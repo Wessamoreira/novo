@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+<h:head>
+</h:head>
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Fórum" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+
+		<script type="text/javascript" charset="utf-8">
+			(function($) {
+				$(document).ready(function() {
+					inicializarForum();
+				});
+
+				inicializarForum = function() {
+					$(".interacaoForum").watermark("Envie uma nova interação");
+					$(".interacaoForum").on("input", function() {
+						this.style.height = 'auto';
+						this.style.height = this.scrollHeight + 'px';
+					});
+					$(".interacaoForum").mouseenter(function() {
+						this.style.height = 'auto';
+						this.style.height = this.scrollHeight + 'px';
+					});
+					$(".interacaoForum").mouseout(function() {
+						this.style.height = 'auto';
+					});
+
+				}
+			}(jQuery));
+		</script>
+
+		<style type="text/css">
+.mceLayout {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+.cke_top {
+	display: none !important;
+}
+
+.cke_reset {
+	background-color: transparent !important;
+	height: 100% !important;
+}
+</style>
+
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelForumInteracaoResponder" autosized="false" shadowOpacity="true" top="100" width="600" onshow="document.getElementById('formForumInteracaoResponder:interacaoRespostaComentario').focus()" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Forum_reponderComentario }"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkForumInteracaoResponder">
+						<rich:componentControl target="panelForumInteracaoResponder" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formForumInteracaoResponder">
+				<script type="text/javascript" charset="utf-8">
+					(function($) {
+						$(document)
+								.ready(
+										function() {
+											$(
+													'#panelForumInteracaoResponder_content')
+													.css('height',
+															'calc(100% - 50px)');
+											$('#formForumInteracaoResponder')
+													.css('height', 'calc(100%)');
+											$(".interacaoForumResposta")
+													.watermark(
+															"Digite seu comentário aqui e clique em responder");
+
+										});
+					}(jQuery));
+				</script>
+				<h:inputTextarea id="interacaoRespostaComentario" styleClass="form-control interacaoForumResposta" rows="15" value="#{ForumControle.forumInteracaoFilho.interacao}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+					<otm:commandButton id="responderComentario" value="Responder" icon="#{msg_botoes.btn_icon_responder_embutido}" styleClass="btn btn-default" image="#{resource['/imagens/botaoResponder.png']}" oncomplete="#{rich:component('panelForumInteracaoResponder')}.hide();" action="#{ForumControle.persistirRespostaForumInteracao}" render="form:panelScroll, form:textoInteracao, form:items, form:panelGridMensagens, form:scResultadoConsulta" />
+					<otm:spacer width="5px" />
+					<otm:commandButton id="cancelarResponderComentario" value="Cancelar" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" oncomplete="#{rich:component('panelForumInteracaoResponder')}.hide();" immediate="true" render="form:panelScroll, form:textoInteracao, form:items, form:panelGridMensagens, form:scResultadoConsulta" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProfessor" autosized="false" shadowOpacity="true" top="100" width="600" onshow="document.getElementById('formProfessor:valorConsultaPessoa').focus()" height="435">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Professor_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkProfessor">
+						<rich:componentControl target="panelProfessor" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProfessor">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaProfessor" value="#{ForumControle.campoConsultaPessoa}">
+						<a4j:ajax event="change" render="formProfessor" />
+						<f:selectItems value="#{ForumControle.tipoConsultaComboPessoa}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7" rendered="#{!ForumControle.apresentarCampoCpf}">
+					<h:inputText id="valorConsultaPessoa" size="10" styleClass="form-control campos" rendered="#{!ForumControle.apresentarCampoCpf}" value="#{ForumControle.valorConsultaPessoa}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ForumControle.apresentarCampoCpf}">
+					<h:inputText id="cpf" rendered="#{ForumControle.apresentarCampoCpf}" size="14" maxlength="14" onkeypress="return mascara(this.formProfessor, 'formProfessor:cpf', '999.999.999-99', event);" styleClass="form-control camposObrigatorios" value="#{ForumControle.valorConsultaPessoa}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formProfessor:mensagemConsultarProfessor, formProfessor:resultadoConsultarProfessor, formProfessor:scResultadoProfessor" action="#{ForumControle.consultarPessoa}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultarProfessor" style="width:100%;" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ForumControle.listaConsultaPessoa}" rows="5" var="professor">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_professor}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ForumControle.selecionarPessoa}" render="form:panelForumPessoa, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide();" value="#{professor.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_cpf}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ForumControle.selecionarPessoa}" render="form:panelForumPessoa, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide();" value="#{professor.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_titulacao}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ForumControle.selecionarPessoa}" render="form:panelForumPessoa,form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide();" value="#{professor.titulacaoNivelEscolaridade}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ForumControle.selecionarPessoa}" render="form:panelForumPessoa, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<rich:dataScroller align="center" for="formProfessor:resultadoConsultarProfessor" maxPages="10" id="scResultadoProfessor" />
+				<h:panelGroup id="mensagemConsultaProfessor" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup columns="1" width="100%">
+						<h:outputText styleClass="field control-label mensagem col-md-12" value="#{ForumControle.mensagem}" />
+						<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{ForumControle.mensagemDetalhada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" autosized="false" shadowOpacity="true" top="100" width="600" onshow="document.getElementById('formCurso:valorConsultaCurso').focus()" height="435">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkCurso">
+						<rich:componentControl target="panelCurso" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{ForumControle.campoConsultaCurso}">
+							<f:selectItems value="#{ForumControle.tipoConsultaComboCurso}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-7">
+						<h:inputText id="valorConsultaCurso" size="10" styleClass="form-control campos" value="#{ForumControle.valorConsultaCurso}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="btnConsultar" render="formCurso:mensagemConsultaCurso, formCurso:resultadoConsultaCurso, formCurso:scResultadoCurso" action="#{ForumControle.consultarCurso}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataTable id="resultadoConsultaCurso" style="width:100%;" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ForumControle.listaConsultaCurso}" rows="5" var="unidadeensinocurso">
+						<rich:column style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{ForumControle.selecionarCurso}" focus="nomeCurso" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{unidadeensinocurso.curso.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_turno}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{ForumControle.selecionarCurso}" focus="nomeTurno" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{unidadeensinocurso.turno.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{ForumControle.selecionarCurso}" focus="nomeCurso" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" tooltip="#{msg_botoes.btn_selecionar}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" alt="#{msg.msg_selecionar_dados}" />
+						</rich:column>
+					</rich:dataTable>
+					<rich:dataScroller align="center" for="formCurso:resultadoConsultaCurso" maxPages="10" id="scResultadoCurso" />
+					<h:panelGroup layout="block" id="mensagemConsultaCurso" styleClass="pn col-md-12 text-left mt10 mb10">
+						<otm:mensagem bean="#{ForumControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplina" autosized="false" shadowOpacity="true" top="100" width="600" onshow="document.getElementById('formDisciplina:valorConsultaDisciplina').focus()" height="435">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink">
+						<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:selectOneMenu styleClass="form-control campos" id="consultaDisciplina" value="#{ForumControle.campoConsultaDisciplina}">
+							<f:selectItems value="#{ForumControle.tipoConsultaComboDisciplina}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-7">
+						<h:inputText id="valorConsultaDisciplina" size="20" styleClass="form-control campos" value="#{ForumControle.valorConsultaDisciplina}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="btnConsultar" render="formDisciplina:mensagemConsultaDisciplina, formDisciplina:resultadoConsultaDisciplina, formDisciplina:scResultadoDisciplina" action="#{ForumControle.consultarDisciplina}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataTable id="resultadoConsultaDisciplina" style="width:100%;" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ForumControle.listaConsultaDisciplina}" rows="5" var="disciplinaItens">
+						<rich:column colspan="3" style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Disciplina_codigo}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{ForumControle.selecionarDisciplina}" render="form:valorConsulta" oncomplete="#{rich:component('panelDisciplina')}.hide();" value="#{disciplinaItens.codigo}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column colspan="3" style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Disciplina_nome}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{ForumControle.selecionarDisciplina}" render="form:valorConsulta" oncomplete="#{rich:component('panelDisciplina')}.hide();" value="#{disciplinaItens.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column colspan="1" style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{ForumControle.selecionarDisciplina}" oncomplete="#{rich:component('panelDisciplina')}.hide();" render="form:valorConsulta" tooltip="Selecionar" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" alt="#{msg.msg_adicionar_dados}" />
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller align="center" fastControls="hide" boundaryControls="auto" stepControls="auto" for="formDisciplina:resultadoConsultaDisciplina" maxPages="5" id="scResultadoDisciplina" />
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup layout="block" id="mensagemConsultaDisciplina" styleClass="pn col-md-12 text-left mt10 mb10">
+						<otm:mensagem bean="#{ForumControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" autosized="false" onshow="document.getElementById('formTurma:valorConsultarTurma').focus()" shadowOpacity="true" top="0" width="600" height="430">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_consultaTurma}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkTurma">
+						<rich:componentControl target="panelTurma" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{ForumControle.campoConsultaTurma}">
+							<f:selectItems value="#{ForumControle.tipoConsultaComboTurma}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-7">
+						<h:inputText id="valorConsultarTurma" size="15" styleClass="form-control campos" value="#{ForumControle.valorConsultaTurma}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultarTurma, formTurma:resultadoConsultarTurma, formTurma:scResultadoTurma" action="#{ForumControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataTable id="resultadoConsultarTurma" style="width:100%;" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ForumControle.listaConsultaTurma}" rows="5" var="turmaItens">
+						<rich:column sortBy="#{turmaItens.identificadorTurma}" style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Turma_identificadorTurma}" />
+							</f:facet>
+							<a4j:commandLink action="#{ForumControle.selecionarTurma}" oncomplete="#{rich:component('panelTurma')}.hide();" render="form" id="identificadorTurma" value="#{turmaItens.identificadorTurma}" />
+						</rich:column>
+						<rich:column sortBy="#{turmaItens.unidadeEnsino}" style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Turma_unidadeEnsino}" />
+							</f:facet>
+							<a4j:commandLink action="#{ForumControle.selecionarTurma}" oncomplete="#{rich:component('panelTurma')}.hide();" render="form" id="unidadeEnsino" value="#{turmaItens.unidadeEnsino.nome}" />
+						</rich:column>
+						<rich:column sortBy="#{turmaItens.curso.nome}" style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Turma_curso}" />
+							</f:facet>
+							<a4j:commandLink action="#{ForumControle.selecionarTurma}" id="curso" oncomplete="#{rich:component('panelTurma')}.hide();" render="form" value="#{turmaItens.curso.nome}" />
+						</rich:column>
+						<rich:column sortBy="#{turmaItens.turno.nome}" style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Turma_turno}" />
+							</f:facet>
+							<a4j:commandLink action="#{ForumControle.selecionarTurma}" id="turno" oncomplete="#{rich:component('panelTurma')}.hide();" render="form" value="#{turmaItens.turno.nome}" />
+						</rich:column>
+						<rich:column sortBy="#{turmaItens.peridoLetivo.descricao}" style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Turma_periodoLetivo}" />
+							</f:facet>
+							<a4j:commandLink action="#{ForumControle.selecionarTurma}" id="periodo" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItens.peridoLetivo.descricao}" />
+						</rich:column>
+						<rich:column style="text-align: center !important;">
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{ForumControle.selecionarTurma}" focus="turma" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" tooltip="#{msg_botoes.btn_selecionar}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" alt="#{msg.msg_selecionar_dados}" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formTurma:resultadoConsultarTurma" maxPages="5" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup layout="block" id="mensagemConsultarTurma" styleClass="pn col-md-12 text-left mt10 mb10">
+						<otm:mensagem bean="#{ForumControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelRegistrarNotaAluno" autosized="false" onshow="document.getElementById('formRegistrarNotaAluno:turmaVigenteNota').focus()" shadowOpacity="true" top="0" width="900" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarAluno}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkRegistrarNotaAluno" />
+					<rich:componentControl target="panelRegistrarNotaAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formRegistrarNotaAluno">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_turma}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ForumControle.turmaVigenteNota.codigo}" id="turmaVigenteNota">
+						<f:selectItems value="#{ForumControle.listaSelectItemTurmaInteragiramForum}" />
+						<a4j:ajax event="change" render="formRegistrarNotaAluno" listener="#{ForumControle.consultarTurmaAlunoQueInteragiramForum }" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ForumControle.turmaVigenteNota.apresentarAnoSemestre}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_ano}" rendered="#{ForumControle.turmaVigenteNota.apresentarAnoSemestre}" />
+					<h:inputText id="ano" styleClass="form-control camposObrigatorios" size="9" maxlength="4" value="#{ForumControle.anoVigenteNota}" rendered="#{ForumControle.turmaVigenteNota.apresentarAnoSemestre}" onkeypress="return somenteNumero1(event);">
+						<a4j:ajax event="blur" render="formRegistrarNotaAluno" listener="#{ForumControle.limparCampoListaAlunoRegistrarNota }" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ForumControle.turmaVigenteNota.apresentarAnoSemestre}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_semestre}" rendered="#{ForumControle.turmaVigenteNota.semestral}" />
+					<h:selectOneMenu id="semestreNotaAluno" styleClass="form-control camposObrigatorios" value="#{ForumControle.semestreVigenteNota}" rendered="#{ForumControle.turmaVigenteNota.semestral}">
+						<f:selectItems value="#{EnumControle.comboboxSemestreEnum}" />
+						<a4j:ajax event="change" render="formRegistrarNotaAluno" listener="#{ForumControle.limparCampoListaAlunoRegistrarNota }" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!empty ForumControle.forum.forumRegistrarNotaVOs}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_configuracoesAcademicas}" rendered="#{!empty ForumControle.forum.forumRegistrarNotaVOs}" />
+					<h:selectOneMenu styleClass="#{ForumControle.cssConfiguracaoAcademicoVigenteNota}" disabled="#{ForumControle.desablitarConfiguracaoAcademicoVigenteNota}" value="#{ForumControle.configuracaoAcademicoVigenteNota.codigo}" rendered="#{!empty ForumControle.forum.forumRegistrarNotaVOs}">
+						<f:selectItems value="#{ForumControle.listaSelectItemConfiguracaoAcademico}" />
+						<a4j:ajax event="change" render="formRegistrarNotaAluno" listener="#{ForumControle.montarListaDeNotasDaConfiguracaoAcademico}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty ForumControle.forum.forumRegistrarNotaVOs and ForumControle.configuracaoAcademicoVigenteNota.codigo > 0}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_tipoNota}" rendered="#{!empty ForumControle.forum.forumRegistrarNotaVOs and ForumControle.configuracaoAcademicoVigenteNota.codigo > 0}" />
+					<h:selectOneMenu id="nota" styleClass="form-control camposObrigatorios" value="#{ForumControle.variavelTipoNota}" style="width:100px;" rendered="#{not empty ForumControle.forum.forumRegistrarNotaVOs and ForumControle.configuracaoAcademicoVigenteNota.codigo > 0}">
+						<a4j:ajax event="change" render="listaRegistrarNotaAluno" listener="#{ForumControle.carregarDadosConfiguracaoAcadimicoPeloTipoDaNota}" />
+						<f:selectItems value="#{ForumControle.listaSelectItemTipoInformarNota}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<otm:spacer height="10px;" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<otm:commandButton id="btnRegistrarNotaAluno" render="formRegistrarNotaAluno" action="#{ForumControle.consultarAlunoParaRegistrarNota}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<otm:spacer height="10px;" />
+				<h:panelGroup id="listaRegistrarNotaAluno" width="100%" columnClasses="colunaCentralizada">
+					<rich:dataTable id="resultadoRegistrarNotaAluno" style="width:100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ForumControle.forum.forumRegistrarNotaVOs}" rows="5" var="forumRegistrar" rendered="#{not empty ForumControle.forum.forumRegistrarNotaVOs}">
+						<rich:column filterType="custom" filterExpression="#{forumRegistrar.historicoVO.configuracaoAcademico.codigo eq ForumControle.configuracaoAcademicoVigenteNota.codigo }">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+							</f:facet>
+							<h:outputText value="#{forumRegistrar.historicoVO.matricula.matricula}" />
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{forumRegistrar.historicoVO.configuracaoAcademico.codigo eq ForumControle.configuracaoAcademicoVigenteNota.codigo }">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Aluno_tituloForm}" />
+							</f:facet>
+							<h:outputText value="#{forumRegistrar.pessoaVO.nome}" />
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{forumRegistrar.historicoVO.configuracaoAcademico.codigo eq ForumControle.configuracaoAcademicoVigenteNota.codigo }">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Forum_qtdRegistrarForum}" />
+							</f:facet>
+							<a4j:commandLink action="#{ForumControle.consultarForumInteracaoRegistroNota }" render="formPanelInteracaoForum" oncomplete="#{rich:component('panelInteracaoForum')}.show();">
+								<h:outputText value="#{forumRegistrar.qtdRegistroForum}" />
+							</a4j:commandLink>
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{forumRegistrar.historicoVO.configuracaoAcademico.codigo == ForumControle.configuracaoAcademicoVigenteNota.codigo }">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Forum_notaForum}" />
+							</f:facet>
+							<h:panelGroup>
+								<h:inputText id="nota1" size="3" autocomplete="off" styleClass="form-control campos" rendered="#{!ForumControle.configuracaoNota.utilizarNotaPorConceito}" value="#{forumRegistrar.nota}">
+									<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+									<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ForumControle.configuracaoAcademicoVigenteNota.quantidadeCasasDecimaisPermitirAposVirgula}" />
+									<a4j:ajax render="nota1, mensagemRegistrarNotaAluno" listener="#{ForumControle.checarFormatarValoresNota}" event="change" />
+								</h:inputText>
+								<h:selectOneMenu styleClass="form-control campos" rendered="#{ForumControle.configuracaoNota.utilizarNotaPorConceito}" value="#{forumRegistrar.notaConceito.codigo}">
+									<f:selectItems value="#{ForumControle.listaSelectItemNotaConceito}" />
+									<a4j:ajax event="change" render="mensagemRegistrarNotaAluno" listener="#{ForumControle.carregarDadosConfiguracaoAcadimicoNotaConceito }" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{forumRegistrar.historicoVO.configuracaoAcademico.codigo eq ForumControle.configuracaoAcademicoVigenteNota.codigo }">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Forum_historicoLancado}" />
+							</f:facet>
+							<h:inputText id="notaHistorico1" size="3" readonly="true" styleClass="form-control camposSomenteLeitura" rendered="#{!ForumControle.configuracaoNota.utilizarNotaPorConceito}" value="#{forumRegistrar.notaHistorico}">
+								<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+							</h:inputText>
+
+							<h:selectOneMenu styleClass="form-control camposSomenteLeitura" readonly="true" rendered="#{ForumControle.configuracaoNota.utilizarNotaPorConceito}" value="#{forumRegistrar.notaConceitoHistorico.codigo}">
+								<f:selectItems value="#{ForumControle.listaSelectItemNotaConceito}" />
+							</h:selectOneMenu>
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formRegistrarNotaAluno:resultadoRegistrarNotaAluno" maxPages="10" id="scResultadoRegistrarNotaAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<otm:spacer height="15px" />
+				<h:panelGroup id="mensagemRegistrarNotaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup columns="1" width="100%">
+						<h:outputText styleClass="field control-label mensagem col-md-12" value="#{ForumControle.mensagem}" />
+						<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{ForumControle.mensagemDetalhada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<otm:spacer height="10px" />
+				<h:panelGroup width="100%" columnClasses="colunaCentralizada">
+					<h:panelGroup layout="block" rendered="#{not empty ForumControle.forum.forumRegistrarNotaVOs}">
+						<otm:commandButton id="btnRegistrarNota" render="formRegistrarNotaAluno" action="#{ForumControle.persistirForumRegistrarNota}" value="#{msg_bt.btn_gravar}" styleClass="btn btn-dark btn-gravar" />
+						<otm:spacer width=" 25px" />
+						<otm:commandButton id="btnRegistrarNotaHistorico" render="formRegistrarNotaAluno" action="#{ForumControle.persistirRestritoHistorioForumNota }" oncomplete="#{ForumControle.fecharModalRegistrarNotaAluno}" value="#{msg_bt.btn_gravar}" image="#{resource['./imagens/botaoRegistrarNotaHistorico.png']}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelInteracaoForum" autosized="false" shadowOpacity="true" top="0" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Forum_interacaoForum}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkInteracaoForum" />
+					<rich:componentControl target="panelInteracaoForum" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPanelInteracaoForum">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup columns="1" width="100%" columnClasses="colunaEsquerda">
+						<rich:dataGrid id="items" border="none" style="border:none; width:100%;" columnClasses="bordaInteracao" value="#{ForumControle.controleConsultaInteracaoRegistroNota}" rowKeyVar="row" columns="1" elements="5" var="forumInteracao1">
+							<h:panelGroup columns="1" width="100%" style="#{forumInteracao1.cssQtdRegistroForum}">
+								<h:panelGroup columns="2" style="#{forumInteracao1.cssApresentacao}">
+									<rich:column width="60px;" style="border:none;">
+										<h:panelGroup layout="block" style="width:100%">
+											<h:graphicImage rendered="#{forumInteracao1.usuarioInteracao.pessoa.existeImagem}" style="position:relative; left:0px; top:0px; width:39px; height:39px; display:inline-block; background-color: transparent; border: 0px solid;vertical-align:middle;" width="55" height="55" value="#{ForumControle.caminhoBaseFoto}/imagem/#{forumInteracao1.usuarioInteracao.pessoa.arquivoImagem.nome}" />
+											<h:graphicImage rendered="#{not forumInteracao1.usuarioInteracao.pessoa.existeImagem}" width="55" height="55" value="#{resource['./imagens/visao/foto_usuario.png']}" style="position:relative; left:0px; top:0px; width:39px; height:39px;vertical-align:middle;background-color: transparent; border: 0px solid;display:inline-block">
+											</h:graphicImage>
+										</h:panelGroup>
+									</rich:column>
+									<rich:column width="100%" style="border:none;">
+										<h:panelGroup columns="1" width="100%">
+											<h:panelGroup layout="block" style="width:100%">
+												<h:panelGroup style="text-align:left;float:left;font-weight: bold;">
+													<h:outputText styleClass="tituloCamposResultado" value="#{forumInteracao1.usuarioInteracao.pessoa.nome}" />
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:outputText style="border:none;width:100%;height:auto;resize:auto;word-wrap: break-word;display:block;word-break:break-all;text-align: justify;" styleClass="tituloCamposResultado" rendered="#{not forumInteracao1.excluido}" value="#{forumInteracao1.interacao}" />
+											<h:outputText styleClass="tituloCamposResultado" rendered="#{forumInteracao1.excluido}" style="text-align: justify;opacity:0.5;vertical-align:middle;margin-top:25px;display:block" value="Interação excluida pelo criador" />
+											<a4j:region rendered="#{not forumInteracao1.excluido}">
+												<h:panelGroup rendered="#{not forumInteracao1.excluido}" id="opcoesForum" style="margin-top:5px;float:left;width:100%" layout="block">
+													<h:outputText styleClass="tituloCamposResultado" value="#{forumInteracao1.dataInteracao}" style="font-weight: bold;">
+														<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+													</h:outputText>
+													<otm:spacer width="5px;" />
+													<h:graphicImage style="height:22px;width:22px;text-align:left;vertical-align:bottom;cursor:pointer;border:none;opacity:0.5;margin:0px;" rendered="#{not forumInteracao1.jaGostado and not forumInteracao1.excluido}" url="#{resource['./imagens/ead/gostar.png']}" />
+													<otm:spacer width="5px;" />
+													<h:graphicImage style="height:22px;width:22px;text-align:left;vertical-align:bottom;cursor:pointer;border:none;opacity:0.9;margin:0px;" rendered="#{forumInteracao1.jaGostado and not forumInteracao1.excluido}" url="#{resource['./imagens/ead/gostado.png']}" />
+													<otm:spacer width="5px;" />
+													<h:outputText style="font-size: 18px;top: -1px;right:-3px;position: relative;opacity:0.5;text-align:left;vertical-align:bottom;" value="#{forumInteracao1.qtdeGostado}" />
+												</h:panelGroup>
+											</a4j:region>
+										</h:panelGroup>
+									</rich:column>
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:dataGrid>
+						<h:panelGroup id="panelScroll">
+							<rich:dataScroller align="center" for="formPanelInteracaoForum:items" style="border:none; background-color:transparent; margin-top:5px" render="formPanelInteracaoForum" id="scResultadoConsulta" scrollListener="#{ForumControle.scrollListenerInteracaoRegistroNota}" rendered="#{ForumControle.controleConsultaInteracaoRegistroNota.apresentarDatascroller}" selectedStyle="border:none;background-color:transparent;" pagesVar="pages" boundaryControls="hide" fastControls="hide" maxPages="0" inactiveStyle="border:none; background-color:transparent;">
+								<f:facet name="previous">
+									<h:outputText style="width:100px;text-align:center;display:block;" styleClass="scrollLast" value="Mais Recentes" />
+								</f:facet>
+								<f:facet name="next">
+									<h:outputText style="width:100px;display:block;text-align:center;" styleClass="scrollNext" value="Mais Antigas" />
+								</f:facet>
+								<f:facet name="pages">
+									<h:outputText style="width:200px;display:block;text-align:center;" styleClass="tituloCamposResultado" value="#{ForumControle.controleConsultaInteracaoRegistroNota.paginaAtual}/#{pages}" />
+								</f:facet>
+							</rich:dataScroller>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<!-- 	<ui:include src="richPanelImagem.xhtml" /> -->
+
+		<h:form id="form">
+			<h:panelGroup id="panelGridForm" layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_tema}" />
+					<otm:editor id="editorTema" rendered="#{ForumControle.forum.responsavelCriacao.codigo eq ForumControle.usuarioLogado.codigo or LoginControle.permissaoAcessoMenuVO.alterarTemaForum}" width="900" height="200" value="#{ForumControle.forum.tema}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_publicoAlvo}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ForumControle.forum.publicoAlvoForumEnum}">
+						<f:selectItems value="#{EnumControle.listaSelectPublicoAlvoForumEnum}" />
+						<a4j:ajax event="change" listener="#{ForumControle.limparCampoRestricaoPublicoAlvo}" execute="@form" render="form" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_turma}" />
+					<h:panelGroup rendered="#{ForumControle.forum.cursoVO.codigo eq 0}">
+						<h:inputText id="inputTextIdentificadorTurma" size="38" maxlength="50" disabled="#{!ForumControle.forum.novoObj}" readonly="#{!ForumControle.forum.novoObj}" styleClass="form-control campos" value="#{ForumControle.forum.turma.identificadorTurma}">
+							<a4j:ajax event="change" render="form" listener="#{ForumControle.consultarTurmaPorIdentificadorTurma}" />
+						</h:inputText>
+						<span class="append-icon right"> <otm:commandIcon id="consultarTurma" rendered="#{ForumControle.forum.novoObj}" style="position:relative; top:19px; right:5px;" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" title="#{msg.msg_consultar_dados}" /> <otm:commandIcon id="limparTurma" rendered="#{ForumControle.forum.novoObj}" style="position:relative; top:19px; right:5px;" render="panelGridForm" action="#{ForumControle.limparTurma}" icon="#{msg_botoes.btn_icon_limpar_embutido}" title="#{msg_botoes.btn_btnLimpar}" />
+						</span>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{ForumControle.forum.cursoVO.codigo > 0}">
+						<h:selectOneMenu readonly="#{!ForumControle.forum.novoObj}" styleClass="form-control campos" value="#{ForumControle.forum.turma.codigo}">
+							<f:selectItems value="#{ForumControle.listaSelectItemTurma}" />
+							<a4j:ajax event="change" listener="#{ForumControle.montarListaSelectItemTurmaDisciplina}" render="form" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{ForumControle.forum.publicoAlvoForumEnum.publicoProfessor}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_restricaoPublicoAlvo}" rendered="#{ForumControle.forum.publicoAlvoForumEnum.publicoProfessor}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ForumControle.forum.restricaoPublicoAlvoForumEnum}" rendered="#{ForumControle.forum.publicoAlvoForumEnum.publicoProfessor}">
+						<f:selectItems value="#{EnumControle.listaSelectRestricaoPublicoAlvoForumEnum}" />
+						<a4j:ajax event="change" render="dadosBasicos, panelForumPessoa" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ForumControle.forum.publicoAlvoForumEnum.publicoProfessor}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_areaConhecimento}" />
+					<h:selectOneMenu id="areaConhecimento" styleClass="form-control #{ForumControle.forum.cssCampoAreaConhecimento}" value="#{ForumControle.forum.areaConhecimentoVO.codigo}">
+						<f:selectItems value="#{ForumControle.listaSelectItemAreaConhecimento}" />
+						<a4j:ajax event="change" render="form" listener="#{ForumControle.carregarDadosCurso}" />
+					</h:selectOneMenu>
+					<span class="append-icon right"> <otm:commandIcon id="atualizar_areaConhecimento" style="position:relative; top:19px; right:18px;" action="#{ForumControle.montarListaSelectItemAreaConhecimento}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" render="form" />
+					</span>
+				</h:panelGroup>
+				<h:panelGroup styleClass="col-md-6" rendered="#{ForumControle.forum.publicoAlvoForumEnum.publicoProfessor}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_curso}" />
+					<h:panelGroup rendered="#{ForumControle.forum.areaConhecimentoVO.codigo eq 0}">
+						<h:inputText size="45" maxlength="100" disabled="#{!ForumControle.forum.novoObj}" readonly="#{!ForumControle.forum.novoObj}" styleClass="form-control camposSomenteLeitura" value="#{ForumControle.forum.cursoVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultarCurso" style="position:relative; top:19px; right:5px;" rendered="#{ForumControle.forum.novoObj}" value="#{msg_bt.btn_consultar}" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" title="#{msg.msg_consultar_dados}" /> <otm:commandIcon id="limparCurso" style="position:relative; top:19px; right:5px;" rendered="#{ForumControle.forum.novoObj}" render="panelGridForm" action="#{ForumControle.limparCurso}" value="#{msg_bt.btn_btnLimpar}" icon="#{msg_botoes.btn_icon_limpar_embutido}" title="#{msg_bt.btn_btnLimpar}" />
+						</span>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{ForumControle.forum.areaConhecimentoVO.codigo > 0}">
+						<h:selectOneMenu readonly="#{!ForumControle.forum.novoObj}" styleClass="form-control #{ForumControle.forum.cssCampoCurso}" value="#{ForumControle.forum.cursoVO.codigo}">
+							<f:selectItems value="#{ForumControle.listaSelectItemCurso}" />
+							<a4j:ajax event="change" render="form" listener="#{ForumControle.carregarDadosTurma}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_disciplina}" />
+					<h:panelGroup rendered="#{ForumControle.forum.turma.codigo eq 0}">
+						<h:inputText id="valorConsulta" styleClass="form-control campos" size="40" maxlength="50" readonly="true" value="#{ForumControle.forum.disciplina.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultarDisciplina" rendered="#{ForumControle.forum.novoObj}" style="position:relative; top:19px; right:5px;" render="formDisciplina" oncomplete="#{rich:component('panelDisciplina')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" title="#{msg.msg_consultar_dados}" /> <otm:commandIcon id="limparDisciplina" rendered="#{ForumControle.forum.novoObj}" style="position:relative; top:19px; right:5px;" render="valorConsulta" action="#{ForumControle.limparDisciplina}" icon="#{msg_botoes.btn_icon_limpar_embutido}" title="#{msg_botoes.btn_btnLimpar}" />
+						</span>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{ForumControle.forum.turma.codigo > 0}">
+						<h:selectOneMenu id="selectOneDisciplina" readonly="#{!ForumControle.forum.novoObj}" styleClass="form-control camposObrigatorios" value="#{ForumControle.forum.disciplina.codigo}">
+							<f:selectItems value="#{ForumControle.listaSelectItemDisciplina}" />
+							<a4j:ajax event="change" render="form"/>
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Período de Disponibilização" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ForumControle.forum.tipoPeriodoDisponibilizacao}">
+						<f:selectItems value="#{ForumControle.listaTipoPeriodoDisponibilizacao}" />
+						<a4j:ajax event="change" render="form" execute="form" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup styleClass="col-md-1">
+					<h:outputText styleClass="field control-label tituloCampos" value="Ano" rendered="#{ForumControle.forum.tipoPeriodoDisponibilizacao ne 'SEMPRE_DISPONIVEL' and ForumControle.forum.tipoPeriodoDisponibilizacao ne ''}" />
+					<h:inputText id="forumAno" value="#{ForumControle.forum.ano}" rendered="#{ForumControle.forum.tipoPeriodoDisponibilizacao ne 'SEMPRE_DISPONIVEL' and ForumControle.forum.tipoPeriodoDisponibilizacao ne ''}" onkeydown="aceitarSomenteValorNumerico(this);" onchange="validarAno(this.value,this.id)" maxlength="4" styleClass="form-control camposObrigatorios">
+						<a4j:ajax event="blur" render="form:turma , form:selectOneDisciplina, form:forumAno, form:selectOneSemestre" execute="form:turma , form:selectOneDisciplina, form:forumAno, form:selectOneSemestre" listener="#{ForumControle.montarListaItemTurmaDisciplina}" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup styleClass="col-md-1">
+					<h:outputText styleClass="field control-label tituloCampos" value="Semestre" rendered="#{ForumControle.forum.tipoPeriodoDisponibilizacao eq 'ANO_SEMESTRE'}" />
+					<h:selectOneMenu id="selectOneSemestre" styleClass="form-control camposObrigatorios" value="#{ForumControle.forum.semestre}" rendered="#{ForumControle.forum.tipoPeriodoDisponibilizacao eq 'ANO_SEMESTRE'}">
+						<f:selectItems value="#{ForumControle.listaSelectItemSemestre}" />
+						<a4j:ajax event="change" render="form:turma, form:selectOneDisciplina, form:forumAno, form:selectOneSemestre" execute="form:turma , form:selectOneDisciplina, form:forumAno, form:selectOneSemestre" listener="#{ForumControle.montarListaItemTurmaDisciplina}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ForumControle.forum.publicoAlvoForumEnum.publicoAluno }">
+					<otm:outputHelp tooltip="Quando este campo estiver marcado, será possível lançar nota para os alunos que interagiram com o fórum, e esta nota poderá ser registrada diretamente no histórico do aluno." id="Forum_avaliado" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_avaliado}" />
+					<otm:selectBooleanCheckbox value="#{ForumControle.forum.forumAvaliado}" styleClass="form-control campos">
+						<a4j:ajax event="change" render="panelGridMensagens" />
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup id="panelForumPessoa">
+					<rich:togglePanel switchType="client" immediate="true" ignoreDupResponses="true" style="display:block;" opened="false" width="100%" headerClass="consulta" label="#{msg_aplic.prt_Forum_listaProfessores }" rendered="#{ForumControle.forum.restricaoPublicoAlvoForumEnum.restricaoEspecificos}">
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+							<otm:commandButton id="consultaDadosProfessor" focus="valorConsultaPessoa" value="Consultar Professor" render="formProfessor" oncomplete="#{rich:component('panelProfessor')}.show();setFocus(formProfessor,'formProfessor:valorConsultaPessoa');" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" />
+						</h:panelGroup>
+						<br />
+						<br />
+						<rich:dataTable id="resultadoForumPessoa" style="width:100%;" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ForumControle.forum.forumPessoaVOs}" rows="5" var="forumPessoa1">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_professor}" />
+								</f:facet>
+								<h:outputText value="#{forumPessoa1.pessoaVO.nome}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_titulacao}" />
+								</f:facet>
+								<h:outputText value="#{forumPessoa1.pessoaVO.titulacaoNivelEscolaridade}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_bt.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon action="#{ForumControle.removerForumPessoa}" render="form:panelForumPessoa, form:panelGridMensagens" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" />
+							</rich:column>
+						</rich:dataTable>
+						<rich:dataScroller align="center" for="resultadoForumPessoa" maxPages="10" id="scResultadoForumPessoa" />
+					</rich:togglePanel>
+				</h:panelGroup>
+				<h:panelGroup id="interacoes">
+					<h:panelGroup layout="block" styleClass="col-md-12 pn mt5 mb5" id="textoInteracao" rendered="#{!ForumControle.forum.novoObj}">
+						<h:panelGroup layout="block" styleClass="float-left col-md-10" style="text-align:left;float:left;width:calc(100% - 60px);height:100%;">
+							<h:inputTextarea pt:placeholder="Digite aqui sua mensagem..." styleClass="form-control interacaoForum" style="heigth:auto" value="#{ForumControle.forumInteracao.interacao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 text-right mb10">
+							<otm:commandButton id="enviar" render="form:panelScroll, form:textoInteracao, form:items, form:panelGridMensagens, form:scResultadoConsulta" image="#{resource['imagens/botaoEnviar.png']}" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" styleClass="btn btn-success pl30 pr30" value="Enviar" action="#{ForumControle.adicionarForumInteracao}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<rich:list id="items" styleClass="w-100 bg-transparent border-0" rows="10" rowKeyVar="row" type="definitions" value="#{ForumControle.controleConsultaInteracao}" var="forumInteracaoItens">
+						<h:panelGroup layout="block" styleClass="row border #{row % 2 eq 0 ? 'bg-gray-100' : 'bg-white'} rounded  ml5 mb10 textoInteracaoForum#{row+1}" style="#{forumInteracaoItens.cssApresentacao}">
+							<h:panelGroup layout="block" style="height:45px;width:45px;" styleClass="float-left text-center mr10 mt5">
+								<h:graphicImage style="width:24px;" rendered="#{forumInteracaoItens.usuarioInteracao.pessoa.existeImagem}" value="#{ForumControle.caminhoBaseFoto}/imagem/#{forumInteracaoItens.usuarioInteracao.pessoa.arquivoImagem.cpfRequerimento}/#{forumInteracaoItens.usuarioInteracao.pessoa.arquivoImagem.nome}" />
+								<h:panelGroup rendered="#{!forumInteracaoItens.usuarioInteracao.pessoa.existeImagem}" styleClass="fa fa-user fs26 text-gray-700 mt10">
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="float-left p10" style="text-align:left;float:left;width:calc(100% - 220px);height:100%;">
+								<h:outputText styleClass="tituloCampos text-gray mr10 btn-block font-weight-bold" value="#{forumInteracaoItens.usuarioInteracao.nome}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="float-left p10" style="text-align:left;float:left;width:160px;height:100%;">
+								<h:outputText styleClass="tituloCampos text-gray mr10 btn-block font-weight-bold" value="#{forumInteracaoItens.dataInteracao}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+								</h:outputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="float-right p10" style="text-align:left;float:left;width:calc(100% - 60px);height:100%;">
+								<h:inputTextarea rendered="#{!forumInteracaoItens.excluido}" readonly="true" styleClass="form-control bg-transparent  interacaoForum" style="heigth:auto" value="#{forumInteracaoItens.interacao}" />
+								<h:outputText styleClass="text-danger fs14" rendered="#{forumInteracaoItens.excluido}" value="Interação excluida pelo criador" />
+							</h:panelGroup>
+							<h:panelGroup id="opcoes" layout="block" rendered="#{!forumInteracaoItens.excluido}" styleClass="row ml5">
+								<h:panelGroup layout="block" styleClass="col-md-2 p10 text-center">
+									<otm:commandButton styleClass="btn btn-transparent border-0 text-primary" render="form:panelScroll, form:textoInteracao, form:items, form:panelGridMensagens, form:scResultadoConsulta" rendered="#{!forumInteracaoItens.jaGostado}" icon="#{msg_botoes.btn_icon_gostar_embutido}  text-primary" tooltip="Clique para gostar" action="#{ForumControle.gostarForumInteracao}" value="(#{forumInteracaoItens.qtdeGostado}) like" />
+									<otm:commandButton styleClass="btn btn-transparent border-0 text-success" render="form:panelScroll, form:textoInteracao, form:items, form:panelGridMensagens, form:scResultadoConsulta" rendered="#{forumInteracaoItens.jaGostado}" icon="#{msg_botoes.btn_icon_gostar_embutido} text-success" tooltip="Clique para desgostar" action="#{ForumControle.excluirGostarForumInteracao}" value="(#{forumInteracaoItens.qtdeGostado}) like" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2 p10 text-center">
+									<otm:commandButton styleClass="btn btn-transparent border-0 text-info" render="formForumInteracaoResponder" value="Responder" action="#{ForumControle.responderComentarioForumInteracao}" oncomplete="#{rich:component('panelForumInteracaoResponder')}.show();" icon="#{msg_botoes.btn_icon_enviar_email_embutido} " />
+								</h:panelGroup>
+								<h:panelGroup layout="block" rendered="#{ForumControle.usuarioLogado.codigo eq forumInteracaoItens.usuarioInteracao.codigo and !forumInteracaoItens.excluido}" styleClass="col-md-2 p10 text-center">
+									<otm:commandButton styleClass="btn btn-transparent border-0 text-danger" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" render="form:panelScroll, form:textoInteracao, form:items, form:panelGridMensagens, form:scResultadoConsulta" icon="fas fa-trash text-danger " tooltip="#{msg_aplic.prt_Forum_excluir}" alt="#{msg_aplic.prt_Forum_excluir}" action="#{ForumControle.excluirForumInteracao}" value="Excluir" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<!-- 							<h:panelGroup id="opcoes" style="vertical-align: bottom;width:23px;height:100%;float:right;margin-top:8px;margin-left:2px" layout="block"> -->
+							<!-- 								<h:panelGroup layout="block" styleClass="text-center"> -->
+							<!-- 									<otm:commandIcon render="formForumInteracaoResponder" rendered="#{not forumInteracaoItens.excluido}" tooltip="Responder" icon="#{msg_botoes.btn_icon_responder_embutido} iconePequeno" title="Responder" alt="Responder" action="#{ForumControle.responderComentarioForumInteracao}" oncomplete="#{rich:component('panelForumInteracaoResponder')}.show();" image="#{resource['imagens/botaoResponder.png']}" /> -->
+							<!-- 								</h:panelGroup> -->
+							<!-- 								<h:panelGroup layout="block" styleClass="text-center"> -->
+							<!-- 									<otm:commandIcon render="form:panelScroll, form:textoInteracao, form:items, form:panelGridMensagens, form:scResultadoConsulta" rendered="#{not forumInteracaoItens.jaGostado and not forumInteracaoItens.excluido}" image="#{resource['imagens/ead/gostar.png']}" icon="#{msg_botoes.btn_icon_gostar_embutido} iconePequeno" tooltip="#{msg_aplic.prt_Forum_gostar}" alt="#{msg_aplic.prt_Forum_gostar}" action="#{ForumControle.gostarForumInteracao}" /> -->
+							<!-- 									<otm:commandIcon render="form:panelScroll, form:textoInteracao, form:items, form:panelGridMensagens, form:scResultadoConsulta" rendered="#{forumInteracaoItens.jaGostado and not forumInteracaoItens.excluido}" image="#{resource['imagens/ead/gostado.png']}" icon="#{msg_botoes.btn_icon_desgostar_embutido} iconePequeno" tooltip="#{msg_aplic.prt_Forum_desgostar}" alt="#{msg_aplic.prt_Forum_desgostar}" action="#{ForumControle.excluirGostarForumInteracao}" /> -->
+							<!-- 									<h:outputText style="font-size: 12px;top: -1px;right:-3px;position: relative;opacity:0.5;text-align:left;vertical-align:bottom;" title="Quantidade de Gostei" value="#{forumInteracaoItens.qtdeGostado}" /> -->
+							<!-- 								</h:panelGroup> -->
+							<!-- 								<h:panelGroup layout="block" styleClass="text-center"> -->
+							<!-- 									<otm:commandIcon render="form:panelScroll, form:textoInteracao, form:items, form:panelGridMensagens, form:scResultadoConsulta" rendered="#{ForumControle.usuarioLogado.codigo eq forumInteracaoItens.usuarioInteracao.codigo and not forumInteracaoItens.excluido}" image="#{resource['imagens/ead/excluir.png']}" icon="#{msg_botoes.btn_icon_remover_embutido} iconePequeno" tooltip="#{msg_aplic.prt_Forum_excluir}" alt="#{msg_aplic.prt_Forum_excluir}" action="#{ForumControle.excluirForumInteracao}" /> -->
+							<!-- 								</h:panelGroup> -->
+							<!-- 							</h:panelGroup> -->
+						</h:panelGroup>
+					</rich:list>
+					<h:panelGroup id="panelScroll">
+						<rich:dataScroller align="center" for="form:items" execute="@this" render="form" oncomplete="inicializarForum();" id="scResultadoConsultaForum" page="#{ForumControle.controleConsultaInteracao.page}" scrollListener="#{ForumControle.scrollListenerInteracao}" stepControls="auto" boundaryControls="auto" fastControls="hide" maxPages="10" />
+						<!-- 						<rich:dataScroller align="center" for="form:items" style="border:none; background-color:transparent; margin-top:5px" render="itens, panelGridMensagens" id="scResultadoConsulta" scrollListener="#{ForumControle.scrollListenerInteracao}" rendered="#{ForumControle.controleConsultaInteracao.apresentarDatascroller}" selectedStyle="border:none;background-color:transparent;" pagesVar="pages" boundaryControls="hide" fastControls="hide" maxPages="0" inactiveStyle="border:none; background-color:transparent;"> -->
+						<!-- 							<f:facet name="previous"> -->
+						<!-- 								<h:outputText style="width:100px;text-align:center;display:block;" styleClass="scrollLast" value="Mais Recentes" /> -->
+						<!-- 							</f:facet> -->
+						<!-- 							<f:facet name="next"> -->
+						<!-- 								<h:outputText style="width:100px;display:block;text-align:center;" styleClass="scrollNext" value="Mais Antigas" /> -->
+						<!-- 							</f:facet> -->
+						<!-- 							<f:facet name="pages"> -->
+						<!-- 								<h:outputText style="width:200px;display:block;text-align:center;" styleClass="tituloCamposResultado" value="#{ForumControle.controleConsultaInteracao.paginaAtual}/#{pages}" /> -->
+						<!-- 							</f:facet> -->
+						<!-- 						</rich:dataScroller> -->
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="pn col-md-12 text-left mt10 mb10">
+						<otm:mensagem bean="#{ForumControle}"></otm:mensagem>
+					</h:panelGroup>
+					<h:panelGroup styleClass="row navbar navbar-fixed-bottom barraFlutuanteInferior text-center" layout="block">
+						<otm:commandButton id="novo" immediate="true" action="#{ForumControle.novo}" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+						<otm:spacer width="5px" />
+						<otm:commandButton id="salvar" render="form:panelGridForm" action="#{ForumControle.persistir}" value="#{msg_botoes.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" />
+						<otm:spacer width="5px" />
+						<otm:commandButton id="ativar" render="form:panelGridForm" action="#{ForumControle.ativar}" icon="#{msg_botoes.btn_icon_ativar_embutido}" value="Ativar" styleClass="btn btn-primary" rendered="#{!ForumControle.forum.novoObj and ForumControle.forum.situacaoForum eq 'INATIVO' and ForumControle.forum.responsavelCriacao.codigo eq ForumControle.usuarioLogado.codigo}" accesskey="3" image="#{resource['/imagens/botaoAtivar.png']}" />
+						<otm:spacer width="5px" rendered="#{!ForumControle.forum.novoObj and ForumControle.forum.situacaoForum eq 'INATIVO' and ForumControle.forum.responsavelCriacao.codigo eq ForumControle.usuarioLogado.codigo}" />
+						<otm:commandButton id="inativar" render="form:panelGridForm" action="#{ForumControle.inativar}" icon="#{msg_botoes.btn_icon_inativar_embutido}" value="Inativar" styleClass="btn btn-danger" rendered="#{!ForumControle.forum.novoObj and ForumControle.forum.situacaoForum eq 'ATIVO' and ForumControle.forum.responsavelCriacao.codigo eq ForumControle.usuarioLogado.codigo}" accesskey="3" image="#{resource['/imagens/botaoInativar.png']}" />
+						<otm:spacer rendered="#{!ForumControle.forum.novoObj and ForumControle.forum.responsavelCriacao.codigo eq ForumControle.usuarioLogado.codigo}" width="5px" />
+						<otm:commandButton id="consultar" immediate="true" action="#{ForumControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" accesskey="4" styleClass="btn btn-default btn-consultar" />
+						<otm:spacer width="5px" />
+						<otm:commandButton id="registrarNotaAluno" action="#{ForumControle.montarListaDeTurmaAlunoQueInteragiramForum}" render="formRegistrarNotaAluno" oncomplete="#{rich:component('panelRegistrarNotaAluno')}.show();" icon="#{msg_botoes.btn_icon_aluno_embutido}" styleClass="btn btn-primary" value="Registrar Nota Aluno" rendered="#{ForumControle.forum.forumAvaliado}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

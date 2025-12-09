@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Renegociacao_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+		<title><h:outputText value="#{msg_aplic.prt_Turma_tituloForm} " /></title>
+		<h:form id="formCadastro">
+			<h:commandLink action="#{RenegociacaoRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelPrincipal">
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Renegociacao_filtrarPeriodoPor}" />
+						<h:selectOneMenu value="#{RenegociacaoRelControle.tipoPeriodo}" id="tipoPeriodo" styleClass="form-control camposObrigatorios">
+							<f:selectItems value="#{RenegociacaoRelControle.listaSelectItemTipoPeriodo}" />
+							<a4j:ajax event="change" render="formCadastro:panelPeriodo" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup id="panelPeriodo">
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!RenegociacaoRelControle.isApresentarFiltroDataCompetencia}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaReceber_periodo}" />
+							<otm:calendar id="valorConsultaData" value="#{RenegociacaoRelControle.dataInicio}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!RenegociacaoRelControle.isApresentarFiltroDataCompetencia}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Periodo Fim" />
+							<otm:calendar id="dataFim" value="#{RenegociacaoRelControle.dataFim}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RenegociacaoRelControle.isApresentarFiltroDataCompetencia}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Data Competencia" />
+							<otm:calendar id="valorConsultaDataInicioComp" value="#{RenegociacaoRelControle.dataInicio}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RenegociacaoRelControle.isApresentarFiltroDataCompetencia}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Data Competencia Fim" />
+							<otm:calendar id="valorConsultaDataFimComp" value="#{RenegociacaoRelControle.dataFim}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_unidadeEnsino}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="unidadeEnsino" size="70" styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" value="#{RenegociacaoRelControle.unidadeEnsinoVO.nome}" />
+							<span class="append-icon right"> <otm:commandIcon id="selecionarUnidadeEnsino" tooltip="Selecionar Unidade de Ensino" oncomplete="#{rich:component('panelUnidadeEnsino')}.show()" icon="#{msg_botoes.btn_icon_adicionar_embutido}" render="formUnidadeEnsino" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaFinanceiroAlunoRel_tipo}" />
+					<h:selectOneMenu value="#{RenegociacaoRelControle.tipo}" id="tipo" styleClass="form-control camposObrigatorios">
+						<f:selectItems value="#{RenegociacaoRelControle.tipoConsultaComboTipo}" />
+						<a4j:ajax event="change" render="panelPrincipal" execute="panelPrincipal" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RenegociacaoRelControle.tipo eq  'turma'}">
+					<h:outputText rendered="#{RenegociacaoRelControle.tipo eq  'turma'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ComissionamentoPorTurma_turma}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText size="70" readonly="true" disabled="true" id="turma" styleClass="form-control camposSomenteLeitura" value="#{RenegociacaoRelControle.turmaVO.identificadorTurma}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" tooltip="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" action="#{RenegociacaoRelControle.limparConsultaTurma}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" tooltip="Limpas Dados" action="#{RenegociacaoRelControle.limparDadosTurma}" render="turma" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RenegociacaoRelControle.apresentarCampoResponsavelFinanceiro}">
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenegociacaoRelControle.apresentarCampoResponsavelFinanceiro}" value="#{msg_aplic.prt_ContaReceber_responsavelFinanceiro}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText size="70" id="nomeResponsavelFinanceiro" styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" maxlength="50" value="#{RenegociacaoRelControle.responsavelFinanceiro.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultarResponsavelFinanceiro" tooltip="Consultar Responsavel Financeiro" render="formResponsavelFinanceiro" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.show()" /> <otm:commandIcon id="limparDadosResponsavelFinanceiro" tooltip="Limpas Dados" action="#{RenegociacaoRelControle.limparDadosResponsavelFinanceiro}" render="nomeResponsavelFinanceiro" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RenegociacaoRelControle.apresentarCampoParceiro}">
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenegociacaoRelControle.apresentarCampoParceiro}" value="#{msg_aplic.prt_NegociacaoContaReceber_parceiro}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText size="70" id="nomeParceiro" styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" maxlength="50" value="#{RenegociacaoRelControle.parceiroVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultarParceiro" tooltip="Consultar Parceiro" render="formParceiro" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelParceiro')}.show()" /> <otm:commandIcon id="limparDadosParceiro" tooltip="Limpas Dados" action="#{RenegociacaoRelControle.limparParceiro}" render="nomeParceiro" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RenegociacaoRelControle.apresentarCampoFuncionario}">
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenegociacaoRelControle.apresentarCampoFuncionario}" value="#{msg_aplic.prt_NegociacaoContaReceber_funcionario}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText size="70" id="nomeFuncionario" styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" maxlength="50" value="#{RenegociacaoRelControle.funcionarioVO.pessoa.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultarFuncionario" tooltip="Consultar Funcionario" render="formFuncionario" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelFuncionario')}.show()" /> <otm:commandIcon id="limparDadosFuncionario" tooltip="Limpas Dados" action="#{RenegociacaoRelControle.limparFuncionario}" render="nomeFuncionario" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RenegociacaoRelControle.apresentarCampoForncedor}">
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenegociacaoRelControle.apresentarCampoForncedor}" value="#{msg_aplic.prt_ContaReceber_fornecedor}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText size="70" id="nomeFornecedor" styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" maxlength="50" value="#{RenegociacaoRelControle.fornecedorVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultarFornecedor" tooltip="Consultar Fornecedor" render="formFornecedor" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelFornecedor')}.show()" /> <otm:commandIcon id="limparDadosFornecedor" tooltip="Limpas Dados" action="#{RenegociacaoRelControle.limparFornecedor}" render="nomeFornecedor" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{RenegociacaoRelControle.apresentarCampoAluno}">
+					<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RenegociacaoRelControle.apresentarCampoAluno}">
+						<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenegociacaoRelControle.apresentarCampoAluno}" value="#{msg_aplic.prt_CartaAluno_matricula}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RenegociacaoRelControle.apresentarCampoAluno}">
+						<h:inputText id="alunoMatricula" size="21" styleClass="form-control camposObrigatorios" value="#{RenegociacaoRelControle.alunoVO.matricula}">
+							<a4j:ajax event="change" listener="#{RenegociacaoRelControle.consultarAlunoPorMatricula}" render="alunoNome, alunoMatricula, form" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RenegociacaoRelControle.apresentarCampoAluno}">
+						<h:inputText id="alunoNome" size="40" styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" value="#{RenegociacaoRelControle.alunoVO.aluno.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosAluno" tooltip="Localizar Aluno" render="form, formAluno" oncomplete="#{rich:component('panelAluno')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAluno" tooltip="Limpas Dados" action="#{RenegociacaoRelControle.limparDadosAluno}" render="alunoNome, alunoMatricula" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_RenegociacaoRel_responsavelRenegociacao}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText size="70" id="nomeResponsavelRenegociacao" styleClass="form-control camposSomenteLeitura" readonly="true" maxlength="50" value="#{RenegociacaoRelControle.responsavelRenegociacao.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultarResponsavelRenegociacao" tooltip="Consultar Responsavel Renegociacao" render="formResponsavelRenegociacao" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelResponsavelRenegociacao')}.show()" /> <otm:commandIcon id="limparDadosResponsavelRenegociacao" tooltip="Limpas Dados" action="#{RenegociacaoRelControle.limparDadosResponsavelRenegociacao}" render="nomeResponsavelRenegociacao" icon="#{msg_botoes.btn_icon_limpar_embutido}" style="position: relative; top: -1px;" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaFinanceiroAlunoRel_tipoRelatorio}" />
+					<h:selectOneMenu value="#{RenegociacaoRelControle.tipoRelatorio}" id="tipoRelatorio" styleClass="form-control camposObrigatorios">
+						<f:selectItems value="#{RenegociacaoRelControle.tipoConsultaComboTipoRelatorio}" />
+						<a4j:ajax event="change" render="panelPrincipal" execute="panelPrincipal" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RenegociacaoRelControle.apresentarComboTipoContasNegociadas}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_RenegociacaoRel_tipoContasNegociadas}" rendered="#{RenegociacaoRelControle.apresentarComboTipoContasNegociadas}" />
+					<h:selectOneMenu value="#{RenegociacaoRelControle.tipoContaNegociada}" styleClass="form-control camposObrigatorios">
+						<f:selectItems value="#{RenegociacaoRelControle.tipoContasNegociadas}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Renegociacao_situacaoContaReceber}" />
+					<h:selectOneMenu value="#{RenegociacaoRelControle.situacaoContaReceber}" id="situacaoContaReceber" styleClass="form-control campos">
+						<f:selectItems value="#{RenegociacaoRelControle.listaSelectItemSituacaoContaReceber}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Renegociacao_ordenarPor}" />
+					<h:selectOneMenu value="#{RenegociacaoRelControle.ordernarPor}" id="ordenarPor" styleClass="form-control camposObrigatorios">
+						<f:selectItems value="#{RenegociacaoRelControle.listaSelectItemOrdenarPor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="tabMensagens">
+					<otm:mensagem bean="#{RenegociacaoRelControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<otm:commandButton style="margin-right:5px" render="panelPrincipal" id="imprimirPDF" oncomplete="#{RenegociacaoRelControle.download}" action="#{RenegociacaoRelControle.imprimirPDF}" value="Gerar Relatório (PDF)" accesskey="2" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger" />
+						<otm:commandButton render="panelPrincipal" id="imprimirExcel" oncomplete="#{RenegociacaoRelControle.download}" action="#{RenegociacaoRelControle.imprimirExcel}" value="Gerar Relatório (Excel)" accesskey="2" icon="#{msg_botoes.btn_icon_excel_embutido}" styleClass="btn btn-info" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelResponsavelFinanceiro" shadowOpacity="true" width="750" onshow="document.getElementById('formResponsavelFinanceiro:valorConsultaResponsavelFinanceiro').focus();" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceber_responsavelFinanceiro}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkResponsavelFinanceiro" />
+					<rich:componentControl target="panelResponsavelFinanceiro" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formResponsavelFinanceiro">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionario" value="#{RenegociacaoRelControle.campoConsultaResponsavelFinanceiro}">
+						<f:selectItems value="#{RenegociacaoRelControle.tipoConsultaComboResponsavelFinanceiro}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionario" size="10" styleClass="form-control campos" value="#{RenegociacaoRelControle.valorConsultaResponsavelFinanceiro}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formResponsavelFinanceiro" action="#{RenegociacaoRelControle.consultarResponsavelFinanceiro}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaResponsavelFinanceiro" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RenegociacaoRelControle.listaConsultaResponsavelFinanceiro}" rows="5" var="responsavelFinanceiroItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarResponsavelFinanceiro}" focus="nomeResponsavelFinanceiro" render="formCadastro" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.hide(), setFocus(formCadastro,'formCadastro:nomeResponsavelFinanceiro');" value="#{responsavelFinanceiroItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarResponsavelFinanceiro}" focus="nomeResponsavelFinanceiro" render="formCadastro" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.hide(), setFocus(formCadastro,'formCadastro:nomeResponsavelFinanceiro');" value="#{responsavelFinanceiroItens.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RenegociacaoRelControle.selecionarResponsavelFinanceiro}" focus="nomeResponsavelFinanceiro" render="formCadastro" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.hide(), setFocus(formCadastro,'formCadastro:nomeResponsavelFinanceiro');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formResponsavelFinanceiro:resultadoConsultaResponsavelFinanceiro" maxPages="10" id="scResultadoResponsavelFinanceiro" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaResponsavelFinanceiro" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RenegociacaoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelResponsavelRenegociacao" shadowOpacity="true" width="750" onshow="document.getElementById('formResponsavelRenegociacao:valorConsultaResponsavelRenegociacao').focus();" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_RenegociacaoRel_responsavelRenegociacao}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkResponsavelRenegociacao" />
+					<rich:componentControl target="panelResponsavelRenegociacao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formResponsavelRenegociacao">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionario" value="#{RenegociacaoRelControle.campoConsultaResponsavelFinanceiro}">
+						<f:selectItems value="#{RenegociacaoRelControle.tipoConsultaComboResponsavelFinanceiro}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaResponsavelRenegociacao" size="10" styleClass="form-control campos" value="#{RenegociacaoRelControle.valorConsultaResponsavelRenegociacao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formResponsavelRenegociacao" action="#{RenegociacaoRelControle.consultarResponsavelRenegociacao}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaResponsavelRenegociacao" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RenegociacaoRelControle.responsavelRenegociacaoVOs}" rows="5" var="responsavelRenegociacaoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarResponsavelRenegociacao}" focus="nomeResponsavelRenegociacao" render="formCadastro" oncomplete="#{rich:component('panelResponsavelRenegociacao')}.hide(), setFocus(formCadastro,'formCadastro:nomeResponsavelRenegociacao');" value="#{responsavelRenegociacaoItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RenegociacaoRelControle.selecionarResponsavelRenegociacao}" focus="nomeResponsavelRenegociacao" render="formCadastro" oncomplete="#{rich:component('panelResponsavelRenegociacao')}.hide(), setFocus(formCadastro,'formCadastro:nomeResponsavelRenegociacao');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formResponsavelRenegociacao:resultadoConsultaResponsavelRenegociacao" maxPages="10" id="scResultadoResponsavelRenegociacao" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaResponsavelRenegociacao" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RenegociacaoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formTurma:valorConsultaTurma').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink4" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{RenegociacaoRelControle.campoConsultaTurma}">
+						<f:selectItems value="#{RenegociacaoRelControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaTurma" size="20" styleClass="form-control campos" value="#{RenegociacaoRelControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{RenegociacaoRelControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RenegociacaoRelControle.listaConsultaTurma}" rows="7" var="turmaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Identificador Turma" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarTurma}" render="turma, curso, unidadeEnsino" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarTurma}" render="turma, curso, unidadeEnsino" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Unidade de Ensino" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarTurma}" render="turma, curso, unidadeEnsino" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.unidadeEnsino.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RenegociacaoRelControle.selecionarTurma}" render="turma, curso, unidadeEnsino" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RenegociacaoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_CartaAluno_consultarAluno}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink1" />
+					<rich:componentControl target="panelAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAluno" value="#{RenegociacaoRelControle.campoConsultaAluno}">
+						<f:selectItems value="#{RenegociacaoRelControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaAluno" size="20" styleClass="form-control campos" value="#{RenegociacaoRelControle.valorConsultaAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno, formAluno:scResultadoAluno" action="#{RenegociacaoRelControle.consultarAluno}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RenegociacaoRelControle.listaConsultaAluno}" rows="5" var="matriculaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarAluno}" render="alunoNome, alunoMatricula" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Matrícula" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarAluno}" render="alunoNome, alunoMatricula" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarAluno}" render="alunoNome, alunoMatricula" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RenegociacaoRelControle.selecionarAluno}" render="alunoNome" oncomplete="#{rich:component('panelAluno')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RenegociacaoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelParceiro" onshow="document.getElementById('formParceiro:valorConsultaParceiro').focus();" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_NegociacaoContaReceber_parceiro}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink15" />
+					<rich:componentControl target="panelParceiro" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formParceiro">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaParceiro" value="#{RenegociacaoRelControle.campoConsultaParceiro}">
+						<f:selectItems value="#{RenegociacaoRelControle.tipoConsultaComboParceiro}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaParceiro" size="10" styleClass="form-control campos" value="#{RenegociacaoRelControle.valorConsultaParceiro}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formParceiro" action="#{RenegociacaoRelControle.consultarParceiro}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaParceiro" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RenegociacaoRelControle.listaConsultaParceiro}" rows="5" var="parceiroItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Parceiro_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarParceiro}" render="formCadastro" oncomplete="#{rich:component('panelParceiro')}.hide()" value="#{parceiroItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Parceiro_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarParceiro}" render="formCadastro" oncomplete="#{rich:component('panelParceiro')}.hide()" value="#{parceiroItens.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Parceiro_CNPJ} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarParceiro}" render="formCadastro" oncomplete="#{rich:component('panelParceiro')}.hide()" value="#{parceiroItens.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RenegociacaoRelControle.selecionarParceiro}" render="formCadastro" oncomplete="#{rich:component('panelParceiro')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formParceiro:resultadoConsultaParceiro" maxPages="10" id="scResultadoParceiro" boundaryControls="auto" fastControls="hide" stepControls="auto" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaParceiro" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RenegociacaoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" onshow="document.getElementById('formFuncionario:valorConsultaFuncionario').focus();" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceber_funcionario}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionario" value="#{RenegociacaoRelControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{RenegociacaoRelControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionario" size="10" styleClass="form-control campos" value="#{RenegociacaoRelControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formFuncionario:mensagemConsultaFuncionario, formFuncionario:resultadoConsultaFuncionario, formFuncionario:scResultadoFuncionario" action="#{RenegociacaoRelControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaFuncionario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RenegociacaoRelControle.listaConsultaFuncionario}" rows="5" var="funcionarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarFuncionario}" focus="nomeFuncionario" render="formCadastro" oncomplete="#{rich:component('panelFuncionario')}.hide(), setFocus(form,'nomeFuncionario');" value="#{funcionarioItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarFuncionario}" focus="nomeFuncionario" render="formCadastro" oncomplete="#{rich:component('panelFuncionario')}.hide(), setFocus(form,'nomeFuncionario');" value="#{funcionarioItens.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarFuncionario}" focus="nomeFuncionario" render="formCadastro" oncomplete="#{rich:component('panelFuncionario')}.hide(), setFocus(form,'nomeFuncionario');" value="#{funcionarioItens.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RenegociacaoRelControle.selecionarFuncionario}" focus="nomeFuncionario" render="formCadastro" oncomplete="#{rich:component('panelFuncionario')}.hide(), setFocus(form,'nomeFuncionario');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" for="formFuncionario:resultadoConsultaFuncionario" maxPages="10" id="scResultadoFuncionario" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RenegociacaoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFornecedor" shadowOpacity="true" width="750" onshow="document.getElementById('formFornecedor:valorConsultaFornecedor').focus();" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceber_fornecedor}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkFornecedor" />
+					<rich:componentControl target="panelFornecedor" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFornecedor">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFornecedor" value="#{RenegociacaoRelControle.campoConsultaFornecedor}">
+						<a4j:ajax event="change" render="formFornecedor:valorConsultaFornecedor" />
+						<f:selectItems value="#{RenegociacaoRelControle.tipoConsultaComboFornecedor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFornecedor" size="10" onkeypress="#{RenegociacaoRelControle.mascaraConsultaFornecedor}" styleClass="form-control campos" value="#{RenegociacaoRelControle.valorConsultaFornecedor}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formFornecedor:mensagemConsultaFornecedor, formFornecedor:resultadoConsultaFornecedor, formFornecedor:scResultadoFornecedor" action="#{RenegociacaoRelControle.consultarFornecedor}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaFornecedor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RenegociacaoRelControle.listaConsultaFornecedor}" rows="5" var="fornecedorItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Fornecedor_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarFornecedor}" focus="nomeFornecedor" render="formCadastro" oncomplete="#{rich:component('panelFornecedor')}.hide(), setFocus(form,'form:nomeFornecedor');" value="#{fornecedorItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Fornecedor_razaoSocial}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarFornecedor}" focus="nomeFornecedor" render="formCadastro" oncomplete="#{rich:component('panelFornecedor')}.hide(), setFocus(form,'form:nomeFornecedor');" value="#{fornecedorItens.razaoSocial}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Fornecedor_CPF} / #{msg_aplic.prt_Fornecedor_CNPJ}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarFornecedor}" focus="nomeFornecedor" render="formCadastro" rendered="#{fornecedorItens.tipoEmpresa eq 'FI'}" oncomplete="#{rich:component('panelFornecedor')}.hide(), setFocus(form,'form:nomeFornecedor');" value="#{fornecedorItens.CPF}" />
+							<a4j:commandLink action="#{RenegociacaoRelControle.selecionarFornecedor}" focus="nomeFornecedor" render="formCadastro" rendered="#{fornecedorItens.tipoEmpresa eq 'JU'}" oncomplete="#{rich:component('panelFornecedor')}.hide(), setFocus(form,'form:nomeFornecedor');" value="#{fornecedorItens.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RenegociacaoRelControle.selecionarFornecedor}" focus="nomeFornecedor" render="formCadastro" oncomplete="#{rich:component('panelFornecedor')}.hide(), setFocus(form,'form:nomeFornecedor');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formFornecedor:resultadoConsultaFornecedor" maxPages="10" id="scResultadoFornecedor" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaFornecedor" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RenegociacaoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelUnidadeEnsino" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceberRel_selecionarUnidadeEnsino}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hideUnidadeEnsino" />
+					<rich:componentControl target="panelUnidadeEnsino" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUnidadeEnsino">
+				<h:panelGroup layout="block" styleClass="col-md-12" style="margin:10px">
+					<h:outputText style="font: 10pt 'Trebuchet MS', verdana, arial, helvetica, sans-serif;color: #000000;text-align: right;" value="#{msg_aplic.prt_Rel_MarcarDesmarcar}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox style="position: relative; top:3;" value="#{RenegociacaoRelControle.marcarTodasUnidadeEnsino}">
+							<a4j:ajax event="change" listener="#{RenegociacaoRelControle.marcarTodasUnidadesEnsinoAction}" render="formUnidadeEnsino, formCadastro:unidadeEnsino" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" style="border-radius:5px; border:1px solid #dddfe3;margin:5px">
+					<rich:dataGrid columns="#{RenegociacaoRelControle.column}" elements="#{RenegociacaoRelControle.element}" align="left" id="filtrosUnidadeEnsino" width="100%" var="unidadeEnsinoItens" value="#{RenegociacaoRelControle.unidadeEnsinoVOs}">
+						<h:panelGroup layout="block" styleClass="col-md-6" style="margin:10px">
+							<h:outputText value="#{unidadeEnsinoItens.nome}" styleClass="field control-label tituloCampos" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{unidadeEnsinoItens.filtrarUnidadeEnsino}">
+									<a4j:ajax event="change" execute="@this" listener="#{RenegociacaoRelControle.verificarTodasUnidadesSelecionadas}" render="formCadastro:unidadeEnsino" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:dataGrid>
+				</h:panelGroup>
+				<otm:spacer height="20" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<otm:commandButton render="formCadastro" oncomplete="#{rich:component('panelUnidadeEnsino')}.hide()" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="Fechar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<script>
+	document.getElementById("formCadastro:valorConsulta").focus();
+</script>
+	</ui:define>
+</ui:composition>
+</html>

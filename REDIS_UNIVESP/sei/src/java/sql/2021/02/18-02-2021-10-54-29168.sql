@@ -1,0 +1,1 @@
+alter table requerimento add column turmabase text;

@@ -1,0 +1,1 @@
+ALTER TABLE configuracaoacademico ADD permitiraproveitamentodisciplinasoptativas boolean DEFAULT true;

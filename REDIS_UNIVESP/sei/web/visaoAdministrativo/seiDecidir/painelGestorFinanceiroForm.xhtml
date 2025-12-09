@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_PainelGestor_tituloForm}" />
+	</ui:define>
+	<ui:define name="modal">
+
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelNivelEducacional" shadowOpacity="true" width="350" height="150" onshow="document.getElementById('formUnidadeEnsino:consultarUnidadeEnsino').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtrar Receita Por Nível Educacional" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkpanelNivelEducacional" />
+					<rich:componentControl target="panelNivelEducacional" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNivelEducacional">
+
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_nivelEducacional}" />
+
+						<h:selectOneMenu id="niveis" styleClass="form-control camposObrigatorios" value="#{PainelGestorControle.tipoNivelEducacional}">
+							<f:selectItems value="#{PainelGestorControle.tipoNivelEducacionalEnums}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="row mt10 text-center">
+					<otm:commandButton value="Gerar Relatório" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-info" action="#{PainelGestorControle.executarGeracaoDadosPainelGestorFinanceiroPorNivelEducacional}" />
+				</h:panelGroup>
+
+			</h:form>
+		</rich:popupPanel>
+
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelNivelEducacionalFluxoCaixa" shadowOpacity="true" width="350" height="150" onshow="document.getElementById('formUnidadeEnsino:consultarUnidadeEnsino').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtrar Receita Por Nível Educacional" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkpanelNivelEducacionalFluxoCaixa" />
+					<rich:componentControl target="panelNivelEducacionalFluxoCaixa" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNivelEducacionalFluxoCaixa">
+					<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_nivelEducacional}" />
+						
+						<h:selectOneMenu id="niveis" styleClass="form-control camposObrigatorios" value="#{PainelGestorControle.tipoNivelEducacional}">
+							<f:selectItems value="#{PainelGestorControle.tipoNivelEducacionalEnums}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="row mt10 text-center">
+					<otm:commandButton value="Gerar Relatório" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-info" action="#{PainelGestorControle.executarGeracaoDadosPainelGestorFinanceiroPorNivelEducacionalFluxoCaixa}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+
+	<ui:define name="conteudo">
+
+		<rich:dragIndicator id="BI_RECEITA_DESPESA_CONSOLIDADO_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-chart-line fs16"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="BI_RECEITA_POR_COMPETENCIA_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-money-bill-alt fs16"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="BI_RECEITA_POR_FLUXO_CAIXA_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-cash-register fs16"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="BI_MAPA_DESPESAS_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-stamp fs16"></i>
+		</rich:dragIndicator>
+		<h:form id="form">
+
+			<h:panelGroup layout="block" styleClass="row">
+				<rich:panel id="panelFiltroUnidadeEnsino">
+					<f:facet name="header">
+						<h:panelGroup layout="block" styleClass="p5">
+							<i class="fas fa-filter mr5"></i>
+							<h:outputText rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="Ocultar Filtros" />
+							<h:outputText rendered="#{!PainelGestorControle.filtrarUnidadeEnsino}" styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="Apresentar Filtros" />
+
+							<otm:commandIcon rendered="#{!PainelGestorControle.filtrarUnidadeEnsino}" styleClass="float-right mr10" action="#{PainelGestorControle.setFiltrarUnidadeEnsino(true)}" render="panelFiltroUnidadeEnsino" icon="fas fa-expand-alt fs14">
+
+							</otm:commandIcon>
+							<otm:commandIcon rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" styleClass="float-right mr10" action="#{PainelGestorControle.setFiltrarUnidadeEnsino(false)}" render="panelFiltroUnidadeEnsino" icon="fas fa-compress-alt fs14">
+
+							</otm:commandIcon>
+
+
+						</h:panelGroup>
+					</f:facet>
+					<h:panelGroup layout="block" rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-6" id="filtroPeriodo">
+							<h:outputText styleClass="field control-label tituloCampos col-md-12 pn" value="#{msg_aplic.prt_PainelGestor_periodoDe}" />
+							<h:panelGroup layout="block" styleClass="col-md-6 pn">
+								<otm:calendar id="dataInicio" showWeekDaysBar="false" showWeeksBar="false" showFooter="false" locale="pt_BR" oninputkeypress="return mascara(this.form, this.id, '99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarDataMesAno(this.value,this.id)" enableManualInput="true" datePattern="MM/yyyy" inputSize="7" styleClass="form-control camposObrigatorios" value="#{PainelGestorControle.dataInicio}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6 pn pl5">
+								<otm:calendar id="dataTermino" showWeekDaysBar="false" showWeeksBar="false" showFooter="false" locale="pt_BR" oninputkeypress="return mascara(this.form, this.id, '99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarDataMesAno(this.value,this.id)" enableManualInput="true" datePattern="MM/yyyy" inputSize="7" styleClass="form-control camposObrigatorios" value="#{PainelGestorControle.dataFinal}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6 ">
+							<h:outputText styleClass="fields tituloCampos btn-block" value="Selecionar Todas as Unidades de Ensino" />
+							<otm:selectBooleanCheckbox id="marcarTodasUnidadeEnsino" value="#{PainelGestorControle.marcarTodasUnidadeEnsino}">
+								<a4j:ajax event="change" listener="#{PainelGestorControle.marcarTodasUnidadesEnsinoAction}" render="form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+						<a4j:repeat id="filtros" var="unidadeEnsinoItens" value="#{PainelGestorControle.unidadeEnsinoVOs}">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText value="#{unidadeEnsinoItens.nome}" styleClass="tituloCampos btn-block" />
+								<otm:selectBooleanCheckbox id="unidade#{unidadeEnsinoItens.codigo}" value="#{unidadeEnsinoItens.filtrarUnidadeEnsino}">
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+
+
+					<h:panelGroup layout="block" styleClass="row text-center">
+
+						<a4j:commandLink type="submit" oncomplete="criarGraficoReceitaDespesaLine()" styleClass="btn btn-default" value="Gerar Relatório" render="form" action="#{PainelGestorControle.executarInicializacaoDadoFinanceiroPainelGestor}">
+							<i class="fas fa-chart-pie pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener target="#{PainelGestorControle.telaOrigem}" value="PAGINA_INICIAL" />
+						</a4j:commandLink>
+
+						<a4j:commandLink rendered="#{LoginControle.permissaoAcessoMenuVO.painelGestorAcademico}" styleClass="btn btn-default ml10" value="#{msg_botoes.btn_monitorarAcademico}" title="#{msg_botoes.btn_monitorarAcademico}" action="#{PainelGestorControle.consultarDadosMonitoramentoAcademico}">
+							<i class="fas fa-university pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener target="#{PainelGestorControle.telaOrigem}" value="PAGINA_INICIAL" />
+						</a4j:commandLink>
+
+						<a4j:commandLink styleClass="btn btn-default ml10" action="#{PainelGestorControle.voltarPagina}" value="Voltar">
+							<i class="#{msg_botoes.btn_icon_voltar} pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener target="#{PainelGestorControle.telaOrigem}" value="PAGINA_INICIAL" />
+						</a4j:commandLink>
+					</h:panelGroup>
+				</rich:panel>
+			</h:panelGroup>
+
+
+			<h:panelGroup layout="block" styleClass="row mt20" id="panelGeral" style="display:flex !important">
+				<h:panelGroup layout="block" id="menuTopo" styleClass="row row-overflow pt-2 pb-2 pl-3 pr-3" style="display:flex !important">
+					<a4j:repeat value="#{PainelGestorControle.listaDashboard}" var="itemDash">
+						<h:panelGroup layout="block" style="width:39px; height:39px;order:#{itemDash.ordem}" id="panelFavsIcon" rendered="#{itemDash.ocultar 
+					and (itemDash.tipoDashboard eq 'BI_RECEITA_DESPESA_CONSOLIDADO' 
+					or itemDash.tipoDashboard eq 'BI_RECEITA_POR_COMPETENCIA'  
+					or itemDash.tipoDashboard eq 'BI_RECEITA_POR_FLUXO_CAIXA'  
+					or itemDash.tipoDashboard eq 'BI_MAPA_DESPESAS')}" styleClass="mr5 p10 border rounded bg-secundary text-center float-left">
+							<a4j:commandLink action="#{PainelGestorControle.persistirDashboard(itemDash)}" render="form:panelGeral">
+								<f:setPropertyActionListener value="false" target="#{itemDash.ocultar}"></f:setPropertyActionListener>
+								<span class="#{itemDash.icone} fs16" style="margin: 0px !important; padding: 0px !important; position: initial !important"></span>
+							</a4j:commandLink>
+							<rich:tooltip rendered="#{!LoginControle.appMovel}" followMouse="true" target="panelFavsIcon" value="Apresentar #{itemDash.titulo}"></rich:tooltip>
+						</h:panelGroup>
+					</a4j:repeat>
+
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" style="order:#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').ordem}" styleClass="col-md-12" id="BI_RECEITA_DESPESA_CONSOLIDADO" rendered="#{!PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').ocultar}">
+					<rich:dropTarget dropValue="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO')}" render=":form:panelGeral" dropListener="#{PainelGestorControle.registrarPosicaoDashboard}" acceptedTypes="DASHBOARDS" />
+					<rich:dragSource type="DASHBOARDS" dragIndicator="BI_RECEITA_DESPESA_CONSOLIDADO_DRAG" dragValue="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO')}">
+					</rich:dragSource>
+					<otm2:dashpanel id="dashboardBI_RECEITA_DESPESA_CONSOLIDADO" cols="12">
+						<ui:define name="header">
+							<i class="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').icone} mr-2 fs12"></i>
+							<otm:outputHelp styleClassPanel=" " id="helpEvolucaoAcademicaNivelEducacional" tooltip="#{msg.msg_PainelGestorFinanceiro_receitaXDespesaConsolidado}" styleClass="fs12 fonteHeaderDashboard" value="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').titulo}" />
+							<a4j:commandLink action="#{PainelGestorControle.persistirDashboard(PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO'))}" rendered="#{!PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').maximizado}" styleClass="float-right p-0" render="panelGeral">
+								<i class="fas fa-angle-down text-center fonteHeaderDashboard mr-2 fs12" />
+								<f:setPropertyActionListener value="true" target="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').maximizado}"></f:setPropertyActionListener>
+							</a4j:commandLink>
+							<a4j:commandLink action="#{PainelGestorControle.persistirDashboard(PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO'))}" rendered="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').maximizado}" styleClass="float-right p-0" render="panelGeral">
+								<i class="fas fa-angle-up text-center fonteHeaderDashboard mr-2 fs12" />
+								<f:setPropertyActionListener value="false" target="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').maximizado}"></f:setPropertyActionListener>
+							</a4j:commandLink>
+							<a4j:commandLink action="#{PainelGestorControle.persistirDashboard(PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO'))}" render=":form:menuTopo, :form:panelGeral" styleClass="border-0 bg-transparent float-right p-0" title="Ocultar Gráfico">
+								<i class="fas fa-compress-arrows-alt text-center fonteHeaderDashboard mr-2 fs12" />
+								<f:setPropertyActionListener value="true" target="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').ocultar}"></f:setPropertyActionListener>
+							</a4j:commandLink>
+						</ui:define>
+						<ui:define name="body">
+							<h:panelGroup layout="block" styleClass="row" rendered="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_DESPESA_CONSOLIDADO').maximizado}" style="height:300px;overflow-x:auto">
+
+
+								<h:panelGroup id="graficoReceitaDespesaLine" layout="block" styleClass="col-md-12">
+								</h:panelGroup>
+
+
+								<script type="text/javascript" charset="UTF-8">
+											(function($) {
+												$.ajaxSetup({
+													cache : false
+												});
+												
+												$(document).ready(function() {
+													 criarGraficoReceitaDespesaLine();												
+												});
+												
+												criarGraficoReceitaDespesaLine = 	function() {														
+														var options = {		
+																exporting:{
+															    	type: 'image/jpeg',
+															    	buttons:{
+															    		exportButton:{
+															    			 y:5														    			
+															    		},
+																		printButton:{														    			
+												    					    y:5
+												    					}
+															    	}
+															    },
+															legend:{															
+																marginTop: 5,
+																style:{
+																	fontSize:10
+																}
+															},
+															chart : {
+																type : "column",
+																renderTo : "form\:graficoReceitaDespesaLine",
+																backgroundColor : "#FFF",																																
+																height:300,
+																spacingLeft: 0,												
+																marginTop: 40
+															},
+															credits : {
+																enabled : false
+															},
+															title : {
+																text : '',
+																	align:'left',
+																	useHTML:true,
+																	y:5																	
+															},																														
+															xAxis:{
+ 																type: 'datetime', 																
+ 																 labels: {
+ 													                formatter: function() {
+ 													                     return (Highcharts.dateFormat('%b', this.value) == 'Apr'?'Abr': 													                    	
+ 													                          Highcharts.dateFormat('%b', this.value) == 'May'?'Mai': 													                        	  
+ 													                          Highcharts.dateFormat('%b', this.value) == 'Aug'?'Ago':
+ 													                          Highcharts.dateFormat('%b', this.value) == 'Sep'?'Set':
+ 													                          Highcharts.dateFormat('%b', this.value) == 'Oct'?'Out':
+ 													                          Highcharts.dateFormat('%b', this.value) == 'Dec'?'Dez':
+ 													                          Highcharts.dateFormat('%b', this.value))
+ 													                          +'/'+Highcharts.dateFormat('%y', this.value);    
+ 													                }, 													                
+															        rotation: -75.0,															        
+															        step: 0,
+															        style:{
+															        	fontSize: '10px'															        	
+															        },
+															        align:'right'
+ 													            }, 	
+ 													            
+ 													            maxZoom: ( 30 )* 24 * 3600 * 1000,
+ 													            tickInterval: 30* 24 * 3600 * 1000															   
+															},															
+															yAxis: {
+												               title:{
+												            	   text:''
+												               },
+												                labels: {
+ 													                formatter: function() {
+ 													                     return 'R$'+Highcharts.numberFormat((this.value),2,',', '.');    
+ 													                },															      
+															        style:{
+															        	fontSize: '10px'															        	
+															        }
+															        
+ 													            },
+ 													            marginLeft:0,
+ 													           
+												                tickInterval: 500000														                
+												            },															
+															tooltip : {
+																formatter: function() {
+											                         return ''+										                         											                         											                         
+											                         (Highcharts.dateFormat('%b', this.x) == 'Apr'?'Abr':
+											                         Highcharts.dateFormat('%b', this.x) == 'May'?'Mai':
+											                         Highcharts.dateFormat('%b', this.x) == 'Aug'?'Ago':
+											                         Highcharts.dateFormat('%b', this.x) == 'Sep'?'Set':
+											                         Highcharts.dateFormat('%b', this.x) == 'Oct'?'Out':
+											                         Highcharts.dateFormat('%b', this.x) == 'Dec'?'Dez':
+											                         Highcharts.dateFormat('%b', this.x))
+											                         +'/'+Highcharts.dateFormat('%y', this.x) +' - R$'+ Highcharts.numberFormat((this.y),2,',', '.');											                    
+											                         }
+															},
+															plotOptions : {
+																column : {
+																	dataLabels : {
+																		enabled : true,
+																		formatter : function(){return ''+Highcharts.numberFormat(this.y,2,',', '.')},
+																		color: '#000000'
+																	}
+																}
+															},														
+															series : [ {
+ 																		name:'${PainelGestorControle.montarGraficoLegendaReceitaVOs}',
+ 																		color:'#3399FF',	
+ 																		pointInterval: 30* 24 * 3600 * 1000,
+ 																		visible: ${PainelGestorControle.montarGraficoReceitaVisible},
+ 																		showInLegend: ${PainelGestorControle.montarGraficoReceitaShowInLegend},
+ 																		data :[${PainelGestorControle.montarGraficoDataReceita}]
+																	}, 																
+																	{
+																		name:'${PainelGestorControle.montarGraficoLegendaDespesaVOs}',
+																		color:'#D20000',
+																		pointInterval: 30* 24 * 3600 * 1000,
+																		visible: ${PainelGestorControle.montarGraficoDespesaVisible},
+																		showInLegend: ${PainelGestorControle.montarGraficoDespesaShowInLegend},
+																		data :[${PainelGestorControle.montarGraficoDataDespesa}]																															  
+																	}, 																
+																	{
+																		name:'${PainelGestorControle.montarGraficoLegendaSaldoVOs}',
+																		color : '#FDFD00',
+																		pointInterval : 30 * 24 * 3600 * 1000,
+																		visible: ${PainelGestorControle.montarGraficoSaldoVisible},
+																		showInLegend: ${PainelGestorControle.montarGraficoSaldoShowInLegend},
+																		data :[${PainelGestorControle.montarGraficoDataSaldo}]
+
+																	}
+																]
+
+											};
+											var chart = new Highcharts.Chart(options);
+
+										}
+
+									}(jQuery));
+								</script>
+
+							</h:panelGroup>
+						</ui:define>
+					</otm2:dashpanel>
+				</h:panelGroup>
+
+				<ui:include src="painelGestorFinanceiroMapaReceitaCompetenciaForm.xhtml" />
+
+				<ui:include src="painelGestorFinanceiroMapaReceitaFluxoCaixaForm.xhtml" />
+
+				<h:panelGroup layout="block" style="order:#{PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS').ordem}" styleClass="col-md-12" id="BI_MAPA_DESPESAS" rendered="#{!PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS').ocultar and !empty PainelGestorControle.painelGestorVO.painelGestorContaPagarMesAnoVOs}">
+					<rich:dropTarget dropValue="#{PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS')}" render=":form:panelGeral" dropListener="#{PainelGestorControle.registrarPosicaoDashboard}" acceptedTypes="DASHBOARDS" />
+					<rich:dragSource type="DASHBOARDS" dragIndicator="BI_MAPA_DESPESAS_DRAG" dragValue="#{PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS')}">
+					</rich:dragSource>
+					<otm2:dashpanel id="dashboardBI_RECEITA_POR_COMPETENCIA" cols="12">
+						<ui:define name="header">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<i class="#{PainelGestorControle.mapDashboards.get('BI_RECEITA_POR_COMPETENCIA').icone} mr-2 fs12"></i>
+								<h:outputText styleClass="fs12 fonteHeaderDashboard" value="#{PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS').titulo}" />
+
+
+								<a4j:commandLink action="#{PainelGestorControle.persistirDashboard(PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS'))}" rendered="#{!PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS').maximizado}" styleClass="float-right p-0" render="panelGeral">
+									<i class="fas fa-angle-down text-center fonteHeaderDashboard mr-2 fs12" />
+									<f:setPropertyActionListener value="true" target="#{PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS').maximizado}"></f:setPropertyActionListener>
+								</a4j:commandLink>
+								<a4j:commandLink action="#{PainelGestorControle.persistirDashboard(PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS'))}" rendered="#{PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS').maximizado}" styleClass="float-right p-0" render="panelGeral">
+									<i class="fas fa-angle-up text-center fonteHeaderDashboard mr-2 fs12" />
+									<f:setPropertyActionListener value="false" target="#{PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS').maximizado}"></f:setPropertyActionListener>
+								</a4j:commandLink>
+								<a4j:commandLink action="#{PainelGestorControle.persistirDashboard(PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS'))}" render=":form:menuTopo, :form:panelGeral" styleClass="border-0 bg-transparent float-right p-0" title="Ocultar Gráfico">
+									<i class="fas fa-compress-arrows-alt text-center fonteHeaderDashboard mr-2 fs12" />
+									<f:setPropertyActionListener value="true" target="#{PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS').ocultar}"></f:setPropertyActionListener>
+								</a4j:commandLink>
+								<otm:commandIcon styleClass="border-0 bg-transparent float-right p-0 mr10" icon="#{msg_botoes.btn_icon_imprimir_embutido}" id="printDesp" tooltip="Imprimir" action="#{PainelGestorControle.imprimirDespesas}" oncomplete="#{PainelGestorControle.download}" />
+							</h:panelGroup>
+
+						</ui:define>
+						<ui:define name="body">
+							<h:panelGroup layout="block" styleClass="row" rendered="#{PainelGestorControle.mapDashboards.get('BI_MAPA_DESPESAS').maximizado}" style="height:300px;overflow-x:auto">
+
+
+								<h:panelGroup layout="block" styleClass="col-md-12">
+
+									<rich:dataTable width="100%" headerClass="consulta" id="despesas" columnClasses="colunaDireita" value="#{PainelGestorControle.painelGestorVO.painelGestorContaPagarMesAnoVOs}" var="contaPagarMesAnoItens">
+
+										<f:facet name="header">
+											<rich:columnGroup>
+
+												<rich:column styleClass="colunaDireita">
+													<h:outputText value="#{msg_aplic.prt_PainelGestorFinanceiro_mes}" />
+												</rich:column>
+												<rich:column>
+													<otm:outputHelp styleClassPanel="btn-block text-right" id="valorPagarMes" tooltip="#{msg.msg_PainelGestorFinanceiro_valorPagarMes}" styleClass=" " value="#{msg_aplic.prt_PainelGestorFinanceiro_valorPagarMes}" />
+												</rich:column>
+
+												<rich:column>
+													<otm:outputHelp styleClassPanel="btn-block text-right" id="pagoDoMesTopo" tooltip="#{msg.msg_PainelGestorFinanceiro_pagoDoMes}" styleClass=" " value="#{msg_aplic.prt_PainelGestorFinanceiro_valorPagoDoMes}" />
+
+												</rich:column>
+												<rich:column>
+													<otm:outputHelp styleClassPanel="btn-block text-right" id="saldoPagarMes" tooltip="#{msg.msg_PainelGestorFinanceiro_saldoPagarMes}" styleClass=" " value="#{msg_aplic.prt_PainelGestorFinanceiro_saldoPagarMes}" />
+												</rich:column>
+
+												<rich:column>
+													<otm:outputHelp styleClassPanel="btn-block text-right" id="pagoNoMesTopo" tooltip="#{msg.msg_PainelGestorFinanceiro_pagoNoMes}" styleClass=" " value="#{msg_aplic.prt_PainelGestorFinanceiro_valorPagoNoMes}" />
+												</rich:column>
+												<rich:column>
+													<otm:outputHelp styleClassPanel="btn-block text-right" id="inadPagoDoMesTopo" tooltip="#{msg.msg_PainelGestorFinanceiro_inadimplenciaDoMes}" styleClass=" " value="#{msg_aplic.prt_PainelGestorFinanceiro_inadimplenciaDoMes}" />
+												</rich:column>
+												<rich:column>
+													<h:outputText value="#{msg_botoes.btn_opcoes}" />
+												</rich:column>
+
+											</rich:columnGroup>
+										</f:facet>
+										<rich:columnGroup rowClasses="linhaImpar, linhaPar" columnClasses="linhaImpar, linhaPar">
+											<rich:column>
+												<h:outputText value="#{contaPagarMesAnoItens.mesAnoApresentar}" />
+											</rich:column>
+											<rich:column style="text-align:right !important" styleClass="colunaDireita">
+												<h:outputText value="#{contaPagarMesAnoItens.provisaoPagarMes}">
+													<f:converter converterId="FormatadorNumerico" />
+												</h:outputText>
+											</rich:column>
+
+											<rich:column style="text-align:right !important" styleClass="colunaDireita">
+												<h:outputText value="#{contaPagarMesAnoItens.pagoDoMes}">
+													<f:converter converterId="FormatadorNumerico" />
+												</h:outputText>
+											</rich:column>
+											<rich:column style="text-align:right !important" styleClass="colunaDireita">
+												<h:outputText value="#{contaPagarMesAnoItens.saldoPagarMes}">
+													<f:converter converterId="FormatadorNumerico" />
+												</h:outputText>
+											</rich:column>
+											<rich:column style="text-align:right !important" styleClass="colunaDireita">
+												<otm:outputHelp styleClassPanel="btn-block text-right" valorNumerico="true" sytleClass=" " id="pagoNoMes" style="cursor:pointer" value="#{contaPagarMesAnoItens.pagoNoMes}">
+													<h:panelGroup layout="block" styleClass="row" style="max-height:300px; overflow:auto;">
+
+														<h:panelGroup layout="block" rendered="#{contaPagarMesAnoItens.pagoDoMesNoMes gt 0.0}" styleClass="float-left">
+															<otm2:panel name="pagoDoMesNoMes4" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 80px;min-width:260px">
+																<ui:define name="header">
+																	<h:outputText styleClass="tituloCampos fs10" value="#{msg_aplic.prt_PainelGestorFinanceiro_valorPagoDoMes}" />
+																</ui:define>
+
+																<ui:define name="body">
+																	<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+																		<h:outputText rendered="#{contaPagarMesAnoItens.pagoDoMesNoMes > 0.0}" styleClass="tituloCamposReduzidos" value="#{contaPagarMesAnoItens.pagoDoMesNoMes}">
+																			<f:converter converterId="FormatadorNumerico" />
+																		</h:outputText>
+																	</h:panelGroup>
+																</ui:define>
+															</otm2:panel>
+														</h:panelGroup>
+
+														<h:panelGroup layout="block" rendered="#{contaPagarMesAnoItens.pagoAtrazadoDeOutroMesNoMes gt 0.0}" styleClass="float-left">
+															<otm2:panel name="pagoAtrazadoDeOutroMesNoMes4" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 80px;min-width:260px">
+																<ui:define name="header">
+																	<h:outputText styleClass="tituloCampos fs10" value="#{msg_aplic.prt_PainelGestorFinanceiro_valorPagoAtrazados}" />
+																</ui:define>
+
+																<ui:define name="body">
+																	<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+																		<h:outputText rendered="#{contaPagarMesAnoItens.pagoAtrazadoDeOutroMesNoMes > 0.0}" styleClass="tituloCamposReduzidos" value="#{contaPagarMesAnoItens.pagoAtrazadoDeOutroMesNoMes}">
+																			<f:converter converterId="FormatadorNumerico" />
+																		</h:outputText>
+																	</h:panelGroup>
+																</ui:define>
+															</otm2:panel>
+														</h:panelGroup>
+
+														<h:panelGroup layout="block" rendered="#{contaPagarMesAnoItens.pagoAdiantadoDeOutroMesNoMes gt 0.0}" styleClass="float-left">
+															<otm2:panel name="pagoAdiantadoDeOutroMesNoMes4" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 80px;min-width:260px">
+																<ui:define name="header">
+																	<h:outputText styleClass="tituloCampos fs10" value="#{msg_aplic.prt_PainelGestorFinanceiro_valorPagoAdiantados}" />
+																</ui:define>
+
+																<ui:define name="body">
+																	<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+																		<h:outputText rendered="#{contaPagarMesAnoItens.pagoAdiantadoDeOutroMesNoMes > 0.0}" styleClass="tituloCamposReduzidosNegrito" value="#{msg_aplic.prt_PainelGestorFinanceiro_valorPagoAdiantados}" />
+																		<h:outputText rendered="#{contaPagarMesAnoItens.pagoAdiantadoDeOutroMesNoMes > 0.0}" styleClass="tituloCamposReduzidos" value="#{contaPagarMesAnoItens.pagoAdiantadoDeOutroMesNoMes}">
+																			<f:converter converterId="FormatadorNumerico" />
+																		</h:outputText>
+																	</h:panelGroup>
+																</ui:define>
+															</otm2:panel>
+														</h:panelGroup>
+													</h:panelGroup>
+												</otm:outputHelp>
+											</rich:column>
+
+											<rich:column style="text-align:right !important" styleClass="colunaDireita">
+												<h:outputText value="#{contaPagarMesAnoItens.taxaInadimplenciaDoMes}">
+													<f:converter converterId="FormatadorNumerico" />
+												</h:outputText>
+											</rich:column>
+
+											<rich:column style="vertical-align:middle; text-align:center">
+												<a4j:commandLink alt="Visualizar Consumo Deste Mês Por Departamento" title="Visualizar Consumo Deste Mês Por Departamento" action="#{PainelGestorControle.visualizarConsumoContaPagarMesAnoEspecifico}">
+													<i class="btn btn-danger fas fa-stamp fs12 iconePequeno"></i>
+													<f:setPropertyActionListener value="PAINEL_GESTOR_FINANCEIRO" target="#{PainelGestorControle.telaOrigem}" />
+												</a4j:commandLink>
+												<a4j:commandLink alt="Visualizar Consumo Deste Mês Por Categoria Despesa" title="Visualizar Consumo Deste Mês Por Categoria Despesa" action="#{PainelGestorControle.visualizarCategoriaDespesaContaPagarMesAnoEspecifico}">
+													<i class="btn btn-warning fas fa-comment-dollar fs12 iconePequeno"></i>
+													<f:setPropertyActionListener value="PAINEL_GESTOR_FINANCEIRO" target="#{PainelGestorControle.telaOrigem}" />
+												</a4j:commandLink>
+											</rich:column>
+
+										</rich:columnGroup>
+										<f:facet name="footer">
+											<rich:columnGroup columnClasses="rodapeTabelaDireita">
+												<rich:column>
+													<h:outputText value="#{msg_aplic.prt_PainelGestorFinanceiro_totais}" />
+												</rich:column>
+												<rich:column style="text-align:right !important" styleClass="colunaDireita">
+													<h:outputText value="#{PainelGestorControle.painelGestorVO.totalProvisaoContaPagarPeriodo}">
+														<f:converter converterId="FormatadorNumerico" />
+													</h:outputText>
+												</rich:column>
+
+												<rich:column style="text-align:right !important" styleClass="colunaDireita">
+													<h:outputText value="#{PainelGestorControle.painelGestorVO.totalPagoDoPeriodo}">
+														<f:converter converterId="FormatadorNumerico" />
+													</h:outputText>
+												</rich:column>
+												<rich:column style="text-align:right !important" styleClass="colunaDireita">
+													<h:outputText value="#{PainelGestorControle.painelGestorVO.saldoPagarDoPeriodo}">
+														<f:converter converterId="FormatadorNumerico" />
+													</h:outputText>
+												</rich:column>
+
+												<rich:column style="text-align:right !important" styleClass="colunaDireita">
+													<h:outputText value="#{PainelGestorControle.painelGestorVO.totalPagoNoPeriodo}">
+														<f:converter converterId="FormatadorNumerico" />
+													</h:outputText>
+
+												</rich:column>
+
+												<rich:column style="text-align:right !important" styleClass="colunaDireita">
+													<h:outputText value="#{PainelGestorControle.painelGestorVO.mediaInadimplenciaDespesaDoPeriodo}">
+														<f:converter converterId="FormatadorNumerico" />
+													</h:outputText>
+
+												</rich:column>
+
+												<rich:column rendered="#{LoginControle.permissaoAcessoMenuVO.painelGestorDespesaCategoria or LoginControle.permissaoAcessoMenuVO.painelGestorConsumo}" style="vertical-align:middle; text-align:center">
+													<a4j:commandLink rendered="#{LoginControle.permissaoAcessoMenuVO.painelGestorConsumo}" alt="Visualizar Consumo Deste Período Por Departamento" title="Visualizar Consumo Deste Período Por Departamento" action="#{PainelGestorControle.visualizarConsumoContaPagarMesAno}">
+														<i class="btn btn-danger fas fa-stamp fs12 iconePequeno"></i>
+														<f:setPropertyActionListener value="PAINEL_GESTOR_FINANCEIRO" target="#{PainelGestorControle.telaOrigem}" />
+													</a4j:commandLink>
+													<a4j:commandLink rendered="#{LoginControle.permissaoAcessoMenuVO.painelGestorDespesaCategoria}" alt="Visualizar Consumo Deste Período Por Categoria de Despesa" title="Visualizar Consumo Deste Período Por Categoria de Despesa" action="#{PainelGestorControle.consultarDadosPainelGestorCategoriaDespesaMonitoramentoFinanceiro}">
+														<i class="btn btn-warning fas fa-comment-dollar fs12 iconePequeno"></i>
+														<f:setPropertyActionListener value="" target="#{PainelGestorControle.painelGestorVO.nivelAtualCategoriaDespesa}" />
+														<f:setPropertyActionListener value="PAINEL_GESTOR_FINANCEIRO" target="#{PainelGestorControle.telaOrigem}" />
+													</a4j:commandLink>
+												</rich:column>
+
+											</rich:columnGroup>
+										</f:facet>
+
+									</rich:dataTable>
+
+								</h:panelGroup>
+							</h:panelGroup>
+						</ui:define>
+					</otm2:dashpanel>
+				</h:panelGroup>
+			</h:panelGroup>
+
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

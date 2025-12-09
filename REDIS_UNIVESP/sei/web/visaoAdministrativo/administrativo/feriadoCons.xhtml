@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+
+<h:head>
+	<style>
+table {
+	width: 100%;
+}
+</style>
+	<script type="text/javascript">
+		window.onload = function() {
+			document.getElementById("formCadastro:valorConsulta").focus();
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Feriado_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{FeriadoControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="painelConsulta" layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{FeriadoControle.controleConsulta.campoConsulta}">
+						<f:selectItems value="#{FeriadoControle.tipoConsultaCombo}" />
+						<a4j:ajax event="change" listener="#{FeriadoControle.limparCampoConsulta}" render="painelConsulta" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{FeriadoControle.controleConsulta.campoConsulta ne 'periodo'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Valor Consulta" />
+					<h:inputText styleClass="form-control campos" value="#{FeriadoControle.controleConsulta.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{FeriadoControle.controleConsulta.campoConsulta eq 'periodo'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Perido Inicio" />
+					<otm:calendar value="#{FeriadoControle.controleConsulta.dataIni}" id="dataini" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{FeriadoControle.controleConsulta.campoConsulta eq 'periodo'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Até" />
+					<otm:calendar id="dataFim" value="#{FeriadoControle.controleConsulta.dataFim}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Feriado_considerarFeriado}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{FeriadoControle.considerarFeriado}">
+						<f:selectItems value="#{FeriadoControle.tipoConsiderarFeriado}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Feriado_cidade}" />
+					<h:inputText styleClass="form-control campos" value="#{FeriadoControle.filtroCidade}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+				<a4j:commandLink id="consultar" value="#{msg_botoes.btn_consultar}" action="#{FeriadoControle.irPaginaInicial}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2" render="form">
+					<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+					<f:setPropertyActionListener for="1" target="#{FeriadoControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+					<f:setPropertyActionListener for="1" target="#{FeriadoControle.controleConsultaOtimizado.page}" value="1" />
+				</a4j:commandLink>
+			</h:panelGroup>
+			<rich:dataTable id="items" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{FeriadoControle.listaConsulta}" rendered="#{FeriadoControle.apresentarResultadoConsulta}" rows="10" var="feriados">
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_Feriado_descricao}" />
+					</f:facet>
+					<h:commandLink action="#{FeriadoControle.editar}" id="descricao" value="#{feriados.descricao}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_Feriado_data}" />
+					</f:facet>
+					<h:commandLink rendered="#{!feriados.recorrente}" action="#{FeriadoControle.editar}" id="data" value="#{feriados.data_Apresentar}" />
+					<h:commandLink rendered="#{feriados.recorrente}" action="#{FeriadoControle.editar}" id="todosOsAnos" value="#{feriados.dataRecorrente_Apresentar} - TODOS OS ANOS" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_Feriado_cidade}" />
+					</f:facet>
+					<h:commandLink rendered="#{!feriados.nacional}" action="#{FeriadoControle.editar}" id="cidade" value="#{feriados.cidade.nome} - #{feriados.cidade.estado.sigla}" />
+					<h:commandLink rendered="#{feriados.nacional}" action="#{FeriadoControle.editar}" id="nacional" value="NACIONAL" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="Considerado" />
+					</f:facet>
+					<h:commandLink action="#{FeriadoControle.editar}">
+						<h:outputText value="Financeiro" rendered="#{feriados.considerarFeriadoFinanceiro}" />
+						<otm:spacer width="5px" />
+						<h:outputText value="Biblioteca" rendered="#{feriados.considerarFeriadoBiblioteca}" />
+						<otm:spacer width="5px" />
+						<h:outputText value="Acadêmico" rendered="#{feriados.considerarFeriadoAcademico}" />
+					</h:commandLink>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<otm:commandIcon action="#{FeriadoControle.editar}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" alt="#{msg.msg_editar_dados}" />
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller for="form:items" id="paginador" page="#{FeriadoControle.controleConsultaOtimizado.page}" scrollListener="#{FeriadoControle.scrollerListener}" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+			<otm:mensagem bean="#{FeriadoControle}"></otm:mensagem>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton style="margin-left: 5px" id="novo" action="#{FeriadoControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" alt="#{msg.msg_novo_dados}" accesskey="1" />
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

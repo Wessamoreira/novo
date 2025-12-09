@@ -1,0 +1,1501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ImportarCandidatoInscricaoProcessoSeletivo_titulo}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<otm2:progressBar bean="#{AplicacaoControle}" interval="700" bar="progressBarImportarCandidatoVO" height="150px" width="500" id="statusPanel" render="form, statusPanel">
+		
+			<ui:define name="botoesADDProgressBar">
+				<h:panelGroup layout="block" styleClass="row mt40 text-center">
+					<a4j:commandLink id="forcarEncerramento" render="form, statusPanel"  action="#{AplicacaoControle.progressBarImportarCandidatoVO.encerrar}" value="Parar Processamento" accesskey="1" styleClass="btn btn-danger btn-excluir" >
+						<f:setPropertyActionListener value="true" target="#{AplicacaoControle.progressBarImportarCandidatoVO.forcarEncerramento}"></f:setPropertyActionListener>
+					</a4j:commandLink>
+				</h:panelGroup>
+			</ui:define>
+
+		</otm2:progressBar>
+
+		<h:form id="form">
+		       <h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="Tipo de Layout" />
+				</h:panelGroup>
+		       <h:panelGroup layout="block" styleClass="col-md-4">
+	           <h:selectOneMenu styleClass="form-control campos" id="tipoLayout" required="true" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.tipoLayout}">
+					<f:selectItems value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.tipoLayoutConsultaCombo}" />
+					<a4j:ajax event="change" render="form"></a4j:ajax>
+			   </h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-8">
+<!-- 				<a4j:jsFunction name="processarArquivo" render="statusPanel" execute="@form" action="#{ImportarCandidatoInscricaoProcessoSeletivoControle.realizarProcessamentoArquivoExcelCandidadoInscricaoProcessoSeletivo}"></a4j:jsFunction>  -->
+				<rich:fileUpload listHeight="60" listWidth="390"  render="form" execute="@form" allowFlash="false"  noDuplicate="true" fileUploadListener="#{ImportarCandidatoInscricaoProcessoSeletivoControle.inicializarDadosProgressBar}" addLabel="Selecionar Arquivo" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" id="upload" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+					<a4j:ajax event="uploadcomplete" render="form, statusPanel" execute="@form" />
+				</rich:fileUpload>
+			</h:panelGroup>
+
+			<h:panelGroup layout="block" styleClass="row">
+
+				<rich:tabPanel width="100%" activeItem="#{CursoControle.controleAba}" switchType="ajax">
+					<rich:tab header="Candidatos Importar" id="tabDadosImportados" name="dadosImportadosTab" execute="@this" render="form:groupDadosImportados">
+						<h:panelGroup id="groupDadosImportados" layout="block" styleClass="row">
+
+							<rich:dataTable reflow="true" id="tabelaConsulta" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.listaCandidatoInscricaoProcessoSeletivoVOs}" var="item" styleClass="table table-bordered table-striped table-hover table-condensed" rows="10">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Nome" />
+										<a4j:region>
+											<h:inputText value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.pessoaFiltroVO.nome}" styleClass="form-control campo">
+												<a4j:ajax event="change"  listener="#{ImportarCandidatoInscricaoProcessoSeletivoControle.consultarPorNomeCandidatos}" render="form:tabelaConsulta"></a4j:ajax>
+											</h:inputText>
+										</a4j:region>
+									</f:facet>
+									<h:outputText id="nomeFantasia" value="#{item.nome}" />
+
+									<rich:tooltip direction="auto" followMouse="false" horizontalOffset="0" verticalOffset="0" layout="block" style="background-color:#cccccc;border-color:#666666; width: 700px; height: 400px; overflow: auto !important;" target="nomeFantasia">
+										<h:panelGroup styleClass="row" layout="block" style="heigth:200px !important; overflow: auto !important; ">
+											<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; ">
+												<h:outputText value="Dados Candidato" />
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block" style="padding-top: 5px;">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Titulo Eleitoral: " />
+													</h:panelGroup>
+													<h:outputText value="#{item.tituloEleitoral}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Orgão Emissor" />
+													</h:panelGroup>
+													<h:outputText value="#{item.orgaoEmissor}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Estado Emissão RG" />
+													</h:panelGroup>
+													<h:outputText value="#{item.estadoEmissaoRG}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Data Emissão RG" />
+													</h:panelGroup>
+													<h:outputText value="#{item.dataEmissaoRG}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Certificado Militar" />
+													</h:panelGroup>
+													<h:outputText value="#{item.certificadoMilitar}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="RG" />
+													</h:panelGroup>
+													<h:outputText value="#{item.RG}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="CPF" />
+													</h:panelGroup>
+													<h:outputText value="#{item.CPF}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Nacionalidade" />
+													</h:panelGroup>
+													<h:outputText value="#{item.nacionalidade}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Nome Naturalidade" />
+													</h:panelGroup>
+													<h:outputText value="#{item.nomeNaturalidade}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Estado Naturalidade" />
+													</h:panelGroup>
+													<h:outputText value="#{item.estadoNaturalidade}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Data Nascimento" />
+													</h:panelGroup>
+													<h:outputText value="#{item.dataNasc}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="email" />
+													</h:panelGroup>
+													<h:outputText value="#{item.email}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Celular " />
+													</h:panelGroup>
+													<h:outputText value="#{item.celular}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Telefone Recado " />
+													</h:panelGroup>
+													<h:outputText value="#{item.telefoneRecado}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Telefone Res. " />
+													</h:panelGroup>
+													<h:outputText value="#{item.telefoneRes}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Estado Civil " />
+													</h:panelGroup>
+													<h:outputText value="#{item.estadoCivil}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Sexo " />
+													</h:panelGroup>
+													<h:outputText value="#{item.sexo}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Deficiência " />
+													</h:panelGroup>
+													<h:outputText value="#{item.deficiencia}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+											    <h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Nome Cidade " />
+													</h:panelGroup>
+													<h:outputText value="#{item.nomeCidade}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Estado Cidade " />
+													</h:panelGroup>
+													<h:outputText value="#{item.estadoCidade}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Complemento " />
+													</h:panelGroup>
+													<h:outputText value="#{item.complemento}" styleClass="tituloCampos" />
+												</h:panelGroup>												
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+											    <h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="CEP " />
+													</h:panelGroup>
+													<h:outputText value="#{item.cep}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Setor " />
+													</h:panelGroup>
+													<h:outputText value="#{item.setor}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Endereço " />
+													</h:panelGroup>
+													<h:outputText value="#{item.endereco}" styleClass="tituloCampos" />
+												</h:panelGroup>												
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Zona Eleitoral " />
+													</h:panelGroup>
+													<h:outputText value="#{item.zonaEleitoral}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Data Exp. Cert. Militar " />
+													</h:panelGroup>
+													<h:outputText value="#{item.dataExpedicaoCertificadoMilitar}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Orgão Expedidor Cert. Militar " />
+													</h:panelGroup>
+													<h:outputText value="#{item.orgaoExpedidorCertificadoMilitar}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-12" layout="block" style="padding-bottom: 5px;">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Situação Militar " />
+													</h:panelGroup>
+													<h:outputText value="#{item.situacaoMilitar}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Código Candidato " />
+													</h:panelGroup>
+													<h:outputText value="#{item.codigoCandidato}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<!-- 											INSCRIÇÃO -->
+											<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; padding-top: 5px; ">
+												<h:outputText value="Dados Inscrição" />
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Número Inscrição " />
+													</h:panelGroup>
+													<h:outputText value="#{item.numeroInscricao}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Data Inscrição " />
+													</h:panelGroup>
+													<h:outputText value="#{item.dataInscricao}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Nome Curso " />
+													</h:panelGroup>
+													<h:outputText value="#{item.nomeCurso}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="ID Polo " />
+													</h:panelGroup>
+													<h:outputText value="#{item.unidadeEnsinoVO.codigo}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Nome Turno " />
+													</h:panelGroup>
+													<h:outputText value="#{item.nomeTurno}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Descrição Proc. Seletivo " />
+													</h:panelGroup>
+													<h:outputText value="#{item.descricaoProcessoSeletivo}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Data Prova " />
+													</h:panelGroup>
+													<h:outputText value="#{item.dataProva}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Hora " />
+													</h:panelGroup>
+													<h:outputText value="#{item.hora}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Data Início Inscrição " />
+													</h:panelGroup>
+													<h:outputText value="#{item.dataInicioInscricao}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Data Término Inscrição " />
+													</h:panelGroup>
+													<h:outputText value="#{item.dataTerminoInscricao}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Situação Inscrição " />
+													</h:panelGroup>
+													<h:outputText value="#{item.situacaoInscricao}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Forma Ingresso " />
+													</h:panelGroup>
+													<h:outputText value="#{item.formaIngresso}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Ano " />
+													</h:panelGroup>
+													<h:outputText value="#{item.ano}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Semestre " />
+													</h:panelGroup>
+													<h:outputText value="#{item.semestre}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Classificação " />
+													</h:panelGroup>
+													<h:outputText value="#{item.classificacao}" styleClass="tituloCampos" />
+											    </h:panelGroup>										
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-12" layout="block">
+											    <h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Número Chamada " />
+													</h:panelGroup>
+													<h:outputText value="#{item.numeroChamada}" styleClass="tituloCampos" />
+												</h:panelGroup>	
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Sobre Bolsas e Auxílios " />
+													</h:panelGroup>
+													<h:outputText value="#{item.sobreBolsasEAuxilios}" styleClass="tituloCampos" />
+												</h:panelGroup>									
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Auto Declaração Preto/Pardo ou Indígena " />
+													</h:panelGroup>
+													<h:outputText value="#{item.autodeclaracaoPretoPardoOuIndigena}" styleClass="tituloCampos" />
+												</h:panelGroup>																				
+											</h:panelGroup>
+	                                        <h:panelGroup styleClass="col-md-12" layout="block">
+													<h:panelGroup styleClass="col-md-4" layout="block">
+														<h:panelGroup styleClass="row" layout="block">
+															<h:outputText value="Escola Pública " />
+														</h:panelGroup>
+														<h:outputText value="#{item.escolaPublica}" styleClass="tituloCampos" />
+													</h:panelGroup>												
+											</h:panelGroup>
+
+											<!-- 											RESULTADO PROCESSO SELETIVO -->
+											<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; padding-top: 5px; ">
+												<h:outputText value="Resultado Processo Seletivo" />
+											</h:panelGroup>
+
+											<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Data Registro " />
+													</h:panelGroup>
+													<h:outputText value="#{item.dataRegistro}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Nota Processo Seletivo " />
+													</h:panelGroup>
+													<h:outputText value="#{item.notaProcessoSeletivo}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Resultado Processo Seletivo " />
+													</h:panelGroup>
+													<h:outputText value="#{item.resultadoProcessoSeletivo}" styleClass="tituloCampos" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</h:panelGroup>
+									</rich:tooltip>
+
+								</rich:column>
+								<rich:column style="text-align: center;">
+									<f:facet name="header">
+										<h:outputText value="CPF" />
+									</f:facet>
+									<h:outputText id="cpf" value="#{item.CPF}" />
+								</rich:column>
+								<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Inscrição" />
+								</f:facet>
+								<h:outputText id="numeroInscricaoErro" value="#{item.numeroInscricao}" styleClass="labelCampos" />
+							</rich:column>
+								<rich:column style="text-align: center;">
+									<f:facet name="header">
+										<h:outputText value="Curso" />
+									</f:facet>
+									<h:outputText id="curso" value="#{item.nomeCurso}" />
+								</rich:column>
+								<rich:column style="text-align: center;">
+									<f:facet name="header">
+										<h:outputText value="Eixo Curso" />
+									</f:facet>
+									<h:outputText id="exixo" value="#{item.cursoVO.eixoCursoVO.nome}" />
+								</rich:column>
+								<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Unidade Ensino" />
+								</f:facet>
+								<h:outputText id="unidadeEnsinoVO" value="#{item.unidadeEnsinoVO.codigo} - #{item.unidadeEnsinoVO.nome}" />
+							</rich:column>
+								<rich:column style="text-align: center;">
+									<f:facet name="header">
+										<h:outputText value="Telefone" styleClass="labelCampos" />
+									</f:facet>
+									<h:outputText id="celular" value="#{item.celular}" />
+								</rich:column>
+								<rich:column style="text-align: center;">
+									<f:facet name="header">
+										<h:outputText value="RG" styleClass="labelCampos" />
+									</f:facet>
+									<h:outputText id="rg" value="#{item.RG}" />
+								</rich:column>
+								<rich:column style="text-align: center; width:10%">
+									<f:facet name="header">
+										<h:outputText value="Opções" />
+										<h:panelGroup layout="block" styleClass="col-md-12 text-center mb5">
+											<otm:selectBooleanCheckbox value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.opcaoSelecionarDesmarcarTodos}" title="Selecionar Todos">
+												<a4j:ajax event="change" listener="#{ImportarCandidatoInscricaoProcessoSeletivoControle.selecionarTodosDesmarcarTodos}" render="form:tabelaConsulta" />
+											</otm:selectBooleanCheckbox>
+										</h:panelGroup>
+									</f:facet>
+									<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+										
+										<otm:commandIcon tooltip="Inscrição Existente" icon="#{msg_botoes.btn_icon_checkDouble}  text-success" style="padding:10px !important;" rendered="#{item.inscricaoExistente}" />
+									
+										<otm:commandIcon tooltip="Possui Erro" icon="#{msg_botoes.btn_icon_aviso_embutido}  text-danger" style="padding:10px !important;" rendered="#{item.possuiErro and !item.inscricaoExistente}" />
+										<otm:commandIcon tooltip="Sucesso" icon="#{msg_botoes.btn_icon_requerimento_deferido} " style="padding-right:10px !important; padding-left:3px !important;" rendered="#{!item.possuiErro and !item.inscricaoExistente}" />
+										<otm:commandIcon tooltip="Possui Observação" icon="#{msg_botoes.btn_icon_urgente}  text-warning" style="padding-right:10px !important; padding-left:3px !important;" rendered="#{item.possuiObservacao and ! item.inscricaoExistente}" />
+										<h:selectBooleanCheckbox id="selecionar" value="#{item.selecionado}" rendered="#{!item.inscricaoExistente}">
+											<a4j:ajax event="click" render="groupDadosImportados" execute="@form" />
+										</h:selectBooleanCheckbox>
+									</h:panelGroup>
+									<f:facet name="footer">
+										<h:outputText value="Total Selecionados:  #{ImportarCandidatoInscricaoProcessoSeletivoControle.quantidadeCandidatoSelecionado}" />
+									</f:facet>
+
+								</rich:column>
+								<f:facet name="footer">
+									<rich:dataScroller boundaryControls="auto" fastControls="hide" stepControls="auto" for="tabelaConsulta" limitRender="10" align="center" />
+								</f:facet>
+
+							</rich:dataTable>
+
+
+							<h:panelGroup layout="block" styleClass="row mt-1 text-center" style="width: 100%">
+								<h:panelGroup layout="block" styleClass="col-md-3 text-center">
+									<h:panelGroup layout="block" styleClass="col-md-12 boxPrimary text-center" style="height: 90px !important">
+										<h:outputText style="font-weight: bold !important; font-style: italic;" value=" Quantidade Candidatos"></h:outputText>
+										<h:panelGroup layout="block" styleClass="com-md-12 text-center" style="position:relative;">
+											<h:outputText style="font-weight: bold !important; font-style: italic; font-size: 20px; color:#4e73df" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.quantidadeCandidatos}"></h:outputText>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+
+								<h:panelGroup layout="block" styleClass="col-md-3 text-center">
+									<h:panelGroup layout="block" styleClass="col-md-12 boxVerde text-center" style="height: 90px !important">
+										<h:outputText style="font-weight: bold !important; font-style: italic;" value="Quantidade Candidato Apto Importação"></h:outputText>
+										<h:panelGroup layout="block" styleClass="com-md-12 text-center" style="position:relative; margin-top: 10px;">
+											<h:outputText style="font-weight: bold !important; font-style: italic; font-size: 20px; color:#799e79" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.quantidadeCandidatosAptosImportacao}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+
+								<h:panelGroup layout="block" styleClass="col-md-3 text-center">
+									<h:panelGroup layout="block" styleClass="col-md-12 boxAmarelo text-center" style="height: 90px !important">
+										<h:outputText style="font-weight: bold !important; font-style: italic;" value="Quantidade Candidato Contém Observação"></h:outputText>
+										<h:panelGroup layout="block" styleClass="com-md-12 text-center" style="position:relative; margin-top: 10px;">
+											<h:outputText style="font-weight: bold !important; font-style: italic; font-size: 20px; color:#f6c23e" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.quantidadeCandidatoObservacao}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+
+								<h:panelGroup layout="block" styleClass="col-md-3 text-center">
+									<h:panelGroup layout="block" styleClass="col-md-12 boxDanger text-center" style="height: 90px !important">
+										<h:outputText style="font-weight: bold !important; font-style: italic;" value="Quantidade Candidato Contém Erro"></h:outputText>
+										<h:panelGroup layout="block" styleClass="com-md-12 text-center" style="position:relative; margin-top: 10px;">
+											<h:outputText style="font-weight: bold !important; font-style: italic; font-size: 20px; color:#8e3d35" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.quantidadeCandidatoErro}"></h:outputText>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+
+						</h:panelGroup>
+					</rich:tab>
+
+					<rich:tab header="Erros" id="tabCandidatosErro" name="CandidatosTab" execute="@this" render="form:groupDadosImportados">
+
+						<rich:dataTable reflow="true" id="tabelaConsultaErroCandidatos" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.listaCandidatoInscricaoProcessoSeletivoErroVOs}" var="item" styleClass="table table-bordered table-striped table-hover table-condensed" rows="10">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Nome" />
+									<h:inputText value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.pessoaFiltroErroVO.nome}" styleClass="form-control campo">
+										<a4j:ajax event="change" listener="#{ImportarCandidatoInscricaoProcessoSeletivoControle.consultarPorNomeCandidatosErro}" render="tabelaConsultaErroCandidatos"></a4j:ajax>
+									</h:inputText>
+								</f:facet>
+								<h:outputText id="nomeFantasiaErro" value="#{item.nome}" styleClass="labelCampos" />
+
+								<rich:tooltip direction="auto" followMouse="false" horizontalOffset="0" verticalOffset="0" layout="block" style="background-color:#cccccc;border-color:#666666; width: 700px; height: 400px; overflow: auto !important;" target="nomeFantasiaErro">
+									<h:panelGroup styleClass="row" layout="block" style="heigth:200px !important; overflow: auto !important; ">
+										<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; ">
+											<h:outputText value="Dados Candidato" />
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block" style="padding-top: 5px;">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Titulo Eleitoral: " />
+												</h:panelGroup>
+												<h:outputText value="#{item.tituloEleitoral}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Orgão Emissor" />
+												</h:panelGroup>
+												<h:outputText value="#{item.orgaoEmissor}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Estado Emissão RG" />
+												</h:panelGroup>
+												<h:outputText value="#{item.estadoEmissaoRG}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Emissão RG" />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataEmissaoRG}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Certificado Militar" />
+												</h:panelGroup>
+												<h:outputText value="#{item.certificadoMilitar}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="RG" />
+												</h:panelGroup>
+												<h:outputText value="#{item.RG}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="CPF" />
+												</h:panelGroup>
+												<h:outputText value="#{item.CPF}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nacionalidade" />
+												</h:panelGroup>
+												<h:outputText value="#{item.nacionalidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nome Naturalidade" />
+												</h:panelGroup>
+												<h:outputText value="#{item.nomeNaturalidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Estado Naturalidade" />
+												</h:panelGroup>
+												<h:outputText value="#{item.estadoNaturalidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Nascimento" />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataNasc}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="email" />
+												</h:panelGroup>
+												<h:outputText value="#{item.email}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Celular " />
+												</h:panelGroup>
+												<h:outputText value="#{item.celular}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Telefone Recado " />
+												</h:panelGroup>
+												<h:outputText value="#{item.telefoneRecado}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Telefone Res. " />
+												</h:panelGroup>
+												<h:outputText value="#{item.telefoneRes}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Estado Civil " />
+												</h:panelGroup>
+												<h:outputText value="#{item.estadoCivil}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Sexo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.sexo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Deficiência" />
+												</h:panelGroup>
+												<h:outputText value="#{item.deficiencia}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+										     <h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nome Cidade " />
+												</h:panelGroup>
+												<h:outputText value="#{item.nomeCidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Estado Cidade " />
+												</h:panelGroup>
+												<h:outputText value="#{item.estadoCidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Complemento " />
+												</h:panelGroup>
+												<h:outputText value="#{item.complemento}" styleClass="tituloCampos" />
+											</h:panelGroup>											
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+										    <h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="CEP " />
+												</h:panelGroup>
+												<h:outputText value="#{item.cep}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Setor " />
+												</h:panelGroup>
+												<h:outputText value="#{item.setor}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Endereço " />
+												</h:panelGroup>
+												<h:outputText value="#{item.endereco}" styleClass="tituloCampos" />
+											</h:panelGroup>											
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Zona Eleitoral " />
+												</h:panelGroup>
+												<h:outputText value="#{item.zonaEleitoral}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Exp. Cert. Militar " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataExpedicaoCertificadoMilitar}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Orgão Expedidor Cert. Militar " />
+												</h:panelGroup>
+												<h:outputText value="#{item.orgaoExpedidorCertificadoMilitar}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-12" layout="block" style="padding-bottom: 5px;">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Situação Militar " />
+												</h:panelGroup>
+												<h:outputText value="#{item.situacaoMilitar}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Código Candidato " />
+												</h:panelGroup>
+												<h:outputText value="#{item.codigoCandidato}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<!-- 											INSCRIÇÃO -->
+										<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; padding-top: 5px; ">
+											<h:outputText value="Dados Inscrição" />
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Número Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.numeroInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nome Curso " />
+												</h:panelGroup>
+												<h:outputText value="#{item.nomeCurso}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="ID Polo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.unidadeEnsinoVO.codigo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nome Turno " />
+												</h:panelGroup>
+												<h:outputText value="#{item.nomeTurno}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Descrição Proc. Seletivo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.descricaoProcessoSeletivo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Prova " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataProva}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Hora " />
+												</h:panelGroup>
+												<h:outputText value="#{item.hora}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Início Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataInicioInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Término Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataTerminoInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Situação Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.situacaoInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Forma Ingresso " />
+												</h:panelGroup>
+												<h:outputText value="#{item.formaIngresso}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Ano " />
+													</h:panelGroup>
+													<h:outputText value="#{item.ano}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Semestre " />
+													</h:panelGroup>
+													<h:outputText value="#{item.semestre}" styleClass="tituloCampos" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Classificação " />
+													</h:panelGroup>
+													<h:outputText value="#{item.classificacao}" styleClass="tituloCampos" />
+											    </h:panelGroup>										
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-12" layout="block">
+											    <h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Número Chamada " />
+													</h:panelGroup>
+													<h:outputText value="#{item.numeroChamada}" styleClass="tituloCampos" />
+												</h:panelGroup>	
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Sobre Bolsas e Auxílios " />
+													</h:panelGroup>
+													<h:outputText value="#{item.sobreBolsasEAuxilios}" styleClass="tituloCampos" />
+												</h:panelGroup>									
+												<h:panelGroup styleClass="col-md-4" layout="block">
+													<h:panelGroup styleClass="row" layout="block">
+														<h:outputText value="Auto Declaração Preto/Pardo ou Indígena " />
+													</h:panelGroup>
+													<h:outputText value="#{item.autodeclaracaoPretoPardoOuIndigena}" styleClass="tituloCampos" />
+												</h:panelGroup>																				
+											</h:panelGroup>
+	                                        <h:panelGroup styleClass="col-md-12" layout="block">
+													<h:panelGroup styleClass="col-md-4" layout="block">
+														<h:panelGroup styleClass="row" layout="block">
+															<h:outputText value="Escola Pública " />
+														</h:panelGroup>
+														<h:outputText value="#{item.escolaPublica}" styleClass="tituloCampos" />
+													</h:panelGroup>												
+											</h:panelGroup>
+
+										<!-- 											RESULTADO PROCESSO SELETIVO -->
+										<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; padding-top: 5px; ">
+											<h:outputText value="Resultado Processo Seletivo" />
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Registro " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataRegistro}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nota Processo Seletivo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.notaProcessoSeletivo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Resultado Processo Seletivo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.resultadoProcessoSeletivo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+								</rich:tooltip>
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="CPF" />
+								</f:facet>
+								<h:outputText id="cpfErro" value="#{item.CPF}" styleClass="labelCampos" />
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Inscrição" />
+								</f:facet>
+								<h:outputText id="numeroInscricaoErro" value="#{item.numeroInscricao}" styleClass="labelCampos" />
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Curso" />
+								</f:facet>
+								<h:outputText id="curso" value="#{item.nomeCurso}" />
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Eixo Curso" />
+								</f:facet>
+								<h:outputText id="exixo" value="#{item.cursoVO.eixoCursoVO.nome}" />
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Unidade Ensino" />
+								</f:facet>
+								<h:outputText id="unidadeEnsinoVO" value="#{item.unidadeEnsinoVO.codigo} - #{item.unidadeEnsinoVO.nome}" />
+							</rich:column>
+
+							<rich:column style="text-align: center; width: 25%" width="25%">
+								<f:facet name="header">
+									<h:outputText value="Observação" styleClass="labelCampos" />
+								</f:facet>
+								<a4j:repeat value="#{item.observacao.split('-')}" var="obs">
+									<h:outputText style="font-size:11px;" id="observacao" value="#{obs}" styleClass="labelCampos col-md-12 text-left" />
+								</a4j:repeat>
+							</rich:column>
+							<rich:column style="text-align: center; width: 25%" width="25%">
+								<f:facet name="header">
+									<h:outputText value="Erro" styleClass="labelCampos" />
+								</f:facet>								
+								<a4j:repeat value="#{item.erro.split('-')}" var="erro"  id="erroRepeat">
+									<h:outputText style="font-size:11px;" id="erro" value="#{erro}" styleClass="labelCampos col-md-12 text-left" />
+								</a4j:repeat>
+								
+								<rich:tooltip direction="auto" followMouse="false" horizontalOffset="0" verticalOffset="0" layout="block" style="background-color:#cccccc;border-color:#666666; width: 700px;  overflow: auto !important;" target="erroRepeat">
+										<h:panelGroup styleClass="row" layout="block" style="overflow: auto !important; ">
+											<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; ">
+												<h:outputText value="ERRO" />
+											</h:panelGroup>											
+												<a4j:repeat value="#{item.listaMotivoErrosImportacao}" var="erroItem">
+													<h:panelGroup layout="block" styleClass="col-md-12"  >														
+														<h:outputText value="#{erroItem}" styleClass="tituloCampos" />
+													</h:panelGroup>													
+												</a4j:repeat>										
+										</h:panelGroup>
+									</rich:tooltip>
+								
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Opções" />
+								</f:facet>
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+									<otm:commandIcon tooltip="Erro" icon="#{msg_botoes.btn_icon_aviso_embutido}  text-danger" rendered="#{item.possuiErro}" />
+									<otm:commandIcon tooltip="Observação" icon="#{msg_botoes.btn_icon_urgente}  text-warning" rendered="#{item.possuiObservacao}" />
+								</h:panelGroup>
+							</rich:column>
+							<f:facet name="footer">
+								<rich:dataScroller boundaryControls="auto" fastControls="hide" stepControls="auto" for="tabelaConsultaErroCandidatos" limitRender="10" align="center" />
+							</f:facet>
+
+						</rich:dataTable>
+					</rich:tab>
+					
+<!-- 					OBSERVAÇÃO -->
+
+					<rich:tab header="Observações" id="tabCandidatosObservacao" name="CandidatosObservacaoTab" execute="@this" render="form:groupDadosImportados">
+
+						<rich:dataTable reflow="true" id="tabelaConsultaObservacaoCandidatos" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.listaCandidatoInscricaoProcessoSeletivoObservacaoVOs}" var="item" styleClass="table table-bordered table-striped table-hover table-condensed" rows="10">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Nome" />
+									<h:inputText value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.pessoaFiltroObservacaoVO.nome}" styleClass="form-control campo">
+										<a4j:ajax event="change" listener="#{ImportarCandidatoInscricaoProcessoSeletivoControle.consultarPorNomeCandidatosObservacao}" render="tabelaConsultaObservacaoCandidatos"></a4j:ajax>
+									</h:inputText>
+								</f:facet>
+								<h:outputText id="nomeFantasiaObservacao" value="#{item.nome}" styleClass="labelCampos" />
+
+								<rich:tooltip direction="auto" followMouse="false" horizontalOffset="0" verticalOffset="0" layout="block" style="background-color:#cccccc;border-color:#666666; width: 700px; height: 400px; overflow: auto !important;" target="nomeFantasiaErro">
+									<h:panelGroup styleClass="row" layout="block" style="heigth:200px !important; overflow: auto !important; ">
+										<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; ">
+											<h:outputText value="Dados Candidato" />
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block" style="padding-top: 5px;">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Titulo Eleitoral: " />
+												</h:panelGroup>
+												<h:outputText value="#{item.tituloEleitoral}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Orgão Emissor" />
+												</h:panelGroup>
+												<h:outputText value="#{item.orgaoEmissor}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Estado Emissão RG" />
+												</h:panelGroup>
+												<h:outputText value="#{item.estadoEmissaoRG}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Emissão RG" />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataEmissaoRG}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Certificado Militar" />
+												</h:panelGroup>
+												<h:outputText value="#{item.certificadoMilitar}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="RG" />
+												</h:panelGroup>
+												<h:outputText value="#{item.RG}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="CPF" />
+												</h:panelGroup>
+												<h:outputText value="#{item.CPF}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nacionalidade" />
+												</h:panelGroup>
+												<h:outputText value="#{item.nacionalidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nome Naturalidade" />
+												</h:panelGroup>
+												<h:outputText value="#{item.nomeNaturalidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Estado Naturalidade" />
+												</h:panelGroup>
+												<h:outputText value="#{item.estadoNaturalidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Nascimento" />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataNasc}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="email" />
+												</h:panelGroup>
+												<h:outputText value="#{item.email}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Celular " />
+												</h:panelGroup>
+												<h:outputText value="#{item.celular}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Telefone Recado " />
+												</h:panelGroup>
+												<h:outputText value="#{item.telefoneRecado}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Telefone Res. " />
+												</h:panelGroup>
+												<h:outputText value="#{item.telefoneRes}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Estado Civil " />
+												</h:panelGroup>
+												<h:outputText value="#{item.estadoCivil}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Sexo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.sexo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nome Cidade " />
+												</h:panelGroup>
+												<h:outputText value="#{item.nomeCidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Estado Cidade " />
+												</h:panelGroup>
+												<h:outputText value="#{item.estadoCidade}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Complemento " />
+												</h:panelGroup>
+												<h:outputText value="#{item.complemento}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="CEP " />
+												</h:panelGroup>
+												<h:outputText value="#{item.cep}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Setor " />
+												</h:panelGroup>
+												<h:outputText value="#{item.setor}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Endereço " />
+												</h:panelGroup>
+												<h:outputText value="#{item.endereco}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Código Candidato " />
+												</h:panelGroup>
+												<h:outputText value="#{item.codigoCandidato}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Zona Eleitoral " />
+												</h:panelGroup>
+												<h:outputText value="#{item.zonaEleitoral}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Exp. Cert. Militar " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataExpedicaoCertificadoMilitar}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Orgão Expedidor Cert. Militar " />
+												</h:panelGroup>
+												<h:outputText value="#{item.orgaoExpedidorCertificadoMilitar}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-12" layout="block" style="padding-bottom: 5px;">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Situação Militar " />
+												</h:panelGroup>
+												<h:outputText value="#{item.situacaoMilitar}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<!-- 											INSCRIÇÃO -->
+										<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; padding-top: 5px; ">
+											<h:outputText value="Dados Inscrição" />
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Número Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.numeroInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nome Curso " />
+												</h:panelGroup>
+												<h:outputText value="#{item.nomeCurso}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="ID Polo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.idPolo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nome Turno " />
+												</h:panelGroup>
+												<h:outputText value="#{item.nomeTurno}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Descrição Proc. Seletivo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.descricaoProcessoSeletivo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Prova " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataProva}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Hora " />
+												</h:panelGroup>
+												<h:outputText value="#{item.hora}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Início Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataInicioInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Término Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataTerminoInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Situação Inscrição " />
+												</h:panelGroup>
+												<h:outputText value="#{item.situacaoInscricao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Forma Ingresso " />
+												</h:panelGroup>
+												<h:outputText value="#{item.formaIngresso}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Ano " />
+												</h:panelGroup>
+												<h:outputText value="#{item.ano}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Semestre " />
+												</h:panelGroup>
+												<h:outputText value="#{item.semestre}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Sobre Bolsas e Auxílios " />
+												</h:panelGroup>
+												<h:outputText value="#{item.sobreBolsasEAuxilios}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Auto Declaração Preto/Pardo ou Indígena " />
+												</h:panelGroup>
+												<h:outputText value="#{item.autodeclaracaoPretoPardoOuIndigena}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Classificação " />
+												</h:panelGroup>
+												<h:outputText value="#{item.classificacao}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Número Chamada " />
+												</h:panelGroup>
+												<h:outputText value="#{item.numeroChamada}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+										<!-- 											RESULTADO PROCESSO SELETIVO -->
+										<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; padding-top: 5px; ">
+											<h:outputText value="Resultado Processo Seletivo" />
+										</h:panelGroup>
+
+										<h:panelGroup styleClass="col-md-12" layout="block">
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Data Registro " />
+												</h:panelGroup>
+												<h:outputText value="#{item.dataRegistro}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Nota Processo Seletivo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.notaProcessoSeletivo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+											<h:panelGroup styleClass="col-md-4" layout="block">
+												<h:panelGroup styleClass="row" layout="block">
+													<h:outputText value="Resultado Processo Seletivo " />
+												</h:panelGroup>
+												<h:outputText value="#{item.resultadoProcessoSeletivo}" styleClass="tituloCampos" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+								</rich:tooltip>
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="CPF" />
+								</f:facet>
+								<h:outputText value="#{item.CPF}" styleClass="labelCampos" />
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Inscrição" />
+								</f:facet>
+								<h:outputText value="#{item.numeroInscricao}" styleClass="labelCampos" />
+							</rich:column>
+
+							<rich:column style="text-align: center; width: 25%" width="25%">
+								<f:facet name="header">
+									<h:outputText value="Observação" styleClass="labelCampos" />
+								</f:facet>
+								<h:outputText style="font-size:11px;" value="#{item.observacao}" styleClass="labelCampos" />
+							</rich:column>
+							<rich:column style="text-align: center; width: 25%" width="25%">
+								<f:facet name="header">
+									<h:outputText value="Erro" styleClass="labelCampos" />
+								</f:facet>								
+								<a4j:repeat value="#{item.erro.split('-')}" var="erro"  id="erroObsRepeat">								   
+									<h:outputText style="font-size:11px;" id="erroObs" value="#{erro}" styleClass="labelCampos col-md-12 text-left" />
+								</a4j:repeat>
+								
+								<rich:tooltip direction="auto" followMouse="false" horizontalOffset="0" verticalOffset="0" layout="block" style="background-color:#cccccc;border-color:#666666; width: 700px;  overflow: auto !important;" target="erroObs">
+										<h:panelGroup styleClass="row" layout="block" style="overflow: auto !important; ">
+											<h:panelGroup styleClass="col-md-12" layout="block" style="border-bottom:1px solid #333; padding-bottom: 5px; ">
+												<h:outputText value="ERRO" />
+											</h:panelGroup>											
+												<a4j:repeat value="#{item.listaMotivoErrosImportacao}" var="erroItem">
+													<h:panelGroup layout="block" styleClass="col-md-12"  >														
+														<h:outputText value="#{erroItem}" styleClass="tituloCampos" />
+													</h:panelGroup>													
+												</a4j:repeat>										
+										</h:panelGroup>
+									</rich:tooltip>
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Opções" />
+								</f:facet>
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+									<otm:commandIcon tooltip="Erro" icon="#{msg_botoes.btn_icon_aviso_embutido}  text-danger" rendered="#{item.possuiErro}" />
+									<otm:commandIcon tooltip="Observação" icon="#{msg_botoes.btn_icon_urgente}  text-warning" rendered="#{item.possuiObservacao}" />
+								</h:panelGroup>
+							</rich:column>
+							<f:facet name="footer">
+								<rich:dataScroller boundaryControls="auto" fastControls="hide" stepControls="auto" for="tabelaConsultaObservacaoCandidatos" limitRender="10" align="center" />
+							</f:facet>
+
+						</rich:dataTable>
+					</rich:tab>
+					
+					<rich:tab header="Processo Seletivo Não Encontrado" id="tabProcessoSeletivo" name="ProcessoSeletivoTab" execute="@this" render="form:groupDadosImportados">
+						<rich:dataTable reflow="true" id="tabelaProcessoSeletivo" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.listaProcessoSeletivoNaoEncontradoVOs}" var="item" styleClass="table table-bordered table-striped table-hover table-condensed" rows="10">
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Descrição" styleClass="labelCampos" />
+								</f:facet>
+								<h:outputText id="descricaoProcessoSeletivo" value="#{item.descricao}" styleClass="labelCampos" />
+							</rich:column>
+						</rich:dataTable>
+					</rich:tab>
+					<rich:tab header="Unidade de Ensino Não Encontrado" id="tabUnidadeEnsino" name="UnidadeEnsinoTab" execute="@this" render="form:groupDadosImportados">
+						<rich:dataTable reflow="true" id="tabelaUnidadeEnsino" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.listaUnidadeEnsinoNaoEncontradoVOs}" var="item" styleClass="table table-bordered table-striped table-hover table-condensed" rows="10">
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="ID Polo" styleClass="labelCampos" />
+								</f:facet>
+								<h:outputText id="nomeUnidadeEnsino" value="#{item.codigo}" styleClass="labelCampos" />
+							</rich:column>
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Cidade" styleClass="labelCampos" />
+								</f:facet>
+								<h:outputText id="cidadeUnidadeEnsino" value="#{item.cidade.nome}" styleClass="labelCampos" />
+							</rich:column>
+						</rich:dataTable>
+					</rich:tab>
+					<rich:tab header="Curso Não Encontrado" id="tabCurso" name="CursoTab" execute="@this" render="form:groupDadosImportados">
+						<rich:dataTable reflow="true" id="tabelaCurso" value="#{ImportarCandidatoInscricaoProcessoSeletivoControle.listaCursoNaoEncontradoVOs}" var="item" styleClass="table table-bordered table-striped table-hover table-condensed" rows="10">
+							<rich:column style="text-align: center;">
+								<f:facet name="header">
+									<h:outputText value="Nome" styleClass="labelCampos" />
+								</f:facet>
+								<h:outputText id="nomeCurso" value="#{item.nome}" styleClass="labelCampos" />
+							</rich:column>
+						</rich:dataTable>
+					</rich:tab>
+				</rich:tabPanel>
+			</h:panelGroup>
+
+
+			<h:panelGroup layout="block" styleClass="row" id="tabMensagens">
+				<otm:mensagem bean="#{ImportarCandidatoInscricaoProcessoSeletivoControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton id="novo" immediate="true" action="#{ImportarCandidatoInscricaoProcessoSeletivoControle.novo}" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+				<otm:commandButton style="margin-left:5px" id="salvar" render="form, statusPanel" action="#{ImportarCandidatoInscricaoProcessoSeletivoControle.inicializarDadosProgressBar}" value="#{msg_botoes.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" />
+
+				<h:commandLink image="#{resource['/imagens/botaoDownloadTemplate.png']}" style="margin-left:5px" action="#{ImportarCandidatoInscricaoProcessoSeletivoControle.downloadLayoutPadraoExcel}" styleClass="btn btn-success dark" value="Download Modelo (EXCEL)">
+					<span class="fas fa-file-excel"></span>
+<!-- 					<rich:tooltip value="template ireport" /> -->
+				</h:commandLink>
+
+
+				<otm:commandButton style="margin-left:5px" id="consultar" immediate="true" action="#{ImportarCandidatoInscricaoProcessoSeletivoControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" accesskey="4" styleClass="btn btn-default btn-consultar" />
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

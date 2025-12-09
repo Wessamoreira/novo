@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Relatório - #{msg_aplic.prt_EspelhoDiarioRel_tituloRel}" />
+	</ui:define>
+	<ui:define name="modal">
+
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelOkEspelho" shadowOpacity="true" width="300" height="120">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_EspelhoDiarioRel_imprimirVerso}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formOkEspelho">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup columns="1" columnClasses="colunaCentralizada" width="100%">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EspelhoDiarioRel_imprimirVersoEspelho}" />
+						<h:panelGroup>
+							<otm:commandButton id="btnOk" render="form" oncomplete="#{EspelhoRelControle.download}; #{rich:component('panelOkEspelho')}.hide()" action="#{EspelhoRelControle.imprimirObjetoEspelhoDiarioVersoPDFVisaoProfessor}" icon="#{msg_botoes.btn_icon_ok_embutido}" value="Imprimir Objeto Espelho Diario Verso PDF Visao Professor" styleClass="btn btn-default" image="#{resource['/imagens/botaoOK.png']}" />
+							<otm:spacer width="5px;" />
+							<otm:commandButton id="btnCancelar" render="form" oncomplete="#{rich:component('panelOkEspelho')}.hide()" action="#{EspelhoRelControle.limparDadosMemoriaVisaoProfessor}" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:panelGroup id="menuEspelho" layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{EspelhoRelControle.isApresentarAnoVisaoProfessorCoordenador}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Ano" rendered="#{EspelhoRelControle.isApresentarAnoVisaoProfessorCoordenador}" />
+						<h:inputText size="4" maxlength="4" id="ano3" value="#{EspelhoRelControle.ano}" styleClass="form-control camposObrigatorios">
+							<a4j:ajax event="change" listener="#{EspelhoRelControle.montarListaSelectItemTurmaVisaoProfessor}" render="form:menuEspelho" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{EspelhoRelControle.isApresentarAnoVisaoProfessorCoordenador}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Semestre" rendered="#{EspelhoRelControle.isApresentarSemestreVisaoProfessorCoordenador}" />
+						<h:selectOneMenu id="semestre3" styleClass="form-control campos" value="#{EspelhoRelControle.semestre}" rendered="#{EspelhoRelControle.isApresentarSemestreVisaoProfessorCoordenador}">
+							<a4j:ajax event="change" listener="#{EspelhoRelControle.montarListaSelectItemTurmaVisaoProfessor}" render="form:menuEspelho" />
+							<f:selectItems value="#{EnumControle.comboboxSemestreEnum}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EspelhoRel_identificador}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{EspelhoRelControle.turmaVO.codigo}">
+						<a4j:ajax event="change" listener="#{EspelhoRelControle.consultarTurmaProfessor}" execute="@this" render="form:menuEspelho" />
+						<f:selectItems value="#{EspelhoRelControle.listaSelectItemTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!EspelhoRelControle.turmaVO.turmaAgrupada and EspelhoRelControle.isApresentarDadosAposSelecionarTurma}">
+					<h:outputText rendered="#{!EspelhoRelControle.turmaVO.turmaAgrupada and EspelhoRelControle.isApresentarDadosAposSelecionarTurma}" styleClass="field control-label tituloCampos" value="Curso" />
+					<h:inputText size="40" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{EspelhoRelControle.turmaVO.curso.nome}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}">
+					<h:outputText rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EspelhoRel_disciplina}" />
+					<h:selectOneMenu id="disciplinaEspelho" styleClass="form-control camposObrigatorios" value="#{EspelhoRelControle.disciplina}">
+						<f:selectItems value="#{EspelhoRelControle.listaSelectItemDisciplina}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Turno" rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}" />
+					<h:inputText size="40" maxlength="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{EspelhoRelControle.turmaVO.turno.nome}" rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!EspelhoRelControle.turmaVO.turmaAgrupada and EspelhoRelControle.isApresentarDadosAposSelecionarTurma}">
+					<h:outputText rendered="#{!EspelhoRelControle.turmaVO.turmaAgrupada and EspelhoRelControle.isApresentarDadosAposSelecionarTurma}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoTurma_periodoLetivo}" />
+					<h:inputText size="40" maxlength="30" id="perioLetivo" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{EspelhoRelControle.turmaVO.peridoLetivo.descricao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}">
+					<h:outputText rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}" styleClass="field control-label tituloCampos" value="Tipo de Layout" />
+					<h:selectOneMenu id="tipoLayoutEspelho" styleClass="form-control camposObrigatorios" value="#{EspelhoRelControle.tipoLayout}">
+						<f:selectItems value="#{EspelhoRelControle.listaTipoLayout}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}">
+					<h:outputText rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}" styleClass="field control-label tituloCampos" value="Tipo de Aluno" />
+					<h:selectOneMenu rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}" id="tipoAlunoEspelho" styleClass="form-control camposObrigatorios" value="#{EspelhoRelControle.tipoAluno}">
+						<f:selectItems value="#{EspelhoRelControle.listaSelectItemTipoAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{EspelhoRelControle.isApresentarPeriodo}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaReceber_periodo}" rendered="#{EspelhoRelControle.isApresentarPeriodo}" />
+					<otm:calendar id="dataInicio" enableManualInput="true" value="#{EspelhoRelControle.dataInicio}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{EspelhoRelControle.isApresentarPeriodo}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Periodo Fim" />
+					<otm:calendar id="dataFim" enableManualInput="true" value="#{EspelhoRelControle.dataFim}" />
+				</h:panelGroup>
+				<otm:mensagem bean="#{EspelhoRelControle}"></otm:mensagem>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px" rendered="#{EspelhoRelControle.isApresentarDadosAposSelecionarTurma}">
+					<otm:commandButton style="margin-right:5px" id="imprimirEspelhoDiario" render="form" oncomplete="#{EspelhoRelControle.download};" action="#{EspelhoRelControle.imprimirObjetoEspelhoDiarioPDFVisaoProfessor}" rendered="#{VisaoProfessorControle.menuEspelhoDiario}" value="Imprimir Espelho do Diario da Turma (PDF)" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger" image="#{resource['/imagens/botaoImprimirEspelhoDiarioTurma.png']}" />					
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

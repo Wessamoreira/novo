@@ -1,0 +1,1030 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_EntregaDocumento_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<script>
+			(function($) {
+				clickUpload = function(idPanel) {
+					var input = $(idPanel).find("input:file");
+					$(input).click();
+				};
+			})(jQuery);
+		</script>
+
+		<style>
+			.btn-disabledUpload {
+				color: #b3afaf !important;
+			}
+			.background-upload {
+				background-color: rgba(158, 158, 158, 0.185) !important;
+			}
+		</style>
+		<h:outputScript src="resource:///jquery.js" />
+		<h:outputScript name="jquery.color.js" library="script/crop" />
+		<h:outputScript name="jquery.Jcrop.js" library="script/crop" />
+		<h:outputStylesheet name="jquery.Jcrop.css" library="script/crop" />
+		<h:outputScript name="webcam.js" library="script/webcam" />
+		<h:form id="form">
+			<h:commandLink action="#{DocumetacaoMatriculaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_matricula}" />
+					<h:inputText styleClass="form-control camposSomenteLeidtura" readonly="true" size="20" value="#{DocumetacaoMatriculaControle.matriculaVO.matricula}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pessoa_nome}" />
+					<h:inputText styleClass="form-control camposSomenteLeitura" readonly="true" size="60" value="#{DocumetacaoMatriculaControle.matriculaVO.aluno.nome}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_curso}" />
+					<h:inputText styleClass="form-control camposSomenteLeitura" readonly="true" size="60" value="#{DocumetacaoMatriculaControle.matriculaVO.curso.nome}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_turma}" />
+					<h:inputText styleClass="form-control camposSomenteLeitura" readonly="true" size="60" value="#{DocumetacaoMatriculaControle.turma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_TipoMatricula}" />
+					<h:inputText styleClass="form-control camposSomenteLeitura" readonly="true" size="60" value="#{DocumetacaoMatriculaControle.matriculaVO.tipoMatricula_Apresentar}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_localArmazenamentoDocumentosMatricula}" />
+					<h:inputText styleClass="form-control campos" size="53" value="#{DocumetacaoMatriculaControle.matriculaVO.localArmazenamentoDocumentosMatricula}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+					<otm:commandButton id="atualizarDocumentacaoMatricula" tooltip="#{msg_aplic.prt_EntregaDocumento_atualizarListaDocumentos}" value="Atualizar Documentação Matricula" icon="#{msg_botoes.btn_icon_atualizar_embutido}" render="documetacaoMatriculaVO" action="#{DocumetacaoMatriculaControle.atualizarListaDocumentosMatriculaPeloCurso}" image="#{resource['/imagens/botaoAtualizarDocumentoCurso.png']}" title="#{msg.msg_consultar_dados}" accesskey="2" styleClass="btn btn-default dark" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<rich:tabPanel activeItem="#{DocumetacaoMatriculaControle.tabAtiva}" switchType="ajax">
+				<rich:tab header="Documentos" id="primeiraTab" switchType="ajax" execute="@form">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="row mt10" rendered="#{DocumetacaoMatriculaControle.controlaAprovacaoDocEntregue}">
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<i class="#{msg_botoes.btn_icon_confirmar_embutido} fs14 mr5"></i>
+								<h:outputText value="Documento Entregue" styleClass="field control-label tituloCampos" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<i class="fas fa-file-upload fs14 mr5"></i>
+								<h:outputText value="Documento Pendente" styleClass="field control-label tituloCampos" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<i class="fas fa-exclamation-triangle fs14 mr5"></i>
+								<h:outputText value="Pendente Aprovação" styleClass="field control-label tituloCampos" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<i class="fas fa-ban fs14 mr5"></i>
+								<h:outputText value="Documento  Rejeitado" styleClass="field control-label tituloCampos" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<rich:dataTable id="documetacaoMatriculaVO" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{DocumetacaoMatriculaControle.matriculaVO.documetacaoMatriculaVOs}" var="documetacaoMatriculaItens">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_DocumetacaoMatricula_tipoDocumento}" />
+								</f:facet>
+								<h:outputText value="#{documetacaoMatriculaItens.tipoDeDocumentoVO.nome} - #{documetacaoMatriculaItens.ano}/#{documetacaoMatriculaItens.semestre}" rendered="#{documetacaoMatriculaItens.ano != '' and documetacaoMatriculaItens.semestre != ''}" />
+								<h:outputText value="#{documetacaoMatriculaItens.tipoDeDocumentoVO.nome}" rendered="#{documetacaoMatriculaItens.ano == '' and documetacaoMatriculaItens.semestre == ''}" />
+								<h:outputText value="#{documetacaoMatriculaItens.tipoDeDocumentoVO.nome} -  #{documetacaoMatriculaItens.ano}" rendered="#{documetacaoMatriculaItens.ano == '' and documetacaoMatriculaItens.semestre != ''}" />
+							</rich:column>
+							<rich:column style="text-align:center">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_DocumetacaoMatricula_entregue}" />
+								</f:facet>
+								<otm:selectBooleanCheckbox id="entregue" disabled="#{(documetacaoMatriculaItens.isPossuiArquivo || documetacaoMatriculaItens.isPossuiArquivoVerso || documetacaoMatriculaItens.isPossuiArquivoAssinado) and documetacaoMatriculaItens.entregue == true}" rendered="#{!DocumetacaoMatriculaControle.controlaAprovacaoDocEntregue}" styleClass="campos" value="#{documetacaoMatriculaItens.entregue}">
+									<a4j:ajax event="click" render="documetacaoMatriculaVO" listener="#{DocumetacaoMatriculaControle.selecionarEntregue}" />
+								</otm:selectBooleanCheckbox>
+								<h:panelGroup rendered="#{DocumetacaoMatriculaControle.controlaAprovacaoDocEntregue}">
+									<otm:commandIcon disabled="true" rendered="#{documetacaoMatriculaItens.entregue}" icon="#{msg_botoes.btn_icon_confirmar_embutido} fs20" tooltip="Documento Entregue" />
+									<otm:commandIcon disabled="true" rendered="#{!documetacaoMatriculaItens.entregue and !documetacaoMatriculaItens.arquivoAprovadoPeloDep and !documetacaoMatriculaItens.isPossuiArquivo and documetacaoMatriculaItens.dataNegarDocDep == null}" icon="fas fa-file-upload fs20" tooltip="Documento Pendente" />
+									<otm:commandIcon disabled="true" rendered="#{!documetacaoMatriculaItens.entregue and !documetacaoMatriculaItens.arquivoAprovadoPeloDep and documetacaoMatriculaItens.isPossuiArquivo and documetacaoMatriculaItens.dataNegarDocDep == null}" icon="fas fa-exclamation-triangle fs20" tooltip="Documento Pendente Aprovação" />
+									<otm:commandIcon disabled="true" rendered="#{!documetacaoMatriculaItens.entregue and documetacaoMatriculaItens.dataNegarDocDep != null}" icon="fas fa-ban fs20" tooltip="Documento Rejeitado" />
+								</h:panelGroup>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_DocumetacaoMatricula_dataEntrega}" />
+								</f:facet>
+								<h:outputText id="dataentregue" value="#{documetacaoMatriculaItens.dataEntrega_Apresentacao}" />
+							</rich:column>
+							<rich:column >
+								<f:facet name="header">
+									<h:outputText value="Arquivo Frente" />
+								</f:facet>
+								<otm:commandIcon id="uploadList" render="formUplod" rendered="#{DocumetacaoMatriculaControle.permiteAnexarImagemDocumentosEntregues}" oncomplete="#{DocumetacaoMatriculaControle.oncompleteModal}"  action="#{DocumetacaoMatriculaControle.selecionarObjetoDocumentacaoMatricula}" icon="#{msg_botoes.btn_icon_upload} iconePequeno" tooltip="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo ? 'Para realizar o upload do arquivo frente deve-se excluir a documentação antiga do aluno' : 'Upload Documento Frente'}" disabled="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo}" styleClassIcon="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo ? 'background-upload btn-disabledUpload' : ''}" />
+								<otm:commandIcon id="dwl" oncomplete="#{documetacaoMatriculaItens.arquivoVO.servidorArquivoOnline eq 'APACHE'} ? location.href='../../DownloadSV' : abrirPopup('../../DownloadSV', 'DownloadSV_#{documetacaoMatriculaItens.codigo}',950,595)" rendered="#{documetacaoMatriculaItens.isPossuiArquivo}" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download} iconePequeno" image="#{resource['/imagens/botaoDownloadResumido.png']}" action="#{DocumetacaoMatriculaControle.realizarDownloadArquivo(documetacaoMatriculaItens.arquivoVO)}" />
+								<otm:commandIcon id="previewFrente" oncomplete="#{rich:component('panelPreview')}.show();" render="formPreview" rendered="#{documetacaoMatriculaItens.isPossuiArquivo and (documetacaoMatriculaItens.arquivoVO.isPdF or documetacaoMatriculaItens.arquivoVO.isImagem)}" tooltip="Visualizar Arquivo" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" action="#{DocumetacaoMatriculaControle.realizarVisualizacaoPreview(documetacaoMatriculaItens.arquivoVO)}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Arquivo Verso" />
+								</f:facet>
+								<otm:commandIcon id="uploadListVerso" render="formImagemVerso, formUplodVerso" oncomplete="#{DocumetacaoMatriculaControle.oncompleteModal}"  rendered="#{documetacaoMatriculaItens.tipoDeDocumentoVO.documentoFrenteVerso and documetacaoMatriculaItens.isPossuiArquivo and DocumetacaoMatriculaControle.permiteAnexarImagemDocumentosEntregues}" action="#{DocumetacaoMatriculaControle.selecionarObjetoDocumentacaoMatriculaVerso}" icon="#{msg_botoes.btn_icon_upload} iconePequeno" tooltip="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo ? 'Para realizar o upload do arquivo verso deve-se excluir a documentação antiga do aluno' : 'Upload Documento Verso'}" disabled="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo}" styleClassIcon="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo ? 'background-upload btn-disabledUpload' : ''}" />
+								<otm:commandIcon id="dwl4" oncomplete="#{documetacaoMatriculaItens.arquivoVOVerso.servidorArquivoOnline eq 'APACHE'} ? location.href='../../DownloadSV' : abrirPopup('../../DownloadSV', 'DownloadSV_#{documetacaoMatriculaItens.codigo}',950,595)" rendered="#{documetacaoMatriculaItens.isPossuiArquivoVerso}" icon="#{msg_botoes.btn_icon_download} iconePequeno" tooltip="Download Arquivo Verso" image="#{resource['/imagens/botaoDownloadResumido.png']}" action="#{DocumetacaoMatriculaControle.realizarDownloadArquivo(documetacaoMatriculaItens.arquivoVOVerso)}" />
+								<otm:commandIcon id="previewVerso" oncomplete="#{rich:component('panelPreview')}.show();" render="formPreview" rendered="#{documetacaoMatriculaItens.isPossuiArquivoVerso and (documetacaoMatriculaItens.arquivoVOVerso.isPdF or documetacaoMatriculaItens.arquivoVOVerso.isImagem)}" tooltip="Visualizar Arquivo" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" action="#{DocumetacaoMatriculaControle.realizarVisualizacaoPreview(documetacaoMatriculaItens.arquivoVOVerso)}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Arquivo Assinado" />
+								</f:facet>
+								<otm:commandIcon id="dwl5" oncomplete="#{documetacaoMatriculaItens.arquivoVOAssinado.servidorArquivoOnline eq 'APACHE'} ? location.href='../../DownloadSV' : abrirPopup('../../DownloadSV', 'DownloadSV_#{documetacaoMatriculaItens.codigo}',950,595)" rendered="#{documetacaoMatriculaItens.isPossuiArquivoAssinado}" icon="#{msg_botoes.btn_icon_download} iconePequeno" tooltip="Download Arquivo Assinado" image="#{resource['/imagens/botaoDownloadResumido.png']}" action="#{DocumetacaoMatriculaControle.realizarDownloadArquivoAssinado}" />
+								<otm:commandIcon id="previewAssinado" oncomplete="#{rich:component('panelPreview')}.show();" render="formPreview" rendered="#{documetacaoMatriculaItens.isPossuiArquivoAssinado and (documetacaoMatriculaItens.arquivoVOAssinado.isPdF or documetacaoMatriculaItens.arquivoVOAssinado.isImagem)}" tooltip="Visualizar Arquivo" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" action="#{DocumetacaoMatriculaControle.realizarVisualizacaoPreview(documetacaoMatriculaItens.arquivoVOAssinado)}" />								
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Arquivo Ged" />
+								</f:facet>
+								<otm:commandIcon id="dwlGed" oncomplete="#{documetacaoMatriculaItens.arquivoGED.servidorArquivoOnline eq 'APACHE'} ? location.href='../../DownloadSV' : abrirPopup('../../DownloadSV', 'DownloadSV_#{documetacaoMatriculaItens.codigo}',950,595)" rendered="#{documetacaoMatriculaItens.arquivoGED.codigo ne 0}" icon="#{msg_botoes.btn_icon_download} iconePequeno" tooltip="Download Arquivo Assinado" image="#{resource['/imagens/botaoDownloadResumido.png']}" action="#{DocumetacaoMatriculaControle.realizarDownloadArquivo(documetacaoMatriculaItens.arquivoGED)}" />
+								<otm:commandIcon id="previewGed1" oncomplete="#{rich:component('panelPreview')}.show();" render="formPreview" rendered="#{documetacaoMatriculaItens.arquivoGED.codigo ne 0 and (documetacaoMatriculaItens.arquivoGED.isPdF or documetacaoMatriculaItens.arquivoGED.isImagem)}" tooltip="Visualizar Arquivo" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" action="#{DocumetacaoMatriculaControle.realizarVisualizacaoPreview(documetacaoMatriculaItens.arquivoGED)}" />								
+							</rich:column>
+							<rich:column rendered="#{DocumetacaoMatriculaControle.permiteAnexarImagemDocumentosEntregues}">
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon id="removerItemArquivo" oncomplete="#{rich:component('panelExcluir')}.show()" action="#{DocumetacaoMatriculaControle.selecionarArquivoDocumentoEntregueExclusao}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" image="#{resource['/imagens/botaoExcluirResumido.png']}" tooltip="Excluir Documento" rendered="#{documetacaoMatriculaItens.isPossuiArquivo || documetacaoMatriculaItens.isPossuiArquivoVerso || documetacaoMatriculaItens.isPossuiArquivoAssinado}" />
+								<h:panelGroup id="helpResponsavelRecebimento" rendered="#{documetacaoMatriculaItens.entregue  or (!documetacaoMatriculaItens.entregue and !documetacaoMatriculaItens.arquivoAprovadoPeloDep and (documetacaoMatriculaItens.isPossuiArquivo or documetacaoMatriculaItens.isPossuiArquivoAssinado))}">
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_usuario} iconePequeno" disable="true" />
+								</h:panelGroup>
+								<rich:tooltip target="helpResponsavelRecebimento" id="tooltipNaoVisivel" rendered="#{documetacaoMatriculaItens.entregue or (!documetacaoMatriculaItens.entregue and !documetacaoMatriculaItens.arquivoAprovadoPeloDep and documetacaoMatriculaItens.isPossuiArquivo and documetacaoMatriculaItens.dataNegarDocDep == null)}" zindex="1000">
+									<h:panelGroup layout="block" styleClass="col-md-12" style="min-width: 800px!important;">
+										<h:panelGroup layout="block" styleClass="col-md-9">
+											<h:outputText styleClass="tituloCampos" value="Responsável Upload" />
+											<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.usuario.nome}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="tituloCampos" value="Data Entrega" />
+											<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.dataEntrega}" >
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+											</h:inputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block" rendered="#{documetacaoMatriculaItens.entregue}" styleClass="col-md-9">
+											<h:outputText styleClass="tituloCampos" value="Responsável Deferimento Documento" />
+											<h:inputText readonly="true" styleClass="form-control campos" rendered="#{empty documetacaoMatriculaItens.respAprovacaoDocDep.nome}" value="#{documetacaoMatriculaItens.arquivoVOAssinado.responsavelUpload.nome}" />
+											<h:inputText readonly="true" styleClass="form-control campos" rendered="#{!empty documetacaoMatriculaItens.respAprovacaoDocDep.nome}" value="#{documetacaoMatriculaItens.respAprovacaoDocDep.nome}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" rendered="#{documetacaoMatriculaItens.entregue}" styleClass="col-md-3">
+											<h:outputText styleClass="tituloCampos" value="Data Deferimento" />
+											<h:inputText readonly="true" styleClass="form-control campos" rendered="#{empty documetacaoMatriculaItens.dataAprovacaoDocDep}" value="#{documetacaoMatriculaItens.arquivoVOAssinado.dataUpload_Apresentar}" />
+											<h:inputText readonly="true" styleClass="form-control campos" rendered="#{!empty documetacaoMatriculaItens.dataAprovacaoDocDep}" value="#{documetacaoMatriculaItens.dataAprovacaoDocDep}" >
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+											</h:inputText>
+										</h:panelGroup>
+									</h:panelGroup>
+								</rich:tooltip>
+								<rich:tooltip target="helpResponsavelRecebimento" id="tooltipNaoVisivelIndeferimento" rendered="#{documetacaoMatriculaItens.documentoRejeitado}" zindex="1000">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<h:panelGroup layout="block" styleClass="col-md-9">
+											<h:outputText styleClass="tituloCampos" value="Responsável Upload" />
+											<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.usuario.nome}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="tituloCampos" value="Data Entrega" />
+											<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.dataEntrega}" >
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+											</h:inputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-8">
+											<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_EntregaDocumento_ResponsavelIndeferimento}" />
+											<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.respNegarDocDep.nome}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4">
+											<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_EntregaDocumento_DataIndeferimento}" />
+											<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.dataNegarDocDep}" >
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+											</h:inputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{!empty documetacaoMatriculaItens.motivoIndeferimentoDocumentoAlunoVO.nome}">
+											<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_EntregaDocumento_MotivoIndeferimento}" />
+											<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.motivoIndeferimentoDocumentoAlunoVO.nome}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_EntregaDocumento_ObservacaoIndeferimento}" />
+											<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.justificativaNegacao}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</rich:tooltip>
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- TAB Digitações GED -->
+				<rich:tab header="Digitações GED" id="segundatab" switchType="ajax" execute="@form">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" style="width:100%; padding:10px; text-align:center">
+							<otm:commandButton id="uploadList" render="formDocumentoGED" oncomplete="#{rich:component('panelDocumentosEntreguesGED')}.show()" action="#{DocumetacaoMatriculaControle.novoDocumentacaoGed}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="Adicionar Documento GED" styleClass="btn btn-primary dark" image="#{resource['/imagens/botaoAdicionar2.png']}" />
+						</h:panelGroup>
+						<rich:dataTable id="digitacoesGED" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{DocumetacaoMatriculaControle.listaDocumentacaoGED}" var="documentacao">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_DocumetacaoMatricula_categoriaGED}" />
+								</f:facet>
+								<h:outputText value="#{documentacao.categoriaGED.descricao}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Arquivo" />
+								</f:facet>
+								<h:outputText value="#{documentacao.arquivo.descricao}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Data" />
+								</f:facet>
+								<h:outputText value="#{documentacao.data}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm"></f:convertDateTime>
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Situação" />
+								</f:facet>
+								<h:outputText value="#{documentacao.situacao}">
+								</h:outputText>
+								<h:commandButton rendered="#{!empty documentacao.mensagem}" id="helpMensagemErroDocumentacaoGED" image="#{resource['/V2/imagens/70.png']}" style="position: relative; top: 3px; left: 2px;" />
+								<rich:tooltip rendered="#{!empty documentacao.mensagem}" followMouse="false" direction="topLeft" style="width:250px" target="helpMensagemErroDocumentacaoGED">
+									<h:outputText escape="false" value="#{documentacao.mensagem}" />
+								</rich:tooltip>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<!-- 									<a4j:commandButton style="width:16px" title="Download Documento" image="#{resource['/imagens/botaoDownloadResumido.png']}"  oncomplete="abrirPopup('#{DocumetacaoMatriculaControle.caminhoServidorDownloadGED}', '#{documetacao.arquivo.nome}', 930, 600);" rendered="#{documentacao.arquivo.nome != ''}" /> -->
+								<otm:commandIcon id="dwl5" oncomplete="#{documentacao.arquivo.servidorArquivoOnline eq 'APACHE'} ? location.href='../../DownloadSV' : abrirPopup('../../DownloadSV', 'DownloadSV_GED_#{documetacao.arquivo.codigo}',950,595)" rendered="#{documentacao.arquivo.nome != ''}" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download} iconePequeno" action="#{DocumetacaoMatriculaControle.realizarDownloadArquivo(documentacao.arquivo)}" />
+								<otm:commandIcon id="previewAssinadoGed2" oncomplete="#{rich:component('panelPreview')}.show();" render="formPreview" rendered="#{documentacao.arquivo.isPdF or documentacao.arquivo.isImagem}" tooltip="Visualizar Arquivo" icon="#{msg_botoes.btn_icon_lupa} iconePequeno ml5" action="#{DocumetacaoMatriculaControle.realizarVisualizacaoPreview(documentacao.arquivo)}" />								
+								<otm:commandIcon id="removerItemArquivo" oncomplete="#{rich:component('panelExcluirGed')}.show()" render="formExcluirGed" action="#{DocumetacaoMatriculaControle.selecionarArquivoDocumentoEntregueExclusaoGED(documentacao)}"  icon="#{msg_botoes.btn_icon_excluir} ml5 iconePequeno" tooltip="Excluir Documento" />
+								<otm:commandIcon id="editarItemArquivo" render="formDocumentoGED" oncomplete="#{rich:component('panelDocumentosEntreguesGED')}.show()" action="#{DocumetacaoMatriculaControle.editarDocumentacaoGed}" icon="#{msg_botoes.btn_icon_editar} ml5 iconePequeno" tooltip="Editar Documento GED" />
+								<otm:commandIcon icon="#{msg_botoes.btn_icon_usuario} ml5  iconePequeno" tooltip="Responsável Recebimento Documento GED: #{documentacao.usuario.nome}" id="helpResponsavelRecebimento" />
+								
+							</rich:column>
+							<rich:column breakRowBefore="true" colspan="23">
+								<rich:dataTable id="tipoDocumentoGED" width="100%" rendered="#{!empty documentacao.listaTipoDocumentoGED}" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{documentacao.listaTipoDocumentoGED}" var="tipoDocumentacaoGED" style="margin-top: 15px">
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_tipoDocumento}" />
+										</f:facet>
+										<h:outputText value="#{tipoDocumentacaoGED.tipoDocumento.nome}" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome != ''}" />
+										<h:outputText value="#{tipoDocumentacaoGED.tipoDocumento.nome}" style="color:red" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome == ''}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_identificadorGED}" />
+										</f:facet>
+										<h:outputText value="#{tipoDocumentacaoGED.identificadorGed}" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome != ''}" />
+										<h:outputText value="#{tipoDocumentacaoGED.identificadorGed}" style="color:red" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome == ''}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_situacao}" />
+										</f:facet>
+										<h:outputText value="#{msg.msg_erro_DocumentacaoGED_tipoDocumentoNaoEncontrado}" style="color:red" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo eq 0}" />
+										<h:outputText value="#{msg.msg_erro_DocumentacaoGED_tipoDocumentoReconhecido}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo ne 0 and  tipoDocumentacaoGED.tipoDocumento.nome != ''}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_entregue}" />
+										</f:facet>
+										<h:outputText value="#{msg.msg_erro_DocumentacaoGED_documentoEntregue}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo != 0  and  tipoDocumentacaoGED.documetacaoMatricula.entregue}" />
+										<h:outputText value="#{msg.msg_erro_DocumentacaoGED_documentoNaoEntregue}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo != 0  and  !tipoDocumentacaoGED.documetacaoMatricula.entregue}" />
+									</rich:column>
+								</rich:dataTable>
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+				</rich:tab>
+			</rich:tabPanel>
+			<script type="text/javascript">
+						function scannear(caminhoServido, nomeArquivo, verso) {
+							var Applet = document.scannerApplet;
+							if (Applet == null) {
+								alert("Scanner não localizado");
+								return false;
+							}
+
+							var cs = caminhoServido;
+							var na = nomeArquivo;
+							Applet.setCaminhoAplicacao(cs);
+							Applet.setNomeArquivo(na);
+							if (Applet == null) {
+								alert("Scanner não localizado");
+								return false;
+							}
+							alert("Clique em OK após a digitalização do arquivo.");
+							if (verso) {
+								fireElement("form:upLoadArquivoScannerVerso");
+							} else {
+								fireElement("form:upLoadArquivoScanner");
+							}
+						}
+					</script>
+			<h:panelGroup rendered="#{LoginControle.permissaoAcessoMenuVO.permiteLeituraArquivoScanner}" styleClass="applet" id="appScanner">
+				<a4j:commandButton execute="@this" action="#{DocumetacaoMatriculaControle.upLoadArquivoScanner}" render="form:documetacaoMatriculaVO, form:panelGridMensagens, formImagem" id="upLoadArquivoScanner" style="display: none" />
+				<a4j:commandButton execute="@this" action="#{DocumetacaoMatriculaControle.upLoadArquivoScannerVerso}" render="form:documetacaoMatriculaVO, form:panelGridMensagens, formImagemVerso" id="upLoadArquivoScannerVerso" style="display: none" />
+				<f:verbatim>
+					<applet id="scannerAppletId" codebase="./applet" archive="ScannerImage.jar, ./lib/Scan_.jar, ./lib/uk.co.mmscomputing.device.twain.jar" code="controle.ScannerImage.class" height="0" width="0" name="scannerApplet"> </applet>
+				</f:verbatim>
+			</h:panelGroup>
+			<h:panelGroup id="botao" columns="1" width="100%" styleClass="tabMensagens">
+				<h:panelGroup id="panelGridMensagens" columns="1" rendered="#{!DocumetacaoMatriculaControle.exibirMensagemRelatorio}" width="100%">
+					<otm:mensagem bean="#{DocumetacaoMatriculaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagensRelatorio" rendered="#{DocumetacaoMatriculaControle.exibirMensagemRelatorio}" columns="1" width="100%">
+					<otm:mensagem bean="#{DocumetacaoMatriculaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<h:panelGroup>
+						<otm:commandButton id="salvar" render="form" action="#{DocumetacaoMatriculaControle.gravar}" value="Gravar" icon="#{msg_botoes.btn_icon_gravar_embutido}" image="#{resource['/imagens/botaoGravar.png']}" title="#{msg.msg_gravar_dados}" accesskey="2" styleClass="btn btn-dark" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="consultar" immediate="true" action="#{DocumetacaoMatriculaControle.inicializarConsultar}" value="consultar" icon="#{msg_botoes.btn_icon_lupa_embutido}" image="#{resource['/imagens/botaoConsultar.png']}" title="#{msg.msg_consultar_dados}" accesskey="4" styleClass="btn btn-default" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="imprimirPDF" render="form:botao" immediate="true" oncomplete="#{rich:component('panelSituacaoDocumento')}.show();" icon="#{msg_botoes.btn_icon_pdf_embutido}" value="Emitir Comprovante" accesskey="5" styleClass="btn btn-danger dark" image="#{resource['/imagens/botaoEmitirComprovante.png']}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<!-- Popup -->
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelImagemDocumentosEntregues" onshow="iniciarCropFrente()" zindex="2000" shadowOpacity="false" width="850" height="650" >
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagem">
+				<style>
+.scroll::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #c7c7c7 !important;
+	scrollbar-color: #c7c7c7 transparent !important;
+	height: 20px !important;
+}
+</style>
+				<h:panelGroup id="panelArquivo">
+					<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_DocumetacaoMatricula_tipoDocumento}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="100" value="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.tipoDeDocumentoVO.nome}" />
+					</h:panelGroup>
+					<h:panelGroup id="arquivoUpload">
+						<h:panelGroup layout="block" styleClass="row mn border rounded p5" id="arquivo" rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.isPossuiArquivo}">
+							<h:panelGroup id="dadosImagem" rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVO.isImagem}" layout="block" style="width:100%">
+								<h:panelGroup layout="block" styleClass="row mn border rounded text-center p5 bg-gray mb5">
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_recortar} iconePequeno" action="#{DocumetacaoMatriculaControle.recortarImagem}" render="formImagem:panelArquivo" tooltip="Recorte a Imagem" />
+									<otm:commandIcon action="#{DocumetacaoMatriculaControle.executarZoomIn}" icon="#{msg_botoes.btn_icon_zoomPlus} iconePequeno" render="formImagem:panelArquivo" />
+									<otm:commandIcon action="#{DocumetacaoMatriculaControle.executarZoomOut}" icon="#{msg_botoes.btn_icon_zoomMinus} iconePequeno" render="formImagem:panelArquivo" />
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_esquerda} iconePequeno" action="#{DocumetacaoMatriculaControle.rotacionar90GrausParaEsquerda}" render="formImagem:panelArquivo" tooltip="Girar 90º para Esquerda" />
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_direita} iconePequeno" action="#{DocumetacaoMatriculaControle.rotacionar90GrausParaDireita}" render="formImagem:panelArquivo" tooltip="Girar 90º para Direita" />
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_180} iconePequeno" action="#{DocumetacaoMatriculaControle.rotacionar180Graus}" render="formImagem:panelArquivo" tooltip="Girar 180º" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:graphicImage id="image" url="#{DocumetacaoMatriculaControle.caminhoServidorDownloadDocumentacao}?embedded=true" />
+								</h:panelGroup>
+
+								<script type="text/javascript">
+											jQuery(function($) {
+												$(document)
+														.ready(
+																function() {
+																	$(
+																			"#formImagem\\:image")
+																			.Jcrop(
+																					{
+																						onSelect : showCoords,
+																						onChange : showCoords,
+																						bgColor : 'black',
+																						bgOpacity : .3,
+																					});
+
+																});
+											});
+											function showCoords(c) {
+												var valorX = document
+														.getElementById('formImagem:x');
+												valorX.value = c.x;
+												var valorY = document
+														.getElementById('formImagem:y');
+												valorY.value = c.y;
+												var valorW = document
+														.getElementById('formImagem:w');
+												valorW.value = c.w;
+												var valorH = document
+														.getElementById('formImagem:h');
+												valorH.value = c.h;
+											};
+										</script>
+								<h:panelGroup style="display:none" layout="block">
+									<h:panelGroup style="display:none" columns="6">
+										<h:panelGroup>
+											<h:outputText value="X" />
+											<h:inputText size="4" id="x" value="#{DocumetacaoMatriculaControle.x}" />
+										</h:panelGroup>
+										<h:panelGroup>
+											<h:outputText value="Y" />
+											<h:inputText size="4" id="y" value="#{DocumetacaoMatriculaControle.y}" />
+										</h:panelGroup>
+										<h:panelGroup>
+											<h:outputText value="largura" />
+											<h:inputText size="4" id="w" value="#{DocumetacaoMatriculaControle.largura}" />
+										</h:panelGroup>
+										<h:panelGroup>
+											<h:outputText value="altura" />
+											<h:inputText size="4" id="h" value="#{DocumetacaoMatriculaControle.altura}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup id="dadosPDF" layout="block" style="width:100%" rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVO.isPdF and !empty DocumetacaoMatriculaControle.caminhoPDF}">
+								<otm:pdfView id="pdfFrente" data="#{DocumetacaoMatriculaControle.caminhoPDF}" height="500px" />
+							</h:panelGroup>
+							<h:graphicImage rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVO.isWord}" url="#{resource['/imagens/iconeArquivo/wordGrande.png']}" />
+							<h:graphicImage rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVO.isExcel}" url="#{resource['/imagens/iconeArquivo/excelGrande.png']}" />
+							<h:graphicImage rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVO.isTxt}" url="#{resource['/imagens/iconeArquivo/txtGrande.png']}" />
+							<h:graphicImage rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVO.isOutros}" url="#{resource['/imagens/iconeArquivo/outrosGrande.png']}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+						<otm:commandButton id="dwl2" oncomplete="location.href='../../DownloadSV'" rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.isPossuiArquivo}" value="Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido}" styleClass="btn btn-success mr5" action="#{DocumetacaoMatriculaControle.realizarDownloadArquivo(DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVO)}" />
+						<otm:commandButton action="#{DocumetacaoMatriculaControle.adicionarArquivoDocumentacaoMatricula}" oncomplete="#{rich:component('panelImagemDocumentosEntregues')}.hide();#{DocumetacaoMatriculaControle.abrirModalInclusaoArquivoVerso}" render="documetacaoMatriculaVO, tabMensagensAux, mensagemDocumentacao2, mensagemDetalhadaDocumentacao2, formIncluirArquivoVerso, form, formUplodVerso" value="Confirmar" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info mr5" />
+						<otm:commandButton id="cancelarUploadArquivo" title="#{msg_botoes.btn_cancelar}" action="#{DocumetacaoMatriculaControle.limparDocumentacaoMatriculaVO}" oncomplete="#{rich:component('panelImagemDocumentosEntregues')}.hide();" render="form" value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger mr5" />
+					</h:panelGroup>
+					<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="tabMensagensAux">
+						<otm:mensagem bean="#{DocumetacaoMatriculaControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- GED -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDocumentosEntreguesGED" shadowOpacity="false" width="800" height="600" autosized="false">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="Incluir Documentação GED" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDocumentoGED">
+				<h:panelGroup layout="block" styleClass="#{!empty DocumetacaoMatriculaControle.documentacaoGED.arquivo.descricao ? 'col-md-6' : 'col-md-12'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DocumetacaoMatricula_categoriaGED}" />
+					<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{DocumetacaoMatriculaControle.documentacaoGED.categoriaGED.codigo}">
+						<a4j:ajax event="change" render="formTipoDocumento" execute="formTipoDocumento" listener="#{DocumetacaoMatriculaControle.realizarLocalizacaoDocumentacaoMatriculaVincularDocumentoGED}"></a4j:ajax>
+						<f:selectItems value="#{DocumetacaoMatriculaControle.listaSelectItemCategoriaGED}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!empty DocumetacaoMatriculaControle.documentacaoGED.arquivo.descricao}">
+					<h:outputText styleClass="tituloCampos" value="Arquivo" />
+					<h:inputText styleClass="form-control" readonly="true" id="nomeArquivoGED" rendered="#{!empty DocumetacaoMatriculaControle.documentacaoGED.arquivo.descricao}" value="#{DocumetacaoMatriculaControle.documentacaoGED.arquivo.descricao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:5px">
+					<h:panelGroup>
+						<otm:commandButton id="consultaDadosTipoDocumento" accesskey="1" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Localizar Tipo Documento" action="#{DocumetacaoMatriculaControle.limparMensagem}" alt="Localizar Tipo Documento" render="formTipoDocumentoCons" oncomplete="#{rich:component('panelTipoDocumento')}.show();" image="#{resource['/imagens/botaoAdicionarTipoDocumento.png']}" styleClass="btn btn-default dark" />
+						<otm:spacer width="5px" />
+						<a4j:commandLink render="formUplodGED" oncomplete="#{rich:component('panelUploadGED')}.show();" value="Upload" accesskey="2" styleClass="btn btn-info dark" image="#{resource['/imagens/botaoUpload.png']}">
+							<span class="fas fa-upload pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+							<f:setPropertyActionListener value="true" target="#{DocumetacaoMatriculaControle.arquivoGED}"></f:setPropertyActionListener>
+						</a4j:commandLink>
+						<otm:spacer width="5px" />
+						<otm:commandButton id="adicionarAssinaturaFuncionario" render="formResponsavel" title="Adicionar Assinatura Funcionário" value="Adicionar Assinatura Funcionário" styleClass="btn btn-primary dark btn-adicionar" oncomplete="#{rich:component('panelFuncionario')}.show()" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="tipoDocumentoGED" width="100%" headerClass="consulta" rendered="#{!empty DocumetacaoMatriculaControle.documentacaoGED.listaTipoDocumentoGED}" columnClasses="colunaAlinhamento" value="#{DocumetacaoMatriculaControle.documentacaoGED.listaTipoDocumentoGED}" var="tipoDocumentacaoGED" style="margin-top: 15px">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_tipoDocumento}" />
+						</f:facet>
+						<h:outputText value="#{tipoDocumentacaoGED.tipoDocumento.nome}" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome != ''}" />
+						<h:outputText value="#{tipoDocumentacaoGED.tipoDocumento.nome}" style="color:red" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome == ''}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_identificadorGED}" />
+						</f:facet>
+						<h:outputText value="#{tipoDocumentacaoGED.identificadorGed}" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome != ''}" />
+						<h:outputText value="#{tipoDocumentacaoGED.identificadorGed}" style="color:red" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome == ''}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_situacao}" />
+						</f:facet>
+						<h:outputText value="#{msg.msg_erro_DocumentacaoGED_tipoDocumentoNaoEncontrado}" style="color:red" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo eq 0}" />
+						<h:outputText value="#{msg.msg_erro_DocumentacaoGED_tipoDocumentoReconhecido}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo ne 0 and  tipoDocumentacaoGED.tipoDocumento.nome != ''}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_entregue}" />
+						</f:facet>
+						<h:outputText value="#{msg.msg_erro_DocumentacaoGED_documentoEntregue}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo != 0  and  tipoDocumentacaoGED.documetacaoMatricula.codigo ne 0 and tipoDocumentacaoGED.documetacaoMatricula.entregue}" />
+						<h:outputText value="Não #{msg.msg_erro_DocumentacaoGED_documentoEntregue}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo != 0  and  tipoDocumentacaoGED.documetacaoMatricula.codigo ne 0 and !tipoDocumentacaoGED.documetacaoMatricula.entregue}" />
+						<h:outputText value="#{msg.msg_erro_DocumentacaoGED_documentoNaoEntregue}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo != 0  and  !tipoDocumentacaoGED.documetacaoMatricula.entregue}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon id="remover" onclick="return confirm('#{msg.msg_ConfirmaExclusao}');" actionListener="#{DocumetacaoMatriculaControle.removerTipoDocumento(tipoDocumentacaoGED)}" render="formDocumentoGED" icon="#{msg_botoes.btn_icon_remover} iconePequeno" image="#{resource['imagens/botaoRemover.png']}" tooltip="#{msg.msg_remover_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="tabMensagensUploadGED">
+					<otm:mensagem bean="#{DocumetacaoMatriculaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="salvarTipoDocumentoGED" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Gravar" oncomplete="#{DocumetacaoMatriculaControle.oncompleteModal}" image="#{resource['/imagens/botaoGravar.png']}" title="#{msg.msg_gravar_dados}" styleClass="btn btn-dark" action="#{DocumetacaoMatriculaControle.persistirDocumentoGed}" execute="@this" />
+					<otm:spacer width="5px" />
+					<otm:commandButton id="cancelarSalvarTipoDocumentoGED" render="form" oncomplete="#{rich:component('panelDocumentosEntreguesGED')}.hide()" value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" title="#{msg.msg_cancelar_dados}" accesskey="2" action="#{DocumetacaoMatriculaControle.cancelarAlteracaoDocumentacaoGed}" execute="@this" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelImagemDocumentosEntreguesVerso" zindex="2000" shadowOpacity="false" width="850" height="650">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos} Verso" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagemVerso">
+				<h:panelGroup id="panelArquivoVerso">
+					<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_DocumetacaoMatricula_tipoDocumento}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="100" value="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.tipoDeDocumentoVO.nome}" />
+					</h:panelGroup>
+					<h:panelGroup id="arquivoUploadVerso">
+						<h:panelGroup layout="block" styleClass="row mn border rounded p5" id="arquivo" rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.isPossuiArquivoVerso}">
+							<h:panelGroup id="dadosImagem" rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isImagem}">
+								<h:panelGroup layout="block" styleClass="row mn border rounded text-center p5 bg-gray mb10">
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_recortar} iconePequeno" action="#{DocumetacaoMatriculaControle.recortarImagemVerso}" render="formImagemVerso" tooltip="Recorte a Imagem" />
+									<otm:commandIcon action="#{DocumetacaoMatriculaControle.executarZoomInVerso}" icon="#{msg_botoes.btn_icon_zoomPlus} iconePequeno" render="formImagemVerso" />
+									<otm:commandIcon action="#{DocumetacaoMatriculaControle.executarZoomOutVerso}" icon="#{msg_botoes.btn_icon_zoomMinus} iconePequeno" render="formImagemVerso" />
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_esquerda} iconePequeno" action="#{DocumetacaoMatriculaControle.rotacionar90GrausParaEsquerdaVerso}" render="formImagemVerso" tooltip="Girar 90º para Esquerda" />
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_direita} iconePequeno" action="#{DocumetacaoMatriculaControle.rotacionar90GrausParaDireitaVerso}" render="formImagemVerso" tooltip="Girar 90º para Direita" />
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_180} iconePequeno" action="#{DocumetacaoMatriculaControle.rotacionar180GrausVerso}" render="formImagemVerso" tooltip="Girar 180º" />
+								</h:panelGroup>
+								<h:panelGroup styleClass="scroll" style="display:block;overflow:auto;max-height:442px;max-width:816px;">
+									<h:graphicImage id="imageVerso" url="#{DocumetacaoMatriculaControle.caminhoServidorDownloadDocumentacaoVerso}?embedded=true" />
+								</h:panelGroup>
+
+								<script type="text/javascript">
+											jQuery(function($) {
+												$(document)
+														.ready(
+																function() {
+																	$(
+																			"#formImagemVerso\\:imageVerso")
+																			.Jcrop(
+																					{
+																						onSelect : showCoordsVerso,
+																						onChange : showCoordsVerso,
+																						bgColor : 'black',
+																						bgOpacity : .3,
+																					});
+
+																});
+											});
+											function showCoordsVerso(c) {
+												var valorX = document
+														.getElementById('formImagemVerso:xVerso');
+												valorX.value = c.x;
+												var valorY = document
+														.getElementById('formImagemVerso:yVerso');
+												valorY.value = c.y;
+												var valorW = document
+														.getElementById('formImagemVerso:wVerso');
+												valorW.value = c.w;
+												var valorH = document
+														.getElementById('formImagemVerso:hVerso');
+												valorH.value = c.h;
+											};
+										</script>
+								<h:panelGroup style="display:none" layout="block">
+									<h:panelGroup style="display:none" columns="6">
+										<h:panelGroup>
+											<h:outputText value="X" />
+											<h:inputText size="4" id="xVerso" value="#{DocumetacaoMatriculaControle.xcropVerso}" />
+										</h:panelGroup>
+										<h:panelGroup>
+											<h:outputText value="Y" />
+											<h:inputText size="4" id="yVerso" value="#{DocumetacaoMatriculaControle.ycropVerso}" />
+										</h:panelGroup>
+										<h:panelGroup>
+											<h:outputText value="largura" />
+											<h:inputText size="4" id="wVerso" value="#{DocumetacaoMatriculaControle.larguraVerso}" />
+										</h:panelGroup>
+										<h:panelGroup>
+											<h:outputText value="altura" />
+											<h:inputText size="4" id="hVerso" value="#{DocumetacaoMatriculaControle.alturaVerso}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup id="dadosPDFVerso" layout="block" style="width:100%" rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isPdF and !empty DocumetacaoMatriculaControle.caminhoPDFVerso}">
+								<otm:pdfView id="pdfVerso" data="#{DocumetacaoMatriculaControle.caminhoPDFVerso}" height="500px" />
+							</h:panelGroup>
+							<h:graphicImage rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isWord}" url="#{resource['/imagens/iconeArquivo/wordGrande.png']}" />
+							<h:graphicImage rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isExcel}" url="#{resource['/imagens/iconeArquivo/excelGrande.png']}" />
+							<h:graphicImage rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isTxt}" url="#{resource['/imagens/iconeArquivo/txtGrande.png']}" />
+							<h:graphicImage rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isOutros}" url="#{resource['/imagens/iconeArquivo/outrosGrande.png']}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+						<otm:commandButton id="dwl2" oncomplete="location.href='../../DownloadSV'" rendered="#{DocumetacaoMatriculaControle.documetacaoMatriculaVO.isPossuiArquivoVerso}" title="Download Arquivo" value="Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido}" styleClass="btn btn-success mr5" action="#{DocumetacaoMatriculaControle.realizarDownloadArquivo(DocumetacaoMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso)}" />
+						<otm:commandButton action="#{DocumetacaoMatriculaControle.adicionarArquivoDocumentacaoMatriculaVerso}" oncomplete="#{rich:component('panelImagemDocumentosEntreguesVerso')}.hide()" render="documetacaoMatriculaVO, tabMensagensAuxVerso, mensagemDocumentacao2, mensagemDetalhadaDocumentacao2" value="Confirmar" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info mr5" />
+						<otm:commandButton id="cancelarUploadArquivoVerso" title="#{msg_botoes.btn_cancelar}" action="#{DocumetacaoMatriculaControle.limparDocumentacaoMatriculaVerso}" oncomplete="#{rich:component('panelImagemDocumentosEntreguesVerso')}.hide();" render="form" value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger mr5" />
+					</h:panelGroup>
+					<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="tabMensagensAuxVerso">
+						<otm:mensagem bean="#{DocumetacaoMatriculaControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelUpload" zindex="2000" onshow="clickUpload('#formUplod')" shadowOpacity="false" width="450" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelUpload">
+						<rich:componentControl target="panelUpload" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUplod">
+				<h:panelGroup id="panelArquivoUpload" columns="1" width="100%" headerClass="subordinado" columnClasses="colunaCentralizada">
+					<h:panelGroup id="arquivoUpload2" layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_UploadArquivos_escolherArquivo}" />
+						<rich:fileUpload id="btnUpload" style="float: left;" listHeight="100" styleClass="btnUpload" listWidth="300" allowFlash="false" noDuplicate="true" fileUploadListener="#{DocumetacaoMatriculaControle.upLoadArquivo}" addLabel="Selecionar Arquivo" acceptedTypes="png, jpg, jpeg, JPEG, JPG, PNG, PDF, pdf" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{DocumetacaoMatriculaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+							<a4j:ajax event="uploadcomplete" render="formDocumentoGED,btnUpload, formImagem, formUplod, form" execute="form" oncomplete="#{DocumetacaoMatriculaControle.oncompleteModal}" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton id="cancelarUploadArquivo2" title="#{msg_botoes.btn_cancelar}" action="#{DocumetacaoMatriculaControle.limparDocumentacaoMatriculaVO}" oncomplete="#{rich:component('panelUpload')}.hide();" render="form" value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelUploadVerso" zindex="2000" onshow="clickUpload('#formUplodVerso')" shadowOpacity="false" width="450" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos} Verso" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelUploadVerso">
+						<rich:componentControl target="panelUploadVerso" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUplodVerso">
+				<h:panelGroup id="panelArquivoUploadVerso" columns="1" width="100%" headerClass="subordinado" columnClasses="colunaCentralizada">
+					<h:panelGroup id="arquivoUpload2Verso" layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_UploadArquivos_escolherArquivo}" />
+						<rich:fileUpload id="btnUploadVerso" listHeight="40" listWidth="270" noDuplicate="true" onsizerejected="LOL" fileUploadListener="#{DocumetacaoMatriculaControle.upLoadArquivoVerso}" addLabel="Selecionar Arquivo" acceptedTypes="png, jpg, jpeg, JPEG, JPG, PNG, PDF, pdf" maxFilesQuantity="1" addControlLabel="Selecionar Arquivo" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido 2 MB" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+							<a4j:ajax event="uploadcomplete" render="formImagemVerso,btnUploadVerso, panelImagemDocumentosEntreguesVerso, form, arquivoUpload2Verso" oncomplete="#{DocumetacaoMatriculaControle.oncompleteModal}" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton id="cancelarUploadArquivoVerso2" title="#{msg_botoes.btn_cancelar}" action="#{DocumetacaoMatriculaControle.limparDocumentacaoMatriculaVerso}" oncomplete="#{rich:component('panelUploadVerso')}.hide();" render="form" value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelUploadGED" zindex="2000" onshow="clickUpload('#formUplodGED')" shadowOpacity="false" width="450" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUplodGED">
+				<h:panelGroup id="panelArquivoUploadGED" columns="1" width="100%" headerClass="subordinado" columnClasses="colunaCentralizada">
+					<h:panelGroup id="arquivoUpload2" layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_UploadArquivos_escolherArquivo}" />
+						<rich:fileUpload id="btnUpload" style="float: left;" listHeight="100" styleClass="btnUpload" listWidth="300" allowFlash="false" noDuplicate="true" fileUploadListener="#{DocumetacaoMatriculaControle.upLoadArquivo}" addLabel="Selecionar Arquivo" acceptedTypes="png, jpg, jpeg, JPEG, JPG, PNG, PDF, pdf" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{DocumetacaoMatriculaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+							<a4j:ajax event="uploadcomplete" render="form,formUplodGED,  formDocumentoGED,btnUpload, panelImagemDocumentosEntregues" oncomplete="#{rich:component('panelUploadGED')}.hide();" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+						<otm:commandButton id="cancelarUploadArquivoGED" title="#{msg_botoes.btn_cancelar}" oncomplete="#{rich:component('panelUploadGED')}.hide();" render="form" value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger mr5" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelExcluir" shadowOpacity="true" width="220" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Excluir"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluir">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:outputText value="#{msg_aplic.prt_RenovarMatricula_confirmarExclusao}" styleClass="tituloCamposNegrito" />
+					<otm:spacer width="20px" />
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<a4j:commandLink render="form:documetacaoMatriculaVO, form:panelGridMensagens, form" image="#{resource['/imagens/botaoSim.png']}" oncomplete="#{rich:component('panelExcluir')}.hide()" action="#{DocumetacaoMatriculaControle.removerArquivoDocumentacao}" value="Excluir" styleClass="btn btn-danger">
+							<span class="#{msg_botoes.btn_icon_remover_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+							<f:setPropertyActionListener value="false" target="#{DocumetacaoMatriculaControle.arquivoGED}"></f:setPropertyActionListener>
+						</a4j:commandLink>
+						<otm:spacer width="5px" />
+						<otm:commandButton immediate="true" action="#{DocumetacaoMatriculaControle.cancelarExclusaoArquivoDocumentoEntregue}" render="form:documetacaoMatriculaVO, form:panelGridMensagens" oncomplete="#{rich:component('panelExcluir')}.hide()" image="#{resource['/imagens/botaoNao.png']}" value="Não Excluir" styleClass="btn btn-warning" icon="#{msg_botoes.btn_icon_cancelar_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelExcluirGed" shadowOpacity="true" width="220" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Excluir Arquivo Digitalizado GED"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluirGed">
+				<h:panelGroup columns="1" width="100%" columnClasses="colunaAlinhamento" styleClass="tabForm">
+					<h:outputText value="#{msg_aplic.prt_RenovarMatricula_confirmarExclusao}" styleClass="tituloCamposNegrito" />
+					<otm:spacer width="20px" />
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<a4j:commandLink render="form" image="#{resource['/imagens/botaoSim.png']}" oncomplete="#{rich:component('panelExcluirGed')}.hide()" action="#{DocumetacaoMatriculaControle.excluirDocumentoGed}" value="Excluir" styleClass="btn btn-danger">
+							<span class="#{msg_botoes.btn_icon_remover_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+							<f:setPropertyActionListener value="true" target="#{DocumetacaoMatriculaControle.arquivoGED}"></f:setPropertyActionListener>
+						</a4j:commandLink>
+						<otm:spacer width="5px" />
+						<otm:commandButton immediate="true" oncomplete="#{rich:component('panelExcluirGed')}.hide()" image="#{resource['/imagens/botaoNao.png']}" value="Não Excluir" styleClass="btn btn-warning" icon="#{msg_botoes.btn_icon_cancelar_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTipoDocumento" onshow="document.getElementById('formAluno:valorConsultaAluno').focus()" shadowOpacity="false" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_tipoDocumento}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink4" />
+					<rich:componentControl target="panelTipoDocumento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTipoDocumentoCons">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTipoDocumento" value="#{DocumetacaoMatriculaControle.campoConsultaTipoDocumento}">
+						<f:selectItems value="#{DocumetacaoMatriculaControle.tipoConsultaComboTipoDocumento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaTipoDocumento" size="30" styleClass="form-control campos" value="#{DocumetacaoMatriculaControle.valorConsultaTipoDocumento}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar3" render="formTipoDocumentoCons:mensagemConsultaTipoDocumento, formTipoDocumentoCons:resultadoConsultaTipoDocumento, formTipoDocumentoCons:scResultadoTipoDocumento, formTipoDocumentoCons" action="#{DocumetacaoMatriculaControle.consultarTipoDocumento}" styleClass="btn btn-default dark" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" image="#{resource['/imagens/botaoConsultar.png']}" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaTipoDocumento" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{DocumetacaoMatriculaControle.listaConsultaTipoDocumento}" rows="5" var="tipoDocumentoItens" rendered="#{!empty DocumetacaoMatriculaControle.listaConsultaTipoDocumento}">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoDocumento_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{DocumetacaoMatriculaControle.adicionarTipoDocumento}" render="formTipoDocumentoCons, formDocumentoGED" value="#{tipoDocumentoItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoDocumento_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{DocumetacaoMatriculaControle.adicionarTipoDocumento}" render="formTipoDocumentoCons, formDocumentoGED" value="#{tipoDocumentoItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoDocumento_identificadorGED}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{DocumetacaoMatriculaControle.adicionarTipoDocumento}" render="formTipoDocumentoCons, formDocumentoGED" value="#{tipoDocumentoItens.identificadorGED}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{DocumetacaoMatriculaControle.adicionarTipoDocumento}" render="formTipoDocumentoCons, formDocumentoGED" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTipoDocumentoCons:resultadoConsultaTipoDocumento" maxPages="10" id="scResultadoTipoDocumento" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTipoDocumento" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{DocumetacaoMatriculaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelSituacaoDocumento" shadowOpacity="true" maxWidth="750" maxHeight="250" autosized="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Situação Documento"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkSituacaoDocumento" />
+					<rich:componentControl target="panelSituacaoDocumento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formSituacaoDocumento">
+				<h:panelGroup layout="block" styleClass="col-md-12 pn title">
+					<h:outputText styleClass="tituloCampos" value="Escolha a situação do Documento a ser emitido o comprovante:" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ControleDocumentacaoAlunoRel_documentoEntregue}" />
+					<otm:selectBooleanCheckbox value="#{DebitoDocumentosAlunoRelControle.documentoEntregue}">
+						<a4j:ajax event="change" />
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ControleDocumentacaoAlunoRel_documentoPendente}" />
+					<otm:selectBooleanCheckbox value="#{DebitoDocumentosAlunoRelControle.documentoPendente}">
+						<a4j:ajax event="change" />
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ControleDocumentacaoAlunoRel_documentoPendenteAprovacao}" />
+					<otm:selectBooleanCheckbox value="#{DebitoDocumentosAlunoRelControle.documentoPendenteAprovacao}">
+						<a4j:ajax event="change" />
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ControleDocumentacaoAlunoRel_documentoEntregaIndeferida}" />
+					<otm:selectBooleanCheckbox value="#{DebitoDocumentosAlunoRelControle.documentoEntregaIndeferida}">
+						<a4j:ajax event="change" />
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="form" oncomplete="#{DebitoDocumentosAlunoRelControle.download};#{rich:component('panelSituacaoDocumento')}.hide();" id="imprimirPDF" action="#{DocumetacaoMatriculaControle.emitirRelatorio}" value="Gerar Relatório" icon="#{msg_botoes.btn_icon_gerar_relatorio_embutido}" styleClass="btn btn-danger" accesskey="2" image="#{resource['/imagens/botaoGerarRelatorioPdf.png']}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelIncluirArquivoVerso" zindex="2000" shadowOpacity="false" width="400" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_DocumetacaoMatricula_RealizarUploadArquivoVerso}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formIncluirArquivoVerso">
+				<h:panelGroup id="panelArquivoIncluirVerso" columns="1" width="100%" headerClass="subordinado" columnClasses="colunaCentralizada">
+					<h:panelGroup>
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_DocumetacaoMatricula_MensagemRealizarUploadArquivoVerso}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton id="incluirArquivoVerso" title="#{msg_botoes.btn_sim}" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Sim" styleClass="btn btn-info mr5" oncomplete="#{rich:component('panelIncluirArquivoVerso')}.hide();#{rich:component('panelUploadVerso')}.show();" render="formImagemVerso" image="#{resource['imagens/botaoSim.png']}" />
+						<otm:commandButton id="naoIncluirArquivoVerso" title="#{msg_botoes.btn_nao}" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Não" styleClass="btn btn-danger" oncomplete="#{rich:component('panelIncluirArquivoVerso')}.hide();" render="form" image="#{resource['imagens/botaoNao.png']}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" shadowOpacity="true" width="800" height="800" onshow="document.getElementById('formResponsavel:valorConsultaResponsavel').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarFuncionario}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkResponsavel" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formResponsavel">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaResponsavel" value="#{DocumetacaoMatriculaControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{DocumetacaoMatriculaControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaResponsavel" size="20" styleClass="form-control campos" value="#{DocumetacaoMatriculaControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarResponsavel" disabled="#{DocumetacaoMatriculaControle.documentacaoGED.codigo ne 0}" action="#{DocumetacaoMatriculaControle.consultarFuncionario}" value="consultar" icon="#{msg_botoes.btn_icon_lupa_embutido}" image="#{resource['/imagens/botaoConsultar.png']}" title="#{msg.msg_consultar_dados}" accesskey="4" styleClass="btn btn-default" render="formResponsavel" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaResponsavel" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{DocumetacaoMatriculaControle.listaConsultaFuncionarioDocumentoGED}" rows="7" var="responsavel">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{responsavel.pessoa.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{responsavel.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="CPF" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{responsavel.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:selectBooleanCheckbox value="#{responsavel.selecionado}" styleClass="campos">
+							<a4j:ajax event="click" execute="@this" />
+						</otm:selectBooleanCheckbox>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formResponsavel:resultadoConsultaResponsavel" maxPages="10" id="scResultadoResponsavel" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<otm:commandButton action="#{DocumetacaoMatriculaControle.adicionarFuncionario}" disabled="#{DocumetacaoMatriculaControle.documentacaoGED.codigo ne 0}" render="formResponsavel:groupFuncionarioAssinaturaDigital, formResponsavel" styleClass="btn btn-primary" value="Adicionar" icon="#{msg_botoes.btn_icon_adicionar_embutido}" title="Adicionar" />
+				</h:panelGroup>
+				<h:panelGroup id="panelGridFuncionario">
+					<h:panelGroup styleClass="mt10" id="groupFuncionarioAssinaturaDigital">
+						<h:outputText styleClass="tituloCampos" value="Funcionário Assinar Digitalmente" rendered="#{!empty DocumetacaoMatriculaControle.documentacaoGED.arquivo.listaFuncionarioAssinarDigitalmenteVOs}" />
+						<rich:dataTable id="items" width="100%" style="margin-top:7px;" headerClass="consulta" columnClasses="colunaAlinhamento" rendered="#{!empty DocumetacaoMatriculaControle.documentacaoGED.arquivo.listaFuncionarioAssinarDigitalmenteVOs}" value="#{DocumetacaoMatriculaControle.documentacaoGED.arquivo.listaFuncionarioAssinarDigitalmenteVOs}" rows="5" var="funcionarioItens">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Matrícula / Nome" />
+								</f:facet>
+								<h:outputText value="#{funcionarioItens.matricula} - #{funcionarioItens.pessoa.nome}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon action="#{DocumetacaoMatriculaControle.removerFuncionario}" render="form:groupFuncionarioAssinaturaDigital, formResponsavel:items" icon="#{msg_botoes.btn_icon_remover} iconePequeno" image="#{resource['/imagens/botaoRemover.png']}" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller align="center" for="formResponsavel:items" maxPages="5" id="scResultadoResponsavelItems" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGrid id="mensagemConsultaResponsavel" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGrid columns="1" width="100%">
+						<h:outputText styleClass="mensagem" value="#{DocumetacaoMatriculaControle.mensagem}" />
+						<h:outputText styleClass="mensagemDetalhada" value="#{DocumetacaoMatriculaControle.mensagemDetalhada}" />
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+		
+		
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelPreview" zindex="2000" shadowOpacity="false" width="400" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="Visualizar Arquivo" />
+				</h:panelGroup>
+				
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelPreview" />
+					<rich:componentControl target="panelPreview" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPreview">
+				<h:panelGroup id="panelPreviewGeral" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{DocumetacaoMatriculaControle.caminhoPreviewTipoPdf}">
+						<otm2:pdfView2 bean="#{DocumetacaoMatriculaControle}" height="calc(100vh - 100px)" data="#{DocumetacaoMatriculaControle.caminhoPreview}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{!DocumetacaoMatriculaControle.caminhoPreviewTipoPdf}">
+						<h:graphicImage url="#{DocumetacaoMatriculaControle.caminhoPreview}" width="98%" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+						<otm:commandButton id="fecharpanelPreview" title="#{msg_botoes.btn_fechar}" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" styleClass="btn btn-info" oncomplete="#{rich:component('panelPreview')}.hide();" />						
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

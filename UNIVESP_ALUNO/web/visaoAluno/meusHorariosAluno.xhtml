@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets"  xmlns:p="http://primefaces.org/ui" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAluno/template/visaoAluno.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Cronograma de Aulas" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<rich:popupPanel   styleClass="modalMaximizado50" id="panelCalendario" onhide="consultarHorarioAluno();" width="230" height="260" autosized="false">
+			<f:facet name="header">
+				<h:outputText value="Selecione Uma Data:" />
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkpanelCalendario" />
+					<rich:componentControl target="panelCalendario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="calendario">
+				<h:panelGroup layout="block" styleClass="row">
+					<rich:calendar id="valorDataInicio" popup="false" datePattern="dd/MM/yyyy" value="#{HorarioAulaAlunoControle.dataBaseHorarioAula}" >
+						<a4j:ajax event="change" oncomplete="#{rich:component('panelCalendario')}.hide();" render="calendario, turnoEADVOs, turnoVOs, form" />
+					</rich:calendar>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<h:form id="form">
+<!-- 			<h:panelGroup id="imprimirPDF2" style="float:right; position:relative; top:-5px"> -->
+<!-- 				<p:commandButton rendered="#{!empty HorarioAulaAlunoControle.horarioAlunoTurnoVOs or !empty HorarioAulaAlunoControle.programacaoTutoriaOnlineVOs}" render="form" oncomplete="#{HorarioAulaAlunoControle.download}" action="#{HorarioAulaAlunoControle.imprimirPDF}" value="Imprimir Relatório" title="Imprimir Relatório" accesskey="2" styleClass="botoes" image="#{resource['imagens/botaoImprimirHorario.png']}" /> -->
+<!-- 			</h:panelGroup> -->
+			<h:panelGroup layout="block" styleClass="row" id="turnoEADVOs" rendered="#{!empty HorarioAulaAlunoControle.programacaoTutoriaOnlineVOs}">
+				<<p:dataTable> id="cronogramaAulaEad" style="background-color: transparent;position:relative; top:0; left:0; width:100%" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{HorarioAulaAlunoControle.programacaoTutoriaOnlineVOs}" var="programacaoTutoriaOnlineVOItens">
+					<f:facet name="header">
+						<rich:columnGroup>
+							<rich:column colspan="4">
+								<h:outputText value="#{msg_aplic.prt_MeusHorarios_agendaDisciplinasEad}" />
+							</rich:column>
+							<rich:column breakRowBefore="true">
+								<h:outputText value="#{msg_aplic.prt_MeusHorarios_dataInicioModulo}" />
+							</rich:column>
+							<rich:column>
+								<h:outputText value="#{msg_aplic.prt_MeusHorarios_dataFimModulo}" />
+							</rich:column>
+							<rich:column>
+								<h:outputText value="#{msg_aplic.prt_MeusHorarios_disciplina}" />
+							</rich:column>
+							<rich:column>
+								<h:outputText value="#{msg_aplic.prt_MeusHorarios_LocalRealizacao}" />
+							</rich:column>
+						</rich:columnGroup>
+					</f:facet>
+					<rich:column width="20%">
+						<h:outputText value="#{programacaoTutoriaOnlineVOItens.dataInicioAula}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputText>
+					</rich:column>
+					<rich:column width="20%">
+						<h:outputText value="#{programacaoTutoriaOnlineVOItens.dataTerminoAula}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputText>
+					</rich:column>
+					<rich:column width="30%">
+						<h:outputText value="#{programacaoTutoriaOnlineVOItens.disciplinaVO.nome}" />
+					</rich:column>
+					<rich:column width="30%">
+						<h:outputText value="Ambiente Virtual de Aprendizagem" />
+					</rich:column>
+				</<p:dataTable>>
+				<otm:spacer height="5px" />
+			</h:panelGroup>
+
+			<a4j:jsFunction name="consultarHorarioAluno" action="#{HorarioAulaAlunoControle.consultarHorarioAulaAluno}" render="form:turnoVOs, imprimirPDF2" />
+			<h:panelGroup id="turnoVOs" columns="1" columnClasses="colunaCentralizada" width="100%">
+				<h:outputText rendered="#{!empty HorarioAulaAlunoControle.horarioAlunoTurnoVOs}" styleClass="tituloCampos" value="* Passe o mouse sobre a aula para visualizar mais detalhes." />
+				<h:panelGroup rendered="#{empty HorarioAulaAlunoControle.horarioAlunoTurnoVOs}" headerClass="consulta" columns="1" width="100%">
+					<h:panelGroup layout="block" style="width:100%;float:left">
+						<h:panelGroup layout="block" style="width:100%;float:left;padding-bottom:12px; border-bottom: 1px solid #ddd">
+							<h:outputText value="#{msg_aplic.prt_MeusHorarios_agendaDisciplinasPresenciais}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:20%;float:left;padding-top:12px">
+							<otm:commandButton styleClass="btn btn-success" render="turnoVOs, imprimirPDF2" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" action="#{HorarioAulaAlunoControle.visualizarSemanaAnterior}" image="#{resource['/imagens/botaoSemanaAnterior.png']}" icon="#{msg_botoes.btn_icon_anterior2}" value="Semana Anterior" />
+							<otm:commandButton styleClass="btn btn-success" render="form, turnoVOs, imprimirPDF2" rendered="#{HorarioAulaAlunoControle.calendarioMensal}" action="#{HorarioAulaAlunoControle.visualizarSemanaAnterior}" image="#{resource['/imagens/botaoMesAnterior.png']}" icon="#{msg_botoes.btn_icon_anterior2}" value="Mês Anterior" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:60%;float:left;vertical-align:middle;text-align:center;padding-top:12px">
+							<h:outputText styleClass="mensagemDetalhada" value="#{msg.msg_sem_horario_aula_semana}" />
+							<h:panelGroup layout="block" style="vertical-align:middle;">
+								<h:outputText styleClass="tituloCampos" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" value="#{HorarioAulaAlunoControle.dataInicio}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+								<h:outputText styleClass="tituloCampos" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" value=" #{msg_aplic.prt_a} " />
+								<h:outputText styleClass="tituloCampos" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" value="#{HorarioAulaAlunoControle.dataTermino}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+								<h:outputText styleClass="tituloCampos" rendered="#{HorarioAulaAlunoControle.calendarioMensal}" value="#{HorarioAulaAlunoControle.mesAnoApresentar}">
+								</h:outputText>
+								<otm:commandIcon icon="#{msg_botoes.btn_icon_calendario_embutido}" styleIcon="font-size: 15px" tooltip="Selecionar outra data" id="alterarSemana2" oncomplete="#{rich:component('panelCalendario')}.show();" style="margin-left:5px;position:relative; top:5" image="#{resource['/imagens/iconeCalendario.png']}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:20%;float:right;padding-top:12px">
+							<otm:commandButton styleClass="btn btn-success" render="turnoVOs, imprimirPDF2" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" action="#{HorarioAulaAlunoControle.visualizarProximaSemana}" image="#{resource['/imagens/botaoProximaSemana.png']}" icon="#{msg_botoes.btn_icon_proximo2}" value="Próxima Semana" />
+							<otm:commandButton styleClass="btn btn-success" render="form, turnoVOs, imprimirPDF2" rendered="#{HorarioAulaAlunoControle.calendarioMensal}" action="#{HorarioAulaAlunoControle.visualizarProximaSemana}" image="#{resource['/imagens/botaoProximaMes.png']}" icon="#{msg_botoes.btn_icon_proximo2}" value="Próximo Mês" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<<p:dataTable> rendered="#{!empty HorarioAulaAlunoControle.horarioAlunoTurnoVOs}" cellpadding="0" cellspacing="0" style="border:none; width:100%;" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento semBorda" value="#{HorarioAulaAlunoControle.horarioAlunoTurnoVOs}" var="turnoItens">
+					<rich:column style="border:none">
+						<<p:dataTable> headerClass="consulta" style="width:100%;" border="0" id="horarioAulaTurnoSemana" cellpadding="0" cellspacing="0" value="#{turnoItens.horarioAlunoTurnoVOs}" var="turnoSemana">
+							<rich:column>
+								<f:facet name="header">
+									<h:panelGroup layout="block" style="width:100%;float:left">
+										<h:panelGroup layout="block" style="width:100%;float:left;padding-bottom:12px; border-bottom: 1px solid #ddd">
+											<h:outputText value="#{msg_aplic.prt_MeusHorarios_agendaDisciplinasPresenciais}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" style="width:20%;float:left;padding-top:12px">
+											<otm:commandButton styleClass="btn btn-success" icon="#{msg_botoes.btn_icon_anterior2}" render="turnoVOs, imprimirPDF2" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" action="#{HorarioAulaAlunoControle.visualizarSemanaAnterior}" image="#{resource['/imagens/botaoSemanaAnterior.png']}" value="Semana Anterior" />
+											<!-- 											<p:commandButton styleClass="botoes" style="padding:3px;font-size:10px" render="turnoVOs, imprimirPDF2" rendered="#{HorarioAulaAlunoControle.calendarioMensal}" action="#{HorarioAulaAlunoControle.visualizarSemanaAnterior}" image="#{resource['/imagens/botaoMesAnterior.png']}" value="&lt;&lt; Mês Anterior" /> -->
+										</h:panelGroup>
+										<h:panelGroup layout="block" style="width:60%;float:left;vertical-align:middle;text-align:center;padding-top:12px">
+											<h:outputText value="#{turnoItens.turno.nome}" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" />
+											<h:panelGroup layout="block" style="vertical-align:middle;">
+												<h:outputText rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" value="#{turnoItens.dataInicio}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+												<h:outputText rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" value=" #{msg_aplic.prt_a} " />
+												<h:outputText rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" value="#{turnoItens.dataTermino}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+
+												<!-- 												<h:outputText rendered="#{HorarioAulaAlunoControle.calendarioMensal}" value="#{turnoItens.mesAnoApresentar}"> -->
+
+												<!-- 												</h:outputText> -->
+
+												<otm:commandIcon icon="#{msg_botoes.btn_icon_calendario_embutido}" styleIcon="font-size: 15px" tooltip="Selecionar outra data" id="alterarSemana" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" oncomplete="#{rich:component('panelCalendario')}.show();" style="margin-left:5px;position:relative; top:5" image="#{resource['/imagens/iconeCalendario.png']}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" style="width:20%;float:right;padding-top:12px">
+											<otm:commandButton styleClass="btn btn-success" icon="#{msg_botoes.btn_icon_proximo2}" render="turnoVOs, imprimirPDF2" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}" action="#{HorarioAulaAlunoControle.visualizarProximaSemana}" image="#{resource['/imagens/botaoProximaSemana.png']}" value="Próxima Semana" />
+											<!-- 											<p:commandButton styleClass="botoes" style="padding:3px;font-size:10px" render="turnoVOs, imprimirPDF2" rendered="#{HorarioAulaAlunoControle.calendarioMensal}" action="#{HorarioAulaAlunoControle.visualizarProximaSemana}" image="#{resource['/imagens/botaoProximaMes.png']}" value="Próximo Mês &gt;&gt;" /> -->
+										</h:panelGroup>
+									</h:panelGroup>
+								</f:facet>
+								<<p:dataTable> width="100%" style="width:100%;" headerClass="consulta" id="horarioAulaTurno" value="#{turnoSemana.horarioAlunoTurnoNumeroAulaVOs}" var="horarioAula" rendered="#{!HorarioAulaAlunoControle.calendarioMensal}">
+									<f:facet name="header">
+										<rich:columnGroup>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarSegunda and turnoItens.possuiAulaSegunda}">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_segunda}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataSegunda}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarTerca and turnoItens.possuiAulaTerca}">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_terca}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataTerca}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarQuarta and turnoItens.possuiAulaQuarta}">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_quarta}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataQuarta}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarQuinta and turnoItens.possuiAulaQuinta}">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_quinta}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataQuinta}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarSexta and turnoItens.possuiAulaSexta}">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_sexta}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataSexta}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarSabado and turnoItens.possuiAulaSabado}">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_sabado}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataSabado}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarDomingo and turnoItens.possuiAulaDomingo}">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_domingo}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataDomingo}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+										</rich:columnGroup>
+									</f:facet>
+
+									<rich:column styleClass="#{horarioAula.backSegunda}" rendered="#{turnoItens.apresentarSegunda and turnoItens.possuiAulaSegunda}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelSegunda" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaSegundaApresentar}" value="#{horarioAula.disciplinaSegundaApresentar} " />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreSegunda and turnoItens.feriadoSegunda.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreSegunda and turnoItens.feriadoSegunda.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:8pt" styleClass="tituloCampos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno and !empty horarioAula.horarioInicioSegunda}" value="#{horarioAula.horarioInicioSegunda} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoSegunda}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelSegunda" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoSegunda.descricao}" rendered="#{horarioAula.existeHorarioLivreSegunda and turnoItens.feriadoSegunda.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaSegundaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSegunda}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaSegundaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSegunda}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorSegundaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSegunda and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreSegunda and turnoItens.feriadoSegunda.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backTerca}" rendered="#{turnoItens.apresentarTerca and turnoItens.possuiAulaTerca}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelTerca" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaTercaApresentar}" value="#{horarioAula.disciplinaTercaApresentar} " />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreTerca and turnoItens.feriadoTerca.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreTerca and turnoItens.feriadoTerca.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:8pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno and !empty horarioAula.horarioInicioTerca}" value="#{horarioAula.horarioInicioTerca} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoTerca}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelTerca" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoTerca.descricao}" rendered="#{horarioAula.existeHorarioLivreTerca and turnoItens.feriadoTerca.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaTercaApresentar}" rendered="#{!horarioAula.existeHorarioLivreTerca}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaTercaApresentar}" rendered="#{!horarioAula.existeHorarioLivreTerca}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorTercaApresentar}" rendered="#{!horarioAula.existeHorarioLivreTerca and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreTerca and turnoItens.feriadoTerca.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backQuarta}" rendered="#{turnoItens.apresentarQuarta and turnoItens.possuiAulaQuarta}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelQuarta" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaQuartaApresentar}" value="#{horarioAula.disciplinaQuartaApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreQuarta and turnoItens.feriadoQuarta.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreQuarta and turnoItens.feriadoQuarta.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:8pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno and !empty horarioAula.horarioInicioQuarta}" value="#{horarioAula.horarioInicioQuarta} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoQuarta} " />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelQuarta" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoQuarta.descricao}" rendered="#{horarioAula.existeHorarioLivreQuarta and turnoItens.feriadoQuarta.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaQuartaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuarta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaQuartaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuarta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorQuartaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuarta and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreQuarta and turnoItens.feriadoQuarta.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backQuinta}" rendered="#{turnoItens.apresentarQuinta and turnoItens.possuiAulaQuinta}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelQuinta" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaQuintaApresentar}" value="#{horarioAula.disciplinaQuintaApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreQuinta and turnoItens.feriadoQuinta.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreQuinta and turnoItens.feriadoQuinta.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:8pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno  and !empty horarioAula.horarioInicioQuinta}" value="#{horarioAula.horarioInicioQuinta} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoQuinta}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelQuinta" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoQuinta.descricao}" rendered="#{horarioAula.existeHorarioLivreQuinta and turnoItens.feriadoQuinta.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaQuintaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuinta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaQuintaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuinta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorQuintaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuinta and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreQuinta and turnoItens.feriadoQuinta.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backSexta}" rendered="#{turnoItens.apresentarSexta and turnoItens.possuiAulaSexta}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelSexta" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaSextaApresentar}" value="#{horarioAula.disciplinaSextaApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreSexta and turnoItens.feriadoSexta.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreSexta and turnoItens.feriadoSexta.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:8pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno   and !empty horarioAula.horarioInicioSexta}" value="#{horarioAula.horarioInicioSexta} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoSexta} " />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelSexta" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoSexta.descricao}" rendered="#{horarioAula.existeHorarioLivreSexta and turnoItens.feriadoSexta.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaSextaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSexta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaSextaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSexta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorSextaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSexta and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreSexta and turnoItens.feriadoSexta.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backSabado}" rendered="#{turnoItens.apresentarSabado and turnoItens.possuiAulaSabado}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelSabado" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaSabadoApresentar}" value="#{horarioAula.disciplinaSabadoApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreSabado and turnoItens.feriadoSabado.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreSabado and turnoItens.feriadoSabado.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:8pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno  and !empty horarioAula.horarioInicioSabado}" value="#{horarioAula.horarioInicioSabado} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoSabado} " />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelSabado" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoSabado.descricao}" rendered="#{horarioAula.existeHorarioLivreSabado and turnoItens.feriadoSabado.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaSabadoApresentar}" rendered="#{!horarioAula.existeHorarioLivreSabado}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaSabadoApresentar}" rendered="#{!horarioAula.existeHorarioLivreSabado}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorSabadoApresentar}" rendered="#{!horarioAula.existeHorarioLivreSabado and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreSabado and turnoItens.feriadoSabado.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backDomingo}" rendered="#{turnoItens.apresentarDomingo and turnoItens.possuiAulaDomingo}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelDomingo" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaDomingoApresentar}" value="#{horarioAula.disciplinaDomingoApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreDomingo and turnoItens.feriadoDomingo.codigo eq 0}" value=" " />
+											<h:outputText id="feriadoDomSemanal" styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreDomingo and turnoItens.feriadoDomingo.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:8pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno and !empty horarioAula.horarioInicioDomingo}" value="#{horarioAula.horarioInicioDomingo} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoDomingo} " />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelDomingo" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoDomingo.descricao}" rendered="#{horarioAula.existeHorarioLivreDomingo and turnoItens.feriadoDomingo.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaDomingoApresentar}" rendered="#{!horarioAula.existeHorarioLivreDomingo}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaDomingoApresentar}" rendered="#{!horarioAula.existeHorarioLivreDomingo}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorDomingoApresentar}" rendered="#{!horarioAula.existeHorarioLivreDomingo and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreDomingo and turnoItens.feriadoDomingo.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+								</<p:dataTable>>
+
+
+								<<p:dataTable> width="100%" style="width:100%;" headerClass="consulta" id="horarioAulaTurnoPos" value="#{turnoSemana.horarioAlunoTurnoNumeroAulaVOs}" var="horarioAula" rendered="#{HorarioAulaAlunoControle.calendarioMensal} ">
+									<f:facet name="header">
+										<rich:columnGroup>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarSegunda and turnoItens.possuiAulaSegunda} ">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_segunda}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataSegunda}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarTerca and turnoItens.possuiAulaTerca} ">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_terca}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataTerca}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarQuarta and turnoItens.possuiAulaQuarta} ">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_quarta}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataQuarta}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarQuinta and turnoItens.possuiAulaQuinta} ">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_quinta}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataQuinta}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarSexta and turnoItens.possuiAulaSexta} ">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_sexta}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataSexta}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarSabado and turnoItens.possuiAulaSabado} ">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_sabado}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataSabado}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+											<rich:column styleClass="consulta" style="padding:8px 0px; width:14.28%" rendered="#{turnoItens.apresentarDomingo and turnoItens.possuiAulaDomingo} ">
+												<h:panelGroup layout="block" style="width:100%">
+													<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_domingo}" />
+												</h:panelGroup>
+												<h:outputText value="#{turnoSemana.dataDomingo}">
+													<f:convertDateTime pattern="dd/MM/yyyy" />
+												</h:outputText>
+											</rich:column>
+										</rich:columnGroup>
+									</f:facet>
+
+									<rich:column styleClass="#{horarioAula.backSegunda}" rendered="#{turnoItens.apresentarSegunda and turnoItens.possuiAulaSegunda}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelSegundaPos" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaSegundaApresentar}" value="#{horarioAula.disciplinaSegundaApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreSegunda and turnoItens.feriadoSegunda.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreSegunda and turnoItens.feriadoSegunda.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:7pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno and !empty horarioAula.horarioInicioSegunda}" value="#{horarioAula.horarioInicioSegunda} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoSegunda}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelSegundaPos" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoSegunda.descricao}" rendered="#{horarioAula.existeHorarioLivreSegunda and turnoItens.feriadoSegunda.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaSegundaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSegunda}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaSegundaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSegunda}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorSegundaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSegunda and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreSegunda and turnoItens.feriadoSegunda.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backTerca}" rendered="#{turnoItens.apresentarTerca and turnoItens.possuiAulaTerca}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelTercaPos" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaTercaApresentar}" value="#{horarioAula.disciplinaTercaApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreTerca and turnoItens.feriadoTerca.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreTerca and turnoItens.feriadoTerca.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:7pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno and !empty horarioAula.horarioInicioTerca}" value="#{horarioAula.horarioInicioTerca} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoTerca}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelTercaPos" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoTerca.descricao}" rendered="#{horarioAula.existeHorarioLivreTerca and turnoItens.feriadoTerca.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaTercaApresentar}" rendered="#{!horarioAula.existeHorarioLivreTerca}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaTercaApresentar}" rendered="#{!horarioAula.existeHorarioLivreTerca}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorTercaApresentar}" rendered="#{!horarioAula.existeHorarioLivreTerca and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreTerca and turnoItens.feriadoTerca.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backQuarta}" rendered="#{turnoItens.apresentarQuarta and turnoItens.possuiAulaQuarta}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelQuartaPos" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaQuartaApresentar}" value="#{horarioAula.disciplinaQuartaApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreQuarta and turnoItens.feriadoQuarta.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreQuarta and turnoItens.feriadoQuarta.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:7pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno and !empty horarioAula.horarioInicioQuarta}" value="#{horarioAula.horarioInicioQuarta} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoQuarta}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelQuartaPos" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoQuarta.descricao}" rendered="#{horarioAula.existeHorarioLivreQuarta and turnoItens.feriadoQuarta.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaQuartaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuarta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaQuartaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuarta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorQuartaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuarta and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreQuarta and turnoItens.feriadoQuarta.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backQuinta}" rendered="#{turnoItens.apresentarQuinta and turnoItens.possuiAulaQuinta}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelQuintaPos" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaQuintaApresentar}" value="#{horarioAula.disciplinaQuintaApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreQuinta and turnoItens.feriadoQuinta.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreQuinta and turnoItens.feriadoQuinta.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:7pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno  and !empty horarioAula.horarioInicioQuinta}" value="#{horarioAula.horarioInicioQuinta} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoQuinta}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelQuintaPos" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoQuinta.descricao}" rendered="#{horarioAula.existeHorarioLivreQuinta and turnoItens.feriadoQuinta.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaQuintaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuinta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaQuintaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuinta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorQuintaApresentar}" rendered="#{!horarioAula.existeHorarioLivreQuinta and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreQuinta and turnoItens.feriadoQuinta.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backSexta}" rendered="#{turnoItens.apresentarSexta and turnoItens.possuiAulaSexta}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelSextaPos" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaSextaApresentar}" value="#{horarioAula.disciplinaSextaApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreSexta and turnoItens.feriadoSexta.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreSexta and turnoItens.feriadoSexta.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:7pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno   and !empty horarioAula.horarioInicioSexta}" value="#{horarioAula.horarioInicioSexta} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoSexta}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelSextaPos" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoSexta.descricao}" rendered="#{horarioAula.existeHorarioLivreSexta and turnoItens.feriadoSexta.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaSextaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSexta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaSextaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSexta}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorSextaApresentar}" rendered="#{!horarioAula.existeHorarioLivreSexta and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreSexta and turnoItens.feriadoSexta.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backSabado}" rendered="#{turnoItens.apresentarSabado and turnoItens.possuiAulaSabado}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelSabadoPos" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaSabadoApresentar}" value="#{horarioAula.disciplinaSabadoApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreSabado and turnoItens.feriadoSabado.codigo eq 0}" value=" " />
+											<h:outputText styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreSabado and turnoItens.feriadoSabado.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:7pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno  and !empty horarioAula.horarioInicioSabado}" value="#{horarioAula.horarioInicioSabado} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoSabado}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelSabadoPos" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoSabado.descricao}" rendered="#{horarioAula.existeHorarioLivreSabado and turnoItens.feriadoSabado.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaSabadoApresentar}" rendered="#{!horarioAula.existeHorarioLivreSabado}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaSabadoApresentar}" rendered="#{!horarioAula.existeHorarioLivreSabado}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorSabadoApresentar}" rendered="#{!horarioAula.existeHorarioLivreSabado and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreSabado and turnoItens.feriadoSabado.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+									<rich:column styleClass="#{horarioAula.backDomingo}" rendered="#{turnoItens.apresentarDomingo and turnoItens.possuiAulaDomingo}" style="vertical-align:center; width:14.28%">
+										<h:panelGroup id="panelDomingoPos" cellpadding="0" cellspacing="0" columns="1" columnClasses="colunaCentralizada" width="100%">
+											<h:outputText styleClass="tituloCampos" rendered="#{!empty horarioAula.disciplinaDomingoApresentar}" value="#{horarioAula.disciplinaDomingoApresentar}" />
+											<h:outputText styleClass="horarioLivre" rendered="#{horarioAula.existeHorarioLivreDomingo and turnoItens.feriadoDomingo.codigo eq 0}" value=" " />
+											<h:outputText id="feriadoDomSemanalPos" styleClass="horarioFeriado" rendered="#{horarioAula.existeHorarioLivreDomingo and turnoItens.feriadoDomingo.codigo > 0}" value="Feriado" />
+											<h:outputText style="font-size:7pt" styleClass="tituloCamposReduzidos" rendered="#{!turnoItens.turno.naoApresentarHorarioVisaoAluno and !empty horarioAula.horarioInicioDomingo}" value="#{horarioAula.horarioInicioDomingo} #{msg_aplic.prt_a} #{horarioAula.horarioTerminoDomingo}" />
+										</h:panelGroup>
+										<a4j:region>
+											<rich:tooltip target="panelDomingoPos" layout="block" direction="topLeft" mode="client" horizontalOffset="0" verticalOffset="0">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{turnoItens.feriadoDomingo.descricao}" rendered="#{horarioAula.existeHorarioLivreDomingo and turnoItens.feriadoDomingo.codigo > 0}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}: #{horarioAula.turmaDomingoApresentar}" rendered="#{!horarioAula.existeHorarioLivreDomingo}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_SalaLocalAula_sala}: #{horarioAula.salaDomingoApresentar}" rendered="#{!horarioAula.existeHorarioLivreDomingo}" />
+													<h:outputText style="white-space: nowrap" styleClass="tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}: #{horarioAula.professorDomingoApresentar}" rendered="#{!horarioAula.existeHorarioLivreDomingo and !turnoItens.naoApresentarProfessorVisaoAluno}" />
+													<h:outputText styleClass="tituloCampos" rendered="#{horarioAula.existeHorarioLivreDomingo and turnoItens.feriadoDomingo.codigo eq 0}" value="Horário Livre" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</a4j:region>
+									</rich:column>
+								</<p:dataTable>>
+							</rich:column>
+						</<p:dataTable>>
+					</rich:column>
+				</<p:dataTable>>
+				<h:panelGroup layout="block" styleClass="row" rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.codigo > 0 and HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo ne 'IN' }" width="60%">
+					<h:panelGroup layout="block" styleClass="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN' ? 'col-md-2' : 'col-md-6'}">
+						<h:outputText styleClass="tituloCampos" value="Período Letivo" />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataInicioPeriodoLetivo}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN' ? 'col-md-2' : 'col-md-6'}">
+						<h:outputText styleClass="tituloCampos" value=" até " />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataFimPeriodoLetivo}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}">
+						<h:outputText rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}" styleClass="tituloCampos" value="#{msg_aplic.prt_ProcessoMatricula_periodoLetivoPrimeiroBimestre }" />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataInicioPeriodoLetivoPrimeiroBimestre}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}">
+						<h:outputText styleClass="tituloCampos" value=" até " />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataFimPeriodoLetivoPrimeiroBimestre}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}">
+						<h:outputText rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}" styleClass="tituloCampos" value="#{msg_aplic.prt_ProcessoMatricula_periodoLetivoPrimeiroBimestre }" />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataInicioPeriodoLetivoSegundoBimestre}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}">
+						<h:outputText styleClass="tituloCampos" value=" até " />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataFinalPeriodoLetivoSegundoBimestre}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}">
+						<h:outputText rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}" styleClass="tituloCampos" value="#{msg_aplic.prt_ProcessoMatricula_periodoLetivoPrimeiroBimestre }" />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataInicioPeriodoLetivoTerceiroBimestre}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}">
+						<h:outputText styleClass="tituloCampos" value=" até " />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataFinalPeriodoLetivoTerceiroBimestre}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}">
+						<h:outputText rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}" styleClass="tituloCampos" value="#{msg_aplic.prt_ProcessoMatricula_periodoLetivoPrimeiroBimestre }" />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataInicioPeriodoLetivoQuartoBimestre}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.tipoPeriodoLetivo and 'AN'}">
+						<h:outputText styleClass="tituloCampos" value=" até " />
+						<h:inputText size="10" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HorarioAulaAlunoControle.periodoLetivoAtivoUnidadeEnsinoCursoVO.dataFinalPeriodoLetivoQuartoBimestre}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior" rendered="#{!empty HorarioAulaAlunoControle.horarioAlunoTurnoVOs or !empty HorarioAulaAlunoControle.programacaoTutoriaOnlineVOs}">
+					<otm:commandButton id="imprimirPDF" rendered="#{!empty HorarioAulaAlunoControle.horarioAlunoTurnoVOs or !empty HorarioAulaAlunoControle.programacaoTutoriaOnlineVOs}" render="form" oncomplete="#{HorarioAulaAlunoControle.download}" action="#{HorarioAulaAlunoControle.imprimirPDF}" value="Imprimir Relatório" icon="#{msg_botoes.btn_icon_imprimir_embutido}" title="Imprimir Relatório" accesskey="2" styleClass="btn btn-primary" image="#{resource['imagens/botaoImprimirHorario.png']}" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

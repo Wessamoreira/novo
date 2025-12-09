@@ -1,0 +1,1 @@
+alter table if exists personalizacaomensagemautomatica add column if not exists enviaremail boolean default true;

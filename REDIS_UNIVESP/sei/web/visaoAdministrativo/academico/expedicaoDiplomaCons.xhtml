@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br"> <h:head>
+</h:head> <ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ExpedicaoDiploma_tituloForm}" />
+	</ui:define>
+	<ui:define name="ajuda">
+		<otm:ajuda rendered="#{LoginControle.existeArtefatoAjuda}" dir="#{LoginControle.nomeTelaAtualTratado}"></otm:ajuda>
+		<h:form id="formRegra">
+			<a4j:commandButton action="#{RegraEmissaoCertificadoDiplomaControle.consultarTodasRegrasEmissao}" rendered="#{ExpedicaoDiplomaControle.permitirExibirRegraEmissao}" style="float:right; " title="Regra de Emissão" value="#{msg_botoes.btn_editar}" image="#{resource['imagens/botaoConfiguracaoGeralSistemaRed.png']}" oncomplete="#{rich:component('panelRegraEmissao')}.show()" />
+		</h:form>
+	</ui:define>
+	<ui:define name="modal">
+
+		<style>
+			.titulo_Campos {
+				line-height: 23px !important;
+				font-weight: 700 !important;
+			}
+			.font_emoji {
+				font-family: emoji;
+			}
+			.bg-gray_white {
+				background: #f3f3f3 !important;
+			}
+			.fs15 {
+				font-size: 15px !important
+			}
+			.panelAssinatura:hover {
+				background: #f3f3f3 !important;
+				padding: 5px !important;
+    			transition: 0.1s;
+			}
+			.p5 {
+				padding-bottom: 5px !important;
+			}
+		</style>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelMatricula" shadowOpacity="true" width="760" height="550" onshow="document.getElementById('formMatricula:valorConsultarMatricula').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ExpedicaoDiploma_consultarMatricula}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkMatricula" />
+					<rich:componentControl target="panelMatricula" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMatricula">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarMatricula" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula.campoConsulta}">
+						<f:selectItems value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.tipoConsultaComboMatricula}" />
+						<a4j:ajax event="change" render="formMatricula" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarMatricula" size="30" styleClass="form-control campos" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula.valorConsulta}" rendered="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula.campoConsulta ne 'cpfAluno'}" />
+					<h:inputText id="valorConsultarMatriculaCPF" size="30" styleClass="form-control campos" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula.valorConsulta}" onkeypress="return mascara(this.form, 'form:CPF', '999.999.999-99', event);" maxlength="14" rendered="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula.campoConsulta eq 'cpfAluno'}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarMatricula" render="formMatricula" action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.consultarMatriculaOtimizado}" value="Consultar" styleClass="btn btn-default">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener for="btnConsultarMatricula" target="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula.paginaAtual}" value="1" />
+						<f:setPropertyActionListener for="btnConsultarMatricula" target="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaMatricula" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula}" rows="8" var="matriculaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.selecionarMatriculaControleConsulta}" render="form:panelGridForm, formMatricula" oncomplete="#{rich:component('panelMatricula')}.hide()" value="#{matriculaItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.selecionarMatriculaControleConsulta}" render="form:panelGridForm, formMatricula" oncomplete="#{rich:component('panelMatricula')}.hide()" value="#{matriculaItens.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.selecionarMatriculaControleConsulta}" render="form:panelGridForm, formMatricula" oncomplete="#{rich:component('panelMatricula')}.hide()" value="#{matriculaItens.aluno.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_tituloForm}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.selecionarMatriculaControleConsulta}" render="form:panelGridForm, formMatricula" oncomplete="#{rich:component('panelMatricula')}.hide()" value="#{matriculaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação Atual Matrícula" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.selecionarMatriculaControleConsulta}" render="form:panelGridForm, formMatricula" oncomplete="#{rich:component('panelMatricula')}.hide()" value="#{matriculaItens.situacao_Apresentar}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.selecionarMatriculaControleConsulta}" render="form:panelGridForm, formMatricula" oncomplete="#{rich:component('panelMatricula')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="formMatricula:resultadoConsultaMatricula" maxPages="10" id="scResultadoMatricula" boundaryControls="auto" stepControls="auto" fastControls="hide" page="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula.page}" scrollListener="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.scrollerListenerMatricula}" rendered="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaMatricula.apresentarPaginador}" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaMatricula" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ExpedicaoDiplomaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" shadowOpacity="true" width="760" height="550" onshow="document.getElementById('formCurso:valorConsultarCurso').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarCurso}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkCurso" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarCurso" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaCurso.campoConsulta}">
+						<f:selectItems value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.tipoConsultaComboCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarCurso" size="30" styleClass="form-control campos" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaCurso.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarCurso" render="formCurso" action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.consultarCursoOtimizado}" value="Consultar" styleClass="btn btn-default">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener for="btnConsultarCurso" target="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaCurso.paginaAtual}" value="1" />
+						<f:setPropertyActionListener for="btnConsultarCurso" target="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaCurso.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCurso" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaCurso}" rows="8" var="cursoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<a4j:commandLink action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.selecionarCursoControleConsulta}" render="form:panelGridForm, formCurso" oncomplete="#{rich:component('panelCurso')}.hide()" value="#{cursoItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<a4j:commandLink action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.selecionarCursoControleConsulta}" render="form:panelGridForm, formCurso" oncomplete="#{rich:component('panelCurso')}.hide()" value="#{cursoItens.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.selecionarCursoControleConsulta}" render="form:panelGridForm, formCurso" oncomplete="#{rich:component('panelCurso')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="formCurso:resultadoConsultaCurso" maxPages="10" id="scResultadoCurso" boundaryControls="auto" stepControls="auto" fastControls="hide" page="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaCurso.page}" scrollListener="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.scrollerListenerCurso}" rendered="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaCurso.apresentarPaginador}" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultabtnConsultarCurso" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ExpedicaoDiplomaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelPreviewPdf" shadowOpacity="true" width="760" height="550">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Preview PDF" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPreviewPdf">
+				<h:panelGroup layout="block" styleClass="row mn" rendered="#{ExpedicaoDiplomaControle.caminhoPreview != ''}">
+					<otm2:pdfView2 bean="#{ExpedicaoDiplomaControle}" height="calc(100vh - 100px)" data="#{ExpedicaoDiplomaControle.caminhoPreview}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn">
+					<otm:mensagem bean="#{ExpedicaoDiplomaControle}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+					<otm:commandButton value="fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelPreviewPdf')}.hide()" styleClass="btn btn-danger" render="formPreviewPdf, formDocumentoAssinado" action="#{ExpedicaoDiplomaControle.fecharPanelPreview}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDocumentoAssinado" shadowOpacity="true" width="760" height="550">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Documento Assinado" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDocumentoAssinado">
+				<h:panelGroup layout="block" styleClass="row mn bg-gray pn mb5 p5 border-bottom">
+					<a4j:commandLink render="formDocumentoAssinado" action="#{ExpedicaoDiplomaControle.persistirLayoutListaPadrao}" value="#{ExpedicaoDiplomaControle.versaoLayoutListaNovo ? 'Alterar para o layout 1' : 'Alterar para o layout 2'}" styleClass="btn btn-primary2 pr20 pl20 float-right mt5 mr5" rendered="#{ExpedicaoDiplomaControle.versaoLayoutListaNovo}">
+						<span class="far fa-newspaper fs16 mr5 pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						<f:setPropertyActionListener value="false" target="#{ExpedicaoDiplomaControle.versaoLayoutListaNovo}" />
+					</a4j:commandLink>
+					<a4j:commandLink render="formDocumentoAssinado" action="#{ExpedicaoDiplomaControle.persistirLayoutListaPadrao}" value="#{ExpedicaoDiplomaControle.versaoLayoutListaNovo ? 'Alterar para o layout 1' : 'Alterar para o layout 2'}" styleClass="btn btn-primary pr20 pl20 float-right mt5 mr5" rendered="#{!ExpedicaoDiplomaControle.versaoLayoutListaNovo}">
+						<span class="fas fa-newspaper fs16 mr5 pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						<f:setPropertyActionListener value="true" target="#{ExpedicaoDiplomaControle.versaoLayoutListaNovo}" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn border rounded" rendered="#{!ExpedicaoDiplomaControle.versaoLayoutListaNovo}">
+					<table class="rf-dt"> <thead class="rf-dt-thd"> <tr class="rf-dt-shdr"> <th class="rf-dt-shdr-c"> <h:outputText value="CÓDIGO" /> </th> <th class="rf-dt-shdr-c"> <h:outputText value="TIPO DOCUMENTO" /> </th> <th class="rf-dt-shdr-c"> <h:outputText value="UNIDADE ENSINO" /> </th> <th class="rf-dt-shdr-c"> <h:outputText value="DATA REGISTRO" /> </th> <th class="rf-dt-shdr-c"> <h:outputText value="DESCRIÇÃO" /> </th> <h:panelGroup rendered="#{!empty ExpedicaoDiplomaControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}">
+						<th class="rf-dt-shdr-c"> <div class="col-md-12 text-center mb10"> <h:outputText value="ASSINATURAS" /> </div> <div class="col-md-4 text-center"> <h:outputText value="RESPONSÁVEL" /> </div> <div class="col-md-4 text-center"> <h:outputText value="SITUAÇÃO" /> </div> <div class="col-md-4 text-center"> <h:outputText value="DATA" /> </div> </th>
+					</h:panelGroup> <th class="rf-dt-shdr-c"> <h:outputText value="OPÇÃO" /> </th> </tr> </thead> <tbody class="rf-dt-b"> <tr class="rf-dt-r rf-dt-fst-r"> <td class="rf-dt-c"> <h:outputText value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.codigo}" /> </td> <td class="rf-dt-c"> <h:outputText value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum.descricao}" /> </td> <td class="rf-dt-c"> <h:outputText value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.unidadeEnsinoVO.nome}" /> </td> <td class="rf-dt-c"> <h:outputText value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.dataRegistro}" /> </td> <td class="rf-dt-c"> <h:outputText value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.descricaoPersonalizada}" /> </td> <h:panelGroup rendered="#{!empty ExpedicaoDiplomaControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}">
+						<td class="rf-dt-c"> <rich:list type="definitions" rowKeyVar="row2" style="width:100%; padding:0px !important; margin:0px !important" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}" var="pessoaItem">
+							<h:panelGrid cellpadding="0" cellspacing="0" columns="4" columnClasses="bordaDireita,bordaDireita, semBorda" style="width:100%;#{row2 ne 0 ? 'border-top:1px solid #C4C0C9;' : '' }">
+								<h:panelGroup layout="block" style="width:200px; text-align:left;min-height:20px">
+									<h:outputText value="#{(ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' or ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'HISTORICO_DIGITAL' or ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DOCUMENTACAO_ACADEMICA_REGISTRO_DIPLOMA_DIGITAL') ? pessoaItem.nomeAssinanteApresentar : pessoaItem.pessoaVO.nome}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" style="width:80px; text-align:center;min-height:20px;">
+									<h:outputText value="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum.descricao}">
+									</h:outputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" style="width:120px;text-align:center;min-height:20px;">
+									<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'ASSINADO'}" value="#{pessoaItem.dataAssinatura}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+									</h:outputText>
+									<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO'}" value="#{pessoaItem.dataRejeicao}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+									</h:outputText>
+									<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'PENDENTE'}" value="#{pessoaItem.dataSolicitacao}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+									</h:outputText>
+								</h:panelGroup>
+							</h:panelGrid>
+						</rich:list> </td>
+					</h:panelGroup> <td class="rf-dt-c"> <otm:commandIcon action="#{ExpedicaoDiplomaControle.realizarDownloadDocumentoAssinado}" render="formDocumentoAssinado, formPreviewPdf" oncomplete="#{ExpedicaoDiplomaControle.oncompleteModal}" tooltip="#{ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' ? 'Download xml do diploma' : ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DOCUMENTACAO_ACADEMICA_REGISTRO_DIPLOMA_DIGITAL' ? 'Download xml documentação' : ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'HISTORICO_DIGITAL' ? 'Download xml histórico' : 'Download diploma'}" icon="#{msg_botoes.btn_icon_download} iconePequeno" /> <otm:commandIcon action="#{ExpedicaoDiplomaControle.realizarDownloadRepresentacaoVisual}" render="formDocumentoAssinado, formPreviewPdf" oncomplete="#{ExpedicaoDiplomaControle.oncompleteModal}"
+						tooltip="#{ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' ? 'Download representação visual do diploma' : 'Download representação visual do histórico'}" icon="#{msg_botoes.btn_icon_pdf} iconePequeno" rendered="#{ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' or ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'HISTORICO_DIGITAL'}" /> </td> </tr> </tbody> </table>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn border rounded" rendered="#{ExpedicaoDiplomaControle.versaoLayoutListaNovo}">
+					<h:panelGroup layout="block" styleClass="row mn border-bottom bg-gray_white p10">
+						<h:outputText styleClass="tituloCampos fs15" style="font-weight: bold !important; font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum.descricao} - #{ExpedicaoDiplomaControle.documentoAssinadoVO.codigo}" />
+						<h:panelGroup styleClass="float-right">
+							<h:outputText styleClass="tituloCampos fs15 mr5" style="font-weight: bold !important; font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.situacaoDocumentoApresentar eq 1 ? 'Documento Assinado' : ExpedicaoDiplomaControle.documentoAssinadoVO.situacaoDocumentoApresentar eq 2 ? 'Documento Pendente Assinatura' : 'Documento Inválido'}" />
+							<span class="#{ExpedicaoDiplomaControle.documentoAssinadoVO.situacaoDocumentoApresentar eq 1 ? 'far fa-thumbs-up' : ExpedicaoDiplomaControle.documentoAssinadoVO.situacaoDocumentoApresentar eq 2 ? 'fas fa-minus-circle' : 'far fa-thumbs-down'} tituloCampos fs15" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6 pn">
+						<h:panelGroup layout="block" styleClass="row mn mb10">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Matrícula').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.matricula.matricula.toUpperCase()}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Aluno').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.matricula.aluno.nome.toUpperCase()}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Cpf Aluno').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.matricula.aluno.CPF.toUpperCase()}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mn">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Unidade Ensino').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.unidadeEnsinoVO.nome.toUpperCase()}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Data Registro').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.dataRegistro}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+								</h:outputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Responsável Criação').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.usuario.nome.toUpperCase()}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{!empty ExpedicaoDiplomaControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}">
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+							<h:outputText styleClass="tituloCampos fs15" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="Assinaturas" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mn p5 border rounded">
+							<a4j:repeat value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}" var="pessoaItem" rowKeyVar="row">
+								<h:panelGroup layout="block" styleClass="row mn panelAssinatura #{ExpedicaoDiplomaControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa.get(row).codigo eq ExpedicaoDiplomaControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa.get(ExpedicaoDiplomaControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa.size() -1).codigo ? '' : 'border-bottom pb5 mb5'}">
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="titulo_Campos font_emoji fs15 #{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'ASSINADO' ? 'text-success' : pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO' ? 'text-danger' : 'text-secondary'}" value="#{(ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' or ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'HISTORICO_DIGITAL' or ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DOCUMENTACAO_ACADEMICA_REGISTRO_DIPLOMA_DIGITAL') ? pessoaItem.nomeAssinanteApresentar : pessoaItem.pessoaVO.nome}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:panelGroup styleClass="float-right">
+											<h:outputText value="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum.descricao} " styleClass="titulo_Campos font_emoji fs15 #{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'ASSINADO' ? 'text-success' : pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO' ? 'text-danger' : 'text-secondary'}" />
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:panelGroup styleClass="float-right">
+											<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'ASSINADO'}" value="#{pessoaItem.dataAssinatura}" styleClass="titulo_Campos font_emoji fs15 text-success">
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+											</h:outputText>
+											<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO'}" value="#{pessoaItem.dataRejeicao}" styleClass="titulo_Campos font_emoji fs15 text-danger">
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+											</h:outputText>
+											<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'PENDENTE'}" value="#{pessoaItem.dataSolicitacao}" styleClass="titulo_Campos font_emoji fs15 text-secondary">
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+											</h:outputText>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</a4j:repeat>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row mn border-top bg-gray_white p5 mt5 text-center">
+						<otm:commandButton action="#{ExpedicaoDiplomaControle.realizarDownloadDocumentoAssinado}" render="formDocumentoAssinado, formPreviewPdf" oncomplete="#{ExpedicaoDiplomaControle.oncompleteModal}" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' ? 'download xml do diploma' : ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DOCUMENTACAO_ACADEMICA_REGISTRO_DIPLOMA_DIGITAL' ? 'download xml documentação' : ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'HISTORICO_DIGITAL' ? 'download xml histórico' : 'download diploma'}" icon="#{msg_botoes.btn_icon_download_embutido}" styleClass="btn btn-primary2 pr20 pl20" />
+						<otm:commandButton action="#{ExpedicaoDiplomaControle.realizarDownloadRepresentacaoVisual}" render="formDocumentoAssinado, formPreviewPdf" oncomplete="#{ExpedicaoDiplomaControle.oncompleteModal}" value="#{ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' ? 'download representação visual do diploma' : 'download representação visual do histórico'}" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger2 pr20 pl20 ml5" rendered="#{ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' or ExpedicaoDiplomaControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'HISTORICO_DIGITAL'}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn" id="mensagemDocumentoAssinado">
+					<otm:mensagem bean="#{ExpedicaoDiplomaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton value="fechar" styleClass="btn btn-danger pr20 pl20" icon="#{msg_botoes.btn_icon_fechar_embutido}" render="formDocumentoAssinado" action="#{ExpedicaoDiplomaControle.setDocumentoAssinadoVO(null)}" oncomplete="#{rich:component('panelDocumentoAssinado')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{ExpedicaoDiplomaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup layout="block" styleClass="col-md-4 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="Matrícula" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText id="matriculaAluno" styleClass="form-control campos" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.matriculaVO.matricula}">
+							<a4j:ajax event="change" render="form:panelGridForm" listener="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.consultarAlunoPorMatriculaControleConsulta}" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText id="nomeAluno" styleClass="form-control campos" readonly="true" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.matriculaVO.aluno.nome}" />
+						<span class="append-icon right"> <otm:commandIcon icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="Consultar Aluno" oncomplete="#{rich:component('panelMatricula')}.show();" render="formMatricula" action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.limparDadosDataModeloMatricula}" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="Limpar Dados" render="form:panelGridForm" action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.limparDadosMatricula}" /> </span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="Unidade Ensino" />
+					<h:selectOneMenu styleClass="form-control campos" id="unidadeEnsino" required="true" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.unidadeEnsinoVO.codigo}">
+						<f:selectItems value="#{ExpedicaoDiplomaControle.listaSelectItemUnidadeEnsino}" />
+						<a4j:ajax event="change" render="form:panelGridForm" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="Curso" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText styleClass="form-control campos" id="curso" readonly="true" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.cursoVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="Consultar curso" oncomplete="#{rich:component('panelCurso')}.show();" render="formCurso" action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.limparDadosDataModeloCurso}" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="Limpar Dados" render="form:panelGridForm" action="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.limparDadosCurso}" /> </span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Código Verificação" />
+					<h:inputText id="codigoVerificacao" styleClass="form-control campos" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.codigoVerificacao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Número Registro" />
+					<h:inputText id="numeroRegistro" styleClass="form-control campos" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.numeroRegistro}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Número Processo" />
+					<h:inputText id="numeroProcesso" styleClass="form-control campos" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.numeroProcesso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Via" />
+					<h:inputText id="via" styleClass="form-control campos" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.via}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Data Consulta" />
+					<h:selectOneMenu styleClass="form-control campos" id="tipoData" required="true" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.tipoData}">
+						<f:selectItems value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.tipoConsultaComboTipoData}" />
+						<a4j:ajax event="change" render="form:panelGridForm" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<otm:outputHelp id="dataConsultaApresentar" styleClass="field control-label tituloCampos" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.dataConsultaApresentar}" tooltip="Os filtros de data serão aplicados apenas caso a data do período inicial esteja preenchido." />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<otm:calendar id="dataPeriodoInicio" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.dataPeriodoInicio}" datePattern="dd/MM/yyyy" enableManualInput="true" zindex="2" showWeeksBar="false" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+						<h:outputText styleClass="field control-label tituloCampos" value="Até" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<otm:calendar id="dataPeriodoFim" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.dataPeriodoFim}" datePattern="dd/MM/yyyy" enableManualInput="true" zindex="2" showWeeksBar="false" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Limite por Página" />
+					<h:selectOneMenu styleClass="form-control campos" id="limitePagina" required="true" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaOtimizado.limitePorPagina}">
+						<f:selectItems value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.tipoConsultaComboLimitePagina}" />
+						<a4j:ajax event="change" render="form:panelGridForm" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn border rounded p5 mt5">
+					<h:panelGroup layout="block" styleClass="col-md-12 border-bottom pb5 mb5">
+						<otm:outputHelp id="helpSituacaoDiploma" styleClass="field control-label tituloCampos font-weight-bold" value="Situação Diploma Digital" tooltip="O filtro de situação do diploma será utilizado no caso de expedição de diploma de graduação ou graduação/tecnológica que podem gerar diploma digital para o formado." />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos btn-block" value="Diploma Pendente Assinatura" />
+						<otm:selectBooleanCheckbox id="pendenteAssinatura" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.pendenteAssinatura}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<otm:outputHelp id="helpDiplomaValido" styleClass="field control-label tituloCampos" value="Diploma Válido (Diploma Assinado)" tooltip="Caso marcado, o sistema vai buscar o aluno cujo o último diploma gerado esteja 100% assinado, independentemente se a expedição diploma esteja anulado ou não." />
+						<otm:selectBooleanCheckbox id="valido" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.valido}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos btn-block" value="Diploma Anulado" />
+						<otm:selectBooleanCheckbox id="anulado" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.anulado}">
+							<a4j:ajax event="change" render="form:panelDataAnulacao" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<h:panelGroup layout="block" id="panelDataAnulacao">
+						<h:panelGroup layout="block" styleClass="col-md-4 pn" rendered="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.anulado}">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="Período Anulação Diploma" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-5">
+								<otm:calendar id="dataPeriodoAnulacaoInicio" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.dataPeriodoAnulacaoInicio}" datePattern="dd/MM/yyyy" enableManualInput="true" zindex="2" showWeeksBar="false" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+								<h:outputText styleClass="field control-label tituloCampos" value="Até" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-5">
+								<otm:calendar id="dataPeriodoAnulacaoFim" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.dataPeriodoAnulacaoFim}" datePattern="dd/MM/yyyy" enableManualInput="true" zindex="2" showWeeksBar="false" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<a4j:commandLink render="form" id="consultar" value="#{msg_botoes.btn_consultar}" action="#{ExpedicaoDiplomaControle.consultar}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="2">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener for="btnConsultarMatricula" target="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener for="btnConsultarMatricula" target="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaOtimizado}" rows="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaOtimizado.limitePorPagina}" var="expedicaoDiplomaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ExpedicaoDiploma_codigo}" />
+						</f:facet>
+						<h:commandLink action="#{ExpedicaoDiplomaControle.editar}" id="codigo" value="#{expedicaoDiplomaItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ExpedicaoDiploma_matricula}" />
+						</f:facet>
+						<h:commandLink action="#{ExpedicaoDiplomaControle.editar}" id="matricula" value="#{expedicaoDiplomaItens.matricula.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ExpedicaoDiploma_nomeAluno}" />
+						</f:facet>
+						<h:commandLink action="#{ExpedicaoDiplomaControle.editar}" id="nomeAluno" value="#{expedicaoDiplomaItens.matricula.aluno.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_tituloForm}" />
+						</f:facet>
+						<h:commandLink action="#{ExpedicaoDiplomaControle.editar}" id="unidadeEnsinoAluno" value="#{expedicaoDiplomaItens.matricula.unidadeEnsino.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_tituloForm}" />
+						</f:facet>
+						<h:commandLink action="#{ExpedicaoDiplomaControle.editar}" id="cursoAluno" value="#{expedicaoDiplomaItens.matricula.curso.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ExpedicaoDiploma_dataExpedicao}" />
+						</f:facet>
+						<h:commandLink action="#{ExpedicaoDiplomaControle.editar}" id="dataExpedicao" value="#{expedicaoDiplomaItens.dataExpedicao_Apresentar}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ExpedicaoDiploma_via}" />
+						</f:facet>
+						<h:commandLink action="#{ExpedicaoDiplomaControle.editar}" id="via" value="#{expedicaoDiplomaItens.via}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ExpedicaoDiploma_situacaoDiploma}" />
+						</f:facet>
+						<h:commandLink action="#{ExpedicaoDiplomaControle.editar}" id="situacaoDiploma" value="#{expedicaoDiplomaItens.situacaoApresentar}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Documentos Digitais" />
+						</f:facet>
+						<otm:commandIcon icon="#{msg_botoes.btn_icon_certificado} iconePequeno" tooltip="Visualizar diploma" rendered="#{expedicaoDiplomaItens.apresentarDiplomaDigital}" action="#{ExpedicaoDiplomaControle.realizarMontagemDiplomaDigital}" render="formDocumentoAssinado" oncomplete="#{rich:component('panelDocumentoAssinado')}.show();" />
+						<otm:commandIcon icon="#{msg_botoes.btn_icon_reverter} iconePequeno" tooltip="Visualizar histórico" rendered="#{expedicaoDiplomaItens.apresentarHistoricoDigital}" action="#{ExpedicaoDiplomaControle.realizarMontagemHistoricoDigital}" render="formDocumentoAssinado" oncomplete="#{rich:component('panelDocumentoAssinado')}.show();" />
+						<otm:commandIcon icon="#{msg_botoes.btn_icon_graduacao} iconePequeno" tooltip="Visualizar Documentação acadêmica" rendered="#{expedicaoDiplomaItens.apresentarDocumentacaoAcademicaDigital}" action="#{ExpedicaoDiplomaControle.realizarMontagemDocumentacaoAcademica}" render="formDocumentoAssinado" oncomplete="#{rich:component('panelDocumentoAssinado')}.show();" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ExpedicaoDiplomaControle.editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="#{msg.msg_editar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="form:items" id="scResultadoConsulta" page="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaOtimizado.page}" scrollListener="#{ExpedicaoDiplomaControle.scrollerListener}" rendered="#{ExpedicaoDiplomaControle.controleConsultaExpedicaoDiploma.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton id="novo" action="#{ExpedicaoDiplomaControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" title="#{msg.msg_novo_dados}" accesskey="1" style="margin-right: 5px" />
+					<otm:commandButton id="navegarExpedicaoDiplomaLote" action="#{ExpedicaoDiplomaControle.navegarExpedicaoDiplomaLote}" value="#{msg_botoes.btn_emitir_diploma_lote}" styleClass="btn btn-primary dark btn_icon_imprimir_embutido" icon="fas fa-graduation-cap" accesskey="1" />
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagens" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ExpedicaoDiplomaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<script>
+			document.getElementById("form:valorConsulta").focus();
+		</script>
+		<ui:include src="../template/modalRegraEmissaoCertificadoDiploma.xhtml" />
+	</ui:define>
+</ui:composition> </html>

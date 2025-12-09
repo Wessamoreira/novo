@@ -1,0 +1,2 @@
+ALTER TABLE configuracaogeralsistema add column if not exists motivoPadraoCancelamentoPreMatriculaCalouro int;
+ALTER TABLE configuracaogeralsistema add constraint fk_cgs_motivoPadraoCancelamentoPreMatriculaCalouro foreign key (motivoPadraoCancelamentoPreMatriculaCalouro) references motivoCancelamentoTrancamento(codigo);

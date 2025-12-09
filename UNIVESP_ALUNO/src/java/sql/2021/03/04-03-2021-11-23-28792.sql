@@ -1,0 +1,2 @@
+ alter table unidadeensino add column if not exists responsavelNotificacaoAlteracaoCronogramaAula int ;
+ alter table unidadeensino ADD CONSTRAINT fk_unidadeensino_responsavelNotificacaoAlteracaoCronogramaAula  FOREIGN KEY (responsavelNotificacaoAlteracaoCronogramaAula)   references funcionario(codigo) on update 	restrict on 	delete 	restrict ;

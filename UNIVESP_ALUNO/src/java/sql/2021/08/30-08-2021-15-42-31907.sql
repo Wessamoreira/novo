@@ -1,0 +1,1 @@
+alter table gradecurriculargrupooptativadisciplina alter column nrcreditofinanceiro  type numeric(20,5);

@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<h:head></h:head>
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Log Audit Matrícula" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style>
+.expandido {
+	height: 500px;
+}
+
+.recolhido {
+	height: 200px;
+}
+
+.iconExpandido {fas fa-plus;
+	
+}
+
+.iconRecolhido {fa fa-minus;
+	
+}
+
+.recolhido::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #c7c7c7 !important;
+	scrollbar-color: #c7c7c7 transparent !important;
+	height: 20px !important;
+}
+</style>
+
+		<script type="text/javascript">
+			(function($) {
+				$.ajaxSetup({
+					cache : false
+				});
+				$.ajax({
+					cache : false,
+				});
+
+				expandir = function(id) {
+					if ($(id).hasClass('recolhido')) {
+
+						$(id).removeClass('recolhido');
+						$(id).addClass('expandido');
+					} else {
+						$(id).removeClass('expandido');
+						$(id).addClass('recolhido');
+					}
+				}
+			}(jQuery));
+		</script>
+		
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formTurma:valorConsultaTurma').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_HistoricoTurmaRel_consultarTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink11" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{LogMatriculaControle.campoConsultaTurma}">
+						<f:selectItems value="#{LogMatriculaControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaTurma" size="10" styleClass="form-control campos" value="#{LogMatriculaControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{LogMatriculaControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{LogMatriculaControle.listaConsultaTurma}" rows="5" var="turmaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_HistoricoTurmaRel_identificador}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{LogMatriculaControle.selecionarTurma}" render="form:panelGridPrincipal" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{LogMatriculaControle.selecionarTurma}" render="form:panelGridPrincipal" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Turno" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{LogMatriculaControle.selecionarTurma}" render="form:panelGridPrincipal" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{LogMatriculaControle.selecionarTurma}" render="form:panelGridPrincipal" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{LogMatriculaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" onshow="document.getElementById('formAluno:valorConsultaAluno').focus();" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_CartaAluno_consultarAluno}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink1" />
+					<rich:componentControl target="panelAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAluno" value="#{LogMatriculaControle.campoConsultaAluno}">
+						<f:selectItems value="#{LogMatriculaControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaAluno" size="20" styleClass="form-control campos" value="#{LogMatriculaControle.valorConsultaAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno, formAluno:scResultadoAluno" action="#{LogMatriculaControle.consultarAluno}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{LogMatriculaControle.listaConsultaAluno}" rows="5" var="matriculaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{LogMatriculaControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Matrícula" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{LogMatriculaControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{LogMatriculaControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{LogMatriculaControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{LogMatriculaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFiltroCamposAlterados" onshow="document.getElementById('formDisciplina:valorConsultaDisciplina').focus()" shadowOpacity="true" width="650" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtros de Campos Alterados"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink4" />
+					<rich:componentControl target="panelFiltroCamposAlterados" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFiltroCamposAlterados">
+				
+				<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{LogMatriculaControle.opcaoTabelaLogMatricula eq 'MATRICULA'}">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Matrícula" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="matriculaAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.matricula}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Grade Curricular Atual" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="gradeCurricularAtualAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.gradeCurricularAtual}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Situação" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="situacaoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.situacao}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Unidade de Ensino" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="unidadeEnsinoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.unidadeEnsino}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Curso" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="cursoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.curso}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Turno" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="turnoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.turno}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Aluno" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="alunoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.aluno}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Forma de Ingresso" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="formaIngressoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.formaIngresso}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Ano Ingresso" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="anoIngressoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.anoIngresso}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Semestre Ingresso" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="semestreIngressoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.semestreIngresso}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Data Início Curso" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="dataInicioCursoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.dataInicioCurso}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+				</h:panelGroup>
+				
+				<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{LogMatriculaControle.opcaoTabelaLogMatricula eq 'MATRICULA_PERIODO'}">
+				
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Turma" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="turmaAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.turma}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Matriz Curricular" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="matrizCurricularAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.gradeCurricular}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Situação Matrícula Período" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="situacaoMatriculaPeriodoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.situacaoMatriculaPeriodo}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Ano" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="anoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.ano}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Semestre" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="semestreAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.semestre}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Período Letivo" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="periodoLetivoAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.periodoLetivoMatricula}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Data" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox id="dataAlterado" styleClass="form-control campos" value="#{LogMatriculaControle.matriculaCamposAlteradosVO.data}" >
+								<a4j:ajax event="click" execute="@this"></a4j:ajax>
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					
+				</h:panelGroup>
+				
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center mt10 mb10">
+					<otm:commandButton render="form" oncomplete="#{rich:component('panelFiltroCamposAlterados')}.hide()" value="Fechar" styleClass="btn btn-primary dark btn-fechar" title="Fechar" />
+				</h:panelGroup>
+
+				
+				<h:panelGroup id="mensagemFiltroCamposAlterados" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{LogMatriculaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelUsuario" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Usuário Destinatário"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkFunc" />
+					<rich:componentControl target="panelUsuario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUsuario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaUsuario" value="#{LogMatriculaControle.campoConsultaUsuario}">
+						<f:selectItems value="#{LogMatriculaControle.tipoConsultaComboUsuario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaUsuario" size="20" styleClass="form-control campos" value="#{LogMatriculaControle.valorConsultaUsuario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formUsuario:mensagemConsultaUsuario, formUsuario:resultadoConsultaUsuario, formUsuario:scResultadoUsuario" action="#{LogMatriculaControle.consultarUsuario}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaUsuario" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{LogMatriculaControle.listaConsultaUsuarioVOs}" rows="5" var="usuarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Usuario_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{LogMatriculaControle.selecionarUsuario}" focus="nomeUsuario" render="usuario" oncomplete="#{rich:component('panelUsuario')}.hide()" value="#{usuarioItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Usuario_nome} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{LogMatriculaControle.selecionarUsuario}" focus="nomeUsuario" render="usuario" oncomplete="#{rich:component('panelUsuario')}.hide()" value="#{usuarioItens.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{LogMatriculaControle.selecionarUsuario}" focus="nomeUsuario" render="usuario" oncomplete="#{rich:component('panelUsuario')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formUsuario:resultadoConsultaUsuario" maxPages="10" id="scResultadoUsuario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaUsuario" styleClass="tabMensagens">
+					<h:panelGroup>
+						<h:outputText styleClass="mensagem" value="#{LogMatriculaControle.mensagem}" />
+						<h:outputText styleClass="mensagemDetalhada" value="#{LogMatriculaControle.mensagemDetalhada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{LogMatriculaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+				<h:panelGroup id="panelGridPrincipal" styleClass="tabForm">
+					<h:panelGroup layout="block" styleClass="col-md-1">
+						<h:outputText styleClass="tituloCampos" value="Ano" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" id="ano" value="#{LogMatriculaControle.ano}">
+							<f:selectItems value="#{LogMatriculaControle.listaSelectItemAnoVOs}" />
+							<a4j:ajax event="change" render="form" listener="#{LogMatriculaControle.montarListaSelectItemMes}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-1">
+						<h:outputText styleClass="tituloCampos" value="Mês" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" id="mes" value="#{LogMatriculaControle.mes}">
+							<f:selectItems value="#{LogMatriculaControle.listaSelectItemMesVOs}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="Ação" />
+						<h:selectOneMenu styleClass="form-control campos" id="acao" value="#{LogMatriculaControle.acao}">
+							<f:selectItems value="#{LogMatriculaControle.tipoConsultaComboAcao}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="tituloCampos" value="Opção Tabela" />
+						<h:selectOneMenu styleClass="form-control campos" id="opcaoTabela" value="#{LogMatriculaControle.opcaoTabelaLogMatricula}">
+							<f:selectItems value="#{LogMatriculaControle.listaSelectItemOpcaoTabelaMatriculaVOs}" />
+							<a4j:ajax event="change" execute="@this" render="form:panelGridPrincipal" listener="#{LogMatriculaControle.montarListaSelectItemColuna}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText value="Usuário Log" styleClass="tituloCampos" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="usuario" value="#{LogMatriculaControle.usuarioLogVO.nome}" size="30" readonly="true" disabled="true" styleClass="form-control camposSomenteLeitura" />
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosUsuario" tooltip="Localizar Usuário" icon="#{msg_botoes.btn_icon_lupa_embutido}" render="formUsuario" oncomplete="#{rich:component('panelUsuario')}.show()" action="#{LogMatriculaControle.limparConsultaUsuario}" image="#{resource['/imagens/informacao.gif']}" /> <otm:commandIcon id="limparDadosFuncionario" tooltip="Limpas Dados" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{LogMatriculaControle.limparDadosUsuario}" render="usuario" image="#{resource['/imagens/limpar.gif']}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					
+					
+				<h:panelGroup layout="block" styleClass="col-md-12" />
+				
+				<h:panelGroup layout="block" styleClass="col-md-6 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CartaAluno_matricula}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText id="alunoMatricula" size="20" styleClass="form-control camposObrigatorios" value="#{LogMatriculaControle.matriculaVO.matricula}">
+							<a4j:ajax event="change" listener="#{LogMatriculaControle.consultarAlunoPorMatricula}" render="form" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText id="alunoNome" size="60" styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" value="#{LogMatriculaControle.matriculaVO.aluno.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosAluno" alt="Localizar Aluno" render="form, formAluno" oncomplete="#{rich:component('panelAluno')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAluno" alt="Limpas Dados" action="#{LogMatriculaControle.limparDadosAluno}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				
+<!-- 				<h:panelGroup layout="block" styleClass="col-md-2"> -->
+<!-- 					<h:outputText styleClass="tituloCampos" value="Matrícula" /> -->
+<!-- 					<h:inputText id="matricula" styleClass="form-control campos" size="20" value="#{LogMatriculaControle.matricula}" /> -->
+<!-- 				</h:panelGroup> -->
+<!-- 				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{LogMatriculaControle.opcaoTabelaLogMatricula eq 'MATRICULA_PERIODO'}"> -->
+<!-- 					<h:outputText styleClass="tituloCampos" value="Código" /> -->
+<!-- 					<h:inputText id="codigo" styleClass="form-control campos" size="20" value="#{LogMatriculaControle.codigoMatriculaPeriodo}" /> -->
+<!-- 				</h:panelGroup> -->
+				
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="tituloCampos" value="Situação Acadêmica" />
+					<h:selectOneMenu styleClass="form-control campos" id="situacaoMatricula" value="#{LogMatriculaControle.situacaoMatricula}">
+						<f:selectItems value="#{LogMatriculaControle.listaSelectItemSituacaoVinculoMatriculaVOs}" />
+						<a4j:ajax event="change" execute="@this" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="tituloCampos" value="Trazer Somente Coluna" />
+					<h:selectOneMenu id="coluna" styleClass="form-control campos" value="#{LogMatriculaControle.coluna}">
+						<f:selectItems value="#{LogMatriculaControle.listaSelectItemColunaVOs}" />
+						<a4j:ajax event="change" listener="#{LogMatriculaControle.consultarLogMatricula}" render="form:resultado"></a4j:ajax>
+					</h:selectOneMenu>
+				</h:panelGroup>
+				
+				<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{LogMatriculaControle.opcaoTabelaLogMatricula eq 'MATRICULA_PERIODO'}">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_TCC_turma}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="turma" styleClass="form-control camposSomenteLeitura" readonly="true" size="36" value="#{LogMatriculaControle.turmaVO.identificadorTurma}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" focus="nomeTurma" tooltip="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" tooltip="Limpas Dados" action="#{LogMatriculaControle.limparTurma}" execute="@this" render="form:turma" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{LogMatriculaControle.opcaoTabelaLogMatricula eq 'MATRICULA_PERIODO'}">
+					<h:outputText styleClass="tituloCampos" value="Ano Matrícula Período" />
+					<h:inputText value="#{LogMatriculaControle.anoMatriculaPeriodo}" size="10" styleClass="form-control campos" />
+				</h:panelGroup>
+				
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{LogMatriculaControle.opcaoTabelaLogMatricula eq 'MATRICULA_PERIODO'}">
+					<h:outputText styleClass="tituloCampos" value="Semestre Matrícula Período" />
+					<h:selectOneMenu value="#{LogMatriculaControle.semestreMatriculaPeriodo}" styleClass="form-control campos" >
+						<f:selectItem itemLabel="" itemValue="" />
+						<f:selectItem itemLabel="1º" itemValue="1" />
+						<f:selectItem itemLabel="2º" itemValue="2" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				
+				
+				
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:panelGroup layout="block" styleClass="col-md-2 h36">
+						<h:outputText styleClass="tituloCampos" value="Data Início Log" />
+						<otm:calendar id="valorConsultaDataInicio" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" inputSize="10" value="#{LogMatriculaControle.dataInicio}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2 h36">
+						<h:outputText styleClass="tituloCampos" value="Data Fim Log" />
+						<otm:calendar id="valorConsultaDataFim" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" inputSize="10" value="#{LogMatriculaControle.dataFim}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="Código Transação" />
+						<h:inputText value="#{LogMatriculaControle.codigoTransacao}" size="10" styleClass="form-control campos" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText value="." style="color: #FFFFFF" />
+						</h:panelGroup>
+						<otm:commandButton id="filtroCamposAlteradosSelecionado" style="position:relative; top:3px;" render="formFiltroCamposAlterados" styleClass="btn btn-default" oncomplete="#{rich:component('panelFiltroCamposAlterados')}.show()" icon="#{msg_botoes.btn_icon_ok_embutido}" value="Filtros Campos Alterados" image="#{resource['imagens/botaoConsultar.png']}" alt="#{msg.msg_consultar_dados}" accesskey="2" />
+					</h:panelGroup>		
+				</h:panelGroup>
+				
+						
+				
+				
+				<h:panelGroup layout="block" styleClass="col-md-12" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<otm:commandButton id="consultar" render="form:resultado, form:panelMensagem" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" action="#{LogMatriculaControle.consultarLogMatricula}" image="#{resource['imagens/botaoConsultar.png']}" alt="#{msg.msg_consultar_dados}" accesskey="2" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 pn" id="resultado">
+					<a4j:repeat id="items" type="definitions" rowKeyVar="row" value="#{LogMatriculaControle.listaLogMatriculaVOs}" rendered="#{!empty LogMatriculaControle.listaLogMatriculaVOs}" rows="10" var="matriculaItem">
+						<otm2:panel name="panelInforma#{row}" styleClassBody=" " stylePanel="margin-top: 10px;" stylePanelHeader="border-bottom: 2px solid #cccccc; margin-bottom: 10px; position: relative; left: 5px;" styleClassHeader="bg-gray rounded p10" styleClassFooter="dn" renderedControl="true">
+							<ui:define name="header">
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_event_id}" />
+									<h:outputText styleClass="tituloCamposNegrito" id="event_id" readonly="true" value="#{matriculaItem.event_id}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_schema_name}" />
+									<h:outputText styleClass="tituloCamposNegrito" id="schema_name" readonly="true" value="#{matriculaItem.schema_name}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_session_user_name}" />
+									<h:outputText styleClass="tituloCamposNegrito" id="session_user_name" readonly="true" value="#{matriculaItem.session_user_name}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_usuario_logado}" />
+									<h:outputText styleClass="tituloCamposNegrito" id="usuario_logado" readonly="true" value="#{matriculaItem.usuarioLogadoVO.nome}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_action_tstamp_clk}" />
+									<h:outputText styleClass="tituloCamposNegrito" id="action_tstamp_clk" readonly="true" value="#{matriculaItem.action_tstamp_clk}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_transaction_id}" />
+									<h:outputText styleClass="tituloCamposNegrito" id="transaction_id" readonly="true" value="#{matriculaItem.transaction_id}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_client_addr}" />
+									<h:outputText styleClass="tituloCamposNegrito" id="client_addr" readonly="true" value="#{matriculaItem.client_addr}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_action}" />
+									<h:outputText styleClass="tituloCamposNegrito" id="action" readonly="true" value="#{matriculaItem.action_Apresentar}" />
+								</h:panelGroup>
+								<!-- 								<h:panelGroup id="apresentar" layout="block" styleClass="col-md-1 text-center"> -->
+								<!-- 									<otm:spacer width="100%"></otm:spacer> -->
+								<!-- 									<otm:commandIcon action="#{LogMatriculaControle.setApresentarDetalhes(true)}" rendered="#{!LogMatriculaControle.apresentarDetalhes}" onclick="expandir('.log#{row}')" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleIcon="fs15" render="form:resultado" /> -->
+								<!-- 						 			<otm:commandIcon action="#{LogMatriculaControle.setApresentarDetalhes(false)}" rendered="#{LogMatriculaControle.apresentarDetalhes}" onclick="expandir('.log#{row}')" icon="fa fa-minus" styleIcon="fs15" render="form:resultado" /> -->
+								<!-- 								</h:panelGroup> -->
+							</ui:define>
+							<ui:define name="body">
+								<div class="col-md-12" style="display: flex;">
+									<div style="width: 49% !important; margin-right: 5px; margin-left: 5px;" class="border rounded">
+										<h:panelGroup layout="block" styleClass="col-md-12 border rounded bg-gray p5">
+											<h:outputText styleClass="tituloCampos font-weight-bold" value="#{msg_aplic.prt_Audit_row_data}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="log#{row} recolhido" style="width:100%;overflow-y:auto;overflow-x:hidden; margin-top:15px;line-height:20px;word-break: break-all; padding-right: 3px;">
+											<a4j:repeat value="#{matriculaItem.listaAtributoJsonRow_dataVOs}" var="atributoJsonItem">
+												<h:panelGroup layout="block" style="float:left;width:100%; text-align:left; border-bottom:1px solid #C4C0C9;">
+													<h:panelGroup layout="block" style="float:left;width:50%; text-align:left;word-break: break-all;">
+														<h:outputText styleClass="tituloCampos" value="#{atributoJsonItem.atributo}:" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" style="float:left;width:50%; text-align:left;word-break: break-all;">
+														<h:outputText value="#{atributoJsonItem.valor}" />
+													</h:panelGroup>
+												</h:panelGroup>
+											</a4j:repeat>
+										</h:panelGroup>
+									</div>
+									<div style="width: 49% !important; margin-right: 5px;" class="border rounded">
+										<h:panelGroup layout="block" styleClass="col-md-12 border rounded bg-gray p5">
+											<h:outputText styleClass="tituloCampos font-weight-bold" value="#{msg_aplic.prt_Audit_changed_fields}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="log#{row} recolhido" style="width:100%;overflow-y:overlay;overflow-x:hidden; margin-top:15px;">
+											<a4j:repeat value="#{matriculaItem.listaAtributoJsonChanged_fieldsVOs}" var="atributoJsonItem">
+												<h:panelGroup layout="block" style="float:left;width:100%; text-align:left; border-bottom:1px solid #C4C0C9;line-height:20px;word-break: break-all;">
+													<h:panelGroup layout="block" style="float:left;width:50%; text-align:left;word-break: break-all;">
+														<h:outputText styleClass="tituloCampos" value="#{atributoJsonItem.atributo}:" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" style="float:left;width:50%; text-align:left;word-break: break-all;">
+														<h:outputText value="#{atributoJsonItem.valor}" />
+													</h:panelGroup>
+												</h:panelGroup>
+											</a4j:repeat>
+										</h:panelGroup>
+									</div>
+								</div>
+							</ui:define>
+						</otm2:panel>
+					</a4j:repeat>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+						<rich:dataScroller boundaryControls="auto" fastControls="hide" render="form:resultado" stepControls="auto" for="form:items" limitRender="10" align="center" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="panelMensagem" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{LogMatriculaControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

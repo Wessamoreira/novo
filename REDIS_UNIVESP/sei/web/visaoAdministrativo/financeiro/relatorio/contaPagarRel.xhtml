@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ContaPagar_tituloRel}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<script type="text/javascript">
+			window.onload = function() {
+				document.getElementById("form:data").focus();
+			}
+		</script>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFornecedor" shadowOpacity="true" width="590" height="400">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Fornecedor_tituloForm}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink">
+						<rich:componentControl target="panelFornecedor" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFornecedor">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFornecedor" value="#{ContaPagarRelControle.campoConsultaFornecedor}">
+						<f:selectItems value="#{ContaPagarRelControle.tipoConsultaComboFornecedor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaFornecedor" size="10" styleClass="form-control campos" value="#{ContaPagarRelControle.valorConsultaFornecedor}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultar" render="formFornecedor:resultadoConsultaFornecedor,formFornecedor:mensagemConsultaFornecedor, formFornecedor:scResultadoFornecedor" action="#{ContaPagarRelControle.consultarFornecedor}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaFornecedor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ContaPagarRelControle.listaConsultaFornecedor}" rows="5" var="fornecedorItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarFornecedor}" render="form:nomeFornecedor" oncomplete="#{rich:component('panelFornecedor')}.hide(), setFocus(form,'form:nomeFornecedor');" value="#{fornecedorItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Fornecedor_CNPJ}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarFornecedor}" render="form:nomeFornecedor" oncomplete="#{rich:component('panelFornecedor')}.hide(), setFocus(form,'form:nomeFornecedor');" value="#{fornecedorItem.CNPJ}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarFornecedor}" render="form:nomeFornecedor" oncomplete="#{rich:component('panelFornecedor')}.hide(), setFocus(form,'form:nomeFornecedor');" value="#{fornecedorItem.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ContaPagarRelControle.selecionarFornecedor}" render="form:nomeFornecedor" oncomplete="#{rich:component('panelFornecedor')}.hide(), setFocus(form,'form:nomeFornecedor');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizda">
+					<rich:dataScroller for="formFornecedor:resultadoConsultaFornecedor" maxPages="10" id="scResultadoFornecedor" page="#{ContaPagarRelControle.controleConsultaOtimizado.page}" scrollListener="#{ContaPagarRelControle.scrollerListener}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFornecedor" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContaPagarRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" shadowOpacity="true" width="580" height="360">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaPagar_funcionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkFunc">
+						<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionario" value="#{ContaPagarRelControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{ContaPagarRelControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaFuncionario" size="10" styleClass="form-control campos" value="#{ContaPagarRelControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultar" render="formFuncionario:mensagemConsultaFuncionario, formFuncionario:resultadoConsultaFuncionario, formFuncionario:scResultadoFuncionario" action="#{ContaPagarRelControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaFuncionario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ContaPagarRelControle.listaConsultaFuncionario}" rows="5" var="funcionarioItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Funcionario_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarFuncionario}" render="form:funcionario" oncomplete="#{rich:component('panelFuncionario')}.hide(), setFocus(form,'form:nomeFuncionario');" value="#{funcionarioItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Funcionario_nome} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarFuncionario}" render="form:funcionario" oncomplete="#{rich:component('panelFuncionario')}.hide(), setFocus(form,'form:nomeFuncionario');" value="#{funcionarioItem.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ContaPagarRelControle.selecionarFuncionario}" render="form:funcionario" oncomplete="#{rich:component('panelFuncionario')}.hide(), setFocus(form,'form:nomeFuncionario');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formFuncionario:resultadoConsultaFuncionario" maxPages="10" id="scResultadoFuncionario" page="#{ContaPagarRelControle.controleConsultaOtimizado.page}" scrollListener="#{ContaPagarRelControle.scrollerListener}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContaPagarRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelBanco" shadowOpacity="true" width="580" height="360">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaPagar_banco}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink6">
+						<rich:componentControl target="panelBanco" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formBanco">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaBanco" value="#{ContaPagarRelControle.campoConsultaBanco}">
+						<f:selectItems value="#{ContaPagarRelControle.tipoConsultaComboBanco}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaBanco" size="10" styleClass="form-control campos" value="#{ContaPagarRelControle.valorConsultaBanco}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultar" render="formBanco:mensagemConsultaBanco, formBanco:resultadoConsultaBanco, formBanco:scResultadoBanco" action="#{ContaPagarRelControle.consultarBanco}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaBanco" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ContaPagarRelControle.listaConsultaBanco}" rows="5" var="bancoItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Banco_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarBanco}" render="form:banco" oncomplete="#{rich:component('panelBanco')}.hide(), setFocus(form,'form:nomeBanco');" value="#{bancoItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Banco_nome} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarBanco}" render="form:banco" oncomplete="#{rich:component('panelBanco')}.hide(), setFocus(form,'form:nomeBanco');" value="#{bancoItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ContaPagarRelControle.selecionarBanco}" render="form:banco" oncomplete="#{rich:component('panelBanco')}.hide(), setFocus(form,'form:nomeBanco');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formBanco:resultadoConsultaBanco" maxPages="10" id="scResultadoBanco" page="#{ContaPagarRelControle.controleConsultaOtimizado.page}" scrollListener="#{ContaPagarRelControle.scrollerListener}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaBanco" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContaPagarRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCentroDespesa" shadowOpacity="true" width="550" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaPagar_categoriaDespesa}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink5">
+						<rich:componentControl target="panelCentroDespesa" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCentroDespesa">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCentroDespesa" value="#{ContaPagarRelControle.campoConsultaCentroDespesa}">
+						<f:selectItems value="#{ContaPagarRelControle.tipoConsultaComboCentroDespesa}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaCentroDespesa" size="10" styleClass="form-control campos" value="#{ContaPagarRelControle.valorConsultaCentroDespesa}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultar" render="formCentroDespesa:mensagemConsultaCentroDespesa, formCentroDespesa:resultadoConsultaCentroDespesa, formCentroDespesa:scResultadoCentroDespesa" action="#{ContaPagarRelControle.consultarCentroDespesa}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaCentroDespesa" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ContaPagarRelControle.listaConsultaCentroDespesa}" rows="5" var="centroDespesa">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_CentroDespesa_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarCentroDespesa}" render="form:nomeCentroDespesa" oncomplete="#{rich:component('panelCentroDespesa')}.hide(), setFocus(form,'form:nomeCentroDespesa');" value="#{centroDespesa.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_CentroDespesa_descricao} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarCentroDespesa}" render="form:nomeCentroDespesa" oncomplete="#{rich:component('panelCentroDespesa')}.hide(), setFocus(form,'form:nomeCentroDespesa');" value="#{centroDespesa.descricao}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ContaPagarRelControle.selecionarCentroDespesa}" render="form:nomeCentroDespesa" oncomplete="#{rich:component('panelCentroDespesa')}.hide(), setFocus(form,'form:nomeCentroDespesa');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formCentroDespesa:resultadoConsultaCentroDespesa" maxPages="10" id="scResultadoCentroDespesa" page="#{ContaPagarRelControle.controleConsultaOtimizado.page}" scrollListener="#{ContaPagarRelControle.scrollerListener}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCentroDespesa" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContaPagarRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" onshow="document.getElementById('formTurma:valorConsultarTurma').focus()" shadowOpacity="true" top="0" width="600" height="410">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarTurma}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkTurma">
+						<rich:componentControl target="panelTurma" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{ContaPagarRelControle.campoConsultaTurma}">
+						<f:selectItems value="#{ContaPagarRelControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultarTurma" size="10" styleClass="form-control campos" value="#{ContaPagarRelControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultar" render="formTurma:mensagemConsultarTurma, formTurma:resultadoConsultarTurma, formTurma:scResultadoTurma" action="#{ContaPagarRelControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultarTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ContaPagarRelControle.listaConsultaTurma}" rows="5" var="turmaItem">
+					<rich:column sortBy="#{turmaItem.identificadorTurma}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_identificadorTurma}" />
+						</f:facet>
+						<a4j:commandLink action="#{ContaPagarRelControle.selecionarTurma}" oncomplete="#{rich:component('panelTurma')}.hide();" render="form:identificadorTurma" id="identificadorTurma" value="#{turmaItem.identificadorTurma}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItem.curso.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_curso}" />
+						</f:facet>
+						<a4j:commandLink action="#{ContaPagarRelControle.selecionarTurma}" id="curso" oncomplete="#{rich:component('panelTurma')}.hide();" render="form:identificadorTurma" value="#{turmaItem.curso.nome}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItem.turno.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_turno}" />
+						</f:facet>
+						<a4j:commandLink action="#{ContaPagarRelControle.selecionarTurma}" id="turno" oncomplete="#{rich:component('panelTurma')}.hide();" render="form:identificadorTurma" value="#{turmaItem.turno.nome}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItem.peridoLetivo.descricao}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_periodoLetivo}" />
+						</f:facet>
+						<a4j:commandLink action="#{ContaPagarRelControle.selecionarTurma}" id="periodo" render="form:identificadorTurma" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.peridoLetivo.descricao}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ContaPagarRelControle.selecionarTurma}" focus="turma" render="form:identificadorTurma" oncomplete="#{rich:component('panelTurma')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formTurma:resultadoConsultarTurma" maxPages="10" id="scResultadoTurma" page="#{ContaPagarRelControle.controleConsultaOtimizado.page}" scrollListener="#{ContaPagarRelControle.scrollerListener}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultarTurma">
+					<otm:mensagem bean="#{ContaPagarRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelResponsavelFinanceiro" shadowOpacity="true" width="580" onshow="document.getElementById('formResponsavelFinanceiro:valorConsultaResponsavelFinanceiro').focus();" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceber_responsavelFinanceiro}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkResponsavelFinanceiro">
+						<rich:componentControl target="panelResponsavelFinanceiro" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formResponsavelFinanceiro">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionario" value="#{ContaPagarRelControle.campoConsultaResponsavelFinanceiro}">
+						<f:selectItems value="#{ContaPagarRelControle.tipoConsultaComboResponsavelFinanceiro}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaFuncionario" size="10" styleClass="form-control campos" value="#{ContaPagarRelControle.valorConsultaResponsavelFinanceiro}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultar" render="formResponsavelFinanceiro" action="#{ContaPagarRelControle.consultarResponsavelFinanceiro}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaResponsavelFinanceiro" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ContaPagarRelControle.listaConsultaResponsavelFinanceiro}" rows="5" var="responsavelFinanceiro">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarResponsavelFinanceiro}" render="form:responsavelFinanceiro" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.hide(), setFocus(form,'form:responsavelFinanceiro');" value="#{responsavelFinanceiro.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarResponsavelFinanceiro}" render="form:responsavelFinanceiro" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.hide(), setFocus(form,'form:responsavelFinanceiro');" value="#{responsavelFinanceiro.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ContaPagarRelControle.selecionarResponsavelFinanceiro}" render="form:responsavelFinanceiro" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.hide(), setFocus(form,'form:responsavelFinanceiro');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formResponsavelFinanceiro:resultadoConsultaResponsavelFinanceiro" maxPages="10" id="scResultadoResponsavelFinanceiro" page="#{ContaPagarRelControle.controleConsultaOtimizado.page}" scrollListener="#{ContaPagarRelControle.scrollerListener}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaResponsavelFinanceiro" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContaPagarRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelParceiro" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formParceiro:valorConsultaParceiro').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Parceiro_consultarParceiro}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkParceiro">
+						<rich:componentControl target="panelParceiro" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formParceiro">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaParceiro" value="#{ContaPagarRelControle.campoConsultaParceiro}">
+						<f:selectItems value="#{ContaPagarRelControle.tipoConsultaParceiro}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaParceiro" size="10" styleClass="form-control campos" value="#{ContaPagarRelControle.valorConsultaParceiro}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultar" render="formParceiro" action="#{ContaPagarRelControle.consultarParceiro}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaParceiro" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ContaPagarRelControle.listaConsultaParceiro}" rows="5" var="parceiroItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Parceiro_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarParceiro}" render="form:parceiro" oncomplete="#{rich:component('panelParceiro')}.hide();document.getElementById('form:parceiro').focus();" value="#{parceiroItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Parceiro_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarParceiro}" render="form:parceiro" oncomplete="#{rich:component('panelParceiro')}.hide();document.getElementById('form:parceiro').focus();" value="#{parceiroItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Parceiro_razaoSocial}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarParceiro}" render="form:parceiro" oncomplete="#{rich:component('panelParceiro')}.hide();document.getElementById('form:parceiro').focus();" value="#{parceiroItem.razaoSocial}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ContaPagarRelControle.selecionarParceiro}" render="form:parceiro" oncomplete="#{rich:component('panelParceiro')}.hide();document.getElementById('form:parceiro').focus();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formParceiro:resultadoConsultaParceiro" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoParceiro" page="#{ContaPagarRelControle.controleConsultaOtimizado.page}" scrollListener="#{ContaPagarRelControle.scrollerListener}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCidade" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContaPagarRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" width="580" onshow="document.getElementById('formAluno:valorConsultaAluno').focus();" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceber_matriculaAluno}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkAluno">
+						<rich:componentControl target="panelAluno" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAluno" value="#{ContaPagarRelControle.dataModeloAluno.campoConsulta}">
+						<f:selectItems value="#{ContaPagarRelControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaAluno" size="10" styleClass="form-control campos" value="#{ContaPagarRelControle.dataModeloAluno.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultar" render="@form" action="#{ContaPagarRelControle.consultarAluno}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.dataModeloAluno.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContaPagarRelControle.dataModeloAluno.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ContaPagarRelControle.dataModeloAluno}" rows="5" var="matriculaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_matricula} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarAluno}" render="form:aluno" oncomplete="#{rich:component('panelAluno')}.hide(), setFocus(form,'form:aluno');" value="#{matriculaItem.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarAluno}" render="form:aluno" oncomplete="#{rich:component('panelAluno')}.hide(), setFocus(form,'form:aluno');" value="#{matriculaItem.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ContaPagarRelControle.selecionarAluno}" render="form:aluno" oncomplete="#{rich:component('panelAluno')}.hide(), setFocus(form,'form:aluno');" value="#{matriculaItem.aluno.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ContaPagarRelControle.selecionarAluno}" render="form:aluno" oncomplete="#{rich:component('panelAluno')}.hide(), setFocus(form,'form:aluno');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller align="center" for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" page="#{ContaPagarRelControle.dataModeloAluno.page}" scrollListener="#{ContaPagarRelControle.scrollerListenerAluno}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContaPagarRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<h:form id="form" target="_blank">
+			<h:commandLink action="#{ContaPagarRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="contaPagar">
+				<h:panelGroup id="grupo">
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="Período de  " />
+							<otm:calendar id="data" value="#{ContaPagarRelControle.contaPagarRelVO.dataInicio}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="Periodo Fim" />
+							<otm:calendar id="dataFim" value="#{ContaPagarRelControle.contaPagarRelVO.dataFim}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_filtrarContaPagarPor}" />
+							<h:selectOneMenu id="filtroAPagar" styleClass="form-control camposObrigatorios" value="#{ContaPagarRelControle.filtroAPagar}">
+								<f:selectItems value="#{ContaPagarRelControle.listaSelectItemFiltroContaAPaga}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_unidadeEnsino}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:selectOneMenu id="unidadeEnsino" styleClass="form-control campos" value="#{ContaPagarRelControle.contaPagarRelVO.unidadeEnsino}">
+									<f:selectItems value="#{ContaPagarRelControle.listaSelectItemUnidadeEnsino}" />
+								</h:selectOneMenu>
+								<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_unidadeEnsino" tooltip="Atualizar Unida de Ensino" action="#{ContaPagarRelControle.montarListaSelectItemUnidadeEnsino}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="form:contaPagar" render="form:unidadeEnsino" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<a4j:region id="regionTurma">
+							<h:panelGroup layout="block" styleClass="col-md-4" id="modalTurma">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_turma}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:inputText size="40" id="identificadorTurma" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ContaPagarRelControle.turmaVO.identificadorTurma}" />
+									<span class="append-icon right"> <otm:commandIcon id="consultarTurma" tooltip="Consultar Turma" render="formTurma" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelTurma')}.show()" /> <otm:commandIcon id="limparTurma" tooltip="Limpar Turma" action="#{ContaPagarRelControle.limparDadosTurma}" render="form:identificadorTurma" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+									</span>
+								</h:panelGroup>
+							</h:panelGroup>
+						</a4j:region>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_filtrarContaPagaPor}" />
+							<h:selectOneMenu id="filtroPago" styleClass="form-control camposObrigatorios" value="#{ContaPagarRelControle.filtroPago}">
+								<f:selectItems value="#{ContaPagarRelControle.listaSelectItemFiltroPaga}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ContaPagar_filtrarContaPagaCanceladaPor}" />
+							<h:selectOneMenu id="filtroContaPagarCancelada" styleClass="form-control camposObrigatorios" value="#{ContaPagarRelControle.filtroCancelada}">
+								<f:selectItems value="#{ContaPagarRelControle.listaSelectItemFiltroContaAPaga}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_filtrarContaPagaNegociadaPor}" />
+						<h:selectOneMenu id="filtroPagoNegociada" styleClass="form-control camposObrigatorios" value="#{ContaPagarRelControle.filtroNegociada}">
+							<f:selectItems value="#{ContaPagarRelControle.listaSelectItemFiltroContaAPaga}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FluxoCaixa_tipoLayout}" />
+						<h:selectOneMenu id="tipoLayout" styleClass="form-control camposObrigatorios" value="#{ContaPagarRelControle.tipoLayout}">
+							<f:selectItems value="#{ContaPagarRelControle.listaSelectItemTipoLayout}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Recebimento_contaCorrente}" />
+						<h:selectOneRadio styleClass="form-control" value="#{ContaPagarRelControle.possuiConta}" disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10">
+							<a4j:ajax event="click" listener="#{ContaPagarRelControle.validarFiltroContaCorrente}" render="form:grupo" execute="form:contaPagar" />
+							<f:selectItems value="#{ContaPagarRelControle.listaContaCorrente}" />
+						</h:selectOneRadio>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_fornecedor}" />
+						<h:selectOneRadio styleClass="form-control" value="#{ContaPagarRelControle.contaPagarRelVO.fornecedor}" disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10">
+							<a4j:ajax event="click" listener="#{ContaPagarRelControle.validarFiltroFornecedor}" render="form:grupo" execute="form:contaPagar" />
+							<f:selectItems value="#{ContaPagarRelControle.listaContaPagarFiltrosEnum}" />
+						</h:selectOneRadio>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_funcionario}" />
+						<h:selectOneRadio styleClass="form-control" value="#{ContaPagarRelControle.contaPagarRelVO.funcionario}" disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10">
+							<a4j:ajax event="click" listener="#{ContaPagarRelControle.validarFiltroFuncionario}" render="form:grupo" execute="form:contaPagar" />
+							<f:selectItems value="#{ContaPagarRelControle.listaContaPagarFiltrosEnum}" />
+						</h:selectOneRadio>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_banco}" />
+						<h:selectOneRadio styleClass="form-control" value="#{ContaPagarRelControle.contaPagarRelVO.banco}" disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10">
+							<a4j:ajax event="click" listener="#{ContaPagarRelControle.validarFiltroBanco}" render="form:grupo" execute="form:contaPagar" />
+							<f:selectItems value="#{ContaPagarRelControle.listaContaPagarFiltrosEnum}" />
+						</h:selectOneRadio>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_parceiro}" />
+						<h:selectOneRadio styleClass="form-control" value="#{ContaPagarRelControle.contaPagarRelVO.parceiro}" disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10">
+							<a4j:ajax event="click" listener="#{ContaPagarRelControle.validarFiltroParceiro}" render="form:grupo" execute="form:contaPagar" />
+							<f:selectItems value="#{ContaPagarRelControle.listaContaPagarFiltrosEnum}" />
+						</h:selectOneRadio>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_responsavelFinanceiro}" />
+						<h:selectOneRadio styleClass="form-control" value="#{ContaPagarRelControle.contaPagarRelVO.responsavelFinanceiro}" disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10">
+							<a4j:ajax event="click" listener="#{ContaPagarRelControle.validarFiltroResponsavelFinanceiro}" render="form:grupo" execute="form:contaPagar" />
+							<f:selectItems value="#{ContaPagarRelControle.listaContaPagarFiltrosEnum}" />
+						</h:selectOneRadio>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_aluno}" />
+						<h:selectOneRadio styleClass="form-control" value="#{ContaPagarRelControle.contaPagarRelVO.aluno}" disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10">
+							<a4j:ajax event="click" listener="#{ContaPagarRelControle.validarFiltroAluno}" render="form:grupo" execute="form:contaPagar" />
+							<f:selectItems value="#{ContaPagarRelControle.listaContaPagarFiltrosEnum}" />
+						</h:selectOneRadio>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_departamento}" />
+						<h:selectOneRadio styleClass="form-control" value="#{ContaPagarRelControle.contaPagarRelVO.departamento}" disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10">
+							<a4j:ajax event="click" listener="#{ContaPagarRelControle.validarFiltroDepartamento}" render="form:grupo" execute="form:contaPagar" />
+							<f:selectItems value="#{ContaPagarRelControle.listaContaPagarFiltrosEnum}" />
+						</h:selectOneRadio>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_OperadoraCartao_tituloForm}" />
+						<h:selectOneRadio styleClass="form-control" value="#{ContaPagarRelControle.contaPagarRelVO.operadoraCartao}" disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10">
+							<a4j:ajax event="click" listener="#{ContaPagarRelControle.validarFiltroOperadoraCartao}" render="form:grupo" />
+							<f:selectItems value="#{ContaPagarRelControle.listaContaPagarFiltrosEnum}" />
+						</h:selectOneRadio>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_ordenarPor}" />
+						<h:selectOneMenu id="filtroData" styleClass="form-control campos" value="#{ContaPagarRelControle.contaPagarRelVO.filtroData}">
+							<f:selectItems value="#{ContaPagarRelControle.tipoComboBoxFiltroData}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ContaPagarRelControle.apresentarFiltroContaCorrente}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Conta Corrente" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:selectOneMenu id="contaCorrente" styleClass="form-control campos" value="#{ContaPagarRelControle.codigoContaCorrente}">
+								<f:selectItems value="#{RecebimentoRelControle.listaSelectItemContaCorrente}" />
+							</h:selectOneMenu>
+							<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_contaCorrente" action="#{ContaPagarRelControle.montarListaSelectItemContaCorrente}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" immediate="true" execute="form:contaPagar" render="form:contaCorrente" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ContaPagarRelControle.apresentarFiltroFornecedor}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Fornecedor" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText size="40" id="nomeFornecedor" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ContaPagarRelControle.contaPagarRelVO.nomeFornecedor}" />
+							<span class="append-icon right"> <otm:commandIcon id="consultarFornecedor" render="formFornecedor" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelFornecedor')}.show();" execute="form:contaPagar" /> <otm:commandIcon id="limparFornecedor" action="#{ContaPagarRelControle.limparDadosFornecedor}" render="form:cpfCnpjFornecedor, form:nomeFornecedor" icon="#{msg_botoes.btn_icon_limpar_embutido}" execute="form:contaPagar" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ContaPagarRelControle.apresentarFiltroFuncionario}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Funcionario" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="funcionario" size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{ContaPagarRelControle.contaPagarRelVO.nomeFuncionario}" />
+							<span class="append-icon right"> <otm:commandIcon tooltip="Consultar Funcionário" icon="#{msg_botoes.btn_icon_lupa_embutido}" execute="form:contaPagar" oncomplete="#{rich:component('panelFuncionario')}.show();" render="formFuncionario" /> <otm:commandIcon id="limparFuncionario" action="#{ContaPagarRelControle.limparDadosFuncionario}" render="form:funcionario" icon="#{msg_botoes.btn_icon_limpar_embutido}" execute="form:contaPagar" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ContaPagarRelControle.apresentarFiltroBanco}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Banco" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="banco" size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{ContaPagarRelControle.contaPagarRelVO.nomeBanco}" />
+							<span class="append-icon right"> <otm:commandIcon tooltip="Consultar Banco" icon="#{msg_botoes.btn_icon_lupa_embutido}" execute="form:contaPagar" oncomplete="#{rich:component('panelBanco')}.show();" render="formBanco" /> <otm:commandIcon id="limparBanco" action="#{ContaPagarRelControle.limparDadosBanco}" render="form:banco" icon="#{msg_botoes.btn_icon_limpar_embutido}" execute="form:contaPagar" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ContaPagarRelControle.apresentarFiltroParceiro}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Parceiro" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="parceiro" size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{ContaPagarRelControle.contaPagarRelVO.nomeParceiro}" />
+							<span class="append-icon right"> <otm:commandIcon tooltip="Consultar Parceiro" icon="#{msg_botoes.btn_icon_lupa_embutido}" execute="form:contaPagar" oncomplete="#{rich:component('panelParceiro')}.show();" render="formParceiro" /> <otm:commandIcon id="limparParceiro" action="#{ContaPagarRelControle.limparDadosParceiro}" render="form:parceiro" icon="#{msg_botoes.btn_icon_limpar_embutido}" execute="form:contaPagar" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ContaPagarRelControle.apresentarFiltroAluno}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Aluno/Candidato(a)" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="aluno" size="25" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{ContaPagarRelControle.contaPagarRelVO.nomeAluno}" />
+							<span class="append-icon right"> <otm:commandIcon tooltip="Consultar Aluno" icon="#{msg_botoes.btn_icon_lupa_embutido}" execute="form:contaPagar" oncomplete="#{rich:component('panelAluno')}.show();" render="formAluno" /> <otm:commandIcon id="limparAluno" action="#{ContaPagarRelControle.limparDadosAluno}" render="form:aluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" execute="form:contaPagar" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ContaPagarRelControle.apresentarFiltroResponsavelFinanceiro}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Responsavel Financeiro" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="responsavelFinanceiro" size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{ContaPagarRelControle.contaPagarRelVO.nomeResponsavelFinanceiro}" />
+							<span class="append-icon right"> <otm:commandIcon tooltip="Consultar Responsável Financeiro" icon="#{msg_botoes.btn_icon_lupa_embutido}" execute="form:contaPagar" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.show();" render="formResponsavelFinanceiro" /> <otm:commandIcon id="limparResponsavelFinanceiro" action="#{ContaPagarRelControle.limparDadosResponsavelFinanceiro}" render="form:responsavelFinanceiro" icon="#{msg_botoes.btn_icon_limpar_embutido}" execute="form:contaPagar" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ContaPagarRelControle.apresentarFiltroDepartamento}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Departamento" />
+						<h:selectOneMenu id="departamento" styleClass="form-control camposObrigatorios" value="#{ContaPagarRelControle.contaPagarRelVO.codigoDepartamento}">
+							<f:selectItems value="#{ContaPagarRelControle.listaSelectItemDepartamento}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ContaPagarRelControle.apresentarFiltroOperadoraCartao}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Operadora Cartao" />
+						<h:selectOneMenu id="operadoraCartao" styleClass="form-control camposObrigatorios" value="#{ContaPagarRelControle.contaPagarRelVO.codigoOperadoraCartao}">
+							<f:selectItems value="#{ContaPagarRelControle.listaSelectItemOperadoraCartao}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContaPagarRelControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<otm:commandButton style="margin-right:5px" id="imprimirPDF" render="form" oncomplete="#{ContaPagarRelControle.download}" action="#{ContaPagarRelControle.imprimirPDF}" value="Gerar Relatório (PDF)" icon="#{msg_botoes.btn_icon_pdf_embutido}" accesskey="2" styleClass="btn btn-danger" />
+						<otm:commandButton id="imprimirExcel" render="form" oncomplete="#{ContaPagarRelControle.download}" action="#{ContaPagarRelControle.imprimirRelatorioExcel}" value="Gerar Relatório (Excel)" icon="fas fa-file-excel" styleClass="btn btn-info" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

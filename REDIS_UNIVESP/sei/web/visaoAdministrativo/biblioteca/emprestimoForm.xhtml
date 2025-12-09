@@ -1,0 +1,1082 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Emprestimo_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+		<h:outputScript name="jquery.color.js" library="script/crop" />
+		<h:outputScript name="jquery.Jcrop.js" library="script/crop" />
+		<h:outputStylesheet name="jquery.Jcrop.css" library="script/crop" />
+		<h:outputScript name="webcam.js" library="script/webcam" />
+		<h:form id="form">
+			<h:commandLink action="#{EmprestimoControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="row" id="panelGridForm">
+				<h:panelGroup styleClass="col-md-10">
+					<h:panelGroup id="tabFormEmprestimo">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass=" tituloCampos" value="#{msg_aplic.prt_Exemplar_biblioteca}" />
+							<h:selectOneMenu disabled="#{!EmprestimoControle.mostrarComboboxBiblioteca}" id="biblioteca" styleClass="form-control camposObrigatorios" value="#{EmprestimoControle.emprestimoVO.biblioteca.codigo}">
+								<f:selectItems value="#{EmprestimoControle.listaSelectItemBiblioteca}" />
+								<a4j:ajax event="change" render="form" execute="form" listener="#{EmprestimoControle.alterarBiblioteca}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_data}" />
+							<h:inputText size="11" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{EmprestimoControle.emprestimoVO.data}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_atendente}" />
+							<h:inputText size="38" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{EmprestimoControle.emprestimoVO.atendente.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_tipoPessoa}" />
+							<h:selectOneMenu id="tipoPessoa" styleClass="form-control camposObrigatorios" value="#{EmprestimoControle.emprestimoVO.tipoPessoa}">
+								<f:selectItems value="#{EmprestimoControle.tipoConsultaComboTipoPessoa}" />
+								<a4j:ajax listener="#{EmprestimoControle.selecionarFiltro}" event="change" render="form" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{EmprestimoControle.tipoPessoaMembroComunidade}">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText rendered="#{EmprestimoControle.tipoPessoaMembroComunidade}" styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_Visitante}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<a4j:region>
+									<h:inputText id="matriculaVisitante" onkeydown="if (event.keyCode =='13'){ return false }" styleClass="form-control campos" value="#{EmprestimoControle.emprestimoVO.pessoa.CPF}">
+										<a4j:ajax event="change" listener="#{EmprestimoControle.consultarVisitantePorCPF}" render="form" />
+									</h:inputText>
+								</a4j:region>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-8">
+								<h:inputText id="visitante" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{EmprestimoControle.emprestimoVO.pessoa.nome}" />
+								<span class="append-icon right"> <otm:commandIcon id="btnPanelMembroComunidade" oncomplete="#{rich:component('panelMembroComunidade')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_Emprestimo_consultarAluno}" /> <otm:commandIcon id="limparMembroComunidade" action="#{EmprestimoControle.limparCampoMembroComunidade}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" /> <otm:commandIcon disabled="#{!LoginControle.permissaoAcessoMenuVO.bloqueioBiblioteca}"
+										oncomplete="abrirPopup('bloqueioBibliotecaForm.xhtml?pessoa=#{EmprestimoControle.emprestimoVO.pessoa.codigo}&amp;biblioteca=#{EmprestimoControle.emprestimoVO.biblioteca.codigo}&amp;tipoPessoa=#{EmprestimoControle.emprestimoVO.tipoPessoa}', 'bloqueioBibliotecaForm?pessoa=#{EmprestimoControle.emprestimoVO.pessoa.codigo}&amp;biblioteca=#{EmprestimoControle.emprestimoVO.biblioteca.codigo}&amp;tipoPessoa=#{EmprestimoControle.emprestimoVO.tipoPessoa}', 930, 595);" tooltip="#{msg.msg_Biblioteca_bloqueioBiblioteca}" rendered="#{EmprestimoControle.possuiBloqueioBiblioteca}" icon="#{msg_botoes.btn_icon_aviso_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-8 pn" rendered="#{EmprestimoControle.tipoPessoaAluno}">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText rendered="#{EmprestimoControle.tipoPessoaAluno}" styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_Aluno}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:selectOneMenu id="tipoConsulta" styleClass="form-control camposObrigatorios" value="#{EmprestimoControle.tipoConsulta}">
+									<f:selectItems value="#{EmprestimoControle.listaSelectItemTipoConsulta}" />
+									<a4j:ajax event="change" render="form" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{EmprestimoControle.tipoConsulta == 'matricula'}">
+								<h:inputText id="matricula" rendered="#{EmprestimoControle.tipoConsulta == 'matricula'}" size="10" maxlength="20" onkeydown="if (event.keyCode =='13'){ return false }" styleClass="form-control campos" value="#{EmprestimoControle.matricula}">
+									<a4j:ajax event="change" listener="#{EmprestimoControle.consultarAlunoPorMatricula}" render="form" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{EmprestimoControle.tipoConsulta == 'cpf'}">
+								<h:inputText id="matriculaPorCpf" rendered="#{EmprestimoControle.tipoConsulta == 'cpf'}" size="10" maxlength="20" onkeypress="return mascara(this.form, 'form:matriculaPorCpf', '999.999.999-99', event);" styleClass="form-control campos" value="#{EmprestimoControle.matricula}">
+									<a4j:ajax event="change" listener="#{EmprestimoControle.consultarAlunoPorCPF}" render="form" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText id="aluno" size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{EmprestimoControle.emprestimoVO.pessoa.nome}" />
+								<span class="append-icon right"> <otm:commandIcon id="btnPanelAluno" oncomplete="#{rich:component('panelAluno')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_Emprestimo_consultarAluno}" /> <otm:commandIcon id="limparAluno" action="#{EmprestimoControle.limparCampoAluno}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" /> <otm:commandIcon disabled="#{!LoginControle.permissaoAcessoMenuVO.bloqueioBiblioteca}"
+										oncomplete="abrirPopup('bloqueioBibliotecaForm.xhtml?pessoa=#{EmprestimoControle.emprestimoVO.pessoa.codigo}&amp;biblioteca=#{EmprestimoControle.emprestimoVO.biblioteca.codigo}&amp;tipoPessoa=#{EmprestimoControle.emprestimoVO.tipoPessoa}&amp;matricula=#{EmprestimoControle.matricula}', 'bloqueioBibliotecaForm?pessoa=#{EmprestimoControle.emprestimoVO.pessoa.codigo}&amp;biblioteca=#{EmprestimoControle.emprestimoVO.biblioteca.codigo}&amp;tipoPessoa=#{EmprestimoControle.emprestimoVO.tipoPessoa}', 930, 595);" tooltip="#{msg.msg_Biblioteca_bloqueioBiblioteca}" rendered="#{EmprestimoControle.possuiBloqueioBiblioteca}" icon="#{msg_botoes.btn_icon_aviso_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{!empty EmprestimoControle.codigoFinanceiroMatricula and !empty EmprestimoControle.emprestimoVO.pessoa.nome}">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_codigoFinanceiroMatricula}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText styleClass="form-control camposSomenteLeitura" value="#{EmprestimoControle.codigoFinanceiroMatricula}" readonly="true" />
+								<span class="append-icon right"> <otm:commandIcon rendered="#{!EmprestimoControle.emprestimoVO.pessoa.novoObj}" oncomplete="#{rich:component('panelExemplar')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" render="formExemplar" alt="#{msg_aplic.prt_Emprestimo_consultarExemplar}" action="#{EmprestimoControle.limparDadosConsultaExemplar}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-8 pn" rendered="#{EmprestimoControle.tipoPessoaProfessor}">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText rendered="#{EmprestimoControle.tipoPessoaProfessor}" styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_Professor}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:selectOneMenu id="tipoConsultaProfessor" styleClass="form-control camposObrigatorios" value="#{EmprestimoControle.tipoConsulta}">
+									<f:selectItems value="#{EmprestimoControle.listaSelectItemTipoConsulta}" />
+									<a4j:ajax event="change" render="form" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:inputText id="matriculaProfessor" rendered="#{EmprestimoControle.tipoConsulta == 'matricula'}" size="10" styleClass="form-control campos" value="#{EmprestimoControle.matriculaFuncionario}">
+									<a4j:ajax event="change" listener="#{EmprestimoControle.consultarProfessorPorMatricula}" render="form" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:inputText id="matriculaProfessorCPF" rendered="#{EmprestimoControle.tipoConsulta == 'cpf'}" size="10" styleClass="form-control campos" onkeypress="return mascara(this.form, 'form:matriculaProfessorCPF', '999.999.999-99', event);" value="#{EmprestimoControle.matriculaFuncionario}">
+									<a4j:ajax event="change" listener="#{EmprestimoControle.consultarProfessorPorCPF}" render="form" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText id="professor" size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{EmprestimoControle.emprestimoVO.pessoa.nome}" />
+								<span class="append-icon right"> <otm:commandIcon oncomplete="#{rich:component('panelProfessor')}.show()" tooltip="#{msg_aplic.prt_Emprestimo_consultarProfessor}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparProfessor" action="#{EmprestimoControle.limparCampoProfessor}" tooltip="#{msg_aplic.prt_limparCampo}" icon="#{msg_botoes.btn_icon_limpar_embutido}" /> <otm:commandIcon disabled="#{!LoginControle.permissaoAcessoMenuVO.bloqueioBiblioteca}" oncomplete="abrirPopup('bloqueioBibliotecaForm.xhtml?pessoa=#{EmprestimoControle.emprestimoVO.pessoa.codigo}&amp;biblioteca=#{EmprestimoControle.emprestimoVO.biblioteca.codigo}&amp;tipoPessoa=#{EmprestimoControle.emprestimoVO.tipoPessoa}', 'bloqueioBibliotecaForm?pessoa=#{EmprestimoControle.emprestimoVO.pessoa.codigo}&amp;biblioteca=#{EmprestimoControle.emprestimoVO.biblioteca.codigo}&amp;tipoPessoa=#{EmprestimoControle.emprestimoVO.tipoPessoa}', 930, 595);"
+										title="#{msg.msg_Biblioteca_bloqueioBiblioteca}" rendered="#{EmprestimoControle.possuiBloqueioBiblioteca}" icon="#{msg_botoes.btn_icon_aviso_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-8 pn" rendered="#{EmprestimoControle.tipoPessoaFuncionario}">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText rendered="#{EmprestimoControle.tipoPessoaFuncionario}" styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_Funcionario}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:selectOneMenu id="tipoConsultaFuncionario" styleClass="form-control camposObrigatorios" value="#{EmprestimoControle.tipoConsulta}">
+									<f:selectItems value="#{EmprestimoControle.listaSelectItemTipoConsulta}" />
+									<a4j:ajax event="change" render="form" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:inputText id="matriculaFuncionario" rendered="#{EmprestimoControle.tipoConsulta == 'matricula'}" size="10" styleClass="form-control campos" value="#{EmprestimoControle.matriculaFuncionario}">
+									<a4j:ajax event="change" listener="#{EmprestimoControle.consultarFuncionarioPorMatricula}" render="form" />
+								</h:inputText>
+								<h:inputText id="matriculaFuncionarioCPF" rendered="#{EmprestimoControle.tipoConsulta == 'cpf'}" size="10" styleClass="form-control campos" onkeypress="return mascara(this.form, 'form:matriculaFuncionarioCPF', '999.999.999-99', event);" value="#{EmprestimoControle.matriculaFuncionario}">
+									<a4j:ajax event="change" listener="#{EmprestimoControle.consultarFuncionarioPorCPF}" render="form" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText id="funcionario" size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{EmprestimoControle.emprestimoVO.pessoa.nome}" />
+								<span class="append-icon right"> <otm:commandIcon oncomplete="#{rich:component('panelFuncionario')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_Emprestimo_consultarFuncionario}" /> <otm:commandIcon id="limparFuncionario" action="#{EmprestimoControle.limparCampoFuncionario}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" /> <otm:commandIcon disabled="#{!LoginControle.permissaoAcessoMenuVO.bloqueioBiblioteca}" oncomplete="abrirPopup('bloqueioBibliotecaForm.xhtml?pessoa=#{EmprestimoControle.emprestimoVO.pessoa.codigo}&amp;biblioteca=#{EmprestimoControle.emprestimoVO.biblioteca.codigo}&amp;tipoPessoa=#{EmprestimoControle.emprestimoVO.tipoPessoa}', 'bloqueioBibliotecaForm?pessoa=#{EmprestimoControle.emprestimoVO.pessoa.codigo}&amp;biblioteca=#{EmprestimoControle.emprestimoVO.biblioteca.codigo}&amp;tipoPessoa=#{EmprestimoControle.emprestimoVO.tipoPessoa}', 930, 595);"
+										tooltip="#{msg.msg_Biblioteca_bloqueioBiblioteca}" rendered="#{EmprestimoControle.possuiBloqueioBiblioteca}" icon="#{msg_botoes.btn_icon_aviso_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="#{EmprestimoControle.tipoPessoaMembroComunidade ? 'col-md-3' : 'col-md-4'}" rendered="#{EmprestimoControle.tipoPessoaMembroComunidade or EmprestimoControle.tipoPessoaFuncionario or EmprestimoControle.tipoPessoaProfessor}">
+							<h:outputText rendered="#{EmprestimoControle.tipoPessoaMembroComunidade or EmprestimoControle.tipoPessoaFuncionario or EmprestimoControle.tipoPessoaProfessor}" styleClass="tituloCampos" value="#{msg_aplic.prt_UnidadeEnsino_tituloForm}" />
+							<h:selectOneMenu rendered="#{EmprestimoControle.tipoPessoaMembroComunidade or EmprestimoControle.tipoPessoaFuncionario or EmprestimoControle.tipoPessoaProfessor}" id="unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{EmprestimoControle.emprestimoVO.unidadeEnsinoVO.codigo}">
+								<f:selectItems value="#{EmprestimoControle.listaSelectItemUnidadeEnsino}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{EmprestimoControle.tipoPessoaFuncionario or EmprestimoControle.tipoPessoaProfessor}" />
+						<h:panelGroup layout="block" styleClass="#{EmprestimoControle.tipoPessoaMembroComunidade ? 'col-md-3' : 'col-md-4'}">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Exemplar_codigoBarra}" />
+							<a4j:region>
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:inputText id="codigoBarras" size="24" maxlength="50" styleClass="form-control campos" onkeydown="if (event.keyCode == '13'){ return false }" value="#{EmprestimoControle.exemplarVO.codigoBarra}">
+										<a4j:ajax event="change" execute="@this" oncomplete="setFocus(form, 'form:codigoBarras');" render="form:notificações, form:itens, form:btns, form:tabFormEmprestimo, formCodigoBarrasReserva" listener="#{EmprestimoControle.consultarExemplarPeloCodigoBarras}" />
+									</h:inputText>
+									<span class="append-icon right"> <otm:commandIcon render="formExemplar" action="#{EmprestimoControle.limparDadosConsultaExemplar}" oncomplete="#{rich:component('panelExemplar')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" alt="#{msg_aplic.prt_Emprestimo_consultarFuncionario}" rendered="#{!EmprestimoControle.emprestimoVO.pessoa.novoObj}" />
+									</span>
+								</h:panelGroup>
+							</a4j:region>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="panelNotificacao" styleClass="col-md-2" style="border-style: groove;border-width: 2px;border-radius: 4px;top: 25px;height: 167px;text-align: center;">
+					<h:panelGroup layout="block" styleClass="col-md-12" style="border-bottom: solid 1px;">
+						<h:panelGroup rendered="#{!EmprestimoControle.emprestimoVO.pessoa.existeImagem}" layout="block" styleClass="col-md-12 text-center mb5">
+							<a4j:commandLink id="substituirFoto" rendered="#{EmprestimoControle.emprestimoVO.pessoa.codigo > 0}" event="click" execute="@this" render="formImagem, formWebCam" oncomplete="Webcam.reset(); #{rich:component('panelImagem')}.show()" action="#{EmprestimoControle.limparMensagem}">
+								<h:panelGroup styleClass="fas fa-user fs35 mt5" />
+							</a4j:commandLink>
+							<h:panelGroup styleClass="fas fa-user fs35 mt5" rendered="#{EmprestimoControle.emprestimoVO.pessoa.codigo eq 0}" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{EmprestimoControle.emprestimoVO.pessoa.existeImagem}" layout="block" styleClass="col-md-12 text-center mb5">
+							<h:graphicImage rendered="#{EmprestimoControle.emprestimoVO.pessoa.existeImagem}" id="foto1" alt="Alterar Foto" value="#{EmprestimoControle.caminhoFotoUsuario}" style="cursor: pointer; position: relative; left: 0%; width: 73px; height: 73px; top: 1px; border: solid 1px; border-radius: 5px 5px 5px 5px;">
+								<a4j:ajax event="click" execute="@this" render="formImagem, formWebCam" oncomplete="Webcam.reset(); #{rich:component('panelImagem')}.show()" />
+							</h:graphicImage>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup id="notificações" layout="block" styleClass="col-md-12">
+						<h:panelGroup>
+							<otm:spacer width="2px" />
+							<h:outputText style="color: red;" value="#{EmprestimoControle.qtdeEmprestimosAtrasados}" />
+							<otm:spacer width="4px" />
+							<h:outputText styleClass="tituloCampos" value="#{msg.msg_Biblioteca_emprestimoAtrasado}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<otm:spacer width="2px" />
+							<h:outputText style="color: red;" value="#{msg.msg_Biblioteca_cifrao}" />
+							<h:outputText style="color: red;" value="#{EmprestimoControle.valorMultaBiblioteca}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+							<otm:spacer width="4px" />
+							<h:outputText styleClass="tituloCampos" value="#{msg.msg_Biblioteca_emMultas}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" id="itens" styleClass="row mt10">
+				<h:panelGroup styleClass="#{!empty EmprestimoControle.listaCatalogosReservados ? 'col-md-6 text-center' : 'col-md-10 text-center'}" rendered="#{!empty EmprestimoControle.listaItensEmprestimos or !empty EmprestimoControle.listaCatalogosReservados}" headerClass="subordinado" columnClasses="colunaCentralizada">
+					<rich:panel style="width:100%;padding:0px;margin:0px;" header="#{msg_aplic.prt_Emprestimo_emprestados}/#{msg_aplic.prt_Emprestimo_emprestimo}">
+						<h:panelGroup style="border:1px solid red;" columns="2" id="cobranca" rendered="#{EmprestimoControle.apresentarPanelCobranca}" columnClasses="colunaEsquerda" width="100%">
+							<h:panelGroup>
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_valorTotalMultaEmprestimoAtrasado}:" />
+								<otm:spacer width="5px" />
+								<h:outputText value="#{EmprestimoControle.valorMultaACobrarBiblioteca+EmprestimoControle.valorIsencaoDevolucaoBiblioteca}" styleClass="tituloCampos">
+									<f:converter converterId="FormatadorNumerico" />
+								</h:outputText>
+							</h:panelGroup>
+							<h:panelGroup rendered="#{LoginControle.permissaoAcessoMenuVO.permiteIsentarMultaBiblioteca}">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_valorTotalIsencaoMultaEmprestimoAtrasado}:" />
+								<otm:spacer width="5px" />
+								<h:outputText value="#{EmprestimoControle.valorIsencaoDevolucaoBiblioteca}" styleClass="tituloCampos">
+									<f:converter converterId="FormatadorNumerico" />
+								</h:outputText>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_valorASerCobrado}:" />
+								<otm:spacer width="5px" />
+								<h:outputText value="#{EmprestimoControle.valorMultaACobrarBiblioteca}" styleClass="tituloCampos">
+									<f:converter converterId="FormatadorNumerico" />
+								</h:outputText>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Emprestimo_valorMultaCobraEmprestimoDevolvidoRenovado}:" />
+								<otm:spacer width="5px" />
+								<h:outputText value="#{EmprestimoControle.valorMultaCobrarBiblioteca}" styleClass="tituloCampos">
+									<f:converter converterId="FormatadorNumerico" />
+								</h:outputText>
+							</h:panelGroup>
+						</h:panelGroup>
+						<rich:dataTable id="dtItensEmprestados" rendered="#{!empty EmprestimoControle.listaItensEmprestimos}" width="100%" headerClass="consulta" styleClass="tabFormSubordinada text-left" rowClasses="linhaImpar, linhaPar" value="#{EmprestimoControle.listaItensEmprestimos}" var="itemEmprestadoItens">
+							<rich:column style="text-align:center; width: 5%">
+								<f:facet name="header">
+									<h:outputText value="Nrº" />
+								</f:facet>
+								<h:outputText value="#{itemEmprestadoItens.exemplar.numeroExemplar}" />
+							</rich:column>
+							<rich:column style="text-align:center; width: 7%">
+								<f:facet name="header">
+									<h:outputText value="Tombo" />
+								</f:facet>
+								<h:outputText value="#{itemEmprestadoItens.exemplar.codigoBarra}" />
+							</rich:column>
+							<rich:column style="text-align:center; width: 14.28%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Catalogo_titulo}" />
+								</f:facet>
+								<h:outputText id="tituloItemEmprestado" styleClass="tituloCampos" value="#{itemEmprestadoItens.exemplar.catalogo.titulo}" />
+								<h:panelGroup style="position:relative;margin-top:3px">
+									<h:graphicImage url="#{resource['/imagens/iconeCdRom.png']}" rendered="#{itemEmprestadoItens.exemplar.tipoMidia eq 'CD' or itemEmprestadoItens.exemplar.tipoMidia eq 'DV'}" />
+									<h:graphicImage url="#{resource['/imagens/iconeVHS.png']}" rendered="#{itemEmprestadoItens.exemplar.tipoMidia eq 'VH'}" />
+								</h:panelGroup>
+								<rich:tooltip followMouse="true" direction="topRight" style="width:400px;height:150px;" target="tituloItemEmprestado" showDelay="500">
+									<h:panelGroup columns="2" styleClass="tabForm">
+										<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Catalogo_codigo}" />
+										<h:inputText size="30" readonly="true" styleClass="camposSomenteLeitura" value="#{itemEmprestadoItens.exemplar.catalogo.codigo}" />
+										<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Catalogo_classificacao}" />
+										<h:inputText size="50" readonly="true" styleClass="camposSomenteLeitura" value="#{itemEmprestadoItens.exemplar.catalogo.classificacaoBibliografica}" />
+										<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Catalogo_cutterPha}" />
+										<h:inputText size="15" maxlength="30" readonly="true" styleClass="camposSomenteLeitura" value="#{itemEmprestadoItens.exemplar.catalogo.cutterPha}" />
+										<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Catalogo_edicao}" />
+										<h:inputText size="10" maxlength="7" readonly="true" styleClass="camposSomenteLeitura" value="#{reservaCatalogoItens.catalogo.edicao}" />
+									</h:panelGroup>
+								</rich:tooltip>
+							</rich:column>
+							<rich:column style="text-align:center; width: 8%">
+								<f:facet name="header">
+									<h:outputText value="Dt. Emp./Renov." />
+								</f:facet>
+								<h:outputText value="#{itemEmprestadoItens.emprestimo.data}" rendered="#{itemEmprestadoItens.tipoEmprestimo ne 'HR'}">
+									<f:convertDateTime pattern="dd/MM/yyy" />
+								</h:outputText>
+								<h:outputText value="#{itemEmprestadoItens.emprestimo.data_comHora}" rendered="#{itemEmprestadoItens.tipoEmprestimo eq 'HR'}">
+								</h:outputText>
+							</rich:column>
+							<rich:column style="text-align:center; width: 8%">
+								<f:facet name="header">
+									<h:outputText value="Dt. Prev. Devol." />
+								</f:facet>
+								<h:outputText value="#{itemEmprestadoItens.dataPrevistaDevolucaoTemp}" rendered="#{itemEmprestadoItens.tipoEmprestimo ne 'HR'}">
+									<f:convertDateTime pattern="dd/MM/yyy" />
+								</h:outputText>
+								<h:outputText value="#{itemEmprestadoItens.dataPrevistaDevolucaoTemp_comHora}" rendered="#{itemEmprestadoItens.tipoEmprestimo eq 'HR'}">
+								</h:outputText>
+							</rich:column>
+							<rich:column style="text-align:center; width: 8%" rendered="#{EmprestimoControle.apresentarTipoEmprestimo}">
+								<f:facet name="header">
+									<h:outputText value="Tipo Empréstimo" />
+								</f:facet>
+								<h:selectOneMenu id="tipoEmprest" disabled="#{!itemEmprestadoItens.emprestar}" styleClass="form-control camposObrigatorios" value="#{itemEmprestadoItens.tipoEmprestimo}">
+									<f:selectItems value="#{EmprestimoControle.listaSelectItemTipoEmprestimo}" />
+									<a4j:ajax event="change" render="form" listener="#{EmprestimoControle.calcularDataPrevDevolucaoHora}" />
+								</h:selectOneMenu>
+								<otm:spacer width="2px" />
+								<h:selectOneMenu id="horasEmprest" disabled="#{!itemEmprestadoItens.emprestar}" rendered="#{itemEmprestadoItens.tipoEmprestimo eq 'HR'}" styleClass="form-control camposObrigatorios" value="#{itemEmprestadoItens.horasEmprestimo}">
+									<f:selectItems value="#{EmprestimoControle.listaSelectItemHoraEmprestimo}" />
+									<a4j:ajax event="change" render="form" listener="#{EmprestimoControle.calcularDataPrevDevolucaoHora}" />
+								</h:selectOneMenu>
+							</rich:column>
+							<rich:column style="text-align:center; width: 5%">
+								<f:facet name="header">
+									<h:outputText value="#{msg.msg_opcoes}" />
+								</f:facet>
+								<h:panelGroup>
+									<otm:commandIcon rendered="#{!itemEmprestadoItens.devolverEmprestimo and !itemEmprestadoItens.renovarEmprestimo and !itemEmprestadoItens.emprestar}" id="devolver" tooltip="#{msg_botoes.btn_devolver}" icon="#{msg_botoes.btn_icon_fechar} iconePequeno" render="form:dtItensEmprestados, form:cobranca" action="#{EmprestimoControle.registarDevolucaoEmprestimo}" image="#{resource['/imagens/botaoDevolver.png']}" />
+									<otm:commandIcon rendered="#{itemEmprestadoItens.devolverEmprestimo}" id="cancelarDevolver" tooltip="#{msg_botoes.btn_cancelar_devolver}" icon="#{msg_botoes.btn_icon_cancelar} iconePequeno" render="form:dtItensEmprestados, form:cobranca" action="#{EmprestimoControle.cancelarDevolucaoRenovacao}" image="#{resource['/imagens/botaoCancelarDevolver.png']}" />
+									<otm:commandIcon rendered="#{!itemEmprestadoItens.devolverEmprestimo and !itemEmprestadoItens.renovarEmprestimo and !itemEmprestadoItens.emprestar}" id="renovar" tooltip="#{msg_botoes.btn_renovar}" icon="#{msg_botoes.btn_icon_atualizar} iconePequeno" render="form:dtItensEmprestados, form:cobranca, form:panelGridMensagens" action="#{EmprestimoControle.registarRenovacaoEmprestimo}" image="#{resource['/imagens/botaoRenovar.png']}" />
+									<otm:commandIcon rendered="#{itemEmprestadoItens.renovarEmprestimo}" id="cancelarEenovar" tooltip="#{msg_botoes.btn_cancelar_renovar}" icon="#{msg_botoes.btn_icon_cancelar} iconePequeno" render="form:dtItensEmprestados, form:cobranca" action="#{EmprestimoControle.cancelarDevolucaoRenovacao}" image="#{resource['/imagens/botaoCancelarRenovar.png']}" />
+									<otm:commandIcon rendered="#{itemEmprestadoItens.emprestar}" id="novoEmprestimo" tooltip="#{msg_botoes.btn_remover_novo_emprestimo}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" render="form" action="#{EmprestimoControle.removerExemplarListaParaEmprestimo}" image="#{resource['/imagens/botaoRemoverEmprestimo.png']}" />
+									<otm:commandIcon rendered="#{LoginControle.permissaoAcessoMenuVO.permiteIsentarMultaBiblioteca and itemEmprestadoItens.isEmprestimoAtrasado and itemEmprestadoItens.isentarCobrancaMulta}" id="cobrarMulta" tooltip="#{msg_botoes.btn_cobrar_multa}" icon="#{msg_botoes.btn_icon_dollar} iconePequeno" render="form" action="#{EmprestimoControle.realizarCobrancaoMulta}" image="#{resource['/imagens/botaoCobrarMulta.png']}" />
+									<otm:commandIcon rendered="#{LoginControle.permissaoAcessoMenuVO.permiteIsentarMultaBiblioteca and itemEmprestadoItens.isEmprestimoAtrasado and !itemEmprestadoItens.isentarCobrancaMulta and itemEmprestadoItens.devolverEmprestimo}" id="isentarMulta" tooltip="#{msg_botoes.btn_isentar_multa}" icon="#{msg_botoes.btn_icon_dollar} iconePequeno" render="form" action="#{EmprestimoControle.realizarIsencaoMulta}" oncomplete="#{rich:component('panelMotivoIsencao')}.show()" image="#{resource['/imagens/botaoIsentarMulta.png']}" />
+								</h:panelGroup>
+							</rich:column>
+						</rich:dataTable>
+					</rich:panel>
+				</h:panelGroup>
+				<h:panelGroup styleClass="#{!empty EmprestimoControle.listaCatalogosReservados ? 'col-md-6 mt15' : 'col-md-2 mt15'}" rendered="#{!empty EmprestimoControle.listaItensEmprestimos or !empty EmprestimoControle.listaCatalogosReservados}">
+					<rich:panel style="width:100%;padding:0px;margin:0px;" header="#{msg_aplic.prt_Emprestimo_reservados}">
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+							<otm:commandButton rendered="#{!empty EmprestimoControle.listaCatalogosReservados}" render="form" oncomplete="#{EmprestimoControle.download}" action="#{EmprestimoControle.imprimirTicketReservaPDF}" id="imprimirPDF" value="Imprimir (PDF)" styleClass="btn btn-danger mr5" icon="#{msg_botoes.btn_icon_pdf_embutido}" accesskey="4" image="#{resource['/imagens/botaoGerarRelatorioPdf.png']}" />
+							<otm:commandButton rendered="#{!empty EmprestimoControle.listaCatalogosReservados and EmprestimoControle.emprestimoVO.biblioteca.isImpressaoPorApplet}" render="form" oncomplete="imprimir('#{EmprestimoControle.textoComprovante}');" action="#{EmprestimoControle.imprimirTicket}" id="imprimirPDFApplet" value="Imprimir Comprovante" styleClass="btn btn-primary mr5" icon="#{msg_botoes.btn_icon_imprimir_embutido}" accesskey="4" image="#{resource['/imagens/botaoComprovante.png']}" />
+							<otm:commandButton rendered="#{!empty EmprestimoControle.listaCatalogosReservados and EmprestimoControle.emprestimoVO.biblioteca.isImpressaoPorPool}" render="formImpressora" oncomplete="#{rich:component('panelImpressora')}.show();" action="#{EmprestimoControle.montarListaSelectItemImpressora}" id="imprimirPDFPool" value="Imprimir Comprovante" styleClass="btn btn-primary mr5" icon="#{msg_botoes.btn_icon_imprimir_embutido}" accesskey="4" image="#{resource['/imagens/botaoComprovante.png']}" />
+						</h:panelGroup>
+						<script type="text/javascript">
+								function imprimir(texto) {
+									var Applet = document.impressora;
+			
+									Applet.setImprimirTextoCompleto(texto);
+			
+									Applet = null;
+								}
+							</script>
+						<h:outputText rendered="#{empty EmprestimoControle.listaCatalogosReservados}" styleClass="mensagem" value="#{msg.msg_NaoExistemCatalogosReservados}" />
+						<rich:dataTable id="dtCatalogosReservados" rendered="#{!empty EmprestimoControle.listaCatalogosReservados}" width="325px" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{EmprestimoControle.listaCatalogosReservados}" var="reservaCatalogoItens">
+							<rich:column style="text-align:left" width="175px">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Catalogo_titulo}" />
+								</f:facet>
+								<h:outputText id="tituloReservados" value="#{reservaCatalogoItens.catalogo.titulo}" />
+								<rich:tooltip followMouse="true" direction="topRight" style="width:400px;height:150px;" target="tituloReservados" showDelay="500">
+									<h:panelGroup columns="2" styleClass="tabForm">
+										<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Catalogo_codigo}" />
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{reservaCatalogoItens.catalogo.codigo}" />
+										<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Catalogo_classificacao}" />
+										<h:inputText size="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{reservaCatalogoItens.catalogo.classificacaoBibliografica}" />
+										<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Catalogo_cutterPha}" />
+										<h:inputText size="15" maxlength="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{reservaCatalogoItens.catalogo.cutterPha}" />
+										<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Catalogo_edicao}" />
+										<h:inputText size="10" maxlength="7" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{reservaCatalogoItens.catalogo.edicao}" />
+									</h:panelGroup>
+								</rich:tooltip>
+							</rich:column>
+							<!-- 								<rich:column> -->
+							<!-- 								<f:facet name="header"> -->
+							<!-- 										<h:outputText value="#{msg_aplic.prt_Catalogo_autores}" /> -->
+							<!-- 									</f:facet> -->
+							<!-- 									<h:outputText value="#{reservaCatalogoItens.catalogo.nomeAutores}" /> -->
+							<!-- 									</rich:column> -->
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Reserva_validaAte}" />
+								</f:facet>
+								<h:outputText value="#{reservaCatalogoItens.dataTerminoReserva}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Emprestimo_exemplaresDisponiveis}" />
+								</f:facet>
+								<h:outputText value="#{reservaCatalogoItens.nrExemplaresDisponiveisDesseCatalogo}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg.msg_opcoes}" />
+								</f:facet>
+								<h:panelGroup style="display: flex">
+									<a4j:commandButton id="btnAdicionarReservaListaEmprestimo" render="formCodigoBarrasReserva, form, panelCodigoBarrasReserva" onclick="this.disabled = true" oncomplete="this.disabled = false" action="#{EmprestimoControle.adicionarCatalogoReservadoListaEmprestimo}" image="#{resource['imagens/botaoAdicionarResumido.png']}" />
+									<otm:spacer width="5px" />
+									<a4j:commandButton id="btnRemoverReservaListaEmprestimo" onclick="return confirm('#{msg.msg_cancelar_reserva}');" action="#{EmprestimoControle.removerCatalogoReservadoListaEmprestimo}" image="#{resource['imagens/botaoRemover.png']}" render="form, form:dtCatalogosReservados" />
+								</h:panelGroup>
+							</rich:column>
+						</rich:dataTable>
+					</rich:panel>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row" id="btns">
+				<otm:mensagem bean="#{EmprestimoControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<h:panelGroup>
+					<otm:commandButton rendered="#{!empty EmprestimoControle.listaItensEmprestimos}" id="btnNovo" immediate="true" action="#{EmprestimoControle.novo}" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+					<otm:spacer width="5" />
+					<otm:commandButton rendered="#{!empty EmprestimoControle.listaItensEmprestimos}" id="btnFinalizar" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Finalizar" action="#{EmprestimoControle.finalizar}" render="panelEmprestimoRealizadoComSucesso ,formEmprestimoRealizadoComSucesso, panelGridMensagens" accesskey="2" styleClass="btn btn-dark" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<!-- Motivo Desconto -->
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelMotivoIsencao" onshow="document.getElementById('formPanelMotivoIsencao:textAreaPanelMotivoIsencao').focus();" shadowOpacity="true" width="500" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Biblioteca_motivoIsencao}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPanelMotivoIsencao">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Biblioteca_motivoIsencao}" />
+						<h:inputTextarea id="textAreaPanelMotivoIsencao" value="#{EmprestimoControle.itemEmprestimoIsencaoVO.motivoIsencao}" styleClass="form-control" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton icon="#{msg_botoes.btn_icon_ok_embutido}" styleClass="btn btn-info" value="Ok" image="#{resource['/imagens/botaoOK.png']}" oncomplete="RichFaces.$('panelMotivoIsencao').hide()" render="formPanelMotivoIsencao" autoclear="true" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelImagem" zindex="2000" shadowOpacity="false" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_AlterarFoto}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagem">
+				<style>
+.barra-btn-flutuante-modal-80-panel {
+	position: fixed;
+	width: 80%;
+	background-color: #dedede;
+	padding: 10px 5px 5px 5px;
+	left: 10%;
+	border-radius: 0px 0px 10px 10px;
+	margin: 0 auto;
+	bottom: 1%;
+	z-index: 1;
+	text-align: center;
+	min-height: 35px;
+}
+</style>
+
+
+				<script type="text/javascript">
+                jQuery(function($) {
+                    $(document).ready(function() {
+                        $("#formImagem\\:foto2").Jcrop({
+                            onSelect : showCoords,
+                            onChange : showCoords,
+                            bgColor : 'black',
+                            bgOpacity : .3,
+                            setSelect : [ 1, 1, 45, 42 ],
+                            minSize : [ 31, 21 ],
+                            maxSize : [ 400, 350 ],
+                            aspectRatio : 45 / 42
+                        });
+                    });
+                });
+                function showCoords(c) {
+                    var valorX = document.getElementById('formImagem:x');
+                    valorX.value = c.x;
+
+                    var valorY = document.getElementById('formImagem:y');
+                    valorY.value = c.y;
+
+                    var valorW = document.getElementById('formImagem:w');
+                    valorW.value = c.w;
+
+                    var valorH = document.getElementById('formImagem:h');
+                    valorH.value = c.h;
+
+                };
+            </script>
+				<h:panelGroup rendered="#{EmprestimoControle.exibirBotao}" layout="block" style="clear:both;overflow:auto; min-width:455px; min-height:120px ; width:600px; height:500px;">
+					<h:graphicImage url="#{EmprestimoControle.showFotoCrop}" id="foto2" />
+				</h:panelGroup>
+				<h:panelGroup style="display:none" layout="block">
+					<h:panelGroup style="display:none" columns="6">
+						<h:panelGroup>
+							<h:outputText value="X" />
+							<h:inputText size="4" id="x" value="#{EmprestimoControle.x}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="Y" />
+							<h:inputText size="4" id="y" value="#{EmprestimoControle.y}" />
+						</h:panelGroup>
+						<!--                     <h:panelGroup> -->
+						<!-- <h:outputText value="X2" /> -->
+						<!-- 						<h:inputText size="4" id="x2" value="#{EmprestimoControle.x2}" /> -->
+						<!-- 				</h:panelGroup> -->
+						<!-- 				<h:panelGroup> -->
+						<!-- 					<h:outputText value="Y2" /> -->
+						<!-- 					<h:inputText size="4" id="y2" value="#{EmprestimoControle.y2}" /> -->
+						<!-- 					</h:panelGroup> -->
+						<h:panelGroup>
+							<h:outputText value="largura" />
+							<h:inputText size="4" id="w" value="#{EmprestimoControle.largura}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="altura" />
+							<h:inputText size="4" id="h" value="#{EmprestimoControle.altura}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{EmprestimoControle.exibirUpload}" layout="block">
+					<rich:fileUpload styleClass="rich-fileupload-list-decor-aluno" acceptedTypes="jpg, jpeg, png" listHeight="15" listWidth="600" noDuplicate="true" fileUploadListener="#{EmprestimoControle.upLoadImagem}" maxFilesQuantity="1" addControlLabel="Selecionar Arquivo" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo 2MB" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" transferErrorLabel="Tamanho Máximo Permitido 2MB" stopEntryControlLabel="Parar" id="uploadImagemBanner" immediateUpload="true" autoclear="true">
+						<a4j:ajax listener="#{EmprestimoControle.renderizarUpload}" event="uploadcomplete" render="formImagem, form:imagem" />
+					</rich:fileUpload>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{EmprestimoControle.exibirUpload}">
+					<h:panelGroup width="100%" columnClasses="colunaCentralizada" columns="1">
+						<h:outputText styleClass="tituloCampos" value="Você pode enviar arquivos JPG ou PNG (tamanho máximo de 2MB)" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="#{EmprestimoControle.exibirBotao ? 'barra-btn-flutuante-modal-80-panel' : 'barra-btn-flutuante-modal-80'}">
+					<otm:commandButton icon="#{msg_botoes.btn_icon_recortar_embutido}" styleClass="btn btn-primary mr5" value="Recorte a foto" oncomplete="#{EmprestimoControle.oncompleteModal}" rendered="#{EmprestimoControle.exibirBotao}" image="#{resource['/imagens/botaoRecorteFoto.png']}" action="#{EmprestimoControle.recortarFoto}" render="panelGroupMenuLateralMinhaAreaHome, formMenuLateralHomeLogado, form:panelGridFoto, formImagem, form:imagem, form" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger mr5" value="Cancelar" action="#{EmprestimoControle.cancelar}" oncomplete="#{rich:component('panelImagem')}.hide()" render="formFotoUsuario, panelGridFoto, formImagem, form" title="Cancelar" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_camera_embutido}" styleClass="btn btn-info mr5" value="Tirar Foto" oncomplete="#{rich:component('panelImagem')}.hide(); #{rich:component('panelCapturarImagemWebCam')}.show()" render="formFotoUsuario, panelGridFoto, formImagem, form" title="Tirar Foto" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_zoomMinus_embutido}" styleClass="btn btn-success mr5" value="Zoom" rendered="#{EmprestimoControle.exibirBotao}" action="#{EmprestimoControle.executarZoomIn}" image="#{resource['/imagens/botaoZoomIn.png']}" render="formImagem" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_zoomPlus_embutido}" styleClass="btn btn-success mr5" value="Diminuir Zoom" rendered="#{EmprestimoControle.exibirBotao}" action="#{EmprestimoControle.executarZoomOut}" image="#{resource['/imagens/botaoZoomOut.png']}" render="formImagem" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_girar_esquerda_embutido}" styleClass="btn btn-warning mr5" rendered="#{EmprestimoControle.exibirBotao}" image="#{resource['/imagens/girar90Esquerda.png']}" action="#{EmprestimoControle.rotacionar90GrausParaEsquerda}" render="formImagem" value="Girar 90º para Esquerda" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_girar_direita_embutido}" styleClass="btn btn-warning mr5 mt5" rendered="#{EmprestimoControle.exibirBotao}" image="#{resource['/imagens/girar90Direita.png']}" action="#{EmprestimoControle.rotacionar90GrausParaDireita}" render="formImagem" value="Girar 90º para Direita" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_girar_180_embutido}" styleClass="btn btn-dark mr5 mt5" rendered="#{EmprestimoControle.exibirBotao}" image="#{resource['/imagens/gerar180.png']}" action="#{EmprestimoControle.rotacionar180Graus}" render="formImagem" value="Girar 180º" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row" id="panelMensagem">
+					<otm:mensagem bean="#{EmprestimoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelCapturarImagemWebCam" zindex="2000" top="5" shadowOpacity="false" width="750" height="500" onshow="showWebCamAPP()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_tirarFoto}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelCapturarImagemWebCam" />
+					<rich:componentControl target="panelCapturarImagemWebCam" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formWebCam">
+				<div id="my_camera" style="width: 320px; height: 240px;"></div>
+				<br />
+				<br />
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton value="Tirar Foto" icon="#{msg_botoes.btn_icon_camera_embutido}" styleClass="btn btn-primary mr5" action="#{EmprestimoControle.executarCapturarFotoWebCam}" oncomplete="take_snapshot('../../UploadServlet');" />
+					<otm:commandButton value="Nova Foto" icon="#{msg_botoes.btn_icon_imagem_embutido}" styleClass="btn btn-info mr5" onclick="Webcam.unfreeze();" />
+					<otm:commandButton value="Gravar" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" render="formImagem, foto2" onclick="#{rich:component('panelCapturarImagemWebCam')}.hide(); #{rich:component('panelImagem')}.show()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelImpressora" autosized="true" shadowOpacity="true" width="600" moveable="false" resizeable="false" height="100">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:graphicImage styleClass="background-color:transparent;" height="24" width="24" url="#{resource['/imagens/aviso.png']}" />
+					<h:outputText value="Selecionar Impressora" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImpressora">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Impressora_tituloForm}" />
+					<h:selectOneMenu id="impressoras" styleClass="form-control camposObrigatorios" value="#{EmprestimoControle.emprestimoVO.impressoraVO.codigo}">
+						<f:selectItems value="#{EmprestimoControle.listaSelectItemImpressora}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="form" oncomplete="#{rich:component('panelImpressora')}.hide();" action="#{EmprestimoControle.imprimirTicket}" id="imprimirMPDFPool" value="Imprimir" icon="#{msg_botoes.btn_icon_imprimir_embutido}" styleClass="btn btn-primary" image="#{resource['/imagens/botaoComprovante.png']}" />
+					<otm:spacer width="5px" />
+					<otm:commandButton oncomplete="#{rich:component('panelImpressora')}.hide();" id="fecharModalImpressora" value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" image="#{resource['/imagens/botaoFechar.png']}" render="panelMotivoIsencao ,formMembroComunidade" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelEmprestimoRealizadoComSucesso" shadowOpacity="true" width="600" resizeable="false" height="300" domElementAttachment="parent" show="#{EmprestimoControle.mostrarModalEmprestimoDevolucaoRealizadoComSucesso}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:graphicImage styleClass="background-color:transparent;" height="24" width="24" url="#{resource['/imagens/aviso.png']}" />
+					<h:outputText value="AVISO" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formEmprestimoRealizadoComSucesso">
+				<h:panelGroup rendered="#{EmprestimoControle.solicitarSenhaSolicitante and  EmprestimoControle.emprestimoVO.tipoPessoa ne 'MC'}">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText value="#{msg_aplic.prt_Emprestimo_entreSenha}" styleClass="tituloCamposNegrito" />
+						<h:inputSecret size="20" styleClass="camposObrigatorios form-control" value="#{EmprestimoControle.senhaSolicitante}" />
+					</h:panelGroup>
+					<otm:mensagem bean="#{EmprestimoControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+						<h:panelGroup>
+							<otm:commandButton render="panelEmprestimoRealizadoComSucesso" action="#{EmprestimoControle.fecharModalEmprestimoRealizadoComSucesso}" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="Fechar" image="#{resource['/imagens/botaoFechar.png']}" title="Fechar" />
+							<otm:spacer width="5px" />
+							<otm:commandButton styleClass="btn btn-info" value="Confirmar" icon="#{msg_botoes.btn_icon_confirmar_embutido}" render="formEmprestimoRealizadoComSucesso" onclick="this.disabled = true" oncomplete="this.disabled = false" action="#{EmprestimoControle.realizarConfirmacaoSenhaSolicitante}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{!EmprestimoControle.solicitarSenhaSolicitante or EmprestimoControle.emprestimoVO.tipoPessoa eq 'MC'}">
+					<h:panelGroup layout="block" styleClass="col-md-12 mt10 mb10">
+						<h:outputText value="Empréstimo/Devolução:" styleClass="title" />
+						<rich:dataTable id="listaMensagens" width="100%" rows="8" headerClass="consulta" value="#{EmprestimoControle.listaMensagemSucesso}" var="mensagemSucesso">
+							<rich:column>
+								<h:outputText style="align: left;" value="#{mensagemSucesso}" />
+							</rich:column>
+						</rich:dataTable>
+						<rich:dataScroller align="center" boundaryControls="auto" fastControls="hide" stepControls="auto" for="formEmprestimoRealizadoComSucesso:listaMensagens" maxPages="8" id="scResultadolistaMensagens" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{EmprestimoControle.emprestimoVO.biblioteca.isImpressaoPorPool}">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Impressora_tituloForm}" />
+						<h:selectOneMenu id="impressora" styleClass="form-control camposObrigatorios" value="#{EmprestimoControle.emprestimoVO.impressoraVO.codigo}">
+							<f:selectItems value="#{EmprestimoControle.listaSelectItemImpressora}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<otm:spacer rendered="#{EmprestimoControle.emprestimoVO.biblioteca.isImpressaoPorPool}" height="10px" />
+					<script type="text/javascript">
+ 					function imprimir(texto) { 
+ 						var Applet = document.impressora;
+
+ 						Applet.setImprimirTextoCompleto(texto);
+
+						Applet = null; 
+ 					} 
+ 				</script>
+					<h:panelGroup rendered="#{EmprestimoControle.emprestimoVO.biblioteca.codigo > 0 and EmprestimoControle.emprestimoVO.biblioteca.isImpressaoPorApplet}" styleClass="applet" id="app">
+						<applet id="OrganogramaSucesso" style="" archive="AppletImpressaoComprovante.jar" codebase="../../applet" code="ImprimeComprovante.class" height="0" width="0" name="impressora"> </applet>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+						<otm:commandButton render="form, formExemplar" oncomplete="#{rich:component('panelEmprestimoRealizadoComSucesso')}.hide()" action="#{EmprestimoControle.fecharModalEmprestimoRealizadoComSucesso}" styleClass="btn btn-danger mr5" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" image="#{resource['/imagens/botaoFechar.png']}" />
+						<a4j:commandLink execute="@this" render="form, formExemplar" oncomplete="#{EmprestimoControle.download}" action="#{EmprestimoControle.imprimirTicketPDF}" id="imprimirPDF" value="Imprimir (PDF)" styleClass="btn btn-danger mr5" image="#{resource['/imagens/botaoGerarRelatorioPdf.png']}">
+							<i class="#{msg_botoes.btn_icon_imprimir_embutido} pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener value="true" target="#{EmprestimoControle.impressaoPDF}" />
+						</a4j:commandLink>
+						<a4j:commandLink render="form, formExemplar" rendered="#{EmprestimoControle.emprestimoVO.biblioteca.isImpressaoPorApplet}" oncomplete="imprimir('#{EmprestimoControle.textoComprovante}');" action="#{EmprestimoControle.imprimirTicketPDF}" id="imprimirPDFApplet" value="Imprimir (Ticket PFD)" styleClass="btn btn-default mr5" image="#{resource['/imagens/botaoComprovante.png']}">
+							<i class="#{msg_botoes.btn_icon_imprimir_embutido} pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener value="false" target="#{EmprestimoControle.impressaoPDF}" />
+						</a4j:commandLink>
+						<a4j:commandLink render="form, formExemplar" rendered="#{EmprestimoControle.emprestimoVO.biblioteca.isImpressaoPorPool}" action="#{EmprestimoControle.imprimirTicketPDF}" id="imprimirPDFPool" value="Imprimir (PDF Pool)" styleClass="btn btn-info" image="#{resource['/imagens/botaoComprovante.png']}">
+							<i class="#{msg_botoes.btn_icon_imprimir_embutido} pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener value="false" target="#{EmprestimoControle.impressaoPDF}" />
+						</a4j:commandLink>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCodigoBarrasReserva" shadowOpacity="true" width="780" height="500" onshow="document.getElementById('formCodigoBarrasReserva:codigoBarrasReserva').focus()" show="#{EmprestimoControle.mostrarModalCodigoBarrasReserva}" domElementAttachment="parent">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Exemplar_codigoBarra}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCodigoBarrasReserva">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Exemplar_codigoBarra}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-10">
+					<h:inputText id="codigoBarrasReserva" size="20" maxlength="20" styleClass="campos" value="#{EmprestimoControle.exemplarVO.codigoBarra}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton render="form, formCodigoBarrasReserva" oncomplete="#{rich:component('panelCodigoBarrasReserva')}.hide()" action="#{EmprestimoControle.consultarExemplarPeloCodigoBarrasModalReserva}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" image="#{resource['/imagens/botaoConsultar.png']}" title="Consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<h:panelGroup rendered="#{!empty EmprestimoControle.reservaVO.catalogo.exemplarVOs}">
+					<rich:dataTable id="resultadoGeracaoExemplares" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{EmprestimoControle.reservaVO.catalogo.exemplarVOs}" rows="10" rowKeyVar="linha" var="exemplarItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Exemplar_biblioteca}" />
+							</f:facet>
+							<h:outputText value="#{exemplarItens.biblioteca.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Exemplar_secao}" />
+							</f:facet>
+							<h:outputText value="#{exemplarItens.secao.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Exemplar_local}" />
+							</f:facet>
+							<h:outputText value="#{exemplarItens.local}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Exemplar_codigoBarra}" />
+							</f:facet>
+							<h:outputText value="#{exemplarItens.codigoBarra}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="adicionarExemplarEmprestimo" onclick="this.disabled = true" icon="#{msg_botoes.btn_icon_adicionar_embutido}" tooltip="Adicionar Exemplar Emprestimo" render="form, formCodigoBarrasReserva" action="#{EmprestimoControle.adicionarExemplarPeloCodigoBarrasModalReserva}" oncomplete="#{rich:component('panelCodigoBarrasReserva')}.hide()" execute="@this" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formCodigoBarrasReserva:resultadoGeracaoExemplares" maxPages="10" id="scResultadoGeracaoExemplares" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton render="form, formCodigoBarrasReserva" oncomplete="#{rich:component('panelCodigoBarrasReserva')}.hide()" action="#{EmprestimoControle.fecharModalCodigoBarrasReserva}" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" image="#{resource['/imagens/botaoFechar.png']}" title="Fechar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" width="800" height="600" onshow="document.getElementById('formAluno:valorConsultarAluno').focus();" onhide="document.getElementById('form:codigoBarras').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Emprestimo_consultarAluno}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkAluno" />
+					<rich:componentControl target="panelAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarAluno" value="#{EmprestimoControle.dataModeloAluno.campoConsulta}">
+						<f:selectItems value="#{EmprestimoControle.tipoConsultaComboAluno}" />
+						<a4j:ajax event="change" render="formAluno" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarAluno" rendered="#{EmprestimoControle.dataModeloAluno.campoConsulta ne 'cpf'}" styleClass="form-control campos" value="#{EmprestimoControle.dataModeloAluno.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarAluno" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno , formAluno:scResultadoAluno , formAluno" action="#{EmprestimoControle.consultarAluno}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{EmprestimoControle.dataModeloAluno}" rows="10" var="alunoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_curso}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.curso.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_situacao}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.situacao_Apresentar}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.aluno.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.aluno.CPF}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_RG}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.aluno.RG}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{EmprestimoControle.selecionarAluno}" focus="aluno" render="form, formAluno" oncomplete="#{rich:component('panelAluno')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller for="formAluno:resultadoConsultaAluno" id="scResultadoAluno" page="#{EmprestimoControle.dataModeloAluno.page}" scrollListener="#{EmprestimoControle.scrollerListenerAluno}" rendered="#{EmprestimoControle.dataModeloAluno.apresentarPaginador}" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{EmprestimoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProfessor" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formProfessor:consultarProfessor').focus();" onhide="document.getElementById('form:codigoBarras').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Emprestimo_consultarProfessor}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkProfessor" />
+					<rich:componentControl target="panelProfessor" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProfessor">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarProfessor" value="#{EmprestimoControle.dataModeloProfessor.campoConsulta}">
+						<a4j:ajax event="change" render="formProfessor" />
+						<f:selectItems value="#{EmprestimoControle.tipoConsultaComboProfessor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarProfessor" styleClass="form-control campos" value="#{EmprestimoControle.dataModeloProfessor.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarProfessor" render="formProfessor:mensagemConsultarProfessor, formProfessor:resultadoConsultaProfessor , formProfessor:scResultadoProfessor , formProfessor" action="#{EmprestimoControle.consultarProfessor}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaProfessor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{EmprestimoControle.dataModeloProfessor}" rows="10" var="professorItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Funcionario_matricula}" />
+						</f:facet>
+						<h:outputText value="#{professorItens.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:outputText value="#{professorItens.pessoa.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+						</f:facet>
+						<h:outputText value="#{professorItens.pessoa.CPF}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{EmprestimoControle.selecionarProfessor}" focus="professor" render="form, formProfessor" oncomplete="#{rich:component('panelProfessor')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller for="formProfessor:resultadoConsultaProfessor" id="scResultadoProfessor" page="#{EmprestimoControle.dataModeloProfessor.page}" scrollListener="#{EmprestimoControle.scrollerListenerProfessor}" rendered="#{EmprestimoControle.dataModeloProfessor.apresentarPaginador}" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaProfessor" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{EmprestimoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formFuncionario:consultarFuncionario').focus();" onhide="document.getElementById('form:codigoBarras').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Emprestimo_consultarFuncionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkFuncionario" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarFuncionario" value="#{EmprestimoControle.dataModeloFuncionario.campoConsulta}">
+						<a4j:ajax event="change" render="formFuncionario" />
+						<f:selectItems value="#{EmprestimoControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarFuncionario" styleClass="form-control campos" value="#{EmprestimoControle.dataModeloFuncionario.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarFuncionario" render="formFuncionario:mensagemConsultarFuncionario, formFuncionario:resultadoConsultaFuncionario , formFuncionario:scResultadoFuncionario , formFuncionario" action="#{EmprestimoControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFuncionario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{EmprestimoControle.dataModeloFuncionario}" rows="10" var="funcionarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Funcionario_matricula}" />
+						</f:facet>
+						<h:outputText value="#{funcionarioItens.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:outputText value="#{funcionarioItens.pessoa.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+						</f:facet>
+						<h:outputText value="#{funcionarioItens.pessoa.CPF}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{EmprestimoControle.selecionarFuncionario}" focus="funcionario" render="form, formFuncionario" oncomplete="#{rich:component('panelFuncionario')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller for="formFuncionario:resultadoConsultaFuncionario" id="scResultadoFuncionario" page="#{EmprestimoControle.dataModeloAluno.page}" scrollListener="#{EmprestimoControle.scrollerListenerFuncionario}" rendered="#{EmprestimoControle.dataModeloFuncionario.apresentarPaginador}" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{EmprestimoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelExemplar" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formExemplar:catalogo').focus();" onhide="document.getElementById('form:codigoBarras').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Emprestimo_consultarExemplar}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkExemplar" />
+					<rich:componentControl target="panelExemplar" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExemplar">
+				<!--  					<h:outputText rendered="#{EmprestimoControle.mostrarComboboxBiblioteca}" styleClass="tituloCampos" value="#{msg_aplic.prt_Exemplar_biblioteca}" />  -->
+				<!--  					<h:panelGroup rendered="#{EmprestimoControle.mostrarComboboxBiblioteca}">  -->
+				<!--  						<h:selectOneMenu id="biblioteca2" style="width:350px" styleClass="camposObrigatorios" value="#{EmprestimoControle.exemplarConsulta.biblioteca.codigo}">  -->
+				<!--  							<f:selectItems value="#{EmprestimoControle.listaSelectItemBiblioteca}" />  -->
+				<!--  						</h:selectOneMenu>  -->
+				<!--  					</h:panelGroup>  -->
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Exemplar_catalogo}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-10">
+					<h:inputText size="50" maxlength="150" id="catalogo" styleClass="form-control campos" value="#{EmprestimoControle.exemplarConsulta.catalogo.titulo}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarExemplar" render="formExemplar" action="#{EmprestimoControle.consultarExemplar}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{EmprestimoControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{EmprestimoControle.controleConsultaOtimizado.page}" value="0" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{EmprestimoControle.controleConsultaOtimizado}" rendered="#{EmprestimoControle.controleConsultaOtimizado.apresentarPaginador}" rows="5" var="exemplarItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_codigo}" />
+						</f:facet>
+						<a4j:commandLink render="form, formExemplar" action="#{EmprestimoControle.adicionarExemplarPeloCodigoBarrasModalExemplar}" id="codigos" value="#{exemplarItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_biblioteca}" />
+						</f:facet>
+						<a4j:commandLink render="form, formExemplar" action="#{EmprestimoControle.adicionarExemplarPeloCodigoBarrasModalExemplar}" id="bibliotecas" value="#{exemplarItens.biblioteca.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_catalogo}" />
+						</f:facet>
+						<a4j:commandLink render="form, formExemplar" action="#{EmprestimoControle.adicionarExemplarPeloCodigoBarrasModalExemplar}" id="catalogos" value="#{exemplarItens.catalogo.titulo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_codigoBarra}" />
+						</f:facet>
+						<a4j:commandLink render="form, formExemplar" action="#{EmprestimoControle.adicionarExemplarPeloCodigoBarrasModalExemplar}" id="codigoBarra" value="#{exemplarItens.codigoBarra}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon onclick="this.disabled = true" oncomplete="this.disabled = false" render="form, formExemplar" action="#{EmprestimoControle.adicionarExemplarPeloCodigoBarrasModalExemplar}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formExemplar:items" id="paginador" page="#{EmprestimoControle.controleConsultaOtimizado.page}" scrollListener="#{EmprestimoControle.scrollerListener}" rendered="#{EmprestimoControle.controleConsultaOtimizado.apresentarPaginador}" stepControls="auto" fastControls="hide" boundaryControls="auto" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{EmprestimoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelMembroComunidade" onshow="document.getElementById('formMembroComunidade:valorConsultaMembroComunidade').focus();" onhide="document.getElementById('form:codigoBarras').focus();" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Emprestimo_Visitante}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelMembroComunidade" />
+					<rich:componentControl target="panelMembroComunidade" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMembroComunidade">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaMembroComunidade" value="#{EmprestimoControle.campoConsultaMembroComunidade}">
+						<a4j:ajax event="change" render="formMembroComunidade:valorConsultaMembroComunidade" />
+						<f:selectItems value="#{EmprestimoControle.tipoConsultaComboMembroComunidade}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaMembroComunidade" onkeypress="#{EmprestimoControle.mascaraConsultaMembroComunidade}" size="14" styleClass="form-control campos" value="#{EmprestimoControle.valorConsultaMembroComunidade}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formMembroComunidade" action="#{EmprestimoControle.consultarMembroComunidade}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="btnNovo" render="formMembroComunidade" action="#{EmprestimoControle.cadastrarNovoAluno}" oncomplete="abrirPopup('../academico/alunoForm.xhtml', 'AlunoForm', 945, 490);" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" alt="#{msg.msg_novo_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaMembroComunidade" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{EmprestimoControle.listaConsultaMembroComunidade}" rows="10" var="membroComunidadeItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{EmprestimoControle.selecionarMembroComunidade}" render="form" oncomplete="#{rich:component('panelMembroComunidade')}.hide()" value="#{membroComunidadeItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{EmprestimoControle.selecionarMembroComunidade}" render="form" oncomplete="#{rich:component('panelMembroComunidade')}.hide()" value="#{membroComunidadeItens.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{EmprestimoControle.selecionarMembroComunidade}" render="form, formMembroComunidade" oncomplete="#{rich:component('panelMembroComunidade')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formMembroComunidade:resultadoConsultaMembroComunidade" maxPages="10" id="scResultadoMembroComunidade" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaMembroComunidade" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{EmprestimoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<script>
+	document.getElementById("form:matricula").focus();
+</script>
+	</ui:define>
+</ui:composition>
+</html>

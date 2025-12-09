@@ -1,0 +1,169 @@
+package controle.biblioteca;
+
+/**
+ * Classe responsável por implementar a interação entre os componentes JSF das páginas
+ * classificacaoBibliograficaForm.jsp classificacaoBibliograficaCons.jsp) com as funcionalidades da classe
+ * <code>ClassificacaoBibliografica</code>. Implemtação da camada controle (Backing Bean).
+ * 
+ * @see SuperControle
+ * @see ClassificacaoBibliografica
+ * @see ClassificacaoBibliograficaVO
+ */
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.faces.model.SelectItem;
+
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
+
+import controle.arquitetura.SuperControle;
+import negocio.comuns.biblioteca.ClassificacaoBibliograficaVO;
+import negocio.comuns.utilitarias.ControleConsulta;
+import negocio.comuns.utilitarias.Uteis; @Controller("ClassificacaoBibliograficaControle")
+@Scope("request")
+@Lazy
+public class ClassificacaoBibliograficaControle extends SuperControle implements Serializable {
+
+	private ClassificacaoBibliograficaVO classificacaoBibliograficaVO;
+
+	public ClassificacaoBibliograficaControle() throws Exception {
+		//obterUsuarioLogado();
+		setControleConsulta(new ControleConsulta());
+		setMensagemID("msg_entre_prmconsulta");
+	}
+
+	/**
+	 * Rotina responsável por disponibilizar um novo objeto da classe <code>ClassificacaoBibliografica</code> para
+	 * edição pelo usuário da aplicação.
+	 */
+	public String novo() {         removerObjetoMemoria(this);
+		setClassificacaoBibliograficaVO(new ClassificacaoBibliograficaVO());
+		setMensagemID("msg_entre_dados");
+		return "editar";
+	}
+
+	/**
+	 * Rotina responsável por disponibilizar os dados de um objeto da classe <code>ClassificacaoBibliografica</code>
+	 * para alteração. O objeto desta classe é disponibilizado na session da página (request) para que o JSP
+	 * correspondente possa disponibilizá-lo para edição.
+	 */
+	public String editar() {
+		ClassificacaoBibliograficaVO obj = (ClassificacaoBibliograficaVO) context().getExternalContext().getRequestMap().get("classificacaoBibliografica");
+		obj.setNovoObj(Boolean.FALSE);
+		setClassificacaoBibliograficaVO(obj);
+		setMensagemID("msg_dados_editar");
+		return "editar";
+	}
+
+	/**
+	 * Rotina responsável por gravar no BD os dados editados de um novo objeto da classe
+	 * <code>ClassificacaoBibliografica</code>. Caso o objeto seja novo (ainda não gravado no BD) é acionado a operação
+	 * <code>incluir()</code>. Caso contrário é acionado o <code>alterar()</code>. Se houver alguma inconsistência o
+	 * objeto não é gravado, sendo re-apresentado para o usuário juntamente com uma mensagem de erro.
+	 */
+	public String gravar() {
+		try {
+			if (classificacaoBibliograficaVO.isNovoObj().booleanValue()) {
+				getFacadeFactory().getClassificacaoBibliograficaFacade().incluir(classificacaoBibliograficaVO, getUsuarioLogado());
+			} else {
+				getFacadeFactory().getClassificacaoBibliograficaFacade().alterar(classificacaoBibliograficaVO, getUsuarioLogado());
+			}
+			setMensagemID("msg_dados_gravados");
+			return "editar";
+		} catch (Exception e) {
+			setMensagemDetalhada("msg_erro", e.getMessage());
+			return "editar";
+		}
+	}
+
+	/**
+	 * Rotina responsavel por executar as consultas disponiveis no JSP ClassificacaoBibliograficaCons.jsp. Define o tipo
+	 * de consulta a ser executada, por meio de ComboBox denominado campoConsulta, disponivel neste mesmo JSP. Como
+	 * resultado, disponibiliza um List com os objetos selecionados na sessao da pagina.
+	 */
+	public String consultar() {
+		try {
+			super.consultar();
+			List objs = new ArrayList(0);
+			if (getControleConsulta().getCampoConsulta().equals("codigo")) {
+				if (getControleConsulta().getValorConsulta().equals("")) {
+					getControleConsulta().setValorConsulta("0");
+				}
+				int valorInt = Integer.parseInt(getControleConsulta().getValorConsulta());
+				objs = getFacadeFactory().getClassificacaoBibliograficaFacade().consultarPorCodigo(new Integer(valorInt), true, Uteis.NIVELMONTARDADOS_TODOS, getUsuarioLogado());
+			}
+			if (getControleConsulta().getCampoConsulta().equals("nome")) {
+				objs = getFacadeFactory().getClassificacaoBibliograficaFacade().consultarPorNome(getControleConsulta().getValorConsulta(), true, Uteis.NIVELMONTARDADOS_TODOS, getUsuarioLogado());
+			}
+			setListaConsulta(objs);
+			setMensagemID("msg_dados_consultados");
+			return "consultar";
+		} catch (Exception e) {
+			setListaConsulta(new ArrayList(0));
+			setMensagemDetalhada("msg_erro", e.getMessage());
+			return "consultar";
+		}
+	}
+
+	/**
+	 * Operação responsável por processar a exclusão um objeto da classe <code>ClassificacaoBibliograficaVO</code> Após
+	 * a exclusão ela automaticamente aciona a rotina para uma nova inclusão.
+	 */
+	public String excluir() {
+		try {
+			getFacadeFactory().getClassificacaoBibliograficaFacade().excluir(classificacaoBibliograficaVO, getUsuarioLogado());
+			novo();
+			setMensagemID("msg_dados_excluidos");
+			return "editar";
+		} catch (Exception e) {
+			setMensagemDetalhada("msg_erro", e.getMessage());
+			return "editar";
+		}
+	}
+
+	/**
+	 * Rotina responsável por atribui um javascript com o método de mascara para campos do tipo Data, CPF, CNPJ, etc.
+	 */
+	public String getMascaraConsulta() {
+		return "";
+	}
+
+	/**
+	 * Rotina responsável por preencher a combo de consulta da telas.
+	 */
+	public List<SelectItem> getTipoConsultaCombo() {
+		List<SelectItem> itens = new ArrayList<SelectItem>(0);
+		itens.add(new SelectItem("nome", "Nome"));
+		itens.add(new SelectItem("codigo", "Código"));
+		return itens;
+	}
+
+	/**
+	 * Rotina responsável por organizar a paginação entre as páginas resultantes de uma consulta.
+	 */
+	public String inicializarConsultar() {         removerObjetoMemoria(this);
+		setListaConsulta(new ArrayList(0));
+		setMensagemID("msg_entre_prmconsulta");
+		return "consultar";
+	}
+
+	/**
+	 * Operação que libera todos os recursos (atributos, listas, objetos) do backing bean. Garantindo uma melhor atuação
+	 * do Garbage Coletor do Java. A mesma é automaticamente quando realiza o logout.
+	 */
+	protected void limparRecursosMemoria() {
+		super.limparRecursosMemoria();
+		classificacaoBibliograficaVO = null;
+	}
+
+	public ClassificacaoBibliograficaVO getClassificacaoBibliograficaVO() {
+		return classificacaoBibliograficaVO;
+	}
+
+	public void setClassificacaoBibliograficaVO(ClassificacaoBibliograficaVO classificacaoBibliograficaVO) {
+		this.classificacaoBibliograficaVO = classificacaoBibliograficaVO;
+	}
+}

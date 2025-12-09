@@ -1,0 +1,20 @@
+CREATE TABLE public.concedente (
+	codigo serial NOT NULL,	
+	tipoconcedente int NOT NULL,
+	cnpj varchar(18),
+	concedente varchar(255) NOT NULL,
+	telefone text NOT NULL,
+	cep varchar(10) NOT NULL,
+	endereco varchar(255) NOT NULL,
+	numero varchar(10),
+	bairro varchar(255) NOT NULL,
+	complemento varchar(255),
+	cidade int NOT NULL,
+	responsavelConcedente varchar(255),
+	cpfResponsavelConcedente varchar(14),
+	emailResponsavelConcedente varchar(255),
+	telefoneResponsavelConcedente TEXT,	
+	CONSTRAINT pkey_concedente_codigo PRIMARY KEY (codigo),
+	CONSTRAINT fk_concedente_tipoconcedente FOREIGN KEY (tipoconcedente) REFERENCES tipoconcedente(codigo) ON UPDATE RESTRICT ON DELETE RESTRICT,
+	CONSTRAINT fk_concedente_cidade FOREIGN KEY (cidade) REFERENCES cidade(codigo) ON UPDATE RESTRICT ON DELETE RESTRICT
+);

@@ -1,0 +1,917 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelLiberarBloqueioCompetencia" shadowOpacity="true" width="400" minWidth="400" autosized="true" onshow="document.getElementById('formLiberarBloqueioCompetencia:usernameLiberarBloqueio').focus()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Liberar Bloqueio Registro Competência Fechada (Mês/Ano)" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperPanelLiberarBloqueioCompetencia" />
+					<rich:componentControl target="panelLiberarBloqueioCompetencia" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLiberarBloqueioCompetencia">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+					<h:inputText id="usernameLiberarBloqueio" size="15" styleClass="form-control camposObrigatorios" value="#{NotaFiscalSaidaControle.usernameLiberacaoBloqueioPorFechamentoMes}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_msg_senha}" />
+					<h:inputSecret id="senhaLiberarBloqueio" size="15" styleClass="form-control camposObrigatorios" value="#{NotaFiscalSaidaControle.senhaLiberacaoBloqueioPorFechamentoMes}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton render="form, form:mensagem" oncomplete="#{rich:component('panelLiberarBloqueioCompetencia')}.hide()" action="#{NotaFiscalSaidaControle.verificarPermissaoLiberarBloqueioCompetencia}" value="Confirmar liberacao" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" title="Confirmar Liberação" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" onshow="document.getElementById('formCurso:valorConsultaCurso').focus()" shadowOpacity="true" width="580" height="340">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarCurso}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkCurso">
+						<rich:componentControl target="panelCurso" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{NotaFiscalSaidaControle.campoConsultaCurso}">
+						<f:selectItems value="#{NotaFiscalSaidaControle.tipoConsultaComboCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCurso" size="10" styleClass="form-control campos" value="#{NotaFiscalSaidaControle.valorConsultaCurso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCurso:mensagemConsultaCurso, formCurso:resultadoConsultaCurso, formCurso:scResultadoCurso" action="#{NotaFiscalSaidaControle.consultarCurso}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCurso" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{NotaFiscalSaidaControle.listaConsultaCurso}" rows="5" var="cursoItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{NotaFiscalSaidaControle.selecionarCurso}" focus="nomeCurso" render="form:nomeCurso" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{cursoItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{NotaFiscalSaidaControle.selecionarCurso}" focus="nomeCurso" render="form:nomeCurso" oncomplete="#{rich:component('panelCurso')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller for="formCurso:resultadoConsultaCurso" maxPages="10" id="scResultadoCurso" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCurso" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{NotaFiscalSaidaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" onshow="document.getElementById('formTurma:valorConsultarTurma').focus()" shadowOpacity="true" top="0" width="550" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_consultaTurma}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkTurma">
+						<rich:componentControl target="panelTurma" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{NotaFiscalSaidaControle.campoConsultaTurma}">
+						<f:selectItems value="#{NotaFiscalSaidaControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarTurma" size="10" styleClass="form-control campos" value="#{NotaFiscalSaidaControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarTurma" render="formTurma:mensagemConsultarTurma, formTurma:resultadoConsultarTurma, formTurma:scResultadoTurma" action="#{NotaFiscalSaidaControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultarTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{NotaFiscalSaidaControle.listaConsultaTurma}" rows="5" var="turmaItem">
+					<rich:column sortBy="#{turmaItem.identificadorTurma}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_identificadorTurma}" />
+						</f:facet>
+						<a4j:commandLink action="#{NotaFiscalSaidaControle.selecionarTurma}" oncomplete="#{rich:component('panelTurma')}.hide();" render="form" id="identificadorTurma" value="#{turmaItem.identificadorTurma}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItem.unidadeEnsino.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_unidadeEnsino}" />
+						</f:facet>
+						<a4j:commandLink action="#{NotaFiscalSaidaControle.selecionarTurma}" id="unidadeEnsinoTurma" oncomplete="#{rich:component('panelTurma')}.hide();" render="form" value="#{turmaItem.unidadeEnsino.nome}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItem.curso.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_curso}" />
+						</f:facet>
+						<a4j:commandLink action="#{NotaFiscalSaidaControle.selecionarTurma}" id="curso" oncomplete="#{rich:component('panelTurma')}.hide();" render="form" value="#{turmaItem.curso.nome}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItem.turno.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_turno}" />
+						</f:facet>
+						<a4j:commandLink action="#{NotaFiscalSaidaControle.selecionarTurma}" id="turno" oncomplete="#{rich:component('panelTurma')}.hide();" render="form" value="#{turmaItem.turno.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{NotaFiscalSaidaControle.selecionarTurma}" focus="turma" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller for="formTurma:resultadoConsultarTurma" maxPages="10" id="scResultadoTurma" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultarTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{NotaFiscalSaidaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" width="550" onshow="document.getElementById('formAluno:valorConsultaAluno').focus();" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_HistoricoAlunoRel_consultarAluno}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkAluno">
+						<rich:componentControl target="panelAluno" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAluno" value="#{NotaFiscalSaidaControle.campoConsultaAluno}">
+						<f:selectItems value="#{NotaFiscalSaidaControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaAluno" size="20" onkeypress="modalKeyHandler('panelAluno', 'formAluno:btnConsultar')" styleClass="form-control campos" value="#{NotaFiscalSaidaControle.valorConsultaAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno, formAluno:scResultadoAluno" action="#{NotaFiscalSaidaControle.consultarAluno}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{NotaFiscalSaidaControle.listaConsultaAluno}" rows="5" var="matriculaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{NotaFiscalSaidaControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_nomeAluno}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{NotaFiscalSaidaControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_curso}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{NotaFiscalSaidaControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{NotaFiscalSaidaControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{NotaFiscalSaidaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelNotaFiscalSaidaServico" shadowOpacity="true" width="550" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_servicos}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkNotaFiscalSaidaServico">
+						<rich:componentControl target="panelNotaFiscalSaidaServico" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNotaFiscalSaidaServico">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="resultadoConsultaNotaFiscalSaidaServico" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{NotaFiscalSaidaControle.notaFiscalSaidaVO.notaFiscalSaidaServicoVOs}" rows="5" var="notaFiscalSaidaServicoItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_descricaoServico}" />
+							</f:facet>
+							<h:outputText value="#{notaFiscalSaidaServicoItem.descricao}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_NegociacaoContaReceber_valor}" />
+							</f:facet>
+							<h:outputText value="#{notaFiscalSaidaServicoItem.precoUnitario}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{NotaFiscalSaidaControle.removerItemNotaFiscal}" render="form:resultadoConsultaContasRecebidas, form:panelTotalGeral, formNotaFiscalSaidaServico" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Item Nota Fiscal" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller for="formNotaFiscalSaidaServico:resultadoConsultaNotaFiscalSaidaServico" id="scResultadoNotaFiscalSaidaServico" rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaVO.notaFiscalSaidaServicoVOs}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelMotivoCancelamentoNota" shadowOpacity="true" width="450" height="210">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Cancelamento" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkMotivoCancelamentoNota">
+						<rich:componentControl target="panelMotivoCancelamentoNota" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMotivoCancelamentoNota">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalSaida_motivoCancelamentoNota}" />
+					<h:inputTextarea styleClass="form-control" id="motivoCancelamentoNota" value="#{NotaFiscalSaidaControle.notaFiscalSaidaVO.motivoCancelamento}" />
+				</h:panelGroup>
+				<otm:spacer height="10" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<h:panelGroup>
+						<otm:commandButton id="cancelarNota" render="form, form:mensagem, form:tabNotaFiscalSaidaErro, form:tabNotaFiscalSaidaAEnviar" action="#{NotaFiscalSaidaControle.executarCancelarNota}" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar Nota" styleClass="btn btn-danger" oncomplete="#{rich:component('panelMotivoCancelamentoNota')}.hide();" accesskey="4" image="#{resource['imagens/botaoCancelarNota.png']}" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="fecharCancelar" render="form, form:mensagem, form:tabNotaFiscalSaidaErro, form:tabNotaFiscalSaidaAEnviar" action="#{NotaFiscalSaidaControle.fecharCancelarNota}" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelMotivoCancelamentoNota')}.hide();" accesskey="6" styleClass="btn btn-danger" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelStatusServicoNFe" shadowOpacity="true" width="400" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_statusServicoNFe}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkStatusServicoNFe">
+						<rich:componentControl target="panelStatusServicoNFe" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formStatusServicoNFe">
+				<h:panelGroup columns="1" width="100%" styleClass="tabBotoes" columnClasses="colunaCentralizada">
+					<h:outputText styleClass="tituloCamposNegrito" value="#{NotaFiscalSaidaControle.statusServicoNFe}" />
+					<otm:commandButton render="form, form:mensagem, form:tabNotaFiscalSaidaErro, form:tabNotaFiscalSaidaAEnviar" oncomplete="#{rich:component('panelStatusServicoNFe')}.hide();" styleClass="btn btn-primary dark btn-fechar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDestinatario" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ConfiguracaoNotaFiscal_alterarDestinatario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelDestinatario">
+						<rich:componentControl target="panelDestinatario" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDestinatario">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="listaDestinatario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{NotaFiscalSaidaControle.listaDestinatario}" rows="5" var="destinatario">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{NotaFiscalSaidaControle.alterarDestinatario}" render="form:resultadoConsultaContasRecebidas" oncomplete="#{rich:component('panelDestinatario')}.hide();;" value="#{destinatario.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{NotaFiscalSaidaControle.alterarDestinatario}" render="form:resultadoConsultaContasRecebidas" oncomplete="#{rich:component('panelDestinatario')}.hide();" value="#{destinatario.CPF}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{NotaFiscalSaidaControle.alterarDestinatario}" render="form:resultadoConsultaContasRecebidas" oncomplete="#{rich:component('panelDestinatario')}.hide();" icon="#{msg_botoes.btn_icon_atualizar} iconePequeno" tooltip="Alterar Destinatario" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formDestinatario:listaDestinatario" maxPages="10" id="scListaDestinatario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup id="mensagemDestinatario" columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{NotaFiscalSaidaControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{NotaFiscalSaidaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup layout="block" styleClass="#{NotaFiscalSaidaControle.apresentarDataValidadeCertificado ? 'col-md-6' : 'col-md-8'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalSaida_unidadeEnsino}" />
+					<h:selectOneMenu id="unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{NotaFiscalSaidaControle.unidadeEnsinoVO.codigo}">
+						<f:selectItems value="#{NotaFiscalSaidaControle.listaSelectItemUnidadeEnsino}" />
+						<a4j:ajax event="change" render="form, observacaoContribuinte" execute="@this" listener="#{NotaFiscalSaidaControle.alterarObservacaoContribuinte}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{NotaFiscalSaidaControle.apresentarDataValidadeCertificado}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Data Vencimento Certificado" rendered="#{NotaFiscalSaidaControle.apresentarDataValidadeCertificado}" />
+					<h:graphicImage url="../../resources/imagens/#{NotaFiscalSaidaControle.situacaoCertificado}" />
+					<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" value="#{NotaFiscalSaidaControle.dataValidadeCertificado}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="Período de  " />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6 h36">
+						<otm:calendar id="data" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control camposObrigatorios" inputSize="10" value="#{NotaFiscalSaidaControle.dataInicio}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-1 text-center">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ate}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5 h36">
+						<otm:calendar id="dataFim" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control camposObrigatorios" inputSize="10" value="#{NotaFiscalSaidaControle.dataFim}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_curso}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText readonly="true" id="nomeCurso" size="50" styleClass="form-control camposSomenteLeitura" value="#{NotaFiscalSaidaControle.cursoVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosCurso" focus="nomeCurso" tooltip="Localizar Curso" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosCurso" tooltip="Limpas Dados" action="#{NotaFiscalSaidaControle.limparCurso}" render="form:nomeCurso, form:turma, form:disciplinaNome" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoTurma_turma}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="identificadorTurma" size="50" maxlength="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{NotaFiscalSaidaControle.turmaVO.identificadorTurma}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" focus="valorConsultaTurma" tooltip="Consultar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show(), setFocus(formTurma,'formTurma:valorConsultaTurma');" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" tooltip="Limpas Dados" action="#{NotaFiscalSaidaControle.limparTurma}" render="form:identificadorTurma, form:disciplinaNome, form:nomeCurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_matriculaAluno}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText id="alunoMatricula" size="20" styleClass="form-control campos" value="#{NotaFiscalSaidaControle.matriculaVO.matricula}">
+							<a4j:ajax event="change" listener="#{NotaFiscalSaidaControle.consultarAlunoPorMatricula}" render="form" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText id="alunoNome" size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{NotaFiscalSaidaControle.matriculaVO.aluno.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosAluno" tooltip="Localizar Aluno" render="formAluno" oncomplete="#{rich:component('panelAluno')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAluno" tooltip="Limpas Dados" action="#{NotaFiscalSaidaControle.limparDadosAluno}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tiposOrigemContaReceberContasReceber}" />
+					<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.buscarContasAReceber}">
+						<a4j:ajax event="click" execute="@this" render="form" />
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tiposOrigemContaReceberContaRecebidas}" />
+					<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.buscarContasRecebidas}">
+						<a4j:ajax event="click" execute="@this" render="form" />
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" />
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{NotaFiscalSaidaControle.unidadeEnsinoVO.configuracaoNotaFiscalVO.tipoIntegracaoNfeEnum != 'NFSE'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalSaida_observacaoContribuinte}" rendered="#{NotaFiscalSaidaControle.unidadeEnsinoVO.configuracaoNotaFiscalVO.tipoIntegracaoNfeEnum != 'NFSE'}" />
+					<h:inputTextarea styleClass="form-control" id="observacaoContribuinte" value="#{NotaFiscalSaidaControle.observacaoContribuinte}" rows="5" cols="50" rendered="#{NotaFiscalSaidaControle.unidadeEnsinoVO.configuracaoNotaFiscalVO.tipoIntegracaoNfeEnum != 'NFSE'}">
+						<a4j:ajax event="change" render="observacaoContribuinte" />
+					</h:inputTextarea>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" id="panelContasAReceber" rendered="#{NotaFiscalSaidaControle.buscarContasAReceber}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalSaida_situacaoContaReceber}" rendered="#{NotaFiscalSaidaControle.buscarContasAReceber}" />
+					<h:selectOneMenu id="situacaoContaReceberContaRecebida" styleClass="form-control camposObrigatorios" value="#{NotaFiscalSaidaControle.tipoValorConsultaContasAReceber}" rendered="#{NotaFiscalSaidaControle.buscarContasAReceber}">
+						<f:selectItems value="#{NotaFiscalSaidaControle.listaSelectItemValorConsiderarContaReceber}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup id="panelContaRecebidas" rendered="#{NotaFiscalSaidaControle.buscarContasRecebidas}">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="Valor Considerar" rendered="#{NotaFiscalSaidaControle.buscarContasRecebidas}" />
+						<h:selectOneMenu id="situacaoContaReceberContaAReceber" styleClass="form-control camposObrigatorios" value="#{NotaFiscalSaidaControle.tipoValorConsultaContasRecebidas}" rendered="#{NotaFiscalSaidaControle.buscarContasRecebidas}">
+							<f:selectItems value="#{NotaFiscalSaidaControle.listaSelectItemValorConsiderarContaRecebidas}" />
+							<a4j:ajax event="change" execute="@this" render="dataConsiderar" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="Data Considerar" rendered="#{NotaFiscalSaidaControle.buscarContasRecebidas}" />
+						<h:selectOneMenu id="dataConsiderar" styleClass="form-control camposObrigatorios" value="#{NotaFiscalSaidaControle.tipoDataConsideratContasRecebidas}" rendered="#{NotaFiscalSaidaControle.buscarContasRecebidas}">
+							<f:selectItems value="#{NotaFiscalSaidaControle.listaSelectItemDataConsiderar}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<otm2:panel name="panel_tipoOrigemContaReceber" styleClassHeader="mn bg-gray rounded-top p10" stylePanel="margin-top: 5px" styleClassBody="mn p5" styleClassFooter="dn" opened="true">
+					<ui:define name="header">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_NotaFiscalSaida_tiposOrigemContaReceber} - #{NotaFiscalSaidaControle.tipoOrigemContaReceberTodos ? 'Desmarcar Todos' : 'Marcar Todos'}" />
+						<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.tipoOrigemContaReceberTodos}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+							<a4j:ajax event="click" execute="@this" listener="#{NotaFiscalSaidaControle.selecionarTodosTiposOrigemContaReceber}" render="form" />
+						</otm:selectBooleanCheckbox>
+					</ui:define>
+					<ui:define name="body">
+						<h:panelGroup id="tiposOrigemContaReceber">
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberInscricaoProcessoSeletivo}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemInscricaoProcessoSeletivo}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberMatricula}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemMatricula}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberRequerimento}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemRequerimento}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberBiblioteca}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberMensalidade}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemMensalidade}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberDevolucaoCheque}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemDevolucaoCheque}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberNegociacao}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemNegociacao}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberBolsaCusteadaConvenio}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemBolsaCusteadaConvenio}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberContratoReceita}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemContratoReceita}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberInclusaoReposicao}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemInclusaoReposicao}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberOutros}" />
+								<otm:selectBooleanCheckbox value="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.tipoOrigemOutros}" disabled="#{NotaFiscalSaidaControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+					</ui:define>
+				</otm2:panel>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<otm:commandButton id="consultarContasRecebidas" render="form" action="#{NotaFiscalSaidaControle.consultarContasRecebidas}" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar Contas Recebidas" styleClass="btn btn-primary" accesskey="4" image="#{resource['imagens/botaoConsultarContasRecebidas.png']}" />
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="mensagem">
+					<otm:mensagem bean="#{NotaFiscalSaidaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<h:panelGroup>
+						<otm:commandButton id="consultarNotasFiscaisEmitidas" render="form, mensagem, mensagens" action="#{NotaFiscalSaidaControle.inicializarConsultar}" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" styleClass="btn btn-default" accesskey="4" image="#{resource['imagens/botaoConsultarNotasFiscaisEmitidas.png']}" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="verificarStatusServicoNFe" rendered="#{NotaFiscalSaidaControle.isApresentarBotaoVerificarStatusServicoNFE}" render="form:mensagem, form:tabNotaFiscalSaidaErro, form:tabNotaFiscalSaidaAEnviar, form:statusPanel, formStatusServicoNFe, form" oncomplete="#{rich:component('panelStatusServicoNFe')}.show();" action="#{NotaFiscalSaidaControle.consultarStatusServicoNFeWebservice}" value="#{msg_botoes.btn_consultar}" image="#{resource['imagens/botaoStatusServicoNFe.png']}" />
+						<otm:spacer width="5px" rendered="#{NotaFiscalSaidaControle.apresentarBotaoLiberarBloqueio}" />
+						<otm:commandButton id="liberarRegistroCompetencia" value="liberarRegistroCompetencia" image="#{resource['/imagens/botaoLiberarRegistroCompetencia.png']}" accesskey="6" oncomplete="#{rich:component('panelLiberarBloqueioCompetencia')}.show()" render="form, mensagem, panelLiberarBloqueioCompetencia, formLiberarBloqueioCompetencia" rendered="#{NotaFiscalSaidaControle.apresentarBotaoLiberarBloqueio}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row" rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaVOs or !empty NotaFiscalSaidaControle.notaFiscalSaidaErroVOs}">
+					<rich:tabPanel rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaVOs or !empty NotaFiscalSaidaControle.notaFiscalSaidaErroVOs}">
+						<rich:tab header="#{msg_aplic.prt_NotaFiscalSaida_notaFiscalSaidaAEnviar} ( #{fn:length(NotaFiscalSaidaControle.notaFiscalSaidaVOs)} )" id="tabNotaFiscalSaidaAEnviar" rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaVOs}">
+							<h:panelGroup layout="block" styleClass="row">
+								<rich:dataTable id="resultadoConsultaContasRecebidas" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" rows="10" var="notaFiscalSaidaVOItens" value="#{NotaFiscalSaidaControle.notaFiscalSaidaVOs}" rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaVOs}">
+									<rich:column>
+										<f:facet name="header">
+											<h:panelGroup>
+												<h:outputText value="#{msg_botoes.btn_opcoes}" />
+												<otm:commandIcon id="btnPreencherTodosListaContasRecebidas" action="#{NotaFiscalSaidaControle.preencherTodosListaContasRecebidas}" tooltip="Marcar Todos" render="tabNotaFiscalSaidaAEnviar" icon="#{msg_botoes.btn_icon_marcarTodos_embutido}" styleClass="ml5" />
+												<otm:commandIcon id="btnDesmarcarTodosListaContasRecebidas" action="#{NotaFiscalSaidaControle.desmarcarTodosListaContasRecebidas}" tooltip="Desmarcar Todos" render="tabNotaFiscalSaidaAEnviar" icon="#{msg_botoes.btn_icon_desmarcarTodos_embutido}" />
+											</h:panelGroup>
+										</f:facet>
+										<otm:selectBooleanCheckbox value="#{notaFiscalSaidaVOItens.notaFiscalSaidaSelecionado}" rendered="#{notaFiscalSaidaVOItens.situacao != 'AU'}" styleClass="campos">
+											<a4j:ajax execute="tabNotaFiscalSaidaAEnviar" render="tabNotaFiscalSaidaAEnviar" event="change" listener="#{NotaFiscalSaidaControle.validarSelecaoNotaFiscalSaidaTotalizadores}" />
+										</otm:selectBooleanCheckbox>
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+										</f:facet>
+										<a4j:commandLink id="matricula" action="#{NotaFiscalSaidaControle.selecionarNotaFiscalSaida}" oncomplete="#{rich:component('panelNotaFiscalSaidaServico')}.show();" render="form, formNotaFiscalSaidaServico" value="#{notaFiscalSaidaVOItens.matricula}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_numero}" />
+										</f:facet>
+										<a4j:commandLink id="numero" action="#{NotaFiscalSaidaControle.selecionarNotaFiscalSaida}" oncomplete="#{rich:component('panelNotaFiscalSaidaServico')}.show();" render="form, formNotaFiscalSaidaServico" value="#{notaFiscalSaidaVOItens.numero > 0 ? notaFiscalSaidaVOItens.numero : ''}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_destinatario}" />
+										</f:facet>
+										<a4j:commandLink id="sacado" action="#{NotaFiscalSaidaControle.selecionarNotaFiscalSaida}" oncomplete="#{rich:component('panelNotaFiscalSaidaServico')}.show();" render="form, formNotaFiscalSaidaServico" value="#{notaFiscalSaidaVOItens.dadosPessoaAtiva}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NegociacaoContaReceber_valorTotal}" />
+										</f:facet>
+										<a4j:commandLink id="valor" action="#{NotaFiscalSaidaControle.selecionarNotaFiscalSaida}" oncomplete="#{rich:component('panelNotaFiscalSaidaServico')}.show();" render="form, formNotaFiscalSaidaServico" value="#{notaFiscalSaidaVOItens.valorTotal_Apresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_valorLiquido}" />
+										</f:facet>
+										<a4j:commandLink id="vlLiquido" action="#{NotaFiscalSaidaControle.selecionarNotaFiscalSaida}" oncomplete="#{rich:component('panelNotaFiscalSaidaServico')}.show()" render="form, formNotaFiscalSaidaServico" value="#{notaFiscalSaidaVOItens.valorLiquido}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_detalhamentoImpostos}" />
+										</f:facet>
+										<h:panelGroup id="helpformulaCalculoMediaFinal">
+											<span class="#{msg_botoes.btn_icon_help2_embutido} fs15 text-success" />
+											<rich:tooltip followMouse="true" direction="topRight" style="width:150px;height:100px;" target="helpformulaCalculoMediaFinal" showDelay="500">
+												<h:panelGrid columns="2" width="100%" styleClass="tituloCampos" columnClasses="colunaEsquerda">
+													<h:outputText value="ISS:" />
+													<h:outputText value="R$ #{notaFiscalSaidaVOItens.totalIssqn}" />
+													<h:outputText value="PIS:" />
+													<h:outputText value="R$ #{notaFiscalSaidaVOItens.valorTotalPIS}" />
+													<h:outputText value="COFINS:" />
+													<h:outputText value="R$ #{notaFiscalSaidaVOItens.valorTotalCOFINS}" />
+													<h:outputText value="INSS:" />
+													<h:outputText value="R$ #{notaFiscalSaidaVOItens.valorTotalINSS}" />
+													<h:outputText value="IRRF:" />
+													<h:outputText value="R$ #{notaFiscalSaidaVOItens.valorTotalIRRF}" />
+													<h:outputText value="CSLL:" />
+													<h:outputText value="R$ #{notaFiscalSaidaVOItens.valorTotalCSLL}" />
+												</h:panelGrid>
+											</rich:tooltip>
+										</h:panelGroup>
+									</rich:column>
+									<rich:column rendered="#{NotaFiscalSaidaControle.apresentarColunaIssRetido}">
+										<f:facet name="header">
+											<h:outputText value="ISS Retido" />
+										</f:facet>
+										<h:selectBooleanCheckbox value="#{notaFiscalSaidaVOItens.issRetido}" disabled="#{NotaFiscalSaidaControle.desabilitarFlagIssRetido}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_ContaReceber_situacao}" />
+										</f:facet>
+										<a4j:commandLink id="situacao" action="#{NotaFiscalSaidaControle.selecionarNotaFiscalSaida}" oncomplete="#{rich:component('panelNotaFiscalSaidaServico')}.show();" render="form, formNotaFiscalSaidaServico" value="#{notaFiscalSaidaVOItens.situacao_Apresentar}" />
+										<rich:tooltip rendered="#{!empty notaFiscalSaidaVOItens.mensagemRetorno}" followMouse="false" direction="bottomLeft" style="width:450px;height:250px;overflow:auto" target="situacao" showDelay="500">
+											<h:outputText value="#{notaFiscalSaidaVOItens.mensagemRetorno}" />
+										</rich:tooltip>
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_Catalogo_opcoes}" />
+										</f:facet>
+										<otm:commandIcon id="selecionar_nfe" action="#{NotaFiscalSaidaControle.selecionarNotaFiscalSaida}" oncomplete="#{rich:component('panelNotaFiscalSaidaServico')}.show();" render="form, formNotaFiscalSaidaServico" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+										<otm:commandIcon id="editar_nfe" rendered="#{notaFiscalSaidaVOItens.situacao != 'AU'}" action="#{NotaFiscalSaidaControle.selecionarDestinatario}" oncomplete="#{rich:component('panelDestinatario')}.show();" render="form, formDestinatario" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="#{msg_aplic.prt_ConfiguracaoNotaFiscal_alterarDestinatario}" />
+										<otm:commandIcon id="cancelar_nfe" rendered="#{notaFiscalSaidaVOItens.situacao == 'AU' and notaFiscalSaidaVOItens.unidadeEnsinoVO.configuracaoNotaFiscalVO.tipoIntegracaoNfeEnum != 'NFSE'}" render="form, mensagem, tabNotaFiscalSaidaErro, tabNotaFiscalSaidaAEnviar" action="#{NotaFiscalSaidaControle.montarCancelarNota}" oncomplete="#{rich:component('panelMotivoCancelamentoNota')}.show();" tooltip="Cancelar" icon="#{msg_botoes.btn_icon_cancelar} iconePequeno" />
+										<otm:commandIcon id="imprimir_nfse" oncomplete="abrirPopup3('#{notaFiscalSaidaVOItens.linkAcesso}');" rendered="#{notaFiscalSaidaVOItens.situacao == 'AU' and notaFiscalSaidaVOItens.unidadeEnsinoVO.configuracaoNotaFiscalVO.tipoIntegracaoNfeEnum == 'NFSE'}" icon="#{msg_botoes.btn_icon_imprimir} iconePequeno" tooltip="Imprimir Danfe da Nota Fiscal" />
+										<otm:commandIcon id="imprimir_nfe" rendered="#{notaFiscalSaidaVOItens.linkAcesso eq '' and notaFiscalSaidaVOItens.webServicesNFSEEnum.layoutRelatorioString ne '' and notaFiscalSaidaVO.situacao eq 'AU' }" render="form, mensagem" tooltip="Imprimir Danfe da Nota Fiscal" action="#{NotaFiscalSaidaControle.imprimirDanfe}" oncomplete="#{NotaFiscalSaidaControle.notaFiscalSaidaRelControle.download}" icon="#{msg_botoes.btn_icon_imprimir} iconePequeno" />
+										<h:commandLink id="download_xml"  rendered="#{(notaFiscalSaidaVOItens.situacao eq 'AU' or notaFiscalSaidaVOItens.situacao eq 'RE') and notaFiscalSaidaVOItens.numero gt 0}" tooltip="Download Xml" icon="#{msg_botoes.btn_icon_imprimir_html} iconePequeno"  action="#{NotaFiscalSaidaControle.downloadXmlNota}"  >
+											<span class="#{msg_botoes.btn_icon_imprimir_html} iconePequeno border-radius-all" />											
+										</h:commandLink>
+									</rich:column>
+									<f:facet name="footer">
+										<h:panelGroup layout="block" styleClass="col-md-12 text-center m5" rendered="#{notaFiscalSaidaVOItens.situacao == 'AU' and notaFiscalSaidaVOItens.unidadeEnsinoVO.configuracaoNotaFiscalVO.tipoIntegracaoNfeEnum != 'NFSE'}">
+											<otm:commandButton id="imprimirNota" render="form, mensagem" action="#{NotaFiscalSaidaControle.imprimirDanfe}" oncomplete="#{NotaFiscalSaidaControle.notaFiscalSaidaRelControle.download}" value="#{msg_bt.btn_enviarNota}" icon="#{msg_botoes.btn_icon_imprimir_embutido}" styleClass="btn btn-dark" />
+										</h:panelGroup>
+										<div style="text-align: center !important; width: 100% !important">
+											<rich:dataScroller for="form:resultadoConsultaContasRecebidas" id="scResultadoContasRecebidas" rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaVOs}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+										</div>
+									</f:facet>
+								</rich:dataTable>
+<style>
+.tituloCampos-text {
+    color: #343a38 !important;
+    font-size: 14px;
+    font-weight: 510;
+    line-height: 23px !important;
+}
+</style>								
+								<h:panelGroup layout="block" styleClass="col-md-12 mt10" style="display: flex;" id="panelTotalGeral">
+									<h:panelGroup style="width: 14.28%" styleClass="border rounded bg-gray-100 text-center pb5 mr5">
+										<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-400 p5" style="margin-bottom: 5px !important">
+											<h:outputText styleClass="tituloCampos-text" value="Valor Total Geral Nota" />
+										</h:panelGroup>
+										<h:outputText styleClass="tituloCampos" id="valorTotalGeralNota" size="7" value="#{NotaFiscalSaidaControle.valorTotalGeralNota}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</h:panelGroup>
+									<h:panelGroup style="width: 14.28%" styleClass="border rounded bg-gray-100 text-center pb5 mr5">
+										<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-400 p5" style="margin-bottom: 5px !important">
+											<h:outputText styleClass="tituloCampos-text" value="#{msg_aplic.prt_NotaFiscalSaida_valorTotalGeralIssqn}" />
+										</h:panelGroup>
+										<h:outputText id="valorTotalGeralIssqn" size="6" value="#{NotaFiscalSaidaControle.valorTotalGeralIssqn}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</h:panelGroup>
+									<h:panelGroup style="width: 14.28%" styleClass="border rounded bg-gray-100 text-center pb5 mr5">
+										<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-400 p5" style="margin-bottom: 5px !important">
+											<h:outputText styleClass="tituloCampos-text" value="Total PIS " />
+										</h:panelGroup>
+										<h:outputText id="valorTotalGeralPis" size="6" value="#{NotaFiscalSaidaControle.valorTotalGeralPis}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</h:panelGroup>
+									<h:panelGroup style="width: 14.28%" styleClass="border rounded bg-gray-100 text-center pb5 mr5">
+										<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-400 p5" style="margin-bottom: 5px !important">
+											<h:outputText styleClass="tituloCampos-text" value="Total COFINS " />
+										</h:panelGroup>
+										<h:outputText id="valorTotalGeralCofins" size="6" value="#{NotaFiscalSaidaControle.valorTotalGeralCofins}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</h:panelGroup>
+									<h:panelGroup style="width: 14.28%" styleClass="border rounded bg-gray-100 text-center pb5 mr5">
+										<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-400 p5" style="margin-bottom: 5px !important">
+											<h:outputText styleClass="tituloCampos-text" value="Total INSS " />
+										</h:panelGroup>
+										<h:outputText id="valorTotalGeralInss" size="6" value="#{NotaFiscalSaidaControle.valorTotalGeralInss}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</h:panelGroup>
+									<h:panelGroup style="width: 14.28%" styleClass="border rounded bg-gray-100 text-center pb5 mr5">
+										<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-400 p5" style="margin-bottom: 5px !important">
+											<h:outputText styleClass="tituloCampos-text" value="Total CSLL " />
+										</h:panelGroup>
+										<h:outputText id="valorTotalGeralCsll" size="6" value="#{NotaFiscalSaidaControle.valorTotalGeralCsll}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</h:panelGroup>
+									<h:panelGroup style="width: 14.28%" styleClass="border rounded bg-gray-100 text-center pb5">
+										<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-400 p5" style="margin-bottom: 5px !important">
+											<h:outputText styleClass="tituloCampos-text" value="Total IRRF " />
+										</h:panelGroup>
+										<h:outputText id="valorTotalGeralIr" size="6" value="#{NotaFiscalSaidaControle.valorTotalGeralIr}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</h:panelGroup>
+								</h:panelGroup>
+								<otm:spacer height="10" />
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+									<otm:commandButton rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaVOs}" id="enviarNotasFiscais" render="form, form:mensagem, pgTopo, modalProgressBar" action="#{NotaFiscalSaidaControle.executarInicioProgressBarEnviarNotasFiscais}" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" value="Enviar Notas Fiscais" styleClass="btn btn-default" accesskey="4" image="#{resource['imagens/botaoEnviarNotasFiscais.png']}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+						
+						<rich:tab header="#{msg_aplic.prt_NotaFiscalSaida_notaFiscalSaidaErro} ( #{fn:length(NotaFiscalSaidaControle.notaFiscalSaidaErroVOs)} )" id="tabNotaFiscalSaidaErro" rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaErroVOs}">
+							<h:panelGroup layout="block" styleClass="row">
+								<rich:dataTable id="resultadoNotaFiscalSaidaErro" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" rows="10" var="notaFiscalSaidaVOItens" value="#{NotaFiscalSaidaControle.notaFiscalSaidaErroVOs}">
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.matricula}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_destinatario}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.dadosPessoaAtiva}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NegociacaoContaReceber_valorTotal}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.valorTotal_Apresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_ConfiguracaoNotaFiscal_issqn}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.totalIssqn}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_ContaReceber_situacao}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.situacao_Apresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_motivoRetorno}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.mensagemRetorno}" />
+									</rich:column>
+									<f:facet name="footer">
+										<div style="text-align: center !important">
+											<rich:dataScroller align="center" for="form:resultadoNotaFiscalSaidaErro" id="scResultadoNotaFiscalSaidaErro" rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaErroVOs}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+										</div>
+									</f:facet>
+								</rich:dataTable>
+							</h:panelGroup>
+						</rich:tab>
+						
+						<rich:tab header="Enviadas ( #{fn:length(NotaFiscalSaidaControle.notaFiscalSaidaEnviadasVOs)} )" id="tabNotaFiscalSaidaEnviadas" rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaEnviadasVOs}">
+							<h:panelGroup columns="1" width="100%">
+								<rich:dataTable id="resultadoNotaFiscalSaidaEnviadas" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" rows="10" var="notaFiscalSaidaVOItens" value="#{NotaFiscalSaidaControle.notaFiscalSaidaEnviadasVOs}">
+									<rich:column>
+										<f:facet name="header">
+											<h:panelGroup>
+												<h:outputText value="#{msg_bt.btn_opcoes}" />
+												<otm:commandIcon id="btnPreencherTodosListaContasRecebidasEnviadas" action="#{NotaFiscalSaidaControle.preencherTodosListaContasRecebidasEnviadas}" tooltip="Marcar Todos" icon="#{msg_botoes.btn_icon_marcarTodos_embutido}" styleClass="ml5" render="form:resultadoNotaFiscalSaidaEnviadas" />
+												<otm:commandIcon id="btnDesmarcarTodosListaContasRecebidasEnviadas" action="#{NotaFiscalSaidaControle.desmarcarTodosListaContasRecebidasEnviadas}" tooltip="Desmarcar Todos" icon="#{msg_botoes.btn_icon_desmarcarTodos_embutido}" render="form:resultadoNotaFiscalSaidaEnviadas" image="#{resource['/imagens/botaoDesmarcar.png']}" />
+											</h:panelGroup>
+										</f:facet>
+										<otm:selectBooleanCheckbox value="#{notaFiscalSaidaVOItens.notaFiscalSaidaSelecionado}" rendered="#{notaFiscalSaidaVOItens.situacao != 'AU'}" styleClass="form-control campos" style="position:relative; top:3px;">
+											<a4j:ajax event="change" />
+										</otm:selectBooleanCheckbox>
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_numero}" />
+										</f:facet>
+										<a4j:commandLink id="numero" action="#{NotaFiscalSaidaControle.selecionarNotaFiscalSaida}" oncomplete="#{rich:component('panelNotaFiscalSaidaServico')}.show();" render="form, formNotaFiscalSaidaServico" value="#{notaFiscalSaidaVOItens.numero}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.matricula}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NotaFiscalSaida_destinatario}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.dadosPessoaAtiva}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_NegociacaoContaReceber_valorTotal}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.valorTotal_Apresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_ConfiguracaoNotaFiscal_issqn}" />
+										</f:facet>
+										<h:outputText value="#{notaFiscalSaidaVOItens.totalIssqn}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_ContaReceber_situacao}" />
+										</f:facet>
+										<a4j:commandLink id="situacaoEnviadas" value="#{notaFiscalSaidaVOItens.situacao_Apresentar}" />
+										<rich:tooltip followMouse="false" direction="topRight" style="width:450px;height:100px;overflow:auto" target="situacao" showDelay="500">
+											<h:outputText value="#{notaFiscalSaidaVOItens.mensagemRetorno}" />
+										</rich:tooltip>
+									</rich:column>
+									<f:facet name="footer">
+										<div style="text-align: center !important">
+											<rich:dataScroller align="center" for="form:resultadoNotaFiscalSaidaEnviadas" id="scResultadoNotaFiscalSaidaEnviadas" rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaEnviadasVOs}" />
+										</div>
+									</f:facet>
+								</rich:dataTable>
+								<h:panelGroup layout="block" styleClass="col-md-12 mt10" style="display: flex;" id="panelTotalGeralEnviadas">
+									<h:panelGroup style="width: 50%" styleClass="border rounded bg-gray-100 text-center pb5 mr5">
+										<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-400 p5" style="margin-bottom: 5px !important">
+											<h:outputText styleClass="tituloCampos-text" value="#{msg_aplic.prt_NotaFiscalSaida_valorTotalGeralNota}" />
+										</h:panelGroup>
+										<h:outputText id="valorTotalGeralNotaEnviadas" size="6" value="#{NotaFiscalSaidaControle.valorTotalGeralNotaEnviada}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</h:panelGroup>
+									<h:panelGroup style="width: 50%" styleClass="border rounded bg-gray-100 text-center pb5 mr5">
+										<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-400 p5" style="margin-bottom: 5px !important">
+											<h:outputText styleClass="tituloCampos-text" value="#{msg_aplic.prt_NotaFiscalSaida_valorTotalGeralIssqn}" />
+										</h:panelGroup>
+										<h:outputText id="valorTotalGeralIssqnEnviadas" size="6" value="#{NotaFiscalSaidaControle.valorTotalGeralIssqnNotaEnviada}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</h:panelGroup>
+								</h:panelGroup>
+								<otm:spacer height="10" />
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+									<a4j:region>
+										<h:panelGroup>
+											<otm:commandButton rendered="#{!empty NotaFiscalSaidaControle.notaFiscalSaidaEnviadasVOs}" id="enviarNotasFiscaisEnviadas" render="form, form:mensagem, form:tabNotaFiscalSaidaErro, form:tabNotaFiscalSaidaAEnviar, form:tabNotaFiscalSaidaEnviadas, pgTopo,modalProgressBarNotasFiscaisEnviadas" action="#{NotaFiscalSaidaControle.executarInicioProgressBarEnviarNotasFiscaisEnviadas}" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" value="Enviar Notas Fiscais Enviadas" styleClass="btn btn-default" accesskey="4" image="#{resource['imagens/botaoEnviarNotasFiscais.png']}" />
+										</h:panelGroup>
+									</a4j:region>
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+					</rich:tabPanel>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<otm2:progressBar bean="#{NotaFiscalSaidaControle}" action="executarEnviarNotasFiscais" render="form:panelGridForm">
+		</otm2:progressBar>
+		<otm2:progressBar bar="progressBarEnviarNotasFicasStatusEnviada" id="modalProgressBarNotasFiscaisEnviadas" bean="#{NotaFiscalSaidaControle}" action="executarEnviarNotasFiscaisEnviadas" render="form:panelGridForm">
+		</otm2:progressBar>
+	</ui:define>
+</ui:composition>
+</html>

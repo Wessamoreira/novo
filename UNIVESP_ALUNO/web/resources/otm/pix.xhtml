@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:p="http://primefaces.org/ui" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core"
+   xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:composite="http://java.sun.com/jsf/composite">
+<composite:interface>
+	<composite:attribute name="id" required="true"  type="java.lang.String"/>
+	<composite:attribute name="idQrCode" required="true" type="java.lang.String" />
+	<composite:attribute name="image" type="java.lang.String" />
+	<composite:attribute name="imageWidth" default="19" type="java.lang.String" />
+	<composite:attribute name="imageHeight" default="19" type="java.lang.String" />
+	<composite:attribute name="style" default="padding: 4px 4px 4px 4px !important;margin-left: 5px;margin-right: 5px;vertical-align: baseline"  type="java.lang.String" />
+	<composite:attribute name="imageCss" default=""  type="java.lang.String" />
+	<composite:attribute name="bean" required="true" type="java.lang.Object" />
+	<composite:attribute name="contaReceberVO" required="true" type="negocio.comuns.financeiro.ContaReceberVO" />
+</composite:interface>
+
+<composite:implementation>
+	<h:panelGroup layout="block" >
+
+		<p:commandLink id="#{cc.attrs.id}" title="Visualizar Pix" oncomplete="PF('panelPix').show()" value="#{cc.attrs.value}"  style="#{cc.attrs.style}" styleClass="#{cc.attrs.styleClass}" process="#{cc.attrs.process}" 
+			onkeydown="acionarBotaoPelaTeclaEnter(event, this.id);" 
+			 action="#{cc.attrs.bean.realizarVisualizacaoPix(cc.attrs.contaReceberVO)}" update="#{cc.attrs.update}">
+			<span class="pull-left" style="margin-right: 0; margin-top:0;">
+				 <img src="#{cc.attrs.image}" style="width:#{cc.attrs.imageWidth}px; height:#{cc.attrs.imageHeight}px;"/>
+			</span>						
+		</p:commandLink >
+		<p:dialog modal="true" hideEffect="fade" closeOnEscape="true" showEffect="fade" id="panelPix" widgetVar="panelPix"  width="800"  height="500" >
+			<f:facet name="header"> 
+				<h:panelGroup>
+					<h:outputText value="Pix"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:panelGroup id="panelGroupPix" columns="1" width="100%" style="height:100%;margin: 0 auto;">
+				<h:panelGroup id="texto" style="text-align:left;width:100%;padding:2px;height:100%;float:left;overflow:auto;min-height:10px;" layout="block" rendered="#{cc.attrs.bean.pixVO.contaCorrenteVO.agencia.banco.orientacaoPix ne ''}">
+					<h:outputText styleClass="tituloCamposResultado" escape="false" style="word-wrap: break-word;text-align: justify;" value="#{cc.attrs.bean.pixVO.contaCorrenteVO.agencia.banco.orientacaoPix}" />
+				</h:panelGroup>
+				<h:panelGroup columns="2" width="100%" columnClasses="colunaEsquerda" rendered="#{cc.attrs.bean.pixVO.codigo ne 0}">
+				 	<h:panelGroup columns="1" >
+				 		<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_PixContaCorrente_qrCode}" /> 
+						<h:inputText id="textoQrCode"  style="display:none;" value="#{cc.attrs.bean.pixVO.qrCode}" />
+						<h:panelGroup layout="block" id="panelQrCode"></h:panelGroup>
+						<script type="text/javascript">		
+									var iqc = #{cc.attrs.idQrCode}+':textoQrCode';
+									var pqc = #{cc.attrs.idQrCode}+':panelQrCode';
+		 							var qrcode = new QRCode(
+		 									document.getElementById(pqc),
+		 									{
+		 										text : document.getElementById(iqc).value,
+		 										width : 250,
+		 										height : 250,
+		 										colorDark : "#000000",
+		 										colorLight : "#ffffff",
+		 										correctLevel : QRCode.CorrectLevel.M
+		 									});
+						</script>					
+					</h:panelGroup>
+					<h:panelGroup columns="1">
+						<h:outputText styleClass="tituloCampos" value="Copie e Cola" />
+						<h:inputTextarea cols="32" rows="8" id="qrCodeCopieCole" readonly="true" value="#{cc.attrs.bean.pixVO.qrCode}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mt10 mb10 text-center" rendered="#{cc.attrs.bean.pixVO.codigo eq 0}">
+					<p:commandButton icon="far fa-save" id="gerarPixContaCorrente" action="#{cc.attrs.bean.realizarGeracaoPix}" update="panelGroupPix"   value="Gerar Pix"  title="#{msg.msg_gravar_dados}" styleClass="btn btn-dark btn-gravar"/>
+				</h:panelGroup>				
+			</h:panelGroup>
+		</p:dialog>
+	</h:panelGroup>
+</composite:implementation>
+</html>

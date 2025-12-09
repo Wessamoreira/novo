@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_menu.Menu_Relatorio_extratoContaCorrente}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style>
+.headerTabela {
+	background: #F6F6F6 !important;
+	padding: 5px !important;
+	vertical-align: middle !important;
+}
+</style>
+		<title><h:outputText value="#{msg_menu.Menu_Relatorio_extratoContaCorrente}" /></title>
+		<h:form id="form">
+			<h:commandLink action="#{ExtratoContaCorrenteRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{!ExtratoContaCorrenteRelControle.existeUnidadeEnsino}">
+				<h:outputText rendered="#{!ExtratoContaCorrenteRelControle.existeUnidadeEnsino}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoTurmaRel_unidadeEnsino}" />
+				<h:selectOneMenu id="unidadeensino" styleClass="form-control campos" value="#{ExtratoContaCorrenteRelControle.unidadeEnsino}">
+					<a4j:ajax event="change" render="form" listener="#{ExtratoContaCorrenteRelControle.inicializarListaSelectItemContaCorrente}" />
+					<f:selectItems value="#{ExtratoContaCorrenteRelControle.listaSelectItemUnidadeEnsino}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaReceber_periodo}" />
+				<otm:calendar id="valorConsultaData" value="#{ExtratoContaCorrenteRelControle.dataInicio}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="Periodo Fim" />
+				<otm:calendar id="dataFim" value="#{ExtratoContaCorrenteRelControle.dataFim}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ExtratoContaCorrente_contaCorrente}" />
+				<h:selectOneMenu id="contaCorrente" styleClass="form-control campos" value="#{ExtratoContaCorrenteRelControle.contaCorrente}">
+					<f:selectItems value="#{ExtratoContaCorrenteRelControle.listaSelectItemContaCorrente}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<h:panelGroup id="panelMsg">
+					<otm:mensagem bean="#{ExtratoContaCorrenteRelControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<h:panelGroup>
+						<otm:commandButton id="imprimirPDF" render="form" oncomplete="#{ExtratoContaCorrenteRelControle.download}" action="#{ExtratoContaCorrenteRelControle.imprimirPDF}" value="Gerar Relatório (Pdf)" icon="#{msg_botoes.btn_icon_pdf_embutido}" title="Gerar Relatório" accesskey="1" styleClass="btn btn-danger" />
+						<otm:commandButton style="margin-left:5px" id="imprimirExcel" render="form" oncomplete="#{ExtratoContaCorrenteRelControle.download}" action="#{ExtratoContaCorrenteRelControle.imprimirRelatorioExcel}" value="Gerar Relatório (Excel)" icon="fas fa-file-excel" title="Gerar Relatório" accesskey="2" styleClass="btn btn-info" />
+						<otm:commandButton style="margin-left:5px" id="consultar" render="form" action="#{ExtratoContaCorrenteRelControle.imprimirRelatorioTela}" value="Gerar Relatório Em Tela" title="Gerar Relatório Em Tela" accesskey="3" styleClass="btn btn-default btn-consultar" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row" rendered="#{!empty ExtratoContaCorrenteRelControle.extratoContaCorrenteRelVOs}">
+				<rich:list id="panelContas" rowKeyVar="row" type="definitions" value="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteRelVOs}" var="conta">
+					<hr class="col-md-12" />
+					<h:panelGroup layout="block" styleClass="col-md-12 mb10">
+						<h:panelGroup layout="block" styleClass="col-md-4" style="border-bottom: solid 1px;">
+							<h:outputText value="Banco: #{conta.banco}" style="font-size: 13px; font-family: revert;" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4" style="border-bottom: solid 1px;">
+							<h:outputText value="Agência: #{conta.agencia}" style="font-size: 13px; font-family: revert;" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4" style="border-bottom: solid 1px;">
+							<h:outputText value="CC: #{conta.contaCorrente}" style="font-size: 13px; font-family: revert;" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+						<otm:commandButton render="formIncluir" value="Incluir Extrato Conta Corrente" title="Incluir Extrato Conta Corrente" rendered="#{ExtratoContaCorrenteRelControle.usuarioPodeIncluirExtratoContaCorrente}" action="#{ExtratoContaCorrenteRelControle.novoExtrato}" oncomplete="#{rich:component('panelIncluir')}.show()" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary">
+						</otm:commandButton>
+					</h:panelGroup>
+					<rich:panel styleClass="row ml5" id="panelFiltro">
+						<f:facet name="header">
+							<h:panelGroup layout="block" styleClass="p5">
+								<i class="fas fa-filter mr5"></i>
+								<h:outputText rendered="#{!conta.minimizar}" styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="Ocultar Filtros" />
+								<h:outputText rendered="#{conta.minimizar}" styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="Apresentar Filtros" />
+								<h:panelGroup styleClass="float-right mr10">
+									<a4j:commandLink rendered="#{!conta.minimizar}" render="panelContas" image="#{resource['./imagens/minimizar.png']}">
+										<span class="fas fa-expand-alt fs14 pull-center" style="position: relative; top: 3px; font-size: 14px;"></span>
+										<f:setPropertyActionListener target="#{conta.minimizar}" value="true" />
+									</a4j:commandLink>
+									<a4j:commandLink rendered="#{conta.minimizar}" render="panelContas" image="#{resource['./imagens/maximizar.png']}">
+										<span class="fas fa-compress-alt fs14 pull-center" style="position: relative; top: 3px; font-size: 14px;"></span>
+										<f:setPropertyActionListener target="#{conta.minimizar}" value="false" />
+									</a4j:commandLink>
+								</h:panelGroup>
+							</h:panelGroup>
+						</f:facet>
+						<rich:dataTable id="panelExtrato" rowKeyVar="rowExtrato" headerClass="headerTabela" footerCellClass="headerTabela" footerClass="headerTabela" headerCellClass="headerTabela" rows="10" value="#{conta.extratoContaCorrenteVOs}" var="extrato">
+							<rich:column style="width: 5%" rendered="#{!conta.minimizar}">
+								<f:facet name="header">
+									<h:outputText value="Nº" />
+								</f:facet>
+								<h:outputText styleClass="field control-label tituloCampos" value="#{rowExtrato+1}" />
+							</rich:column>
+							<rich:column style="width: 12.09%" rendered="#{!conta.minimizar}" filterType="custom" filter="#{FilterFactory.filter('panelExtratoData#{row}', 'data', 'DATA')}">
+								<f:facet name="header">
+									<h:outputText value="Data" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText maxlength="10" styleClass="form-control campos" size="10" value="#{FilterFactory.filter('panelExtratoData#{row}', 'data', 'DATA').filtro}">
+											<a4j:ajax event="change" execute="@this" render="panelContas" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="panelContas" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('panelExtratoData#{row}')}" tooltip="Limpar" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<otm:calendar id="valorConsultaData" disabled="#{extrato.isConciliado or !ExtratoContaCorrenteRelControle.usuarioPodeAlterarDataCompensacao}" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" inputSize="10" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control camposObrigatorios" value="#{extrato.dataAlterar}" onkeypress="aceitarSomenteValorNumerico(this)">
+									<!-- 								<a4j:ajax event="inputchange" render="form:panelContas:#{row}:panelExtrato:#{rowExtrato}:valorConsultaData" execute="form:panelContas:#{row}:panelExtrato:#{rowExtrato}:valorConsultaData" status="region" /> -->
+									<!-- 								<a4j:ajax event="change"  /> -->
+								</otm:calendar>
+								<a4j:jsFunction name="dataAlterar" render="form:panelContas:#{row}:panelExtrato:#{rowExtrato}:valorConsultaData" execute="form:panelContas:#{row}:panelExtrato:#{rowExtrato}:valorConsultaData" status="region" />
+							</rich:column>
+							<rich:column style="width: 9.09%" rendered="#{!conta.minimizar}" filterType="custom" filter="#{FilterFactory.filter('panelExtratoNome#{row}', 'nomeSacado', 'TEXTO')}">
+								<f:facet name="header">
+									<h:outputText value="Sacado" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('panelExtratoNome#{row}', 'nomeSacado', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="panelContas" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="panelContas" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('panelExtratoNome#{row}')}" tooltip="Limpar" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText styleClass="field control-label tituloCampos" value="#{extrato.nomeSacado}" />
+							</rich:column>
+							<rich:column style="width: 9.09%" rendered="#{!conta.minimizar}" filterType="custom" filter="#{FilterFactory.filter('panelExtratoFormaPgto#{row}', 'formaPagamento.nome', 'TEXTO')}">
+								<f:facet name="header">
+									<h:outputText value="Forma Recebimento/Pagamento" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('panelExtratoFormaPgto#{row}', 'formaPagamento.nome', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="panelContas" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="panelContas" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('panelExtratoFormaPgto#{row}')}" tooltip="Limpar" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText styleClass="field control-label tituloCampos" value="#{extrato.formaPagamento.nome}" />
+							</rich:column>
+							<rich:column style="width: 9.09%" rendered="#{!conta.minimizar}" filterType="custom" filter="#{FilterFactory.filter('panelExtratoOrigem#{row}', 'origemApresentar', 'TEXTO')}">
+								<f:facet name="header">
+									<h:outputText value="Origem" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('panelExtratoOrigem#{row}', 'origemApresentar', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="panelContas" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="panelContas" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('panelExtratoOrigem#{row}')}" tooltip="Limpar" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:panelGroup layout="block">
+									<a4j:commandLink oncomplete="#{ExtratoContaCorrenteRelControle.navegarOrigemExtratoContaCorrente}" render="panelMsg" action="#{ExtratoContaCorrenteRelControle.realizarNavegacaoOrigemExtratoContaCorrente}">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{extrato.origemApresentar}" />
+									</a4j:commandLink>
+									<otm:spacer width="5px" />
+									<a4j:commandButton value="Excluir" rendered="#{!extrato.possuiOrigem}" title="Extrato Conta Corrente Sem Origem Localizada, provavelmente foi estornada/adicionado manualmente" oncomplete="#{ExtratoContaCorrenteRelControle.oncompleteModal}" action="#{ExtratoContaCorrenteRelControle.validarExclusaoExtratoContaCorrente}" disabled="#{!ExtratoContaCorrenteRelControle.usuarioPodeExcluirExtratoContaCorrente or extrato.possuiOrigem}" image="#{resource['./imagens/botaoCancelarResumido.png']}">
+										<f:setPropertyActionListener target="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO}" value="#{extrato}" />
+									</a4j:commandButton>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 9.09%" rendered="#{!conta.minimizar}" filterType="custom" filter="#{FilterFactory.filter('panelExtratoLancamentoManual#{row}', 'lancamentoManualApresentar', 'TEXTO')}">
+								<f:facet name="header">
+									<h:outputText value="Rec. Manual" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('panelExtratoLancamentoManual#{row}', 'lancamentoManualApresentar', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="panelContas" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="panelContas" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('panelExtratoLancamentoManual#{row}')}" tooltip="Limpar" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:panelGroup layout="block">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{extrato.lancamentoManualApresentar}" />
+									<otm:spacer width="5px" />
+									<otm:commandIcon rendered="#{extrato.lancamentoManual}" tooltip="Extrato Conta Corrente de Origem manual." icon="#{msg_botoes.btn_icon_alerta_triangulo_embutido} iconePequeno" />
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 9.09%" rendered="#{!conta.minimizar}">
+								<f:facet name="header">
+									<h:outputText value="Entrada/Saída" />
+								</f:facet>
+								<h:outputText styleClass="field control-label tituloCampos" value="#{extrato.tipoMovimentacaoFinanceira.descricao}" />
+							</rich:column>
+							<rich:column style="width: 9.09%" rendered="#{!conta.minimizar}">
+								<f:facet name="header">
+									<h:outputText value="Valor" />
+								</f:facet>
+								<h:outputText styleClass="field control-label tituloCampos" style="#{extrato.tipoMovimentacaoFinanceira.valor eq 'EN' ? 'color:#0000FF' : 'color:#FF0000'}" value="#{extrato.valorApresentar}">
+									<f:converter converterId="FormatadorNumerico"></f:converter>
+								</h:outputText>
+							</rich:column>
+							<rich:column style="width: 9.09%" rendered="#{!conta.minimizar}">
+								<f:facet name="header">
+									<h:outputText value="Saldo" />
+								</f:facet>
+								<h:outputText styleClass="field control-label tituloCampos" style="#{extrato.saldo gt 0 ? 'color:#0000FF' : 'color:#FF0000'}" value="#{extrato.saldo}">
+									<f:converter converterId="FormatadorNumerico"></f:converter>
+								</h:outputText>
+							</rich:column>
+							<rich:column style="width: 9.09%" rendered="#{!conta.minimizar}">
+								<f:facet name="header">
+									<h:outputText value="Saldo Anterior" />
+								</f:facet>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{conta.saldoAnteriorApresentar}" style="#{conta.saldoAnteriorApresentar gt 0 ? 'color:#0000FF;' : 'color:#FF0000;'}">
+										<f:converter converterId="FormatadorNumerico"></f:converter>
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 9.09%" rendered="#{!conta.minimizar}">
+								<f:facet name="header">
+									<h:outputText value="Opções" />
+								</f:facet>
+								<a4j:commandLink render="form:panelContas, form:panelMsg" execute="form:panelContas:#{row}" tooltip="Alterar Extrato Conta Corrente" rendered="#{!extrato.isConciliado and ExtratoContaCorrenteRelControle.usuarioPodeAlterarDataCompensacao}" action="#{ExtratoContaCorrenteRelControle.alterarExtrato}" image="#{resource['./imagens/iconeSalvar.gif']}" styleClass="btn btn-info iconePequeno mr5">
+									<span class="far fa-save pull-center" style="position: relative; top: -0px; font-size: 14px;"></span>
+									<rich:tooltip value="Alterar Extrato Conta Corrente" />
+									<f:setPropertyActionListener target="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO}" value="#{extrato}" />
+								</a4j:commandLink>
+								<a4j:commandLink tooltip="Excluir Extrato Conta Corrente" oncomplete="#{ExtratoContaCorrenteRelControle.oncompleteModal}" action="#{ExtratoContaCorrenteRelControle.validarExclusaoExtratoContaCorrente}" rendered="#{ExtratoContaCorrenteRelControle.usuarioPodeExcluirExtratoContaCorrente}" image="#{resource['./imagens/botaoCancelarResumido.png']}" styleClass="btn btn-danger iconePequeno">
+									<span class="far fa-trash-alt pull-center" style="position: relative; top: -0px; font-size: 14px;"></span>
+									<rich:tooltip value="Excluir Extrato Conta Corrente" />
+									<f:setPropertyActionListener target="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO}" value="#{extrato}" />
+								</a4j:commandLink>
+							</rich:column>
+							<!-- 						rendered="#{!conta.minimizar}" -->
+							<f:facet name="footer">
+								<h:panelGroup layout="block" styleClass="row" rendered="#{!conta.minimizar}">
+									<h:panelGroup layout="block" styleClass="col-md-12 text-center m5" rendered="#{!empty conta.extratoContaCorrenteVOs}">
+										<otm:commandButton render="form, form:panelMsg" execute="form:panelContas" tooltip="Alterar Todos Extratos Conta Corrente" value="Gravar Extrato Conta Corrente" rendered="#{ExtratoContaCorrenteRelControle.usuarioPodeAlterarDataCompensacao and !conta.minimizar}" action="#{ExtratoContaCorrenteRelControle.alterarTodosExtrato}" styleClass="btn btn-dark btn-gravar" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<otm2:panel name="panel1" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+											<ui:define name="header">
+												<h:outputText styleClass="tituloCamposResultado text-info" value="Total Entrada" />
+											</ui:define>
+											<ui:define name="body">
+												<h:outputText styleClass="tituloCamposResultado text-info" value="#{conta.totalEntrada}">
+													<f:converter converterId="FormatadorNumerico" />
+												</h:outputText>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<otm2:panel name="panel2" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+											<ui:define name="header">
+												<h:outputText styleClass="tituloCamposResultado text-primary" value="Total Saida" />
+											</ui:define>
+											<ui:define name="body">
+												<h:outputText styleClass="tituloCamposResultado text-primary" value="#{conta.totalSaida}">
+													<f:converter converterId="FormatadorNumerico" />
+												</h:outputText>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<otm2:panel name="panel3" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+											<ui:define name="header">
+												<h:outputText styleClass="tituloCamposResultado" style="#{conta.saldoFinalApresentar gt 0 ? 'color:#0000FF;' : 'color:#FF0000;'}" value="Saldo Final" />
+											</ui:define>
+											<ui:define name="body">
+												<h:outputText styleClass="tituloCamposResultado" style="#{conta.saldoFinalApresentar gt 0 ? 'color:#0000FF;' : 'color:#FF0000;'}" value="#{conta.saldoFinalApresentar}">
+													<f:converter converterId="FormatadorNumerico" />
+												</h:outputText>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<f:facet name="footer">
+								<h:panelGroup rendered="#{!conta.minimizar}">
+									<div style="text-align: center !important">
+										<rich:dataScroller align="center" for="panelExtrato" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+									</div>
+								</h:panelGroup>
+							</f:facet>
+						</rich:dataTable>
+					</rich:panel>
+				</rich:list>
+			</h:panelGroup>
+		</h:form>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelExcluir" shadowOpacity="true" width="400" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Confirmação de Exclusão do Extrato de Conta Corrente" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluir">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup columns="1" footerClass="colunaCentralizada" width="100%">
+						<h:panelGroup columns="1" columnClasses="colunaEsquerda" style="background-color: transparent" width="100%">
+							<h:outputText styleClass="field control-label tituloCampos" style="text-align: left;" value="Deseja desconsiderar este lançamento na concialiação da conta corrente?" />
+						</h:panelGroup>
+						<otm:spacer height="10" />
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton styleClass="btn btn-dark btn-sim" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Gravar" action="#{ExtratoContaCorrenteRelControle.excluirExtrato}" render="form, formExcluir" oncomplete="#{rich:component('panelExcluir')}.hide();" />
+							<otm:commandButton styleClass="btn btn-danger btn-nao" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" oncomplete="#{rich:component('panelExcluir')}.hide();" alt="Fechar" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup id="mensagemPanelEstornoExtratoContaCorrente" columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{ExtratoContaCorrenteRelControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelIncluir" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Incluir Extrato Conta Corrente" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formIncluir">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="Unidade Ensino" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO.unidadeEnsino.codigo}">
+						<f:selectItems value="#{ExtratoContaCorrenteRelControle.listaSelectItemUnidadeEnsino}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="Conta Corrente" />
+					<h:selectOneMenu styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" value="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO.contaCorrente.codigo}">
+						<f:selectItems value="#{ExtratoContaCorrenteRelControle.listaSelectItemContaCorrente}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="Forma Rec/Pag" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO.formaPagamento.codigo}">
+						<f:selectItems value="#{ExtratoContaCorrenteRelControle.listaSelectItemFormaPagamento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="Sacado" />
+					<h:inputText styleClass="form-control" maxlength="50" value="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO.nomeSacado}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Data" />
+					<otm:calendar jsFunction="extratoContaCorrente" id="data" value="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO.data}">
+						<!-- 						<a4j:ajax event="change" execute="@this" status="region" /> -->
+					</otm:calendar>
+					<a4j:jsFunction name="extratoContaCorrente" action="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO.data}" render="form" event="change" execute="@this" status="region" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Valor" />
+					<h:inputText id="valor" size="12" maxlength="12" styleClass="form-control camposObrigatorios" value="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO.valor}" onkeydown="aceitarSomenteValorDecimal(this)">
+						<f:converter converterId="FormatadorNumerico" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Operação" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ExtratoContaCorrenteRelControle.extratoContaCorrenteVO.tipoMovimentacaoFinanceira}">
+						<f:selectItems value="#{ExtratoContaCorrenteRelControle.listaSelectItemEntradaSaida}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<otm:spacer height="10" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<otm:commandButton styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Gravar" action="#{ExtratoContaCorrenteRelControle.gravarExtrato}" render="form, formIncluir" oncomplete="#{ExtratoContaCorrenteRelControle.oncompleteModal}" />
+					<otm:commandButton styleClass="btn btn-danger ml5" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" oncomplete="#{rich:component('panelIncluir')}.hide();" alt="Fechar" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemPanelEstornoExtratoContaCorrente" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ExtratoContaCorrenteRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<script>
+			document.getElementById("form:contaCorrente").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

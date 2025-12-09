@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+	<script type="text/javascript">
+		window.onload = function() {
+			document.getElementById("form:identificador").focus();
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ContraChequeFolhaPagamento_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup layout="block" styleClass="row" id="gridMatricula">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MediaDescontoAluno_matricula}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText size="20" styleClass="form-control camposObrigatorios" value="#{ContraChequeControle.contraCheque.funcionarioCargo.matriculaCargo}" maxlength="10">
+								<a4j:ajax event="change" listener="#{ContraChequeControle.consultarFuncionarioPorMatricula}" render="form" execute="@this" />
+							</h:inputText>
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosFuncionario" accesskey="2" tooltip="Localizar Funcionario" render="form, formFuncionario" oncomplete="#{rich:component('panelFuncionario')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosFuncionario" tooltip="Limpas Dados" action="#{ContraChequeControle.limparDadosFuncionario}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_Nome}" />
+						<h:inputText id="funcionarioNome" size="75" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{ContraChequeControle.contraCheque.funcionarioCargo.funcionarioVO.pessoa.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_cargo}" />
+						<h:inputText id="cargo" size="22" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{ContraChequeControle.contraCheque.cargoAtual}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:panelGroup layout="block" styleClass="col-md-5">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PrestacaoConta_dataCompetencia}" />
+							<rich:calendar id="dataCompetencia" styleClass="form-control campos" value="#{ContraChequeControle.contraCheque.competenciaFolhaPagamento.dataCompetencia}">
+								<a4j:ajax event="change" listener="#{ContraChequeControle.selecionarCompetenciaChange}" render="@form" execute="@form" />
+							</rich:calendar>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+						<otm:commandButton style="margin-right:5px" id="consultaDadosPeriodo" accesskey="2" value="Localizar Competência" render="form, formCompetencia" oncomplete="#{rich:component('panelCompetencia')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" />
+						<otm:commandButton id="limparDadosPeriodo" value="Limpas Dados" action="#{ContraChequeControle.limparDadosCompetencia}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" styleClass="btn btn-default" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoFolhaPagamento_periodo}" />
+						<h:selectOneMenu id="periodo" styleClass="form-control camposObrigatorios" value="#{ContraChequeControle.contraCheque.periodo.codigo}">
+							<f:selectItems value="#{ContraChequeControle.listaSelectItemCompetenciaPeriodo}" />
+							<a4j:ajax event="change" listener="#{ContraChequeControle.consultarPorFuncionarioCargoEPeriodo()}" render="form:panelGeral" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:tabPanel id="panelGeral">
+					<!-- Tab Contra Cheque -->
+					<rich:tab header="Contracheque" id="primeiraTab">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup id="gridEvento" columns="4" width="100%">
+								<h:panelGroup id="groupEvento">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_evento}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:inputText id="eventoIdentificador" styleClass="form-control camposObrigatorios" value="#{ContraChequeControle.eventoFolhaPagamento.identificador}">
+											<a4j:ajax event="change" execute="@this" render="form:gridEvento" listener="#{ContraChequeControle.consultarEventoPorIdentificador()}" />
+										</h:inputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:inputText id="eventoDescricao" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{ContraChequeControle.eventoFolhaPagamento.descricao}" />
+										<span class="append-icon right"> <otm:commandIcon id="consultaDadosEvento" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEvento" tooltip="Limpas Dados" action="#{ContraChequeControle.limparDadosEvento}" render="gridEvento" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<otm:outputHelp tooltip="#{msg.help_ValorFixoContraCheque}" id="TextoPadrao_valorFixo" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_valorFixo}" />
+										<h:inputText id="eventoValor" styleClass="form-control campos" readonly="false" value="#{ContraChequeControle.contraChequeEvento.valorReferencia}" maxlength="10" onkeydown="aceitarSomenteValorDecimal(this)">
+											<a4j:ajax event="change" execute="@this" render="@this" />
+											<f:converter converterId="FormatadorNumerico" />
+										</h:inputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_referencia}" />
+										<h:inputText id="eventoReferencia" styleClass="form-control campos" value="#{ContraChequeControle.contraChequeEvento.referencia}" maxlength="10" />
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+								<h:panelGroup>
+									<otm:commandButton style="margin-right:5px" id="botaoCancelarFP" action="#{ContraChequeControle.cancelarEdicao}" rendered="#{ContraChequeControle.contraChequeEvento.itemEmEdicao}" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" render="form" value="#{msg_bt.btn_cancelar}" />
+									<otm:commandButton action="#{ContraChequeControle.adicionarEventoFolhaPagamento}" disabled="#{ContraChequeControle.contraCheque.periodo.codigo == 0}" id="adicionar" image="#{resource['imagens/botaoAdicionarLista.png']}" render="form:primeiraTab form:panelGridMensagens" title="#{msg.msg_adicionar_dados}" value="Adicionar Evento Folha Pagamento" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<rich:dataTable id="contraChequeEvento" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{ContraChequeControle.contraCheque.contraChequeEventos}" var="contrachequeEvento" style="margin-top: 15px">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_identificador}" />
+									</f:facet>
+									<h:outputText value="#{contrachequeEvento.eventoFolhaPagamento.identificador}" styleClass="#{ContraChequeControle.corDoEvento()}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_descricao}" />
+									</f:facet>
+									<h:outputText value="#{contrachequeEvento.eventoFolhaPagamento.descricao}" style="float:left" styleClass="#{ContraChequeControle.corDoEvento()}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_GrupoEventoFolhaPagamento_valor}" />
+									</f:facet>
+									<h:inputText value="#{contrachequeEvento.valorReferencia}" size="10" maxlength="8" onkeydown="aceitarSomenteValorDecimal(this)" styleClass="#{ContraChequeControle.corDoEvento()}">
+										<f:converter converterId="FormatadorNumerico" />
+										<a4j:ajax event="change" execute="@this" render="form:contraChequeEvento" listener="#{ContraChequeControle.valorInformadoManual()}" />
+									</h:inputText>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_referencia}" />
+									</f:facet>
+									<h:inputText styleClass="#{ContraChequeControle.corDoEvento()}" value="#{contrachequeEvento.referencia}" maxlength="50">
+										<a4j:ajax event="change" execute="@this" render="form:contraChequeEvento" listener="#{ContraChequeControle.referenciaInformadoManual()}" />
+									</h:inputText>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_GrupoEventoFolhaPagamento_informadoManual}" />
+									</f:facet>
+									<h:outputText value="#{contrachequeEvento.informadoManual == true ? 'Sim' : 'Não'}" styleClass="#{ContraChequeControle.corDoEvento()}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_ContraChequeFolhaPagamento_Provento}" />
+									</f:facet>
+									<h:outputText value="#{contrachequeEvento.provento}" styleClass="#{ContraChequeControle.corDoEvento()}">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:outputText>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_ContraChequeFolhaPagamento_Desconto}" />
+									</f:facet>
+									<h:outputText value="#{contrachequeEvento.desconto}" styleClass="#{ContraChequeControle.corDoEvento()}">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:outputText>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_baseCalculo}" />
+									</f:facet>
+									<h:outputText value="#{contrachequeEvento.baseCalculo}" styleClass="#{ContraChequeControle.corDoEvento()}">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:outputText>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_prioridade}" />
+									</f:facet>
+									<h:outputText value="#{contrachequeEvento.eventoFolhaPagamento.prioridade}" styleClass="#{ContraChequeControle.corDoEvento()}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_ordemCalculo}" />
+									</f:facet>
+									<h:outputText value="#{contrachequeEvento.eventoFolhaPagamento.ordemCalculo}" styleClass="#{ContraChequeControle.corDoEvento()}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									</f:facet>
+									<otm:commandIcon action="#{ContraChequeControle.visualizarEventoFolhaPagamento}" execute="@this" id="visualizarEvento" image="#{resource['imagens/botaoDetalhesIcone.png']}" oncomplete="abrirPopup('../rh/eventoFolhaPagamentoForm.xhtml', 'eventoFolhaPagamentoForm', 950, 595);" title="#{msg.msg_visualizarDetalhes}" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" tooltip="Visualizar Evento Folha Pagamento" />
+									<otm:commandIcon action="#{ContraChequeControle.editarEvento}" id="editarPeriodoAquisitivo" render="form:gridEvento" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar Evento" />
+									<otm:commandIcon action="#{ContraChequeControle.removerEventoFolhaPagamento(contrachequeEvento)}" id="remover" render="form:primeiraTab" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Evento Folha Pagamento" />
+								</rich:column>
+							</rich:dataTable>
+							<!-- Grid Valor  -->
+							<h:panelGroup id="gridValores">
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContraChequeFolhaPagamento_TotalProventos}" />
+									<h:inputText id="totalProvento" value="#{ContraChequeControle.contraCheque.totalProvento}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContraChequeFolhaPagamento_TotalDescontos}" />
+									<h:inputText id="totalDesconto" value="#{ContraChequeControle.contraCheque.totalDesconto}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContraChequeFolhaPagamento_TotalReceber}" />
+									<h:inputText id="totalReceber" value="#{ContraChequeControle.contraCheque.totalReceber}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+					<!-- Tab Incidências -->
+					<rich:tab header="Incidências" id="segundaTab">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup id="gridTipoRecebimento">
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_tipoRecebimento}" />
+										<h:selectOneMenu id="tipoRecebimento" styleClass="form-control camposSomenteLeitura" disabled="true" value="#{ContraChequeControle.contraCheque.tipoRecebimento}">
+											<f:selectItems value="#{ContraChequeControle.listaSelectItemTipoRecebimento}" />
+										</h:selectOneMenu>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_salario}" />
+										<h:inputText id="salario" value="#{ContraChequeControle.contraCheque.salario}" styleClass="form-control camposSomenteLeitura" readonly="true" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_previdencia}" />
+										<h:selectOneMenu id="Previdencia" styleClass="form-control camposSomenteLeitura" disabled="true" value="#{ContraChequeControle.contraCheque.previdencia}">
+											<f:selectItems value="#{ContraChequeControle.listaSelectItemPrevidencia}" />
+										</h:selectOneMenu>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_contribuicaoTotal}" />
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<otm:selectBooleanCheckbox id="contribuicaoSindical" value="#{ContraChequeControle.contraCheque.optanteTotal}" disabled="true" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<!-- INCIDENCIAS -->
+							<rich:panel bodyClass="msgFlutuanteVisaoAdm" style="margin-top: 15px; height: 245px!important">
+								<f:facet name="header">INCIDÊNCIAS</f:facet>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_FGTS}" />
+									<h:inputText id="fgts" value="#{ContraChequeControle.contraCheque.FGTS}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_DSR}" />
+									<h:inputText id="dsr" value="#{ContraChequeControle.contraCheque.DSR}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_salarioFamilia}" />
+									<h:inputText id="salarioFamilia" value="#{ContraChequeControle.contraCheque.salarioFamilia}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_numeroDependenteSalarioFamilia}" />
+									<h:inputText id="numeroDepentes" value="#{ContraChequeControle.contraCheque.numeroDependenteSalarioFamilia}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_previdenciaPropria}" />
+									<h:inputText id="previdenciaPropria" value="#{ContraChequeControle.contraCheque.previdenciaPropria}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_planoSaude}" />
+									<h:inputText id="planoSaude" value="#{ContraChequeControle.contraCheque.planoSaude}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+							</rich:panel>
+							<!-- INSS -->
+							<rich:panel bodyClass="msgFlutuanteVisaoAdm" style="margin-top: 15px; height: 245px!important">
+								<f:facet name="header">INSS</f:facet>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_baseCalculo}" />
+									<h:inputText id="baseCalculo" value="#{ContraChequeControle.contraCheque.baseCalculoINSS}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_valor}" />
+									<h:inputText id="valorBaseCalculo" value="#{ContraChequeControle.contraCheque.valorINSS}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+							</rich:panel>
+							<!-- IRRF -->
+							<rich:panel bodyClass="msgFlutuanteVisaoAdm" style="margin-top: 15px; height: 245px!important">
+								<f:facet name="header">IRRF</f:facet>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_baseCalculo}" />
+									<h:inputText id="baseCalculoIRRF" value="#{ContraChequeControle.contraCheque.baseCalculoIRRF}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dedutivel}" />
+									<h:inputText id="dedutivelIRRF" value="#{ContraChequeControle.contraCheque.dedutivel}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_numeroDependentes}" />
+									<h:inputText id="numeroDependentesIRRF" value="#{ContraChequeControle.contraCheque.numerosDependentes}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_valorDependente}" />
+									<h:inputText id="valorDependenteIRRF" value="#{ContraChequeControle.contraCheque.valorDependente}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_valorIRRF}" />
+									<h:inputText id="valorIRRF" value="#{ContraChequeControle.contraCheque.valorIRRF}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+							</rich:panel>
+							<!-- FISCAL -->
+							<rich:panel bodyClass="msgFlutuanteVisaoAdm" style="margin-top: 15px; height: 245px!important">
+								<f:facet name="header">FISCAL</f:facet>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_informeRendimento}" />
+									<h:inputText id="informeRendimento" value="#{ContraChequeControle.contraCheque.informeRendimento}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_RAIS}" />
+									<h:inputText id="RAIS" value="#{ContraChequeControle.contraCheque.RAIS}" styleClass="form-control camposSomenteLeitura" readonly="true">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:inputText>
+								</h:panelGroup>
+							</rich:panel>
+						</h:panelGroup>
+					</rich:tab>
+				</rich:tabPanel>
+			</h:panelGroup>
+			<h:panelGroup id="panelGridBotoes" columns="1" width="100%" styleClass="tabMensagens">
+				<h:panelGroup id="panelGridMensagens" columns="1" width="100%">
+					<otm:mensagem bean="#{ContraChequeControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<h:panelGroup>
+						<otm:commandButton id="consultar" action="#{ContraChequeControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="3" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="recalcular" rendered="#{ContraChequeControle.contraCheque.competenciaFolhaPagamento.situacao eq 'ATIVO'}" onclick="return confirm('#{msg.msg_ConfirmaRecalcularFolhaPagamento}');" action="#{ContraChequeControle.recalcularFolhaPagamento}" value="#{msg_botoes.btn_recalcularFolhaPagamento}" icon="#{msg_botoes.btn_icon_calculadora}" styleClass="btn btn-default" image="#{resource['imagens/botaoRecalcularFolhaPagamento.png']}" title="#{msg.msg_recalcularr_folha}" accesskey="2" />
+						<otm:spacer width="5" />
+						<otm:commandButton accesskey="3" action="#{ContraChequeControle.imprimirRelatorioFichaFinanceira()}" id="imprimirRelatorio" image="#{resource['/imagens/imprimirFichaFinanceira.png']}" oncomplete="#{ContraChequeControle.download}" render="form" type="submit" icon="#{msg_botoes.btn_icon_imprimir_embutido}" value="Imprimir Relatorio Ficha Financeira" styleClass="btn btn-default" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<!-- Consulta Funcionario -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarFuncionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelFuncionario" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTipoDocumento" value="#{ContraChequeControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{ContraChequeControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionario" size="30" styleClass="form-control campos" value="#{ContraChequeControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarFuncionario" render="formFuncionario:mensagemConsultaFuncionario, formFuncionario:gridFuncionarioTab, formFuncionario:scResultadoFuncionarioRespPreInscricao" action="#{ContraChequeControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContraChequeControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContraChequeControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup id="gridFuncionarioTab" columns="1" width="100%">
+					<rich:dataTable id="funcionarioItem" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{ContraChequeControle.funcionarioCargoVOs}" rendered="#{ContraChequeControle.apresentarResultadoConsultaFuncionarioCargo}" rows="10" var="funcionarioCargoItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+							</f:facet>
+							<a4j:commandLink id="matricula" action="#{ContraChequeControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.matriculaCargo}" render="form:gridMatricula" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+							</f:facet>
+							<a4j:commandLink id="nome" action="#{ContraChequeControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.funcionarioVO.pessoa.nome}" render="form:gridMatricula" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_cargo}" />
+							</f:facet>
+							<a4j:commandLink id="cargoNome" action="#{ContraChequeControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.cargo.nome}" render="form:gridMatricula" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_bt.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="botaoEditar" action="#{ContraChequeControle.selecionarFuncionarioCargo}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" render="form:gridMatricula" oncomplete="#{rich:component('panelFuncionario')}.hide()" tooltip="Selecionar" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formFuncionario:funcionarioItem" maxPages="10" id="scResultadoFuncionario" page="#{ContraChequeControle.controleConsultaOtimizado.page}" scrollListener="#{ContraChequeControle.scrollerListenerFuncionario}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContraChequeControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Consulta Competência -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCompetencia" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarCompetencia}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelCompetencia" />
+					<rich:componentControl target="panelCompetencia" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCompetencia">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTipoDocumento" value="#{ContraChequeControle.campoConsultaCompetencia}">
+						<f:selectItems value="#{EnumControle.tipoConsultaComboCompetencioFolhaPagamento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionario" size="30" styleClass="form-control campos" value="#{ContraChequeControle.valorConsultaCompetencia}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarCompetencia" render="formCompetencia:mensagemConsultaCompetencia, formCompetencia:gridCompetenciaTab, formCompetencia:scResultadoCompetenciaRespPreInscricao" action="#{ContraChequeControle.consultarCompetencia}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContraChequeControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContraChequeControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup id="gridCompetenciaTab" columns="1" width="100%">
+					<rich:dataTable id="competenciaItem" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{ContraChequeControle.competenciaFolhaPagamentoVOs}" rows="10" var="competenciaItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_codigo}" />
+							</f:facet>
+							<a4j:commandLink id="matricula" action="#{ContraChequeControle.selecionarCompetencia}" value="#{competenciaItem.codigo}" render="form" oncomplete="#{rich:component('panelCompetencia')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_situacao}" />
+							</f:facet>
+							<a4j:commandLink id="situacao" action="#{ContraChequeControle.selecionarCompetencia}" value="#{competenciaItem.situacao.getValorApresentar()}" render="form" oncomplete="#{rich:component('panelCompetencia')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_bt.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="botaoEditar" action="#{ContraChequeControle.selecionarCompetencia}" value="#{msg_botoes.btn_icon_editar} iconePequeno" render="form" oncomplete="#{rich:component('panelCompetencia')}.hide()" tooltip="Selecionar" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formFuncionario:funcionarioItem" maxPages="10" id="scResultadoFuncionarioRespPreInscricao" page="#{ContraChequeControle.controleConsultaOtimizado.page}" scrollListener="#{ContraChequeControle.scrollerListenerFuncionario}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCompetencia" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContraChequeControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Consulta Evento Folha Pagamento-->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelEvento" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaFolhaPagamento_consultarEventoGrupo}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelEvento" />
+					<rich:componentControl target="panelEvento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formEvento">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaEvento" value="#{ContraChequeControle.campoConsultaEvento}">
+						<f:selectItems value="#{ContraChequeControle.tipoConsultaComboEvento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaEvento" size="30" styleClass="form-control campos" value="#{ContraChequeControle.valorConsultaEvento}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarFuncionario" render="formEvento:mensagemConsultaEvento, formEvento:gridEventoTab" action="#{ContraChequeControle.consultarEvento}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ContraChequeControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ContraChequeControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup id="gridEventoTab" columns="1" width="100%">
+					<rich:dataTable id="eventoItens" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{ContraChequeControle.listaEventosFolhaPagamento}" rows="10" var="eventoItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_identificador}" />
+							</f:facet>
+							<a4j:commandLink id="identificador" action="#{ContraChequeControle.selecionarEvento}" value="#{eventoItem.identificador}" render="form:gridEvento" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_descricao}" />
+							</f:facet>
+							<a4j:commandLink id="nome" action="#{ContraChequeControle.selecionarEvento}" value="#{eventoItem.descricao}" render="form:gridEvento" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_tipoLancamento}" />
+							</f:facet>
+							<a4j:commandLink id="tipoLancamento" action="#{ContraChequeControle.selecionarEvento}" value="#{eventoItem.tipoLancamento.valor}" render="form:gridEvento" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_bt.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="botaoEditar" action="#{ContraChequeControle.selecionarEvento}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" render="form:gridEvento" oncomplete="#{rich:component('panelEvento')}.hide()" tooltip="Selecionar" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="eventoItens" maxPages="10" page="#{ContraChequeControle.controleConsultaOtimizado.page}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaEvento" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ContraChequeControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

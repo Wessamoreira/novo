@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+	<script type="text/javascript">
+		$('document').ready(function() {
+			colorPicker();
+		});
+		
+		$(document).ready(function() {
+			$('#formImagem').css("display", "none");
+			verifica('formAlterarSenha:senha');
+		});
+	</script>
+</h:head>
+<ui:composition template="/visaoAluno/template/visaoAluno.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText  value="Configuração" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:outputScript name="jquery.color.js" library="script/crop" />
+		<h:outputScript name="jquery.Jcrop.js" library="script/crop" />
+		<h:outputStylesheet name="jquery.Jcrop.css" library="script/crop" />
+		<h:outputScript name="webcam.js" library="script/webcam" />
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCapturarImagemWebCam" zindex="2000" width="750" height="500" onshow="showWebCamAPP()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_tirarFoto}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal"  style="cursor:pointer" id="hidelinkPanelCapturarImagemWebCam" />
+					<rich:componentControl target="panelCapturarImagemWebCam" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formWebCam">
+				<div id="my_camera" style="width: 320px; height: 240px;"></div>
+				<br />
+				<br />
+				<h:panelGroup layout="block" styleClass="row" >
+					<h:panelGroup id="mcMenu" layout="block" styleClass="col-md-12 text-center">
+						<otm:commandButton id="btnTirarFoto" icon =" #{msg_botoes.btn_icon_camera_embutido}" value="Tirar Foto" action="#{VisaoAlunoControle.executarCapturarFotoWebCam}" oncomplete="take_snapshot('../UploadServlet');" />
+						<otm:commandButton id="btnNovaFoto" style="margin-left: 10px" styleClass="btn btn-info btn-novo" value="Nova Foto" onclick="Webcam.unfreeze();"  />
+						<otm:commandButton id="btnGravarFoto" style="margin-left: 10px" styleClass="btn btn-dark btn-gravar" icon =" #{msg_botoes.btn_icon_retrato_embutido}" value="Gravar" render="formImagem, formWebCam" onclick="#{rich:component('panelCapturarImagemWebCam')}.hide(); #{rich:component('panelImagem')}.show()" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelImagem" zindex="2000"  width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AlterarFoto}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagem">
+
+				<script type="text/javascript">
+					jQuery(function($) {
+						$(document).ready(function() {
+							$('#formImagem\\:foto2').Jcrop({
+								onSelect : showCoords,
+								onChange : showCoords,
+								bgColor : 'black',
+								bgOpacity : .3,
+								setSelect : [ 1, 1, 85, 113 ],
+								minSize : [ 31, 21 ],
+								maxSize : [ 600, 450 ]
+							});
+						});
+					});
+					function showCoords(c) {
+						var valorX = document.getElementById('formImagem:x');
+						valorX.value = c.x;
+	
+						var valorY = document.getElementById('formImagem:y');
+						valorY.value = c.y;
+	
+						var valorW = document.getElementById('formImagem:w');
+						valorW.value = c.w;
+	
+						var valorH = document.getElementById('formImagem:h');
+						valorH.value = c.h;
+	
+					};
+				</script>
+				<h:panelGroup rendered="#{VisaoAlunoControle.exibirBotao}" styleClass="col-md-12" layout="block" style="clear:both;overflow:auto; min-width:455px; min-height:120px ; width:600px; height:500px;">
+					<h:graphicImage url="#{VisaoAlunoControle.showFotoCrop}" id="foto2" />
+				</h:panelGroup>
+				<h:panelGroup style="display:none" layout="block">
+					<h:panelGrid style="display:none" columns="6">
+						<h:panelGroup>
+							<h:outputText value="X" />
+							<h:inputText size="4" id="x" value="#{VisaoAlunoControle.x}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="Y" />
+							<h:inputText size="4" id="y" value="#{VisaoAlunoControle.y}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="largura" />
+							<h:inputText size="4" id="w" value="#{VisaoAlunoControle.largura}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="altura" />
+							<h:inputText size="4" id="h" value="#{VisaoAlunoControle.altura}" />
+						</h:panelGroup>
+					</h:panelGrid>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row" rendered="#{VisaoAlunoControle.exibirUpload}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<rich:fileUpload id="btnUpload" listHeight="40" style="width:200px" listWidth="200" noDuplicate="true" fileUploadListener="#{VisaoAlunoControle.upLoadImagem}" addLabel="Selecionar Arquivo" acceptedTypes="png, jpg, jpeg, JPEG, JPG, PNG, PDF, pdf" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido 2 MB" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+							<a4j:ajax event="uploadcomplete" render="formImagem, btnUpload" listener="#{VisaoAlunoControle.renderizarUpload}" />
+						</rich:fileUpload>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row" rendered="#{VisaoAlunoControle.exibirUpload}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="Você pode enviar arquivos JPG ou PNG (tamanho máximo de 2MB)" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<otm:commandIcon id="btnZoomIn" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}" action="#{VisaoAlunoControle.executarZoomIn}" icon="#{msg_botoes.btn_icon_zoomPlus_embutido}" render="formImagem" />
+						<otm:commandIcon id="btnZoomOut" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}" action="#{VisaoAlunoControle.executarZoomOut}" icon="#{msg_botoes.btn_icon_zoomMinus_embutido}"  render="formImagem" />
+						<otm:commandIcon id="btnGirarEsquerda" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}"  icon="#{msg_botoes.btn_icon_girar_esquerda_embutido}" action="#{VisaoAlunoControle.rotacionar90GrausParaEsquerda}" render="formImagem" tooltip="Girar 90º para Esquerda" />
+						<otm:commandIcon id="btnGirarDireita" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}" icon="#{msg_botoes.btn_icon_girar_direita_embutido}"  action="#{VisaoAlunoControle.rotacionar90GrausParaDireita}" render="formImagem" tooltip="Girar 90º para Direita" />
+						<otm:commandIcon id="btnGirar180" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}" icon="#{msg_botoes.btn_icon_girar_180_embutido}"  action="#{VisaoAlunoControle.rotacionar180Graus}" render="formImagem" tooltip="Girar 180º" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row" style="margin-top: 10px">
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<otm:commandButton oncomplete="#{VisaoAlunoControle.oncompleteModal}; Webcam.reset();" rendered="#{VisaoAlunoControle.exibirBotao}" action="#{VisaoAlunoControle.recortarFoto}" render="formImagem, formImagem:foto2, formWebcam, foto1" value="Confirmar foto"  icon="#{msg_botoes.btn_icon_confirmar_embutido}"  />
+						<otm:commandButton style="margin-left: 10px" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" action="#{VisaoAlunoControle.cancelar}" oncomplete="#{rich:component('panelImagem')}.hide();" render="formImagem" title="Cancelar" />						
+					</h:panelGroup>
+				</h:panelGroup>
+				<a4j:outputPanel id="panelMensagem">
+					<h:panelGrid width="100%" styleClass="tabMensagens" style="float: left; clear: left; margin-bottom: 10px; margin-left: 0px;">
+						<h:panelGroup>
+							<h:graphicImage url="#{VisaoAlunoControle.iconeMensagem}" rendered="#{VisaoAlunoControle.sucesso}" />
+							<otm:spacer width="10" />
+							<h:outputText styleClass="field control-label mensagem col-md-12" value="#{VisaoAlunoControle.mensagem}" />
+							<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{VisaoAlunoControle.mensagemDetalhada}" />
+						</h:panelGroup>
+					</h:panelGrid>
+				</a4j:outputPanel>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="alterarSenha" width="650" height="300" onshow="javascript:verifica('formAlterarSenha:senha')">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Alterar Senha"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal"  style="cursor:pointer" id="hidelinkFoto" />
+					<rich:componentControl target="alterarSenha" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAlterarSenha">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-3 ">
+						<h:outputText styleClass="field control-label tituloCampos" value="Usuário Atual" />
+						<h:inputText styleClass="form-control camposObrigatorios" size="20" maxlength="50" value="#{VisaoAlunoControle.loginAnterior}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3 ">
+						<h:outputText styleClass="field control-label tituloCampos" value="Senha Atual" />
+						<h:inputSecret styleClass="form-control camposObrigatorios" size="20" maxlength="50" value="#{VisaoAlunoControle.senhaAnterior}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-3 ">
+						<h:outputText styleClass="field control-label tituloCampos" value="Usuário Novo" />
+						<h:inputText styleClass="form-control camposObrigatorios" size="20" maxlength="50" disabled="#{VisaoAlunoControle.permitirAlterarUsername}" value="#{VisaoAlunoControle.login}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3 ">
+						<h:outputText styleClass="field control-label tituloCampos" value="Senha Nova" />
+						<h:inputSecret id="senha" styleClass="form-control camposObrigatorios" size="20" maxlength="50" value="#{VisaoAlunoControle.senha}" onkeyup="javascript:verifica('formAlterarSenha:senha')" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2 ">
+						<otm:spacer width="100%" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Nível Segurança" />
+						<div id="page-wrap" ></div>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row" style="margin-top: 15px">
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<otm:commandButton oncomplete="#{rich:component('alterarSenha')}.hide()"  icon="#{msg_botoes.btn_icon_selecionar_embutido}" render="form,formFoto,formAlterarSenha" action="#{VisaoAlunoControle.alterarSenha}" value="Alterar"/>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGrid columns="1" width="100%">
+					<h:panelGroup>
+						<h:graphicImage id="imgIcone" url="#{VisaoAlunoControle.iconeMensagem}" rendered="#{VisaoAlunoControle.sucesso}" />
+						<otm:spacer width="10" />
+						<h:outputText styleClass="field control-label mensagem col-md-12" value="#{VisaoAlunoControle.mensagem}" />
+						<h:dataTable id="mensagens" width="100%" headerClass="rich-panel-header" styleClass="field control-label mensagemDetalhada col-md-12" columnClasses="colunaEsquerda" value="#{VisaoAlunoControle.listaMensagemErro}" var="mensagem" rows="3">
+							<rich:column>
+								<h:outputText value="#{mensagem}" />
+							</rich:column>
+						</h:dataTable>
+					</h:panelGroup>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+		<h:form id="form">
+			<h:panelGroup id="configuracao" layout="block" styleClass="row" style="margin-top: 15px">
+				<h:panelGroup id="mcMenu" layout="block" styleClass="col-md-12 text-center">
+					<otm:commandButton id="btnAlterarSenha" action="#{VisaoAlunoControle.inicializarMenuSenha}"   oncomplete="#{rich:component('alterarSenha')}.show()" render="formAlterarSenha" value="Alterar Senha"  icon="#{msg_botoes.btn_icon_bloqueado_embutido}" rendered="#{LoginControle.permissaoAcessoMenuVO.configuracoesAlteracaoSenha}"/>
+					<otm:commandButton id="btnAlterarFoto" value="Alterar Foto" style="margin-left: 10px" action="#{VisaoAlunoControle.limparMensagem}" render="formImagem, formWebCam" oncomplete="Webcam.reset(); #{rich:component('panelImagem')}.show()" icon="#{msg_botoes.btn_icon_imagem_embutido}" rendered="#{LoginControle.permissaoAcessoMenuVO.configuracoesAlteracaoFoto}"/>
+					<otm:commandButton id="btnTirarFoto" style="margin-left: 10px" value="Tirar Foto" action="#{VisaoAlunoControle.limparMensagem}" render="formWebCam" oncomplete="#{rich:component('panelCapturarImagemWebCam')}.show()" icon="#{msg_botoes.btn_icon_camera_embutido}" rendered="#{LoginControle.permissaoAcessoMenuVO.configuracoesAlteracaoFoto}"/>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

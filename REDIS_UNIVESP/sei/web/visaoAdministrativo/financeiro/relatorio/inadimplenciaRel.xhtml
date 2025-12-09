@@ -1,0 +1,959 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Inadimplencia_tituloForm}" />
+	</ui:define>
+	<ui:define name="ajuda">
+		<a4j:region>
+			<a4j:commandLink id="ajuda" type="submit" title="Ajuda" style="float:right;border:none" action="#{AjudaControle.executarConsulta}" oncomplete="abrirPopup('../../../ajudaCons.xhtml', 'Ajuda', 945, 490);">
+				<h:graphicImage value="#{resource['/imagens/209.png']}" />
+				<f:setPropertyActionListener target="#{AjudaControle.moduloConsulta}" value="FINANCEIRO/RELCONTARECEBER/INADIMPLENCIA" />
+			</a4j:commandLink>
+		</a4j:region>
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAgente" onshow="document.getElementById('formCurso:valorConsultaAgente').focus()" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Agente Negativação/Cobrança Conta Receber"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkA" />
+					<rich:componentControl target="panelAgente" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAgente">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAgente" value="#{InadimplenciaRelControle.campoConsultaAgente}">
+						<f:ajax event="change" execute="formAgente" render="formAgente" listener="#{InadimplenciaRelControle.limparConsulta}" />
+						<f:selectItems value="#{InadimplenciaRelControle.tipoConsultaComboAgente}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{InadimplenciaRelControle.campoConsultaAgente eq 'tipo'}">
+					<h:selectOneMenu id="tipoNeg" styleClass="form-control campos" value="#{InadimplenciaRelControle.valorConsultaAgente}" rendered="#{InadimplenciaRelControle.campoConsultaAgente eq 'tipo'}">
+						<f:selectItems value="#{EnumControle.comboboxTipoAgenteNegativacaoCobrancaContaReceberEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaAgente" size="10" styleClass="form-control campos" value="#{InadimplenciaRelControle.valorConsultaAgente}" rendered="#{InadimplenciaRelControle.campoConsultaAgente eq 'nome'}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarA" render="formAgente:mensagemConsultaAgente, formAgente:resultadoConsultaAgente, formAgente:scResultadoAgente" action="#{InadimplenciaRelControle.consultarAgente}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaAgente" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InadimplenciaRelControle.listaConsultaAgente}" rows="5" var="agenteItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarAgente}" focus="nomeAgente" render="form" oncomplete="#{rich:component('panelAgente')}.hide()" value="#{agenteItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Tipo" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarAgente}" focus="tipoAgente" render="form" oncomplete="#{rich:component('panelAgente')}.hide()">
+								<h:outputText value="#{agenteItens.tipo}" converter="EnumConverter" />
+							</a4j:commandLink>
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{InadimplenciaRelControle.selecionarAgente}" render="form" oncomplete="#{rich:component('panelAgente')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formAgente:resultadoConsultaAgente" maxPages="10" id="scResultadoAgente" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAgente" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InadimplenciaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCentroReceita" shadowOpacity="true" width="700" height="350" onshow="document.getElementById('formCentroReceita:valorConsultaCentroReceita').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceber_centroReceita}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink5" />
+					<rich:componentControl target="panelCentroReceita" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCentroReceita" ajaxSubmit="true">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCentroReceita" value="#{InadimplenciaRelControle.campoConsultaCentroReceita}">
+						<f:selectItems value="#{InadimplenciaRelControle.tipoConsultaComboCentroReceita}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaCentroReceita" size="30" styleClass="form-control campos" value="#{InadimplenciaRelControle.valorConsultaCentroReceita}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCentroReceita:mensagemConsultaCentroReceita, formCentroReceita:resultadoConsultaCentroReceita, formCentroReceita:scResultadoCentroReceita" action="#{InadimplenciaRelControle.consultarCentroReceita}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaCentroReceita" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InadimplenciaRelControle.listaCentroReceitaVOs}" rows="5" var="centroReceitaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_CentroReceita_identificadorCentroReceita}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarCentroReceita}" focus="nomeCentroReceita" render="form" oncomplete="#{rich:component('panelCentroReceita')}.hide();" value="#{centroReceitaItem.identificadorCentroReceita}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_CentroReceita_descricao} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarCentroReceita}" focus="nomeCentroReceita" render="form" oncomplete="#{rich:component('panelCentroReceita')}.hide();" value="#{centroReceitaItem.descricao}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{InadimplenciaRelControle.selecionarCentroReceita}" focus="nomeCentroReceita" render="form" oncomplete="#{rich:component('panelCentroReceita')}.hide();" icon="#{msg_bt.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCentroReceita:resultadoConsultaCentroReceita" maxPages="10" id="scResultadoCentroReceita" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCentroReceita" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InadimplenciaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelUnidadeEnsino" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceberRel_selecionarUnidadeEnsino}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hideUnidadeEnsino" />
+					<rich:componentControl target="panelUnidadeEnsino" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUnidadeEnsino">
+				<h:panelGroup columns="1" width="100%" style="text-align: left;">
+					<h:panelGroup id="unidadeEnsinos" style="height:485px;width:99%">
+						<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+							<rich:dataTable align="left" id="filtrosUnidadeEnsino" width="100%" var="unidadeEnsinoItens" value="#{InadimplenciaRelControle.unidadeEnsinoVOs}">
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosUnidadeEnsino', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosUnidadeEnsino', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="filtrosUnidadeEnsino" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="filtrosUnidadeEnsino" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosUnidadeEnsino')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{unidadeEnsinoItens.nome}" />
+								</rich:column>
+								<rich:column filterExpression="#{!unidadeEnsinoItens.filtrarUnidadeEnsino}" filterType="custom">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso" action="#{InadimplenciaRelControle.marcarTodasUnidadesEnsinoAction}">
+											<f:setPropertyActionListener value="true" target="#{InadimplenciaRelControle.marcarTodasUnidadeEnsino}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso" action="#{InadimplenciaRelControle.verificarTodasUnidadesSelecionadas}">
+										<f:setPropertyActionListener value="true" target="#{unidadeEnsinoItens.filtrarUnidadeEnsino}" />
+									</a4j:commandButton>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+							<rich:dataTable align="left" id="filtrosUnidadeEnsino2" width="100%" var="unidadeEnsinoItens" value="#{InadimplenciaRelControle.unidadeEnsinoVOs}">
+								<rich:column filterExpression="#{unidadeEnsinoItens.filtrarUnidadeEnsino}" filterType="custom">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso" action="#{InadimplenciaRelControle.marcarTodasUnidadesEnsinoAction}">
+											<f:setPropertyActionListener value="false" target="#{InadimplenciaRelControle.marcarTodasUnidadeEnsino}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso" action="#{InadimplenciaRelControle.verificarTodasUnidadesSelecionadas}">
+										<f:setPropertyActionListener value="false" target="#{unidadeEnsinoItens.filtrarUnidadeEnsino}" />
+									</a4j:commandButton>
+								</rich:column>
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosUnidadeEnsino2', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosUnidadeEnsino2', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="filtrosUnidadeEnsino2" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="filtrosUnidadeEnsino2" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosUnidadeEnsino2')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{unidadeEnsinoItens.nome}" />
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<otm:spacer height="20px;" />
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelEnvioEmailAlunosInadimplentes" domElementAttachment="parent" shadowOpacity="true" minWidth="850" minHeight="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Envio de Email Alunos Inadimplentes"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkEnvioEmailAlunosInadimplentes" />
+					<rich:componentControl target="panelEnvioEmailAlunosInadimplentes" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formEnvioEmailAlunosInadimplentes">
+				<script type="text/javascript">
+					function contar(campo, cont, total) {
+						var tam = document.getElementById(campo).value.length;
+						var total1 = total - 1;
+						if (tam > total1) {
+							document.getElementById(campo).value = document
+									.getElementById(campo).value.substring(0,
+									total1);
+							tam = total;
+							alert('Atenção, você atingiu o limite máximo de caracteres !');
+						}
+						document.getElementById(cont).value = tam + " de "
+								+ total;
+					}
+				</script>
+				<h:panelGroup columns="1" width="100%">
+					<rich:tabPanel id="richTabMensagem" width="100%" switchType="client" headerAlignment="right">
+						<rich:tab header="Mensagem">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PersonalizacaoMensagemAutomatica_tags}" />
+									<h:inputTextarea id="tags" readonly="true" cols="70" rows="3" styleClass="form-control campos" value="#{InadimplenciaRelControle.tagsUtilizarMensagemCobranca}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Inadimplencia_AssuntoEmailAlunoInadimplente}" />
+									<h:inputText id="textoAssuntoEmail" maxlength="250" size="50" readonly="false" styleClass="form-control campos" value="#{InadimplenciaRelControle.comunicacaoEnviar.assunto}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="Mensagem" />
+									<otm:editor id="mensagem" value="#{InadimplenciaRelControle.email}">
+
+									</otm:editor>
+							</h:panelGroup>
+							</h:panelGroup>
+
+						</rich:tab>
+						<rich:tab id="tabSms" header="SMS" rendered="#{InadimplenciaRelControle.enviarSMS}" oncomplete="contar('formEnvioEmailAlunosInadimplentes:textarea_sms','formEnvioEmailAlunosInadimplentes:contador','150');" switchType="ajax">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:inputTextarea id="textarea_sms" onkeyup="contar('formEnvioEmailAlunosInadimplentes:textarea_sms','formEnvioEmailAlunosInadimplentes:contador','150');" cols="80" rows="6" style="width:730px;height:100px" styleClass="form-control campos" value="#{InadimplenciaRelControle.comunicacaoEnviar.mensagemSMS}">
+							</h:inputTextarea>
+									<h:inputText id="contador" maxlength="10" size="8" readonly="true" style="border:0px; background-color:transparent; color:red; text-align:left; font: 8pt 'Trebuchet MS', verdana, arial, helvetica, sans-serif;" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+					</rich:tabPanel>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Inadimplencia_numeroAlunosInadimplentesReceberEmail}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="#{InadimplenciaRelControle.quantidadeAlunoInadimplentes}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="Enviar SMS" />
+
+						<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.enviarSMS}">
+							<a4j:ajax event="change" execute="@form" render="formEnvioEmailAlunosInadimplentes" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</h:panelGroup>
+				<otm:spacer height="5" />
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton image="#{resource['/imagens/botaoEnviar.png']}" oncomplete="#{InadimplenciaRelControle.showHideModalEnviarEmail}" action="#{InadimplenciaRelControle.enviarEmailAlunosInadimplentes}" id="enviarEmailAlunosInadimplentes" title="#{msg_aplic.prt_Inadimplencia_enviarEmailAlunosInadimplentes}" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" styleClass="btn btn-primary" value="Enviar Email aos Alunos Inadimplentes" render="#{InadimplenciaRelControle.isRenderizarFormularioModalEmailSms}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemEmissaoTermoReconhecimentoDivida" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InadimplenciaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" autosized="false" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtrar Curso"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink19" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup id="cursos" style="height:485px;width:99%">
+						<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+							<rich:dataTable align="left" id="filtrosCurso" width="100%" var="cursoItens" value="#{InadimplenciaRelControle.cursoVOs}">
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="filtrosCurso" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="filtrosCurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosCurso')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{cursoItens.codigo} - #{cursoItens.nome}" />
+								</rich:column>
+								<rich:column filterExpression="#{!cursoItens.filtrarCursoVO}" filterType="custom">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formCurso, form:nomeCurso" action="#{InadimplenciaRelControle.realizarMarcacaoCursos}">
+											<f:setPropertyActionListener value="true" target="#{InadimplenciaRelControle.marcarTodosCursos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="form:nomeCurso, cursos" action="#{InadimplenciaRelControle.verificarTodosCursosSelecionados}">
+										<f:setPropertyActionListener value="true" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+							<rich:dataTable align="left" id="filtrosCurso2" width="100%" var="cursoItens" value="#{InadimplenciaRelControle.cursoVOs}">
+								<rich:column filterExpression="#{cursoItens.filtrarCursoVO}" filterType="custom">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formCurso, form:nomeCurso" action="#{InadimplenciaRelControle.realizarMarcacaoCursos}">
+											<f:setPropertyActionListener value="false" target="#{InadimplenciaRelControle.marcarTodosCursos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="form:nomeCurso, cursos" action="#{InadimplenciaRelControle.verificarTodosCursosSelecionados}">
+										<f:setPropertyActionListener value="false" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="filtrosCurso2" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="filtrosCurso2" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosCurso2')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{cursoItens.codigo} - #{cursoItens.nome}" />
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+					<otm:spacer height="20" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" onshow="document.getElementById('formTurma:valorConsultarTurma').focus()" shadowOpacity="true" top="0" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_consultaTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkTurma" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{InadimplenciaRelControle.campoConsultaTurma}">
+						<f:selectItems value="#{InadimplenciaRelControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultarTurma" size="10" styleClass="form-control campos" value="#{InadimplenciaRelControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarTurma" render="formTurma:mensagemConsultarTurma, formTurma:resultadoConsultarTurma, formTurma:scResultadoTurma" action="#{InadimplenciaRelControle.consultarTurma}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultarTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InadimplenciaRelControle.listaConsultaTurma}" rows="5" var="turmaItens">
+					<rich:column sortBy="#{turmaItens.identificadorTurma}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_identificadorTurma}" />
+						</f:facet>
+						<a4j:commandLink action="#{InadimplenciaRelControle.selecionarTurma}" oncomplete="#{rich:component('panelTurma')}.hide()" render="form" id="identificadorTurma" value="#{turmaItens.identificadorTurma}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItens.unidadeEnsino.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_unidadeEnsino}" />
+						</f:facet>
+						<a4j:commandLink action="#{InadimplenciaRelControle.selecionarTurma}" id="unidadeEnsinoTurma" oncomplete="#{rich:component('panelTurma')}.hide()" render="form" value="#{turmaItens.unidadeEnsino.nome}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItens.curso.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_curso}" />
+						</f:facet>
+						<a4j:commandLink action="#{InadimplenciaRelControle.selecionarTurma}" id="curso" oncomplete="#{rich:component('panelTurma')}.hide()" render="form" value="#{turmaItens.curso.nome}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItens.turno.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_turno}" />
+						</f:facet>
+						<a4j:commandLink action="#{InadimplenciaRelControle.selecionarTurma}" id="turno" oncomplete="#{rich:component('panelTurma')}.hide()" render="form" value="#{turmaItens.turno.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{InadimplenciaRelControle.selecionarTurma}" focus="turma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_bt.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultarTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultarTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InadimplenciaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarAluno}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3" />
+					<rich:componentControl target="panelAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{InadimplenciaRelControle.campoConsultaAluno}">
+						<f:selectItems value="#{InadimplenciaRelControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaAluno" size="10" styleClass="form-control campos" value="#{InadimplenciaRelControle.valorConsultaAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar3" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno, formAluno:scResultadoAluno" action="#{InadimplenciaRelControle.consultarAluno}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InadimplenciaRelControle.listaConsultaAluno}" rows="5" var="matriculaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarAluno}" focus="alunoCPF" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarAluno}" focus="alunoCPF" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_curso}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarAluno}" focus="alunoCPF" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_turno}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarAluno}" focus="alunoCPF" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_situacao}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarAluno}" focus="alunoCPF" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.situacao_Apresentar}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{InadimplenciaRelControle.selecionarAluno}" focus="alunoCPF" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" icon="#{msg_bt.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" fastControls="hide" stepControls="auto" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InadimplenciaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelResponsavelFinanceiro" shadowOpacity="true" width="750" onshow="document.getElementById('formResponsavelFinanceiro:valorConsultaResponsavelFinanceiro').focus();" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceber_responsavelFinanceiro}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkResponsavelFinanceiro" />
+					<rich:componentControl target="panelResponsavelFinanceiro" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formResponsavelFinanceiro">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionario" value="#{InadimplenciaRelControle.campoConsultaResponsavelFinanceiro}">
+						<f:selectItems value="#{InadimplenciaRelControle.tipoConsultaComboResponsavelFinanceiro}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaFuncionario" size="10" styleClass="form-control campos" value="#{InadimplenciaRelControle.valorConsultaResponsavelFinanceiro}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formResponsavelFinanceiro" action="#{InadimplenciaRelControle.consultarResponsavelFinanceiro}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaResponsavelFinanceiro" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InadimplenciaRelControle.listaConsultaResponsavelFinanceiro}" rows="5" var="responsavelFinanceiroItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarResponsavelFinanceiro}" focus="nomeResponsavelFinanceiro" render="form" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.hide(), setFocus(form,'form:nomeResponsavelFinanceiro');" value="#{responsavelFinanceiroItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InadimplenciaRelControle.selecionarResponsavelFinanceiro}" focus="nomeResponsavelFinanceiro" render="form" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.hide(), setFocus(form,'form:nomeResponsavelFinanceiro');" value="#{responsavelFinanceiroItens.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{InadimplenciaRelControle.selecionarResponsavelFinanceiro}" focus="nomeResponsavelFinanceiro" render="form" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.hide(), setFocus(form,'form:nomeResponsavelFinanceiro');" icon="#{msg_bt.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formResponsavelFinanceiro:resultadoConsultaResponsavelFinanceiro" maxPages="10" id="scResultadoResponsavelFinanceiro" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaResponsavelFinanceiro" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InadimplenciaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<h:form id="form">
+			<h:commandLink action="#{InadimplenciaRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup id="panelGridDadosConsulta">
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!InadimplenciaRelControle.filtrarPorDataCompetencia}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaReceber_periodo}" />
+						<otm:calendar id="dataInicio" value="#{InadimplenciaRelControle.dataInicio}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!InadimplenciaRelControle.filtrarPorDataCompetencia}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Periodo Fim" />
+						<otm:calendar id="dataFim" value="#{InadimplenciaRelControle.dataFim}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InadimplenciaRelControle.filtrarPorDataCompetencia}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Data Inicio" />
+						<otm:calendar id="valorConsultaDataInicioComp" value="#{InadimplenciaRelControle.dataInicio}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InadimplenciaRelControle.filtrarPorDataCompetencia}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Data Fim" />
+						<otm:calendar id="valorConsultaDataFimComp" value="#{InadimplenciaRelControle.dataFim}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" id="panelGroupFiltrarPorDataCompetencia">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaReceberRel_filtrarPorDataCompetencia}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="filtrarPorDataCompetencia" value="#{InadimplenciaRelControle.filtrarPorDataCompetencia }">
+								<a4j:ajax event="click" render="form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Inadimplencia_considerarUnidadeFinanceira}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{InadimplenciaRelControle.considerarUnidadeEnsinoFinanceira}">
+								<a4j:ajax event="click" render="form" execute="form" listener="#{InadimplenciaRelControle.consultarCurso}" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:panelGroup layout="block" styleClass="col-md-6" id="panelUnidade">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_unidadeEnsino}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText id="unidadeEnsino" size="68" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{InadimplenciaRelControle.unidadeEnsinoVO.nome}" />
+								<span class="append-icon right"> <otm:commandIcon id="selecionarUnidadeEnsino" tooltip="Selecionar Unidade de Ensino" rendered="#{InadimplenciaRelControle.isApresentarBotaoSelecionarUnidadeEnsino}" oncomplete="#{rich:component('panelUnidadeEnsino')}.show()" icon="#{msg_botoes.btn_icon_adicionar_embutido}" render="formUnidadeEnsino" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" id="panelGroupCurso">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_curso}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText readonly="true" id="nomeCurso" size="68" styleClass="form-control camposSomenteLeitura" value="#{InadimplenciaRelControle.cursosApresentar}" />
+								<span class="append-icon right"> <otm:commandIcon id="consultaDadosCurso" tooltip="Consulta Dados Curso" rendered="#{InadimplenciaRelControle.isApresentarBotoesSelecionarLimparCurso}" focus="nomeCurso" alt="Localizar Curso" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosCurso" rendered="#{InadimplenciaRelControle.isApresentarBotoesSelecionarLimparCurso}" tooltip="Limpar Dados" action="#{InadimplenciaRelControle.limparCurso}" render="form:nomeCurso, form:turma, form:disciplinaNome, panelGridPrincipal, panelMensagem,panelCurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoTurma_turma}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="identificadorTurma" size="68" maxlength="70" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{InadimplenciaRelControle.turma.identificadorTurma}" />
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" focus="valorConsultaTurma" tooltip="Consultar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show(), setFocus(formTurma,'formTurma:valorConsultaTurma');" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" tooltip="Limpar Dados" action="#{InadimplenciaRelControle.limparTurma}" render="form" execute="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaReceber_responsavelFinanceiro}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText size="68" id="nomeResponsavelFinanceiro" styleClass="form-control camposSomenteLeitura" readonly="true" maxlength="50" value="#{InadimplenciaRelControle.responsavelFinanceiro.nome}" />
+							<span class="append-icon right"> <otm:commandIcon id="consultarResponsavelFinanceiro" tooltip="Consultar Responsavel Financeiro" render="formResponsavelFinanceiro" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelResponsavelFinanceiro')}.show()" /> <otm:commandIcon id="limparDadosResponsavelFinanceiro" tooltip="Limpas Dados" action="#{InadimplenciaRelControle.limparDadosResponsavelFinanceiro}" render="nomeResponsavelFinanceiro" icon="#{msg_botoes.btn_icon_limpar_embutido}" style="position: relative; top: -1px; left: 0px;" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" id="panelGroupCentroReceita">
+						<h:outputText id="textoCentroReceita" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Inadimplencia_centro_Receita}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText size="68" id="nomeCentroReceita" styleClass="form-control camposSomenteLeitura" readonly="true" maxlength="50" value="#{InadimplenciaRelControle.centroReceitaVO.descricao}" />
+							<span class="append-icon right"> <otm:commandIcon id="consultarCentroReceita" tooltip="Consultar Centro Receita" render="formCentroReceita" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelCentroReceita')}.show()" action="#{InadimplenciaRelControle.limparDadosConsultaCentroReceita}" /> <otm:commandIcon id="limparDadosCentroReceita" tooltip="Limpas Dados" action="#{InadimplenciaRelControle.limparDadosCentroReceita}" render="nomeCentroReceita" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaNegativacaoCobrancaContaReceber_agente}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText styleClass="form-control camposSomenteLeitura" size="68" maxlength="50" value="#{InadimplenciaRelControle.agente.nome}" readonly="true" />
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosAgente" tooltip="Localizar Agente" render="formAgente" oncomplete="#{rich:component('panelAgente')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAgente" tooltip="Limpas Dados" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{InadimplenciaRelControle.limparAgente}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Aluno_tituloForm}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText id="matricula" maxlength="50" value="#{InadimplenciaRelControle.matricula.matricula}" size="19" styleClass="form-control campos" style="margin-right: 3px;">
+							<a4j:ajax event="change" listener="#{InadimplenciaRelControle.consultarAlunoPorMatricula}" render="form" execute="form" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText size="40" maxlength="50" readonly="true" id="aluno_nomePessoa" styleClass="form-control camposSomenteLeitura" value="#{InadimplenciaRelControle.matricula.aluno.nome}" style="position: relative;right:-3px;" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosAluno" focus="alunoCPF" tooltip="Localizar Aluno" render="formAluno" oncomplete="#{rich:component('panelAluno')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAluno" tooltip="Limpar Dados" action="#{InadimplenciaRelControle.limparAluno}" render="form:panelGroupCurso, form:turma, form:matricula, form:aluno_nomePessoa, form:disciplinaNome, panelGridPrincipal, panelMensagem, panelUnidade" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{InadimplenciaRelControle.agente.codigo ne 0}">
+						<h:outputText rendered="#{InadimplenciaRelControle.agente.codigo ne 0}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaNegativacaoCobrancaContaReceber_TipoAgenteNegativacaoCobranca}" />
+						<h:selectOneMenu rendered="#{InadimplenciaRelControle.agente.codigo ne 0}" styleClass="form-control camposSomenteLeitura" id="situacaoNegativacao" required="true" value="#{InadimplenciaRelControle.tipoAgente}" disabled="#{!InadimplenciaRelControle.agente.tipoAmbos}">
+							<f:selectItems value="#{InadimplenciaRelControle.listaSelectItensTipoAgente}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaNegativacaoCobrancaContaReceber_FiltrarRegistroCobranca}" />
+						<h:selectOneMenu styleClass="form-control campos" id="situacaoRegistroCobranca" value="#{InadimplenciaRelControle.situacaoRegistroCobranca}">
+							<f:selectItems value="#{InadimplenciaRelControle.listaSelectItemFiltroRegistroCobranca}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-left mt10">
+						<h:outputText styleClass="field control-label tituloCampos title" value="#{msg_aplic.prt_FiltroRelatorioAcademico_titulo}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:panelGroup id="panelGridFiltroSituacaoAcademica">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText value="#{InadimplenciaRelControle.isApresentarTextoCheckBoxMarcarDesmarcarTodosFormacaoAcademica}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.marcarTodasSituacoesAcademicas}">
+										<a4j:ajax event="click" execute="@this" listener="#{InadimplenciaRelControle.realizarSelecaoCheckboxMarcarDesmarcarTodosSituacaoAcademica}" render="panelGridFiltroAcademico,panelGridFiltroSituacaoAcademica" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup id="panelGridFiltroAcademico">
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_ativo}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.ativo}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_preMatricula}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.preMatricula}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_preMatriculaCancelada}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.preMatriculaCancelada}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_trancado}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.trancado}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_abandonoCurso}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.abandonado}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_transferenciaInterna}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.transferenciaInterna}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_transferenciaSaida}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.transferenciaExterna}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_cancelado}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.cancelado}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_concluido}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.concluido}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_formado}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.formado}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_jubilado}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioAcademicoVO.jubilado}">
+										<a4j:ajax event="click" execute="@this" render="panelGridFiltroAcademico" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<hr class="col-md-12" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-left mt10">
+						<h:outputText styleClass="field control-label tituloCampos title" value="#{msg_aplic.prt_ContaReceber_tipoOrigem}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:panelGroup id="panelGridCabecalhoTipoOrigem">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText value="#{InadimplenciaRelControle.isApresentarTextoCheckBoxMarcarDesmarcarTodosTipoOrigem}" style="position:relative; bottom:0px; left: 4px;font-size:11px" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.marcarTodosTipoOrigem}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" listener="#{InadimplenciaRelControle.realizarSelecaoCheckboxMarcarDesmarcarTodosTipoOrigem}" render="panelGridCabecalhoTipoOrigem,panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup id="panelGridTipoOrigem">
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemInscricaoProcessoSeletivo}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemInscricaoProcessoSeletivo}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemMatricula}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemMatricula}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemRequerimento}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemRequerimento}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemBiblioteca}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemParcelaMensalidade}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemMensalidade}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemDevolucaoCheque}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemDevolucaoCheque}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemNegociacao}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemNegociacao}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemBolsaCusteadaConvenio}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemBolsaCusteadaConvenio}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemContratoReceita}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemContratoReceita}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemInclusaoReposicao}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemInclusaoReposicao}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemOutros}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemOutros}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemMaterialDidatico}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.tipoOrigemMaterialDidatico}" disabled="#{InadimplenciaRelControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+										<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<hr class="col-md-12" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText id="textoOrdernarPor" styleClass="field control-label tituloCampos" value="Ordenar Por" />
+					<h:selectOneMenu id="ordenarPor" styleClass="form-control campos" value="#{InadimplenciaRelControle.ordenarPor}">
+						<f:selectItems value="#{InadimplenciaRelControle.listaSelectItemOrdenarPor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="botoes" layout="block" styleClass="barraFlutuanteInferior">
+				<h:panelGroup>
+					<otm:commandButton style="margin-right:5px" id="imprimirPDFComDesconto" value="Imprimir PDF Com Desconto" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger" oncomplete="#{InadimplenciaRelControle.download}" render="form" action="#{InadimplenciaRelControle.imprimirPDFDetalhado}" />
+					<otm:commandButton style="margin-right:5px" id="imprimirExcel" styleClass="btn btn-info" icon="fas fa-file-excel" value="Imprimir Excel" oncomplete="#{InadimplenciaRelControle.download}" render="form" action="#{InadimplenciaRelControle.imprimirRelatorioExcel}" />
+					<otm:commandButton id="EnviarEmailAlunosInadimplentes" action="#{InadimplenciaRelControle.realizarDefinicoesEnvioPersonalizacaoMensagemAutomaticaInadimplenciaRel}" oncomplete="#{InadimplenciaRelControle.showHideModalEnviarEmail}" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" styleClass="btn btn-default" value="Enviar Email aos Alunos Inadimplentes" render="formEnvioEmailAlunosInadimplentes" image="#{resource['/imagens/enviarEmailAlunosInadimplentes.png']}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<otm:spacer height="20" />
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<h:panelGroup id="panelGridMensagens">
+					<otm:mensagem bean="#{InadimplenciaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

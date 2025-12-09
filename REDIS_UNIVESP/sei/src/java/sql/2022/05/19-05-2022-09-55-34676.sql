@@ -1,0 +1,1 @@
+alter table if exists pessoa add column if not exists tipoAssinaturaDocumentoEnum varchar(250) default 'ELETRONICA';

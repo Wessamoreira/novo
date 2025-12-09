@@ -1,0 +1,1329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Registrar Aula" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<h:form id="form">
+			<h:panelGroup styleClass="row" id="registrarAulaProfessor">
+				<h:panelGroup id="registroAula" styleClass="row" layout="block">
+					<h:panelGroup styleClass="barraFlutuanteInferior " layout="block">
+						<otm:commandButton execute="@this" id="novoRa" action="#{RegistroAulaControle.novoVisaoProfessor}" render="form:registroAula, form:raMsg" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+						<otm:spacer width="5px" />
+						<otm:commandButton action="#{RegistroAulaControle.gravarVisaoProfessor}" render="form:registroAula, form:raMsg, formReprovarPeriodoLetivo" oncomplete="#{RegistroAulaControle.oncompleteModal}" rendered="#{RegistroAulaControle.isApresentarBotaoGravar and !RegistroAulaControle.bloquearLancamentosNotasAulasFeriadosFinaisSemana}" accesskey="2" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="#{msg.msg_gravar_dados}" styleClass="btn btn-dark" />
+						<otm:spacer width="5px" />
+						<otm:commandButton action="#{RegistroAulaControle.excluirVisaoProfessor}" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" rendered="#{RegistroAulaControle.isMostrarBotaoExcluir}" accesskey="2" icon="#{msg_botoes.btn_icon_remver_embutido}" value="#{msg.msg_excluir_dados}" styleClass="btn btn-danger" />
+						<otm:spacer rendered="#{RegistroAulaControle.calendarioRegistroAula.codigo > 0}" width="5px" />
+						<otm:commandButton rendered="#{RegistroAulaControle.calendarioRegistroAula.codigo > 0}" oncomplete="#{rich:component('panelCalendarioRegistroAula')}.show()" render="formCalendarioRegistroAula" accesskey="5" value="Calendário" styleClass="btn btn-default btn-consultar" />
+						<otm:spacer rendered="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}" width="5px" />
+						<otm:commandButton rendered="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}" value="Plano Ensino" styleClass="btn btn-primary btn-consultar" icon="fas fa-th-list" action="#{RegistroAulaControle.consultarUltimoPlanoEnsino}" oncomplete="#{RegistroAulaControle.abrirModal()}" render="form, formPlanoDisciplina" accesskey="5" />
+					</h:panelGroup>
+					<h:panelGroup styleClass="row" rendered="#{RegistroAulaControle.isApresentarAnoVisaoProfessorCoordenador}" layout="block">
+						<h:panelGroup layout="block" styleClass="col-md-1">
+							<h:outputText styleClass="field control-label tituloCampos" value="Ano" />
+							<h:inputText id="ano" size="4" maxlength="4" value="#{RegistroAulaControle.ano}" styleClass="form-control camposObrigatorios" onkeydown="aceitarSomenteValorNumerico(this)" readonly="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}">
+								<a4j:ajax event="change" oncomplete="focus('form:semestre2')" listener="#{RegistroAulaControle.montarListaSelectItemTurma}" render="form:registrarAulaProfessor , form:raMsg" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{RegistroAulaControle.isApresentarSemestreVisaoProfessorCoordenador}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Semestre" />
+							<h:selectOneMenu id="semestre2" styleClass="form-control campos" value="#{RegistroAulaControle.semestre}" disabled="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}">
+								<a4j:ajax event="change" oncomplete="focus('form:turma')" listener="#{RegistroAulaControle.montarListaSelectItemTurma}" render="form:registrarAulaProfessor , form:raMsg" />
+								<f:selectItems value="#{RegistroAulaControle.listaSelectSemestre}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_turma}" />
+						<h:panelGroup>
+							<h:selectOneMenu id="turma" styleClass="form-control camposObrigatorios" value="#{RegistroAulaControle.turma.codigo}" disabled="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}">
+								<a4j:ajax event="change" oncomplete="focus('form:disciplina')" listener="#{RegistroAulaControle.montarAlunosVisaoProfessor}" render="form:registroAula,form:raMsg;, form:registroAula,form:raMsg;, form:raMsg, form" />
+								<f:selectItems value="#{RegistroAulaControle.listaSelectItemTurma}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!RegistroAulaControle.turma.turmaAgrupada}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoTurma_periodoLetivo}" />
+						<h:inputText id="perioLetivo" size="90" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{RegistroAulaControle.turma.peridoLetivo.descricao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RegistroAulaControle.isApresentarDadosAposSelecionarTurma}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_disciplina}" />
+						<h:selectOneMenu id="disciplina" styleClass="form-control camposObrigatorios" value="#{RegistroAulaControle.disciplina.codigo}" disabled="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}">
+							<a4j:ajax event="change" oncomplete="focus('form:tipoAula')" listener="#{RegistroAulaControle.montarCalendarioDeAulas}" render="form:registrarAulaProfessor , form:raMsg" />
+							<f:selectItems value="#{RegistroAulaControle.listaSelectItemDisciplinasProgramacaoAula}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{RegistroAulaControle.isApresentarDadosAposSelecionarTurma}" layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_tipoAula}" />
+						<h:selectOneMenu id="tipoAula" styleClass="form-control camposObrigatorios" value="#{RegistroAulaControle.tipoAula}">
+							<f:selectItems value="#{RegistroAulaControle.tipoAulaCombo}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<!-- CALENDARIO -->
+
+
+					<h:panelGroup id="porDia" layout="block" styleClass="col-md-6 pn mt5" rendered="#{RegistroAulaControle.isMostrarCalendario}">
+						<otm2:dashpanel id="calendario" styleClass="p-0" cols="12">
+							<ui:define name="header">
+								<i class="far fa-calendar-alt mr-2 fonteHeaderDashboard"></i>
+								<h:outputText value="Calendário" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup id="dadosMiniCalendario" layout="block" styleClass="w-100 p-2" style="overflow:auto;height:316px;max-height:316px">
+									<style>
+/* .rf-ds {
+	margin-top: 0px !important;
+}
+
+.rf-ds-pages {
+	font-weight: 1000;
+	font-size: 12px !important;
+	width: 20%;
+	padding-top: 3px !important;
+	padding-bottom: 4px !important;
+	color: #black;
+}
+
+.rf-ds-pages:hover {
+	background-color: #5fd7ba;
+	color: #000;
+	font-weight: 1000 !important;
+}
+
+.rf-ds-btn-next {
+	width: 20% !important;
+	background: transparent !important;
+	border: none !important;
+	font-weight: normal !important;
+	font-size: 10px !important;
+	padding-top: 5px !important;
+	padding-bottom: 5px !important;
+	height: 25px;
+}
+
+.rf-ds-btn-prev {
+	width: 20% !important;
+	background: transparent !important;
+	border: none !important;
+	font-weight: normal !important;
+	font-size: 10px !important;
+	padding-top: 5px !important;
+	padding-bottom: 5px !important;
+}
+
+.rf-ds-btn-last {
+	width: 20% !important;
+	background: transparent !important;
+	border: none !important;
+	font-weight: normal !important;
+}
+
+.rf-ds-btn-first {
+	width: 20% !important;
+	background: transparent !important;
+	border: none !important;
+	font-weight: normal !important;
+}
+ */
+.horarioOcupado {
+	padding: 4px !important;
+	text-align: center;
+	background-color: red !important;
+	border-radius: 50% !important;
+	color: #fff !important;
+}
+</style>
+									<h:panelGroup layout="block" styleClass="row text-center">
+										<rich:dataScroller id="scrll" for="idCalendario" render="idCalendario" styleClass="cssCalendario" limitRender="3" pageIndexVar="index" page="#{RegistroAulaControle.index}">
+											<f:facet name="first">
+												<i class="fas fa-angle-double-left"></i>
+											</f:facet>
+											<f:facet name="previous">
+												<h:outputText value="#{RegistroAulaControle.tituloScrollFirst}" />
+											</f:facet>
+											<f:facet name="pages">
+												<h:panelGroup styleClass="text-center" layout="block">
+													<h:outputText id="tituloScroll" value="#{RegistroAulaControle.tituloScroll}" />
+												</h:panelGroup>
+											</f:facet>
+											<f:facet name="next">
+												<h:outputText value="#{RegistroAulaControle.tituloScrollNext}" />
+											</f:facet>
+											<f:facet name="last">
+												<i class="fas fa-angle-double-right"></i>
+											</f:facet>
+										</rich:dataScroller>
+									</h:panelGroup>
+									<rich:list id="idCalendario" type="definitions" rows="1" rowKeyVar="row" value="#{RegistroAulaControle.quadroHorario.horarioProfessorVO.calendarioHorarioAulaVOs}" var="mesano">
+										<h:panelGroup layout="block" styleClass="w-100">
+											<h:panelGroup layout="block" styleClass="row">
+												<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+													<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+														<h:outputText value="D" />
+													</h:panelGroup>
+													<rich:list id="programacaoAulaVODiaDom" type="definitions" rowKeyVar="rowDia" value="#{mesano.calendarioHorarioAulaDomingo}" var="horarioProgramacaoDiaItens">
+														<h:panelGroup layout="block" style="line-height:35px" styleClass="w-100 border-bottom text-center ">
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioOcupado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioRegistroLancado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<h:outputText rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioLivre" value="#{horarioProgramacaoDiaItens.dia}" />
+															<a4j:region>
+																<h:outputText id="feriadoDom" rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioFeriado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+																<rich:tooltip target="form:idCalendario:#{row}:programacaoAulaVODiaDom:#{rowDia}:feriadoDom" layout="block" direction="topAuto" horizontalOffset="0" verticalOffset="0" styleClass="tooltipRich">
+																	<span style="white-space: nowrap"> <i class="fas fa-umbrella mr5"></i> <h:outputText styleClass="tituloCampos" value="#{horarioProgramacaoDiaItens.feriado.descricao}" />
+																	</span>
+																</rich:tooltip>
+															</a4j:region>
+														</h:panelGroup>
+													</rich:list>
+												</h:panelGroup>
+												<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+													<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+														<h:outputText value="S" />
+													</h:panelGroup>
+													<rich:list id="programacaoAulaVODiaSeg" type="definitions" rowKeyVar="rowDia" value="#{mesano.calendarioHorarioAulaSegunda}" var="horarioProgramacaoDiaItens">
+														<h:panelGroup layout="block" style="line-height:35px" styleClass="w-100 border-bottom text-center ">
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioOcupado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioRegistroLancado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<h:outputText rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and! horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioLivre" value="#{horarioProgramacaoDiaItens.dia}" />
+															<a4j:region>
+																<h:outputText id="feriadoSeg" rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioFeriado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+																<rich:tooltip target="form:idCalendario:#{row}:programacaoAulaVODiaSeg:#{rowDia}:feriadoSeg" layout="block" direction="topAuto" horizontalOffset="0" verticalOffset="0" styleClass="tooltipRich">
+																	<span style="white-space: nowrap"> <i class="fas fa-umbrella mr5"></i> <h:outputText styleClass="tituloCampos" value="#{horarioProgramacaoDiaItens.feriado.descricao}" />
+																	</span>
+																</rich:tooltip>
+															</a4j:region>
+														</h:panelGroup>
+													</rich:list>
+												</h:panelGroup>
+												<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+													<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+														<h:outputText value="T" />
+													</h:panelGroup>
+													<rich:list id="programacaoAulaVODiaTer" type="definitions" rowKeyVar="rowDia" value="#{mesano.calendarioHorarioAulaTerca}" var="horarioProgramacaoDiaItens">
+														<h:panelGroup layout="block" style="line-height:35px" styleClass="w-100 border-bottom text-center ">
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioOcupado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioRegistroLancado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<h:outputText rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioLivre" value="#{horarioProgramacaoDiaItens.dia}" />
+															<a4j:region>
+																<h:outputText id="feriadoTer" rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioFeriado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+																<rich:tooltip target="form:idCalendario:#{row}:programacaoAulaVODiaTer:#{rowDia}:feriadoTer" layout="block" direction="topAuto" horizontalOffset="0" verticalOffset="0" styleClass="tooltipRich">
+																	<span style="white-space: nowrap"> <i class="fas fa-umbrella mr5"></i> <h:outputText styleClass="tituloCampos" value="#{horarioProgramacaoDiaItens.feriado.descricao}" />
+																	</span>
+																</rich:tooltip>
+															</a4j:region>
+														</h:panelGroup>
+													</rich:list>
+												</h:panelGroup>
+												<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+													<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+														<h:outputText value="Q" />
+													</h:panelGroup>
+													<rich:list id="programacaoAulaVODiaQua" type="definitions" rowKeyVar="rowDia" value="#{mesano.calendarioHorarioAulaQuarta}" var="horarioProgramacaoDiaItens">
+														<h:panelGroup layout="block" style="line-height:35px" styleClass="w-100 border-bottom text-center ">
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioOcupado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioRegistroLancado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<h:outputText rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioLivre" value="#{horarioProgramacaoDiaItens.dia}" />
+															<a4j:region>
+																<h:outputText id="feriadoQua" rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioFeriado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+																<rich:tooltip target="form:idCalendario:#{row}:programacaoAulaVODiaQua:#{rowDia}:feriadoQua" layout="block" direction="topAuto" horizontalOffset="0" verticalOffset="0" styleClass="tooltipRich">
+																	<span style="white-space: nowrap"> <i class="fas fa-umbrella mr5"></i> <h:outputText styleClass="tituloCampos" value="#{horarioProgramacaoDiaItens.feriado.descricao}" />
+																	</span>
+																</rich:tooltip>
+															</a4j:region>
+														</h:panelGroup>
+													</rich:list>
+												</h:panelGroup>
+												<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+													<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+														<h:outputText value="Q" />
+													</h:panelGroup>
+													<rich:list id="programacaoAulaVODiaQui" type="definitions" rowKeyVar="rowDia" value="#{mesano.calendarioHorarioAulaQuinta}" var="horarioProgramacaoDiaItens">
+														<h:panelGroup layout="block" style="line-height:35px" styleClass="w-100 border-bottom text-center ">
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioOcupado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioRegistroLancado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<h:outputText rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioLivre" value="#{horarioProgramacaoDiaItens.dia}" />
+															<a4j:region>
+																<h:outputText id="feriadoQui" rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioFeriado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+																<rich:tooltip target="form:idCalendario:#{row}:programacaoAulaVODiaQui:#{rowDia}:feriadoQui" layout="block" direction="topAuto" horizontalOffset="0" verticalOffset="0" styleClass="tooltipRich">
+																	<span style="white-space: nowrap"> <i class="fas fa-umbrella mr5"></i> <h:outputText styleClass="tituloCampos" value="#{horarioProgramacaoDiaItens.feriado.descricao}" />
+																	</span>
+																</rich:tooltip>
+															</a4j:region>
+														</h:panelGroup>
+													</rich:list>
+												</h:panelGroup>
+												<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+													<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+														<h:outputText value="S" />
+													</h:panelGroup>
+													<rich:list id="programacaoAulaVODiaSex" type="definitions" rowKeyVar="rowDia" value="#{mesano.calendarioHorarioAulaSexta}" var="horarioProgramacaoDiaItens">
+														<h:panelGroup layout="block" style="line-height:35px" styleClass="w-100 border-bottom text-center ">
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioOcupado horarioOcupado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioRegistroLancado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<h:outputText rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioLivre" value="#{horarioProgramacaoDiaItens.dia}" />
+															<a4j:region>
+																<h:outputText id="feriadoSex" rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioFeriado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+																<rich:tooltip target="form:idCalendario:#{row}:programacaoAulaVODiaSex:#{rowDia}:feriadoSex" layout="block" direction="topAuto" horizontalOffset="0" verticalOffset="0" styleClass="tooltipRich">
+																	<span style="white-space: nowrap"> <i class="fas fa-umbrella mr5"></i> <h:outputText styleClass="tituloCampos" value="#{horarioProgramacaoDiaItens.feriado.descricao}" />
+																	</span>
+																</rich:tooltip>
+															</a4j:region>
+														</h:panelGroup>
+													</rich:list>
+												</h:panelGroup>
+												<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+													<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+														<h:outputText value="S" />
+													</h:panelGroup>
+													<rich:list id="programacaoAulaVODiaSab" type="definitions" rowKeyVar="rowDia" value="#{mesano.calendarioHorarioAulaSabado}" var="horarioProgramacaoDiaItens">
+														<h:panelGroup layout="block" style="line-height:35px" styleClass="w-100 border-bottom text-center ">
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioOcupado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<a4j:commandLink rendered="#{horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isLancadoRegistro}" render="form:registrarAulaProfessor , form:raMsg" action="#{RegistroAulaControle.selecionarHorarioTurmaDiaVisaoProfessor}">
+																<h:outputText styleClass="horarioRegistroLancado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+															</a4j:commandLink>
+															<h:outputText rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and !horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioLivre" value="#{horarioProgramacaoDiaItens.dia}" />
+															<a4j:region>
+																<h:outputText id="feriadoSab" rendered="#{!horarioProgramacaoDiaItens.isAulaProgramada and horarioProgramacaoDiaItens.isFeriado}" styleClass="horarioFeriado diaMiniCalendario #{diaAgendaItens.styleClass}" value="#{horarioProgramacaoDiaItens.dia}" />
+																<rich:tooltip target="form:idCalendario:#{row}:programacaoAulaVODiaSab:#{rowDia}:feriadoSab" layout="block" direction="topAuto" horizontalOffset="0" verticalOffset="0" styleClass="tooltipRich">
+																	<span style="white-space: nowrap"> <i class="fas fa-umbrella mr5"></i> <h:outputText styleClass="tituloCampos" value="#{horarioProgramacaoDiaItens.feriado.descricao}" />
+																	</span>
+																</rich:tooltip>
+															</a4j:region>
+														</h:panelGroup>
+													</rich:list>
+												</h:panelGroup>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row border-top border-bottom pt-2 pb-2 bg-gray rounded-bottom" style="position: absolute;bottom: 0px;left: 3px;width: 100%;">
+											<h:panelGroup layout="block" style="width:15%;float:left;" styleClass="text-center">
+												<span class="legendaColunaHorarioSelecionada" style="background: green;" />
+												<h:outputText styleClass="fs10" value="Dia Livre" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" style="width:34%;float:left;" styleClass="text-center">
+												<span class="legendaColunaHorarioSelecionada" style="background: red;" />
+												<h:outputText styleClass="fs10" value="Aula Programada" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" style="width:21%;float:left;" styleClass="text-center">
+												<span class="legendaFeriado" />
+												<h:outputText styleClass="fs10" value="Feriado" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" style="width:30%;float:left;" styleClass="text-center">
+												<span class="legendaHorarioRegistroLancado" />
+												<h:outputText styleClass="fs10" value="Aula Lançada" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</rich:list>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:dashpanel>
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}">
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_RegistroAula_conteudo}" />
+							<h:inputTextarea style="height:190px" cols="50" id="conteudoRa" rows="3" styleClass="form-control camposObrigatorios" value="#{RegistroAulaControle.conteudo}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_PraticaSupervisionada}" />
+							<h:inputTextarea style="height:138px" cols="50" id="praticaSupervisionadaRa" rows="3" styleClass="form-control campos" value="#{RegistroAulaControle.praticaSupervisionada}" />
+						</h:panelGroup>
+					</h:panelGroup>
+
+				</h:panelGroup>
+
+				<h:panelGroup id="scrollDataTable" layout="block" styleClass="w-100" rendered="#{!empty RegistroAulaControle.listaRegistrosAula and !RegistroAulaControle.isMostrarListagemDeDisciplinas}">
+
+					<style>
+.rf-edt {
+	border-width: 0px !important;
+}
+
+.rf-edt-hdr {
+	background-image: none !important;
+	background-color: transparent !important;
+	border: none !important;
+}
+
+.rf-edt-hdr-c {
+	/* 	background-color: #003c7e !important; */
+	background-image: none !important;
+	border-bottom-width: 0px !important;
+	border-right-width: 0px !important;
+	border-right-style: solid !important;
+	border-right-color: #c4c0c9 !important;
+	background-position: top left !important;
+	/* 	color: #f6ebeb !important; */
+	font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;
+	font-size: 14px !important;
+	text-align: center;
+	/* 	min-width: 130px !important; */
+}
+
+.rf-edt-tbl {
+	width: 460px !important;
+}
+
+.rf-edt-c {
+	border-bottom-width: 1px !important;
+	border-right-width: 0px !important;
+	height: 45px !important;
+	padding: 5px !important;
+	/* 	vertical-align: middle !important; */
+	/* 	text-align: center !important; */
+	/* 	font: 600 13px 'Oxygen', Helvetica, Arial, sans-serif !important; */
+	/* 	color: #2a3342; */
+	/* 	min-width: 130px; */
+}
+
+.rf-edt-c-cnt {
+	/* 	color: #343a38; */
+	/* 	font-family: 'Oxygen', Helvetica, Arial, sans-serif !important; */
+	/* 	font-size: 12px !important; */
+	/* 	font-family: 'Oxygen', Helvetica, Arial, sans-serif !important; */
+	padding: 2px 0px !important;
+}
+
+/* .rf-edt-hdr-c-cnt { */
+/* 	color: #f6ebeb !important; */
+/* 	font-family: 'Oxygen', Helvetica, Arial, sans-serif !important; */
+/* 	font-size: 14px !important; */
+/* 	padding: 11px !important; */
+/* 	text-align: center !important; */
+/* } */
+.rf-edt-td-colunaMatricula {
+	width: 60px !important;
+	min-width: inherit;
+}
+
+.rf-edt-td-colunaNomeAluno {
+	width: 140px !important;
+	min-width: inherit;
+}
+
+.rf-edt-td-colunaGravarCalcular {
+	width: 60px !important;
+	min-width: inherit;
+}
+
+.rf-edt-c-colunaNomeAluno {
+	width: 200px !important;
+	vertical-align: baseline !important;
+	min-width: 200px !important;
+}
+
+.rf-edt-c-colunaGravarCalcular {
+	width: 60px !important;
+	vertical-align: baseline !important;
+	min-width: inherit;
+}
+
+.rf-edt-c-colunaMatricula {
+	width: 180px !important;
+	min-width: 180px !important;
+	vertical-align: baseline !important;
+}
+
+.rf-edt-c-colunaSituacao {
+	width: 180px !important;
+	min-width: 180px !important;
+	vertical-align: baseline !important;
+	text-align: center;
+}
+
+.rf-edt-c-colunaFrequenciaPratica {
+	width: 115px !important;
+	min-width: 115px !important;
+	text-align: center;
+}
+
+.rf-edt-c-colunaFrequencia {
+	width: 120px !important;
+	min-width: 120px !important;
+	text-align: center;
+}
+
+.linhaLancamentoNota {
+	height: 40px !important;
+}
+
+.linhaLancamentoNota:hover {
+	background-color: #edefef !important;
+}
+
+.inputTable {
+	width: 50px;
+	text-align: left;
+	margin-top: -10px;
+	padding: 2px 10px !important;
+}
+
+.rf-edt-c-colunaOpcoes {
+	width: 130px !important;
+	text-align: center;
+}
+
+.rf-edt-ftr {
+	background-color: transparent !important;
+	border: none !important;
+}
+
+.rf-edt-tbl-ftr {
+	background-color: transparent !important;
+	border: none !important;
+}
+
+.wNotas {
+	min-width: 130px;
+	padding-right: 5px;
+}
+
+.panelNotas {
+	min-width: inherit;
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: inline-flex;
+	width: calc(100%);
+}
+
+.panelNotasHead {
+	min-width: inherit;
+	display: inline-flex;
+	width: calc(100%);
+	float: left;
+	overflow: auto;
+}
+
+.panelOpcoes {
+	width: 130px;
+	min-width: 130px;
+	display: block;
+	float: right;
+	text-align: center;
+}
+
+.panelOpcoesHead {
+	width: 130px;
+	min-width: 130px;
+	display: block;
+	float: right;
+	text-align: center;
+}
+
+.panelAlunoHead {
+	display: block;
+	width: calc(20%);
+	min-width: calc(20%);
+	text-align: center;
+	float: left;
+}
+
+.panelAluno {
+	display: block;
+	width: calc(100% - 80%);
+	min-width: calc(100% - 80%);
+	text-align: center;
+	float: left;
+}
+
+.panelGeralLista {
+	display: block;
+	width: calc(100%);
+	min-width: calc(100%);
+}
+
+.panelNotasOpcoes {
+	display: block;
+	width: calc(100% - 20%);
+	float: left;
+}
+
+.panelNotasOpcoesHead {
+	display: block;
+	width: calc(100% - 20%);
+	float: left;
+}
+
+.h46 {
+	height: 46px !important;
+}
+
+.hRow {
+	height: 40px !important;
+	padding: 5px 0px 5px 0px;
+}
+
+.panelNotas::-webkit-scrollbar {
+	height: 10px !important;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.panelNotasHead::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #c7c7c7 !important;
+	scrollbar-color: #c7c7c7 transparent !important;
+	height: 20px !important;
+}
+
+.panelNotas::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #c7c7c7 !important;
+	scrollbar-color: #c7c7c7 transparent !important;
+	height: 20px !important;
+}
+
+.hHead {
+	height: 112px;
+}
+
+.hRowOpcoes {
+	height: 40px !important;
+	padding: 5px 0px 5px 0px;
+}
+
+.panelAluno2 {
+	display: none;
+}
+
+.labelOpcoes {
+	display: block;
+}
+
+.labelOp {
+	display: none;
+}
+
+.labelAluno2 {
+	position: relative;
+}
+
+.rowNotas {
+	display: inline-flex !important;
+}
+
+@media ( max-width : 780px) {
+	.panelGeralLista {
+		display: block;
+	}
+	.panelAluno {
+		display: none !important;
+	}
+	.panelAluno2 {
+		display: inline-flex !important;
+		width: calc(100%) !important;
+		height: 40px !important;
+		top: 0px !important;
+		position: relative !important;
+		min-width: calc(100%) !important;
+		max-width: calc(100%) !important;
+	}
+	.panelAlunoHead {
+		display: block;
+		width: calc(100%);
+		min-width: calc(100%);
+		text-align: center;
+		float: none;
+	}
+	.panelNotasOpcoesHead {
+		width: calc(100%);
+	}
+	.panelNotasOpcoes {
+		width: calc(100%);
+	}
+	.panelOpcoes {
+		width: 40px !important;
+		min-width: 40px !important;
+	}
+	.panelOpcoesHead {
+		width: 40px !important;
+		min-width: 40px !important;
+	}
+	.panelNotasHead {
+		width: calc(100%) !important;
+		min-width: calc(100%) !important;
+	}
+	.panelNotas {
+		width: calc(100%) !important;
+		min-width: calc(100%) !important;
+	}
+	.hRowOpcoes {
+		height: 90px !important;
+	}
+	.hHead {
+		height: 186px;
+	}
+	.labelOpcoes {
+		display: none;
+	}
+	.labelOp {
+		display: block;
+		position: relative;
+		top: -7px;
+	}
+	.hRow {
+		height: 90px !important;
+	}
+}
+</style>
+					<script>
+						(function($) {
+							$(document)
+									.ready(
+											function() {
+
+												$('.panelNotas')
+														.on(
+																'scroll',
+																function() {
+																	$(
+																			'.panelNotasHead')
+																			.scrollLeft(
+																					$(
+																							this)
+																							.scrollLeft());
+																	$(
+																			'.labelAluno2')
+																			.css(
+																					"left",
+																					$(
+																							this)
+																							.scrollLeft() + 5);
+																});
+												$('.panelNotasHead')
+														.on(
+																'scroll',
+																function() {
+																	$(
+																			'.panelNotas')
+																			.scrollLeft(
+																					$(
+																							this)
+																							.scrollLeft());
+																	$(
+																			'.labelAluno2')
+																			.css(
+																					"left",
+																					$(
+																							this)
+																							.scrollLeft() + 5);
+																});
+
+											});
+
+							nextInputTable = function(id) {
+								$(id).next().focus();
+							};
+						}(jQuery));
+					</script>
+
+					<h:panelGroup id="alunos" layout="block" styleClass="w-100">
+
+
+						<h:panelGroup id="listaAlunos" layout="block" styleClass="panelGeralLista table-control">
+							<a4j:region id="tabelaNota">
+								<div class="">
+									<div class="rf-dt-thd hHead table-head">
+										<h:panelGroup styleClass="row rf-dt-hdr-c">
+											<h:outputText value="Dia Selecionado: #{RegistroAulaControle.horarioProfessorDiaVO.data_Apresentar}" styleClass="float-left font-weigth-bold" />
+											<h:panelGroup styleClass="float-right">
+												<h:outputText value="Marcar/Desmarcar Todos" />
+												<otm:selectBooleanCheckbox id="controlarMarcarDesmarcarTodos" style="display:inline-block" value="#{RegistroAulaControle.controlarMarcarDesmarcarTodos}">
+													<a4j:ajax render="form:listaAlunos" event="click" listener="#{RegistroAulaControle.marcarDesmarcarTodos}" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<div class="panelAlunoHead  rf-dt-hdr-c">
+											<h:panelGroup style="width:10%" styleClass="float-left">
+												<h:outputText value="Nº" />
+											</h:panelGroup>
+											<h:panelGroup style="width:90%" styleClass="float-left">
+												<h:outputText value="#{msg_aplic.prt_HistoricoTurma_nomeAluno}" />
+												<h:panelGroup layout="block" style="width:100%">
+													<h:inputText styleClass="form-control campos form-control-input-table" size="30" value="#{FilterFactory.filter('aluno2', 'matricula.aluno.nome', 'TEXTO').filtro}">
+														<a4j:ajax event="change" execute="@this" render="listaAlunos" />
+													</h:inputText>
+												</h:panelGroup>
+											</h:panelGroup>
+										</div>
+										<div class="panelNotasOpcoesHead ">
+											<div class="panelNotasHead">
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+													<h:outputText value="#{msg_aplic.prt_HistoricoTurma_matriculaAluno}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="15" value="#{FilterFactory.filter('matricula2', 'matricula.matricula', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="listaAlunos" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaFrequencia float-left rf-dt-hdr-c " rendered="#{RegistroAulaControle.apresentarDataMatricula}">
+													<h:outputText value="#{msg_aplic.prt_Matricula_data}" />
+												</h:panelGroup>
+												<h:panelGroup styleClass=" rf-edt-c-colunaFrequencia float-left rf-dt-hdr-c">
+													<h:outputText value="Faltas" />
+												</h:panelGroup>
+												<h:panelGroup styleClass=" rf-edt-c-colunaFrequencia float-left rf-dt-hdr-c">
+													<h:outputText value="Informações" />
+												</h:panelGroup>
+												<a4j:repeat value="#{RegistroAulaControle.listaRegistrosAula}" var="aula">
+													<h:panelGroup styleClass=" wNotas text-center float-left rf-dt-hdr-c">
+														<h:panelGroup layout="block" styleClass="w-100 text-center">
+															<h:outputText value="#{aula.horarioNrAula_Apresentar}" />
+														</h:panelGroup>
+														<h:panelGroup layout="block" styleClass="w-100 text-center">
+															<h:outputText value="#{aula.somenteHorarioAula_Apresentar}" rendered="#{!RegistroAulaControle.ocultarHorarioAulaVisaoProfessor}" />
+														</h:panelGroup>
+														<h:panelGroup layout="block" styleClass="w-100 text-center">
+															<otm:commandIcon disabled="true" icon="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-warning mr5" tooltip="Registro Aula Não Gravado" rendered="#{aula.codigo eq 0}" />
+														</h:panelGroup>
+													</h:panelGroup>
+												</a4j:repeat>
+											</div>
+										</div>
+									</div>
+									<div class="ml5">
+										<div class="panelAluno float-left">
+											<a4j:repeat value="#{RegistroAulaControle.listaRegistrosAula[0]}" var="aula">
+												<a4j:repeat value="#{aula.frequenciaAulaVOs}" rowKeyVar="row" var="frequenciaItens">
+													<h:panelGroup layout="block" rendered="#{FilterFactory.filter('aluno2', 'matricula.aluno.nome', 'TEXTO').accept(frequenciaItens)
+															and FilterFactory.filter('matricula2', 'matricula.matricula', 'TEXTO').accept(frequenciaItens)}" styleClass="border-bottom hRow w-100">
+														<h:panelGroup style="width:10%" styleClass="float-left">
+															<h:outputText value="#{row+1}" />
+														</h:panelGroup>
+														<h:panelGroup style="width:90%" styleClass="float-left">
+															<h:outputText styleClass="tituloCampos" value="#{frequenciaItens.matricula.aluno.nome}" style="white-space:nowrap;" />
+														</h:panelGroup>
+
+													</h:panelGroup>
+												</a4j:repeat>
+											</a4j:repeat>
+										</div>
+										<div class="panelNotasOpcoes float-left">
+											<div class="panelNotas">
+												<table style="width: 100%;">
+													<tbody>
+														<a4j:repeat value="#{RegistroAulaControle.listaRegistrosAula[0]}" var="aula">
+															<a4j:repeat value="#{aula.frequenciaAulaVOs}" var="frequenciaAulaItens">
+																<tr style="#{FilterFactory.filter('aluno2', 'matricula.aluno.nome', 'TEXTO').accept(frequenciaAulaItens)
+															and FilterFactory.filter('matricula2', 'matricula.matricula', 'TEXTO').accept(frequenciaAulaItens) ? 'display: inline-flex;width: 100%;' : 'display: none'}">
+																	<td style="width: 100%;" class="border-bottom hRow"><h:panelGroup layout="block" styleClass="panelAluno2">
+																			<h:outputText id="nomeAluno2" styleClass="tituloCampos labelAluno2" value="#{frequenciaAulaItens.matricula.aluno.nome}" style="text-align:center" />
+																		</h:panelGroup> <h:panelGroup layout="block" id="linhaNotaFreq" styleClass="rowNotas">
+																			<h:panelGroup styleClass="rf-edt-c-colunaMatricula  float-left ">
+																				<h:outputText id="matriculaAluno" styleClass="tituloCampos" value="#{frequenciaAulaItens.matricula.matricula}" />
+																			</h:panelGroup>
+																			<h:panelGroup styleClass="rf-edt-c-colunaFrequencia float-left  " rendered="#{RegistroAulaControle.apresentarDataMatricula}">
+																				<h:outputText value="#{frequenciaAulaItens.matriculaPeriodoTurmaDisciplinaVO.matriculaPeriodoObjetoVO.data_Apresentar}" styleClass="tituloCampos" />
+																			</h:panelGroup>
+																			<h:panelGroup styleClass="rf-edt-c-colunaFrequencia float-left  ">
+																				<otm:commandIcon render="formFaltas" oncomplete="#{rich:component('panelFaltas')}.show()" action="#{RegistroAulaControle.consultarFaltasAluno}" tooltip="Visualizar Faltas do Aluno" icon="far fa-calendar-times text-info" styleIcon="font-size:16px" />
+																			</h:panelGroup>
+																			<h:panelGroup styleClass=" rf-edt-c-colunaFrequencia  float-left ">
+																				<h:outputText styleClass="tituloCampos" value="Abonado" rendered="#{frequenciaAulaItens.abonado}" />
+																				<h:outputText styleClass="tituloCampos" value="Justificado" rendered="#{frequenciaAulaItens.justificado}" />
+																				<otm:commandIcon icon="fas fa-user-md ml5" styleIcon="font-size:16px" disabled="true" tooltip="#{!empty frequenciaAulaItens.disciplinaAbonoVO.descricaoMotivoAbonoJustificativa ? frequenciaAulaItens.disciplinaAbonoVO.descricaoMotivoAbonoJustificativa : frequenciaAulaItens.mensagemAbonoFalta}" rendered="#{(frequenciaAulaItens.desabilitarCampoFrequenciaAbonoFalta and frequenciaAulaItens.novoObj)}" />
+																				<otm:commandIcon id="removerAbono" styleIcon="font-size:16px" render="form, form:dtGeralRegistroAula" tooltip="Remover o abono do aluno nesta frequencia" action="#{RegistroAulaNotaControle.removerAbonoFrequenciaAula}" rendered="#{(frequenciaAulaItens.desabilitarCampoFrequenciaAbonoFalta and (!frequenciaAulaItens.novoObj))}" icon="#{msg_botoes.btn_icon_remover_embutido} text-danger ml5" />
+																				<otm:commandIcon styleIcon="font-size:16px" url="fas fa-history text-warning ml5" disabled="true" tooltip="#{frequenciaAulaItens.mensagemBloqueadoDevidoDataMatricula}" rendered="#{frequenciaAulaItens.bloqueadoDevidoDataMatricula and frequenciaAulaItens.novoObj}" />
+																				<otm:commandIcon styleIcon="font-size:16px" icon="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-warning ml5" tooltip="#{frequenciaAulaItens.historicoVO.situacaoMatriculaOuSituacaoFinanceiraMatriculaPeriodo}" readonly="true" disabled="true" rendered="#{frequenciaAulaItens.historicoVO.isProfessorNaoPodeAlterarRegistro}" />
+																			</h:panelGroup>
+																			<a4j:repeat value="#{RegistroAulaControle.listaRegistrosAula}" var="aulas">
+																				<a4j:repeat value="#{aulas.frequenciaAulaVOs}" var="frequenciaItem">
+																					<h:panelGroup rendered="#{frequenciaAulaItens.matriculaPeriodoTurmaDisciplina eq frequenciaItem.matriculaPeriodoTurmaDisciplina}" styleClass=" wNotas text-center float-left">
+																						<otm:selectBooleanCheckbox id="freq" style="display: inline-block;" value="#{frequenciaItem.presente}" disabled="#{frequenciaItem.historicoVO.isProfessorNaoPodeAlterarRegistro}" rendered="#{!frequenciaItem.desabilitarCampoFrequenciaAbonoFalta}">
+																						</otm:selectBooleanCheckbox>
+																						<otm:commandIcon icon="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-warning ml5" tooltip="Frequência Não Gravada" rendered="#{frequenciaItem.novoObj and aula.codigo > 0 and !frequenciaItem.bloqueadoDevidoDataMatricula}" />
+																					</h:panelGroup>
+																				</a4j:repeat>
+																			</a4j:repeat>
+																		</h:panelGroup></td>
+																</tr>
+															</a4j:repeat>
+														</a4j:repeat>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+							</a4j:region>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="raMsg" layout="block" styleClass="row">
+					<otm:mensagem bean="#{RegistroAulaControle}" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+
+</ui:define>
+<ui:define name="modal">
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCalendarioRegistroAula" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Calendário Registro de Aula"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkcalendarioLancamentoNotaVO" />
+					<rich:componentControl target="panelCalendarioRegistroAula" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCalendarioRegistroAula">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataJaneiro}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataJaneiro}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataFevereiro}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataFevereiro}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataMarco}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataMarco}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataAbril}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataAbril}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataMaio}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataMaio}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataJunho}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataJunho}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataJulho}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataJulho}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataAgosto}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataAgosto}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataSetembro}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataSetembro}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataOutubro}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataOutubro}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataNovembro}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataNovembro}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioRegistroAula_dataDezembro}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="10" value="#{RegistroAulaControle.calendarioRegistroAula.dataDezembro}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelPlanoDisciplina" autosized="false" shadowOpacity="true" width="950" height="650">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Plano Ensino"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPlanoEnsino" />
+					<rich:componentControl target="panelPlanoDisciplina" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPlanoDisciplina">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_descricao}" />
+							<h:inputText id="descricao" readonly="true" size="60" styleClass="form-control camposSomenteLeitura" value="#{RegistroAulaControle.planoEnsinoVO.descricao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_curso}" />
+							<h:inputText readonly="true" id="nomeCurso" size="60" styleClass="form-control camposSomenteLeitura" value="#{RegistroAulaControle.planoEnsinoVO.curso.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turma_turno}" />
+							<h:inputText readonly="true" id="nomeTurno" size="60" styleClass="form-control camposSomenteLeitura" value="#{RegistroAulaControle.planoEnsinoVO.turno.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_disciplina}" />
+							<h:inputText readonly="true" id="nomeDisciplina" size="60" styleClass="form-control camposSomenteLeitura" value="#{RegistroAulaControle.planoEnsinoVO.disciplina.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_ano}" />
+								<h:inputText size="4" maxlength="4" onkeyup="somenteNumero(e);" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{RegistroAulaControle.planoEnsinoVO.ano}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText rendered="#{!RegistroAulaControle.planoEnsinoVO.curso.anual}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_semestre}" />
+								<h:inputText rendered="#{!RegistroAulaControle.planoEnsinoVO.curso.anual}" id="semestre" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{RegistroAulaControle.planoEnsinoVO.semestre}" size="4" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<rich:tabPanel activeTabClass="true" disabledTabClass="aba2" inactiveTabClass="aba2" tabClass="aba" switchType="client" style="background-color: transparent;">
+						<rich:tab switchType="client" header="Conteúdo Plano de Ensino" rendered="#{RegistroAulaControle.planoEnsinoVO.questionarioRespostaOrigemVO.questionarioVO.codigo ne 0}" >
+							<otm2:questionarioResposta bean="#{RegistroAulaControle}" rendered="true" renderedPrefixo="false" disabled="false" objetoOrigem="#{RegistroAulaControle.planoEnsinoVO.questionarioRespostaOrigemVO}" />
+						</rich:tab>
+						<rich:tab style="background-color: transparent;" rendered="#{RegistroAulaControle.planoEnsinoVO.questionarioRespostaOrigemVO.questionarioVO.codigo eq 0}" header="Plano de Ensino">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_ementa}" />
+									<h:inputTextarea id="ementa" rows="3" cols="40" styleClass="form-control camposSomenteLeituraTextArea" value="#{RegistroAulaControle.planoEnsinoVO.ementa}" readonly="true" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_objetivoGeral}" />
+									<h:inputTextarea id="objetivoGeral" rows="3" cols="40" styleClass="form-control camposSomenteLeituraTextArea" value="#{RegistroAulaControle.planoEnsinoVO.objetivoGeral}" readonly="true" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_objetivoEspecifico}" />
+									<h:inputTextarea id="objetivoEspecifico" rows="3" cols="40" styleClass="form-control camposSomenteLeituraTextArea" value="#{RegistroAulaControle.planoEnsinoVO.objetivoEspecifico}" readonly="true" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_perfilEgresso}" />
+									<h:inputTextarea id="habilidadeCompetencia" rows="3" cols="40" styleClass="form-control camposSomenteLeituraTextArea" value="#{RegistroAulaControle.planoEnsinoVO.perfilEgresso}" readonly="true" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_estrategiaAvaliacao}" />
+									<h:inputTextarea id="estrategiaAvaliacao" rows="3" cols="40" styleClass="form-control camposSomenteLeituraTextArea" value="#{RegistroAulaControle.planoEnsinoVO.estrategiaAvaliacao}" readonly="true" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_procedimentoDidatico}" />
+									<h:inputTextarea id="procedimentoDidatico" rows="3" cols="40" styleClass="form-control camposSomenteLeituraTextArea" value="#{RegistroAulaControle.planoEnsinoVO.procedimentoDidatico}" readonly="true" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+
+						<rich:tab style="background-color: transparent;" rendered="#{RegistroAulaControle.planoEnsinoVO.questionarioRespostaOrigemVO.questionarioVO.codigo eq 0}" header="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_tituloForm}">
+							<h:panelGroup layout="block" styleClass="row">
+
+								<rich:dataTable id="dtConteudoPlanejamento" width="100%" headerClass="consultar" style="background-color: transparent;" value="#{RegistroAulaControle.planoEnsinoVO.conteudoPlanejamentoVOs}" var="planejamento" rowKeyVar="row">
+									<rich:column style="background-color: transparent;">
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_DisciplinaPlanejamento}" />
+										</f:facet>
+										<h:inputTextarea cols="40" styleClass="form-control camposSomenteLeitura" tabindex="250" rows="3" readonly="true" value="#{planejamento.conteudo}" />
+									</rich:column>
+									<rich:column style="background-color: transparent;">
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_PraticaSupervisionada}" />
+										</f:facet>
+										<h:inputTextarea cols="40" styleClass="form-control camposSomenteLeitura" tabindex="250" rows="3" readonly="true" value="#{planejamento.praticaSupervisionada}" />
+									</rich:column>
+									<rich:column style="background-color: transparent; text-align:center !important;">
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_DisciplinaPlanejamento_CargaHoraria}" />
+										</f:facet>
+										<h:outputText value="#{planejamento.cargahoraria}" />
+									</rich:column>
+									<rich:column style="background-color: transparent; text-align:center !important;">
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_Classificacao}" />
+										</f:facet>
+										<h:outputText value="#{planejamento.classificacao_Apresentar}" />
+									</rich:column>
+									<rich:column style="background-color: transparent; text-align:center !important;">
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_LancamentoNota_opcoes}" />
+										</f:facet>
+										<otm:commandIcon action="#{RegistroAulaControle.selecionarConteudoPlanoEnsino}" render="form" oncomplete="#{rich:component('panelPlanoDisciplina')}.hide()" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar} " />
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+						</rich:tab>
+
+						<rich:tab style="background-color: transparent;" header="#{msg_aplic.prt_Disciplina_tabReferenciaBibliografica}">
+							<h:panelGroup layout="block" styleClass="row">
+								<rich:dataTable id="referenciaBibliograficaVO" rows="20" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{RegistroAulaControle.planoEnsinoVO.referenciaBibliograficaVOs}" var="referenciaBibliograficaItens">
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_ReferenciaBibliografica_titulo}" />
+										</f:facet>
+										<h:outputText rendered="#{referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.catalogo.titulo}" />
+										<h:outputText rendered="#{!referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.titulo}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_ReferenciaBibliografica_autores}" />
+										</f:facet>
+										<h:outputText rendered="#{referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.catalogo.apresentarListaConcatenadaAutores}" />
+										<h:outputText rendered="#{!referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.autores}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_ReferenciaBibliografica_anoPublicacao}" />
+										</f:facet>
+										<h:outputText rendered="#{referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.catalogo.anoPublicacao}" />
+										<h:outputText rendered="#{!referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.anoPublicacao}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_ReferenciaBibliografica_edicao}" />
+										</f:facet>
+										<h:outputText rendered="#{referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.catalogo.edicao}" />
+										<h:outputText rendered="#{!referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.edicao}" />
+									</rich:column>
+									<f:facet name="footer">
+										<div style="text-align: center !important">
+											<rich:dataScroller stepControls="auto" fastControls="hide" boundaryControls="auto" for="referenciaBibliograficaVO" />
+										</div>
+									</f:facet>
+								</rich:dataTable>
+							</h:panelGroup>
+						</rich:tab>
+
+						<rich:tab rendered="#{!empty RegistroAulaControle.planoEnsinoVO.planoEnsinoHorarioAulaVOs}" header="#{msg_aplic.prt_PlanoEnsinoHorarioAula_tituloForm}">
+
+							<rich:dataTable style="width:100%" id="itensHorario" headerClass="consulta" rows="10" rowKeyVar="row" value="#{RegistroAulaControle.planoEnsinoVO.planoEnsinoHorarioAulaVOs}" var="planoEnsinoHorarioAulaItem">
+								<rich:column style="text-align:center !important">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_PlanoEnsinoHorarioAula_diaSemana}"></h:outputText>
+									</f:facet>
+									<h:outputText styleClass="field control-label tituloCampos" value="#{planoEnsinoHorarioAulaItem.diaSemana.descricao}" />
+								</rich:column>
+								<rich:column style="text-align:center !important">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_PlanoEnsinoHorarioAula_inicioAula}"></h:outputText>
+									</f:facet>
+									<h:outputText styleClass="field control-label tituloCampos" value="#{planoEnsinoHorarioAulaItem.inicioAula}"></h:outputText>
+								</rich:column>
+								<rich:column style="text-align:center !important">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_PlanoEnsinoHorarioAula_terminoAula}"></h:outputText>
+									</f:facet>
+									<h:outputText styleClass="field control-label tituloCampos" value="#{planoEnsinoHorarioAulaItem.terminoAula}"></h:outputText>
+								</rich:column>
+								<rich:column style="text-align:center !important">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_PlanoEnsinoHorarioAula_turma}"></h:outputText>
+									</f:facet>
+									<h:panelGroup>
+										<h:outputText styleClass="field control-label tituloCampos" value="#{planoEnsinoHorarioAulaItem.turmaVO.identificadorTurma}" />
+
+									</h:panelGroup>
+								</rich:column>
+								<f:facet name="footer">
+									<div style="text-align: center !important">
+										<rich:dataScroller stepControls="auto" fastControls="hide" boundaryControls="auto" for="itensHorario" />
+									</div>
+								</f:facet>
+							</rich:dataTable>
+
+						</rich:tab>
+					</rich:tabPanel>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<otm:commandButton id="imprimirPDF2" render="formImpressao" oncomplete="#{RegistroAulaControle.download}" action="#{RegistroAulaControle.inicializarPlanoEnsino}" value="Gerar Relatório (PDF)" accesskey="2" image="#{resource['imagens/botaoGerarRelatorioEmPDF.png']}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAvisoMensagemFeriadoFinalSemana" autosized="true" shadowOpacity="true" maxWidth="500" show="#{RegistroAulaControle.bloquearLancamentosNotasAulasFeriadosFinaisSemana}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Aviso"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelAvisoMensagemFeriadoFinalSemana" />
+					<rich:componentControl target="panelAvisoMensagemFeriadoFinalSemana" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAvisoMensagemFeriadoFinalSemana">
+				<h:panelGroup columns="2">
+					<h:panelGroup styleClass="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-warning fs20" />
+					<h:outputText value="#{msg_aplic.prt_RegistrarAulaNota_bloquearLancamentosNotasAulasFeriadosFinaisSemana}" styleClass="tituloCamposAviso" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelReprovarPeriodoLetivo" autosized="false" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_LancamentoNota_avisoReprovarAlunoPeriodoLetivo}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formReprovarPeriodoLetivo">
+				<h:panelGroup layout="block" styleClass="row mt10 mb10">
+					<h:panelGroup styleClass="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-warning fs20" />
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_LancamentoNota_avisoReprovarAlunoPeriodoLetivo}" />
+				</h:panelGroup>
+				<rich:dataTable rows="10" headerClass="consulta" id="mpRepLetivoVOs" value="#{RegistroAulaControle.matriculaPeriodoVOs}" var="matriculaPeriodoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_matricula}"></h:outputText>
+						</f:facet>
+						<h:outputText value="#{matriculaPeriodoItens.matriculaVO.matricula}"></h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Aluno"></h:outputText>
+						</f:facet>
+						<h:outputText value="#{matriculaPeriodoItens.matriculaVO.aluno.nome}"></h:outputText>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formReprovarPeriodoLetivo:mpRepLetivoVOs" maxPages="10" id="scmpRepLetivoVOs" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" style="width:100%;text-align:center;padding:10px">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_LancamentoNota_avisoReprovarAlunoPeriodoLetivo_confirmacao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton render="form" oncomplete="#{rich:component('panelReprovarPeriodoLetivo')}.hide();" action="#{RegistroAulaControle.realizarReprovacaoPeriodoLetivo}" value="#{msg_botoes.btn_sim}" styleClass="btn btn-dark btn-sim" title="#{msg_botoes.btn_sim}" />
+					<otm:commandButton style="margin-left:10px" oncomplete="#{rich:component('panelReprovarPeriodoLetivo')}.hide();" action="#{RegistroAulaControle.setOncompleteModal('')}"  value="#{msg_botoes.btn_nao}" styleClass="btn btn-danger btn-nao" title="#{msg_botoes.btn_nao}">
+						
+					</otm:commandButton>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFaltas" top="5px" autosized="false" shadowOpacity="true" width="1000" height="600">
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkfalta" />
+					<rich:componentControl target="panelFaltas" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Faltas Do Aluno"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFaltas">
+				<h:panelGroup layout="block" style="width:100%; text-align:left; padding-bottom">
+					<h:outputText styleClass="field control-label tituloCampos" value="Aluno" />
+					<h:inputText style="margin-left:10px; width:88%" styleClass="form-control camposSomenteLeitura" value="#{RegistroAulaControle.matriculaVO.matricula} - #{RegistroAulaControle.matriculaVO.aluno.nome}" readonly="true"></h:inputText>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="row mt10">
+					<h:outputText rendered="#{empty RegistroAulaControle.listaDetalhesMinhasFaltasVOs}" styleClass="tituloCamposNegrito" value="Registro de Faltas Não Localizadas." />
+					<rich:dataTable id="mihasFaltasDetalhadas" rendered="#{!empty RegistroAulaControle.listaDetalhesMinhasFaltasVOs}" width="100%" columnClasses="colunaCentralizada" headerClass="consulta" rowClasses="linhaImpar, linhaPar" value="#{RegistroAulaControle.listaDetalhesMinhasFaltasVOs}" var="faltasItens">
+						<rich:column filterType="custom" filter="#{FilterFactory.filter('registroAulaVOTurma', 'turma.identificadorTurma', 'TEXTO')}">
+							<f:facet name="header">
+								<h:outputText value="Turma" />
+								<h:inputText style="width:92%; height:17px" styleClass="form-control campos form-control-input-table" size="20" value="#{FilterFactory.filter('registroAulaVOTurma', 'turma.identificadorTurma', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="mihasFaltasDetalhadas" />
+								</h:inputText>
+							</f:facet>
+							<h:outputText value="#{faltasItens.turma.identificadorTurma}">
+
+							</h:outputText>
+						</rich:column>
+						<rich:column filterType="custom" filter="#{FilterFactory.filter('registroAulaVODisciplina', 'disciplina.nome', 'TEXTO')}">
+							<f:facet name="header">
+								<h:outputText value="Disciplina" />
+								<h:inputText style="width:92%; height:17px" styleClass="form-control campos form-control-input-table" size="20" value="#{FilterFactory.filter('registroAulaVODisciplina', 'disciplina.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="mihasFaltasDetalhadas" />
+								</h:inputText>
+							</f:facet>
+							<h:outputText value="#{faltasItens.disciplina.nome}">
+
+							</h:outputText>
+						</rich:column>
+						<rich:column filterType="custom" filter="#{FilterFactory.filter('registroAulaVOProfessor', 'professor.nome', 'TEXTO')}">
+							<f:facet name="header">
+								<h:outputText value="Professor" />
+								<h:inputText style="width:92%; height:17px" styleClass="form-control campos form-control-input-table" size="20" value="#{FilterFactory.filter('registroAulaVOProfessor', 'professor.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="mihasFaltasDetalhadas" />
+								</h:inputText>
+							</f:facet>
+							<h:outputText value="#{faltasItens.professor.nome}">
+
+							</h:outputText>
+						</rich:column>
+						<rich:column filterType="custom" filter="#{FilterFactory.filter('registroAulaVOData', 'data_Apresentar', 'TEXTO')}">
+							<f:facet name="header">
+								<h:outputText value="Data" />
+								<h:inputText style="width:92%; height:17px" styleClass="form-control campos form-control-input-table" size="20" value="#{FilterFactory.filter('registroAulaVOData', 'data_Apresentar', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="mihasFaltasDetalhadas" />
+								</h:inputText>
+							</f:facet>
+							<h:outputText value="#{faltasItens.data}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Horário" />
+							</f:facet>
+							<h:outputText value="#{faltasItens.horario}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Dia da Semana" />
+							</f:facet>
+							<h:outputText value="#{faltasItens.diaSemana_Apresentar}">
+							</h:outputText>
+						</rich:column>
+
+					</rich:dataTable>
+				</h:panelGroup>
+
+			</h:form>
+		</rich:popupPanel>
+
+	</ui:define>
+</ui:composition>
+</html>

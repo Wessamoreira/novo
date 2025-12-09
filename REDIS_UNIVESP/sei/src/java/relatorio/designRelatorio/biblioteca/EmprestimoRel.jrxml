@@ -1,0 +1,815 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ChequesRel" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" uuid="a5b3ea0f-b3d0-4c8c-ac55-b67cc176cfa1">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.10000000000003"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="logoPadraoRelatorio" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="tituloRelatorio" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="nomeEmpresa" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="versaoSoftware" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="nomeUsuario" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="filtros" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="dataEmissao" class="java.lang.String"/>
+	<parameter name="dataPrevisao" class="java.lang.String"/>
+	<parameter name="tipoCheque" class="java.lang.String"/>
+	<parameter name="situacao" class="java.lang.String"/>
+	<parameter name="ordenarPor" class="java.lang.String"/>
+	<parameter name="tipoCatalogo" class="java.lang.String"/>
+	<parameter name="apresentarMotivoIsensao" class="java.lang.Boolean"/>
+	<queryString>
+		<![CDATA[SELECT
+     matricula."matricula" AS matricula_matricula,
+     matricula."aluno" AS matricula_aluno,
+     matriculaperiodoturmadisciplina."turma" AS matriculaperiodoturmadisciplina_turma,
+     matricula."curso" AS matricula_curso,
+     pessoa."nome" AS pessoa_nome
+FROM
+     "public"."matricula" matricula INNER JOIN "public"."matriculaperiodo" matriculaperiodo ON matricula."matricula" = matriculaperiodo."matricula"
+     INNER JOIN "public"."matriculaperiodoturmadisciplina" matriculaperiodoturmadisciplina ON matricula."matricula" = matriculaperiodoturmadisciplina."matricula"
+     AND matriculaperiodo."codigo" = matriculaperiodoturmadisciplina."matriculaperiodo"
+     INNER JOIN "public"."matriculaperiodo" matriculaperiodo_A ON matriculaperiodoturmadisciplina."matriculaperiodo" = matriculaperiodo_A."codigo"
+     AND matricula."matricula" = matriculaperiodo_A."matricula"
+     INNER JOIN "public"."pessoa" pessoa ON matricula."aluno" = pessoa."codigo"
+WHERE
+     pessoa.aluno = true]]>
+	</queryString>
+	<field name="unidadeEnsino" class="java.lang.String"/>
+	<field name="situacao" class="java.lang.String"/>
+	<field name="tipoPessoa" class="java.lang.String"/>
+	<field name="biblioteca" class="java.lang.String"/>
+	<field name="dataInicial" class="java.util.Date"/>
+	<field name="dataFinal" class="java.util.Date"/>
+	<field name="codigoCatalogo" class="java.lang.Integer"/>
+	<field name="catalogo" class="java.lang.String"/>
+	<field name="exemplar" class="java.lang.String"/>
+	<field name="pessoaEmprestimo" class="java.lang.String"/>
+	<field name="tipoEmprestimo" class="java.lang.String"/>
+	<field name="situacaoEmprestimo" class="java.lang.String"/>
+	<field name="dataEmprestimo" class="java.lang.String"/>
+	<field name="dataPrevDevolucao" class="java.lang.String"/>
+	<field name="responsavelEmprestimo" class="java.lang.String"/>
+	<field name="diasAtraso" class="java.lang.Integer"/>
+	<field name="valorMulta" class="java.lang.Double"/>
+	<field name="totalMultaEmprestimo" class="java.lang.Double"/>
+	<field name="isPossuiMulta" class="java.lang.Boolean"/>
+	<field name="multaPaga" class="java.lang.Boolean"/>
+	<field name="dataDevolucao" class="java.lang.String"/>
+	<field name="multaIsenta" class="java.lang.Boolean"/>
+	<field name="situacaoEmprestimo_Apresentar" class="java.lang.String"/>
+	<field name="valorMultaIsenta" class="java.lang.Double"/>
+	<field name="tipoItemEmprestimo" class="java.lang.String"/>
+	<field name="motivoIsencao" class="java.lang.String"/>
+	<variable name="countEmprestimos" class="java.lang.Integer" resetType="Group" resetGroup="catalogo" calculation="Count">
+		<variableExpression><![CDATA[$F{catalogo}]]></variableExpression>
+	</variable>
+	<variable name="countTotalEmprestimos" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{catalogo}]]></variableExpression>
+	</variable>
+	<variable name="countAndamentoAtrasado" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[($F{situacaoEmprestimo}.equals("EX") && $F{diasAtraso} > 0) ? $F{situacao} : null]]></variableExpression>
+	</variable>
+	<variable name="countAndamentoEmdia" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[($F{situacaoEmprestimo}.equals("EX") && $F{diasAtraso} <= 0) ? $F{situacao} : null]]></variableExpression>
+	</variable>
+	<variable name="countFinalizadoEmdia" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[($F{situacaoEmprestimo}.equals("DE") && $F{diasAtraso} <= 0) ? $F{situacao} : null]]></variableExpression>
+	</variable>
+	<variable name="somaMultaRecebida" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{isPossuiMulta} && $F{multaPaga} && !$F{multaIsenta} ? $F{valorMulta} : 0.0]]></variableExpression>
+	</variable>
+	<variable name="somaTotalMultas" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{isPossuiMulta} ? $F{multaIsenta} ? $F{valorMultaIsenta} : $F{valorMulta} : 0.0]]></variableExpression>
+	</variable>
+	<variable name="somaMultaAReceber" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{isPossuiMulta} && !$F{multaPaga} && !$F{multaIsenta} ? $F{valorMulta} : 0.0]]></variableExpression>
+	</variable>
+	<variable name="somaMultaIsento" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{isPossuiMulta} && $F{multaIsenta} ? $F{valorMultaIsenta} : 0.0]]></variableExpression>
+	</variable>
+	<variable name="countFinalizadoAtrasado" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[($F{situacaoEmprestimo}.equals("DE") && $F{diasAtraso} > 0) ? $F{situacao} : null]]></variableExpression>
+	</variable>
+	<group name="catalogo">
+		<groupExpression><![CDATA[$P{ordenarPor}.equals("catalogo")? $F{catalogo}+$F{codigoCatalogo} :
+$P{ordenarPor}.equals("tombo")? $F{exemplar} :
+$P{ordenarPor}.equals("dataEmprestimo")? $F{dataEmprestimo} :
+$P{ordenarPor}.equals("dataPrevisao") || $P{ordenarPor}.equals("dataDevolucao") ? $F{dataPrevDevolucao} :
+$P{ordenarPor}.equals("pessoa")? $F{pessoaEmprestimo} : $F{catalogo}+$F{codigoCatalogo}]]></groupExpression>
+		<groupFooter>
+			<band height="19">
+				<rectangle radius="5">
+					<reportElement key="rectangle-4" mode="Opaque" x="0" y="2" width="786" height="14" forecolor="#333333" backcolor="#D6D8DB" uuid="bea22052-128d-43e0-84b3-f21e96da1108"/>
+				</rectangle>
+				<staticText>
+					<reportElement x="3" y="3" width="102" height="12" uuid="b2d15a7b-8a96-4b9a-93ce-3edacf0b5e0b"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Quantidade Empréstimo:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="109" y="3" width="115" height="12" uuid="33090ea3-09c0-4890-91ad-ed767ea71111"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{countEmprestimos}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="133" splitType="Stretch">
+			<rectangle radius="5">
+				<reportElement key="rectangle-4" mode="Opaque" x="0" y="7" width="786" height="62" forecolor="#333333" uuid="f876de55-3261-488b-bf7f-7d7a088c8459"/>
+			</rectangle>
+			<image>
+				<reportElement key="image-1" x="6" y="15" width="98" height="45" uuid="f08a4b40-709f-46b1-aab4-810c4a3c445c"/>
+				<imageExpression><![CDATA[$P{logoPadraoRelatorio}]]></imageExpression>
+			</image>
+			<textField pattern="dd/MM/yyyy HH.mm.ss" isBlankWhenNull="false">
+				<reportElement key="dataRel-1" mode="Opaque" x="693" y="20" width="87" height="19" backcolor="#FFFFFF" uuid="f01da91b-683b-49af-8dfe-4721b71b75d5"/>
+				<box bottomPadding="2">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isItalic="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-28" x="104" y="28" width="589" height="19" uuid="afd5acc8-374b-4cf8-8dd6-c02f0a199e56"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="15" isBold="false" pdfFontName="Helvetica"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{tituloRelatorio}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-30" x="693" y="39" width="60" height="17" uuid="d60a4a2e-0c3c-485b-989e-7c16977945c9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Pág: " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement key="textField-31" x="753" y="39" width="32" height="17" uuid="416b7a75-599f-4eea-8d31-1ee56ec94144"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<rectangle radius="5">
+				<reportElement key="rectangle-4" mode="Opaque" x="0" y="73" width="786" height="40" forecolor="#333333" backcolor="#D6D8DB" uuid="4ddb6d8d-7e62-454b-9b74-55c539d9d19d"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-44" x="6" y="76" width="80" height="14" uuid="4a691185-6a5e-4674-98d2-6082308011f1"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#666666"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Unidade de Ensino:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-44" x="575" y="76" width="43" height="14" uuid="c1e5f3d7-3e34-4958-84e1-d65377d0779f"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#666666"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Período:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-44" x="6" y="90" width="44" height="14" uuid="8fa43f01-e02b-4ddc-9264-6b8f85322fad"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#666666"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Biblioteca]]></text>
+			</staticText>
+			<rectangle radius="5">
+				<reportElement key="rectangle-4" mode="Opaque" x="0" y="117" width="786" height="14" forecolor="#333333" uuid="69801604-563f-485c-9c4e-66e0a0fd9da7"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-44" x="320" y="76" width="41" height="14" uuid="c9ae5d81-fb60-42ac-ad0e-b2e2bb2f8b87"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#666666"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Situação:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="3" y="117" width="119" height="14" uuid="235a68cf-222f-4183-9dda-2cba4fae5c87"/>
+				<box rightPadding="3"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Catálogo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="122" y="117" width="48" height="14" uuid="e38b70d1-cb25-4516-8bcd-2c621a0fbd3c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tombo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="170" y="117" width="128" height="14" uuid="009e73b9-787f-4f75-a585-d6313b7cfe53"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Pessoa Empréstimo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="298" y="117" width="55" height="14" uuid="9f7d1633-90ef-4513-821c-9c33a38b70aa"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tipo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="353" y="117" width="52" height="14" uuid="9d4a8150-267c-49cc-b7bc-de47e5aafb6f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Situação]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="395" y="117" width="66" height="14" uuid="0cce75bc-ee24-4cb2-958f-b86eb4a820d0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Dt.Emprest.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="586" y="117" width="82" height="14" uuid="00b913ff-b216-47df-9bc6-492c10cccfea"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Atendente]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="461" y="117" width="61" height="14" uuid="cffdf746-b345-4b5e-b566-0109da7c5dbc"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Dt Prev. Dev.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-44" x="320" y="90" width="56" height="14" uuid="86bce1b4-2853-4b6e-a8fa-dca5707789fa"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#666666"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tipo Pessoa:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="668" y="117" width="40" height="14" uuid="e8380eb6-ca3c-45c3-8226-be1246aa3b77"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Dias Atrs.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="709" y="117" width="35" height="14" uuid="42876e99-6c3d-4493-b760-51c9edb96b85"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Multa R$]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="744" y="117" width="42" height="14" uuid="d865e44b-7319-462f-b980-a47300fc4474"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Multa Pg.]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="86" y="76" width="195" height="14" uuid="2cf2020c-5c5e-412d-8cbe-99b409bf502b"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{unidadeEnsino}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="50" y="90" width="231" height="14" uuid="f3381783-c846-4508-82ce-386caff224a6"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{biblioteca}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="361" y="76" width="179" height="14" uuid="a560967e-aefe-4269-8dde-e5a6e5724a20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{situacao}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="376" y="90" width="165" height="14" uuid="775262b6-4985-4e73-9b42-2c44c9ffa51f"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tipoPessoa}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="618" y="76" width="66" height="14" uuid="62e4091d-2f56-4582-aa88-c1d216a7d86d"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dataInicial}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="701" y="76" width="61" height="14" uuid="d2faa813-4901-4e16-b014-107bc0a81c50"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dataFinal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="684" y="76" width="17" height="14" uuid="b633c44b-8dcf-4100-b431-d574a071fc4f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[a]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-44" x="575" y="90" width="58" height="14" uuid="76cf3687-b7d9-48de-ada8-0b206497cb91"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#666666"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Tipo Catálogo:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="633" y="90" width="129" height="14" uuid="8ea381c8-ebe0-4e71-b524-156d0df00bf6"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{tipoCatalogo}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-61" x="522" y="117" width="62" height="14" uuid="41f43f13-9808-4981-82f7-33d710a89176"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Dt. Dev.]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="36" splitType="Prevent">
+			<textField>
+				<reportElement x="3" y="0" width="119" height="23" uuid="d6e1ee7e-82ce-4f72-96d1-eaa2c3a90325"/>
+				<box rightPadding="3"/>
+				<textElement verticalAlignment="Middle" markup="html">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{catalogo}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="122" y="0" width="48" height="23" uuid="cd05d0ae-7b34-495a-b9da-09a2c977900f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{exemplar}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="170" y="0" width="128" height="23" uuid="90a0212b-3985-4e2f-9798-8693da08ed22"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pessoaEmprestimo}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="298" y="0" width="55" height="23" uuid="3138882c-f8a9-45ac-b15e-0978efe25b67"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tipoEmprestimo}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="353" y="0" width="52" height="23" uuid="ccbbe616-e24a-4213-8447-fe3f56c49884"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{situacaoEmprestimo_Apresentar}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="">
+				<reportElement x="395" y="0" width="66" height="23" uuid="c149cb25-b576-497f-bff1-f715527f6756"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dataEmprestimo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="">
+				<reportElement x="461" y="0" width="61" height="23" uuid="ba795688-ad6c-4231-9bd1-557e7ae6aa9e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dataPrevDevolucao}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="586" y="0" width="82" height="23" uuid="3cfbe84d-51c5-4113-90cd-ed30961c5265"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{responsavelEmprestimo}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="668" y="0" width="40" height="23" uuid="d66875cf-800c-4165-86c6-e9ce53712289">
+					<printWhenExpression><![CDATA[$F{diasAtraso} > 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{diasAtraso}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="709" y="0" width="35" height="23" uuid="6c6b9567-8b20-49f1-aff6-015d65195b04"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{valorMulta}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="744" y="0" width="42" height="23" uuid="d2273df9-99df-412d-a9e9-53628a55ed04"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[!$F{isPossuiMulta} ? "" :
+$F{multaIsenta} ? "Isento" : $F{multaPaga} ? "Sim" : "Não"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="">
+				<reportElement x="522" y="0" width="62" height="23" uuid="ceb91e7d-2cb0-445a-8b58-3028ee7bae9b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dataDevolucao}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="3" y="23" width="782" height="10" uuid="df2db3f4-669d-4044-8670-4fa6a0645797"/>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="html">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{apresentarMotivoIsensao}.equals(true) && $F{multaIsenta}.equals(true)?"<b>Motivo Isenção:</b> "+$F{motivoIsencao} :  ""]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<summary>
+		<band height="178">
+			<rectangle radius="5">
+				<reportElement key="rectangle-4" mode="Opaque" x="277" y="17" width="245" height="130" forecolor="#333333" uuid="1ef78ed5-9c01-4504-9171-3161f294168a"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-61" x="284" y="59" width="123" height="13" backcolor="#D6D8DB" uuid="502dd83c-699c-44d5-8f3c-88efd235f6ce"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Devolvido/Em Dia]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="284" y="87" width="123" height="13" backcolor="#D6D8DB" uuid="615c014d-e30e-4d36-bbf1-a829155ff8e7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total Multa R$ Recebida]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="284" y="100" width="123" height="13" backcolor="#D6D8DB" uuid="c7b85688-04f2-4c59-9228-06a9f40d9586"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total Multa R$ A Receber]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="284" y="33" width="123" height="13" backcolor="#D6D8DB" uuid="2fbd4a00-51f7-42b4-8884-c9bc92afa4a1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Emprestado/Atrasado]]></text>
+			</staticText>
+			<line>
+				<reportElement x="407" y="17" width="1" height="130" uuid="2294f095-2e6c-41ef-9c46-bfedd26c0ab7"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="staticText-61" x="284" y="128" width="123" height="13" backcolor="#D6D8DB" uuid="70692b2a-ba61-44ec-9095-b3d9737c5e7a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total Multa R$]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="284" y="46" width="123" height="13" backcolor="#D6D8DB" uuid="509c4398-0616-4156-ad56-92162ad6029c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Emprestado/Em Dia]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="284" y="20" width="123" height="13" uuid="86be9e3e-196c-47a0-b47c-b3a6e1c80281"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Quantidade Total Empréstimo]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="413" y="21" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="bc296a47-7e3f-479b-939f-e4eb4eaab4b9"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{countTotalEmprestimos}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="413" y="33" width="100" height="13" uuid="2cdf5a92-56d2-45ad-b230-f0744b6a2ffb"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{countAndamentoAtrasado}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="413" y="46" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="e7a2852d-baf5-46fd-9799-a962e0fea0ef"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{countAndamentoEmdia}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="413" y="59" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="95e51629-4c20-4068-b418-6c0effc6fadd"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{countFinalizadoEmdia}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="413" y="87" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="a203da73-0e68-4cab-ab36-2636e233fa36"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{somaMultaRecebida}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="413" y="128" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="cfd56b44-08f8-4008-a323-dd197cc68af8"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{somaTotalMultas}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="413" y="100" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="600761e8-faea-4fee-aeec-2cf20bea914d"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{somaMultaAReceber}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="413" y="114" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="9fc51dbe-56e8-4eb5-a04e-1cb8b6b2b760"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{somaMultaIsento}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-61" x="284" y="114" width="123" height="13" backcolor="#D6D8DB" uuid="af43fbdc-d565-4ffd-8b16-6d9b8a0a61d2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total Multa R$ Isento]]></text>
+			</staticText>
+			<rectangle radius="5">
+				<reportElement key="rectangle-4" mode="Opaque" x="0" y="163" width="786" height="13" forecolor="#333333" uuid="c19ee8ab-9271-49b0-8ae3-461cb6a795b4"/>
+			</rectangle>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="2" y="163" width="403" height="13" uuid="fa1291fc-1197-425c-b708-5115dd59d1d4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Usuário: "+$P{nomeUsuario}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="405" y="163" width="373" height="13" uuid="0b236798-9950-446e-b0ad-fd9b5797d32b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{versaoSoftware}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="413" y="73" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="61284b5d-f3fd-4b0f-8417-7fa6d33f1171"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{countFinalizadoAtrasado}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-61" x="284" y="73" width="123" height="13" backcolor="#D6D8DB" uuid="2bd37884-4e8a-4f35-b8dd-1e2f7b2b654d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Devolvido/Atrasado]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

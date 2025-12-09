@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS arquivo ADD COLUMN IF NOT EXISTS arquivoispdfa boolean DEFAULT(NULL);
+ALTER TABLE IF EXISTS configuracaodiplomadigital ADD COLUMN IF NOT EXISTS validararquivocomprobatoriaispdfa boolean DEFAULT (TRUE);

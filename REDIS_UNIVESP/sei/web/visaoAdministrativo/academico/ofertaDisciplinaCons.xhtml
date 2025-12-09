@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_menu.Menu_OfertaDisciplina}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<title><h:outputText value="#{msg_menu.Menu_OfertaDisciplina} #{msg.msg_separador_titulo_paginas}#{msg.msg_titulo_paginas}" /></title>
+		<h:form id="form">
+			<h:commandLink action="#{OfertaDisciplinaControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_ano}" />
+					<h:inputText id="ano" styleClass="form-control camposObrigatorios" maxlength="4" disabled="#{!empty OfertaDisciplinaControle.ofertaDisciplinaVOs}" value="#{OfertaDisciplinaControle.ano}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_semestre}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" id="semestre" disabled="#{!empty OfertaDisciplinaControle.ofertaDisciplinaVOs}" value="#{OfertaDisciplinaControle.semestre}">
+						<f:selectItems value="#{EnumControle.comboboxSemestreEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-12 mt10 text-center">
+					<otm:commandButton id="consultar" render="form" value="#{msg_botoes.btn_consultar} Ofertas Cadastradas" action="#{OfertaDisciplinaControle.consultarOfertaDisciplina}" accesskey="2" styleClass="btn btn-default btn-consultar" />
+					<otm:spacer width="10px"></otm:spacer>
+					<otm:commandButton id="adicionar" value="Adicionar Disciplina" oncomplete="#{rich:component('panelDisciplina')}.show();" styleClass="btn btn-primary dark btn-adicionar" />
+					<otm:spacer width="10px"></otm:spacer>
+					<otm:commandButton id="ImportarPlanilha" value="Importar Planilha" oncomplete="#{OfertaDisciplinaControle.oncompleteModal}" render="msg, formImportarDisciplina" action="#{OfertaDisciplinaControle.inicializarUpload}" styleClass="btn btn-primary dark btn-adicionar" />
+					<otm:spacer width="10px"></otm:spacer>
+					<otm:commandButton id="otsei" value="Criar Oferta de Turmas SEI" tooltip="Este recurso irá criar turmas pendentes no sei para que permita os alunos matricularem nas disciplinas ofertadas." rendered="#{LoginControle.permissaoAcessoMenuVO.permiteCriarOfertaDisciplinaTurma}" onclick="return confirm('Deseja iniciar a rotina de criação de oferta de turma, esta rotina poderá levar alguns minutos, e não poderá ser cancelada?')" render="msg" action="#{OfertaDisciplinaControle.realizarCriacaoTurma}" styleClass="btn btn-primary dark btn-adicionar" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row mt10 border-top" rendered="#{!empty OfertaDisciplinaControle.ofertaDisciplinaVOs}">
+			<h:panelGroup layout="block" styleClass="col-md-12 p10">
+				<span class="#{msg_botoes.btn_icon_alerta_triangulo_embutido} mr5 text-danger" />
+				<h:outputText styleClass="mensagem text-danger" value="Os registros que possuem alunos terão as informações de PERÍODO e CONFIGURAÇÃO ACADÊMICA alterado para os novos valores informados ao clicar em gravar."></h:outputText>
+			</h:panelGroup>
+			<h:panelGroup layout="block" rendered="#{LoginControle.permissaoAcessoMenuVO.permiteExcluirOfertaDisciplinaComAluno}" styleClass="col-md-12 p10">
+				<span class="#{msg_botoes.btn_icon_alerta_triangulo_embutido} mr5 text-danger" />
+				<h:outputText styleClass="mensagem text-danger" value="Ao excluir uma oferta de disciplina que possuem alunos vinculados terão seus históricos excluídos, e também serão desensalados do AVA."></h:outputText>
+			</h:panelGroup>
+			<rich:dataTable rows="10" id="items" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{OfertaDisciplinaControle.ofertaDisciplinaVOs}"  var="disciplinaItens">
+				<rich:column filterType="custom" filter="#{FilterFactory.filter('disciplinaVO.abreviatura', 'disciplinaVO.abreviatura', 'TEXTO')}">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_Disciplina_abreviatura}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<span class="append-icon right"> <otm:commandIcon tooltip="Limpar Filtro" render="items" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('disciplinaVO.abreviatura')}" />
+							</span>
+							<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('disciplinaVO.abreviatura', 'disciplinaVO.abreviatura', 'TEXTO').filtro}">
+								<a4j:ajax event="change" execute="@this" render="items" />
+							</h:inputText>
+						</h:panelGroup>
+					</f:facet>
+					<h:outputText value="#{disciplinaItens.disciplinaVO.abreviatura}" />
+				</rich:column>
+				<rich:column filterType="custom" filter="#{FilterFactory.filter('disciplinaVO.nome', 'disciplinaVO.nome', 'TEXTO')}">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_Disciplina_tituloForm}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<span class="append-icon right"> <otm:commandIcon tooltip="Limpar Filtro" render="items" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('disciplinaVO.nome')}" />
+							</span>
+							<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('disciplinaVO.nome', 'disciplinaVO.nome', 'TEXTO').filtro}">
+								<a4j:ajax event="change" execute="@this" render="items" />
+							</h:inputText>
+						</h:panelGroup>
+					</f:facet>
+					<h:outputText value="#{disciplinaItens.disciplinaVO.nome}" />
+				</rich:column>
+				<rich:column filterType="custom" filter="#{FilterFactory.filter('configuracaoAcademicoVO.nome', 'configuracaoAcademicoVO.nome', 'TEXTO')}">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_ConfiguracaoAcademico_tituloForm}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<span class="append-icon right"> <otm:commandIcon tooltip="Limpar Filtro" render="items" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('configuracaoAcademicoVO.nome')}" />
+							</span>
+							<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('configuracaoAcademicoVO.nome', 'configuracaoAcademicoVO.nome', 'TEXTO').filtro}">
+								<a4j:ajax event="change" execute="@this" render="items" />
+							</h:inputText>
+						</h:panelGroup>
+					</f:facet>
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" id="confiAcad" value="#{disciplinaItens.configuracaoAcademicoVO.codigo}">
+						<a4j:ajax event="change" execute="@form" render="items" listener="#{OfertaDisciplinaControle.consultarConfiguracaoAcademico(disciplinaItens)}" />
+						<f:selectItems value="#{OfertaDisciplinaControle.listaSelectItemConfiguracaoAcademico}" />
+					</h:selectOneMenu>
+				</rich:column>
+				<rich:column filterType="custom" filter="#{FilterFactory.filter('periodo.valorApresentar', 'periodo.valorApresentar', 'TEXTO')}">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_ContaReceber_periodo} Oferta" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<span class="append-icon right"> <otm:commandIcon tooltip="Limpar Filtro" render="items" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('periodo.valorApresentar')}" />
+							</span>
+							<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('periodo.valorApresentar', 'periodo.valorApresentar', 'TEXTO').filtro}">
+								<a4j:ajax event="change" execute="@this" render="items" />
+							</h:inputText>
+						</h:panelGroup>
+					</f:facet>
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" id="periodo" value="#{disciplinaItens.periodo}">
+						<f:selectItems value="#{OfertaDisciplinaControle.listaSelectItemPeriodo}" />
+					</h:selectOneMenu>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="Qtde Alunos" />
+					</f:facet>
+					<h:outputText value="#{disciplinaItens.qtdeAlunoMatriculados}" />
+
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<otm:commandIcon action="#{OfertaDisciplinaControle.excluir(disciplinaItens)}" rendered="#{(LoginControle.permissaoAcessoMenuVO.permiteExcluirOfertaDisciplinaComAluno and disciplinaItens.qtdeAlunoMatriculados ne 0) or disciplinaItens.qtdeAlunoMatriculados eq 0}" onclick="return confirm('Caso algum aluno esteja matriculado nesta disciplina o seu HISTÓRICO será EXCLUÍDO e perderá as notas e ensalamentos no AVA. Deseja excluir a oferta desta disciplina?')" render="form" icon="#{msg_botoes.btn_icon_excluir} iconePequeno" tooltip="Excluir" />
+					<otm:commandIcon action="#{OfertaDisciplinaControle.incluirHistoricoDisciplinaAluno(disciplinaItens)}" rendered="#{LoginControle.permissaoAcessoMenuVO.permiteIncluirOfertaDisciplinaHistoricoAluno and disciplinaItens.codigo ne 0}" onclick="return confirm('Este recurso irá incluir o histórico desta disciplina para os alunos que possuem dependência ou que seja regular do seu período letivo. Caso esta disciplina seja de um grupo de optativa esta disciplina não será incluída. Esta rotina poderá demorar alguns minutos, deseja continuar com a inclusão do histórico?')" render="form" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" tooltip="Adicionar Histórico Alunos" />
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller boundaryControls="auto" fastControls="hide" stepControls="auto" for="items" limitRender="10" align="center" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row" id="msg">
+				<otm:mensagem bean="#{OfertaDisciplinaControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+				<otm:commandButton id="novo" action="#{OfertaDisciplinaControle.novo}" render="form" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+				<otm:spacer width="10px"></otm:spacer>
+				<otm:commandButton id="persistir" action="#{OfertaDisciplinaControle.persistir}" render="form" value="#{msg_botoes.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" />
+			</h:panelGroup>
+		</h:form>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplina" onshow="document.getElementById('formDisciplina:valorConsultaDisciplina').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Adicionar Disciplina"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkmodalMaximizado50" />
+					<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:selectOneMenu styleClass="form-control campos" id="consultadis" required="true" value="#{OfertaDisciplinaControle.campoConsultaDisciplina}">
+							<f:selectItems value="#{OfertaDisciplinaControle.listaSelectItemOpcaoConsultaDisciplina}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-7">
+						<h:inputText id="valorConsultadis" styleClass="form-control campos" size="20" value="#{OfertaDisciplinaControle.valorConsultaDisciplina}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="consultardis" type="submit" value="#{msg_botoes.btn_consultar}" action="#{OfertaDisciplinaControle.consultarDisciplina}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2" render="formDisciplina">
+							<!-- <f:setPropertyActionListener target="#{CidadeControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+							<f:setPropertyActionListener target="#{CidadeControle.controleConsultaOtimizado.page}" value="1" /> -->
+						</otm:commandButton>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataTable id="itemsDis" width="100%" columnHeaderClass="headerTable" columnClasses="columTable" value="#{OfertaDisciplinaControle.listaDisciplina}" rows="10" var="discItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Disciplina_codigo}" />
+							</f:facet>
+							<a4j:commandLink action="#{OfertaDisciplinaControle.adicionarDisciplina(discItem)}" id="cd" value="#{discItem.disciplinaVO.codigo}" render="form, formDisciplina" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Disciplina_abreviatura}" />
+							</f:facet>
+							<a4j:commandLink action="#{OfertaDisciplinaControle.adicionarDisciplina(discItem)}" id="abdis" value="#{discItem.disciplinaVO.abreviatura}" render="form, formDisciplina" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Disciplina_nome}" />
+							</f:facet>
+							<a4j:commandLink action="#{OfertaDisciplinaControle.adicionarDisciplina(discItem)}" id="nomedis" value="#{discItem.disciplinaVO.nome}" render="form, formDisciplina" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ConfiguracaoAcademico_tituloForm}" />
+							</f:facet>
+							<h:selectOneMenu styleClass="form-control camposObrigatorios" id="confiAcadDis" value="#{discItem.configuracaoAcademicoVO.codigo}">
+								<a4j:ajax event="change" execute="@form" render="itemsDis" listener="#{OfertaDisciplinaControle.consultarConfiguracaoAcademico(discItem)}" />
+								<f:selectItems value="#{OfertaDisciplinaControle.listaSelectItemConfiguracaoAcademico}" />
+							</h:selectOneMenu>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ContaReceber_periodo} Oferta" />
+
+							</f:facet>
+							<h:selectOneMenu styleClass="form-control camposObrigatorios" id="periofSis" value="#{discItem.periodo}">
+								<f:selectItems value="#{OfertaDisciplinaControle.listaSelectItemPeriodo}" />
+							</h:selectOneMenu>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{OfertaDisciplinaControle.adicionarDisciplina(discItem)}" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" tooltip="#{msg_botoes.btn_adicionar}" alt="#{msg.msg_adicionar_dados}" render="form, formDisciplina" />
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller for="formDisciplina:itemsDis" id="paginador" fastControls="auto" boundaryControls="auto" />
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+
+				<h:panelGroup id="mensagemDisciplina" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{OfertaDisciplinaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>	
+		
+			
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelImportarDisciplina" domElementAttachment="parent">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Importar Planilha de Oferta de Disciplina"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelImportarDisciplina"  />
+					<rich:componentControl target="panelImportarDisciplina" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImportarDisciplina">
+				<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					
+					<rich:fileUpload listHeight="60" listWidth="390" onfileselect="#{rich:component('ajaxStatusUpload')}.show()" onuploadcomplete="#{rich:component('ajaxStatusUpload')}.hide()"  render="form" execute="@form" allowFlash="false"  noDuplicate="true" acceptedTypes="xlsx, xls" fileUploadListener="#{OfertaDisciplinaControle.upload}" addLabel="Selecionar Arquivo" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" id="upload" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+						<a4j:ajax event="uploadcomplete" render="form, formImportarDisciplina" execute="@form" oncomplete="#{OfertaDisciplinaControle.oncompleteModal}" />
+					</rich:fileUpload>
+				</h:panelGroup>
+				
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" rendered="#{!empty OfertaDisciplinaControle.listaImportarDisciplinaErro}" >
+					<h:outputText styleClass="field control-label tituloCampos col-md-12 p5 mb5 mt10 border-bottom" value="Erro(s) de Importação" />
+					<rich:dataTable id="itemsDis2" width="100%" columnHeaderClass="headerTable" columnClasses="columTable" value="#{OfertaDisciplinaControle.listaImportarDisciplinaErro}" rows="10" var="discItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Linha Planilha" />
+							</f:facet>
+							<h:outputText value="#{discItem.codigo}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Disciplina_abreviatura}" />
+							</f:facet>
+							<h:outputText value="#{discItem.disciplinaVO.abreviatura}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ContaReceber_periodo} Oferta" />
+
+							</f:facet>
+							<h:outputText value="#{discItem.periodoImportacao}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ConfiguracaoAcademico_tituloForm}" />
+							</f:facet>
+							<h:outputText escape="false" value="#{discItem.configuracaoAcademicoImportacao}" />
+
+						</rich:column>
+
+						<rich:column styleClass="text-left">
+							<f:facet name="header">
+								<h:outputText value="Motivo Erro" />
+							</f:facet>
+							<h:outputText styleClass="text-left" escape="false" value="#{discItem.erroImportacao}" />
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller for="formImportarDisciplina:itemsDis2" id="paginador2" fastControls="auto" boundaryControls="auto" />
+						</f:facet>
+					</rich:dataTable>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup id="mensagemImpoDisciplina" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{OfertaDisciplinaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+				<h:commandLink image="#{resource['/imagens/botaoDownloadTemplate.png']}" style="margin-left:5px" action="#{OfertaDisciplinaControle.downloadLayoutPadraoExcel}" styleClass="btn btn-success dark" value="Download Modelo (EXCEL)">
+					<span class="fas fa-file-excel"></span>
+<!-- 					<rich:tooltip value="template ireport" /> -->
+				</h:commandLink>
+					
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<script>
+			document.getElementById("form:ano").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

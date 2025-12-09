@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:p="http://primefaces.org/ui" xmlns:h="http://java.sun.com/jsf/html" xmlns:ui="http://java.sun.com/jsf/facelets"  xmlns:f="http://java.sun.com/jsf/core"
+ xmlns:c="http://java.sun.com/jsp/jstl/core"  xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br" >
+<ui:component>
+
+	<!-- 	O BEAN DECLARADO DEVE HERDAR DA CLASSE  AvaliacaoOnlineAlunoSuperControle -->
+
+	<c:if test="#{empty id}">
+		<c:set var="id" value="panelAval"></c:set>
+	</c:if>
+	<c:if test="#{empty form}">
+		<c:set var="form" value="form"></c:set>
+	</c:if>
+	<c:if test="#{empty avaliacaoOnlineMatriculaVO}">
+		<c:set var="avaliacaoOnlineMatriculaVO" value="avaliacaoOnlineMatriculaVO"></c:set>
+	</c:if>
+	<c:if test="#{empty rendered}">
+		<c:set var="rendered" value="true"></c:set>
+	</c:if>
+
+	<style>
+.panelLetrRes {
+	cursor: pointer;
+}
+
+.panelInfQuestao {
+	float: left;
+	text-align: left;
+	height: 100%;
+	margin-right: 3px;
+}
+
+@media ( max-width : 500px) {
+	.panelInfQuestao {
+		width: 10% !important;
+	}
+	.panelLetrRes {
+		width: 90% !important;
+	}
+}
+@media (max-width: 1024px) and (min-width: 501px) {
+	.panelInfQuestao {
+		width: 3% !important;
+		margin-top: 2px;
+		display: inline-block;
+		vertical-align: top;
+		position: relative;
+		text-align: center;
+	}
+
+	.panelLetrRes {
+		width: 88% !important;
+		display: inline-block;
+		vertical-align: top;
+	}
+}
+
+
+.tituloCampos img,
+.tituloCamposOpcaoRespostaQuestao img {
+	max-width: 100% !important;
+	height: auto !important;
+	display: block;
+	margin: 10px auto;
+	object-fit: contain;
+	box-sizing: border-box;
+}
+</style>
+
+
+
+	<h:panelGroup layout="block" styleClass="row" rendered="#{rendered}" id="#{id}">
+		<h:panelGroup layout="block" styleClass="panelFinalizarAvaliacao" style="width:100%;background-color:#FFFFFF !important" id="panelFinalizarAvaliacao">
+			<script type="text/javascript" charset="utf-8">
+							(function($) {
+								$(window).scroll(
+												function() {													
+													if ($(this).scrollTop() > 200) {
+														$('.panelFinalizarAvaliacao').attr('style','position: fixed; z-index:1000;top: 0;width:'+ document.getElementById(#{id}).clientWidth+ 'px;background-color:#F4F4F4 !important;');
+													} else {
+														$('.panelFinalizarAvaliacao').attr('style','width:100%;background-color:#FFFFFF !important');
+													}
+												});
+							}(jQuery));
+						</script>
+			<h:panelGroup layout="block" style="text-align:center;" id="questoesRespondidas#{id}">
+				<otm:spacer height="20px" />
+				<h:outputFormat styleClass="field  control-label tituloCampos" style="font-style:oblique;font-size:x-large;" value="#{msg_aplic.prt_AvaliacaoOnline_quantidadeQuestoesRespondidas}" rendered="#{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'EM_REALIZACAO'}">
+					<f:param name="{0}" value="#{bean.avaliacaoOnlineMatriculaVO.quantidadeQuestaoMarcadas}"></f:param>
+					<f:param name="{1}" value="#{bean.totalQuestoes}"></f:param>
+				</h:outputFormat>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior" rendered="#{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'EM_REALIZACAO'}">
+					<h:panelGroup styleClass="float-left" rendered="#{!bean.apresentarResultadoAvaliacaoOnline and bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'EM_REALIZACAO'}">
+						<p:fragment>
+							<p:poll status="false" interval="1000" enabled="#{bean.habilitarTempo}" oncomplete="#{bean.abrirModalFinalizacaoAvaliacaoOnline}" update="progressBar#{id}" />
+							<p:progressBar id="progressBar#{id}" style="width:200px !important" update="progressBar#{id}" value="#{bean.dataAtual}" label="#{bean.tempoApresentar}" interval="1000" minValue="#{bean.avaliacaoOnlineMatriculaVO.dataInicioTemporizador}" maxValue="#{bean.avaliacaoOnlineMatriculaVO.dataLimiteTerminoTemporizador}">
+							</p:progressBar>
+						</p:fragment>
+					</h:panelGroup>
+					<p:remoteCommand id="renderizarMenuETopo" name="carregarMenuETopo" update="#{id}" oncomplete="scrollTO('#{form}:items#{id}:#{bean.avaliacaoOnlineMatriculaVO.codigoPrimeiraQuestaoNaoRespondida}:editorFinish')" />
+					<p:commandLink id="encerrarProva" onclick="this.disabled = true" oncomplete="this.disabled = false;carregarMenuETopo()" process="@form" rendered="#{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'EM_REALIZACAO'}" update="form" action="#{bean.realizarCorrecaoAvaliacaoOnline}" accesskey="1" value="Finalizar Avaliação" styleClass="btn btn-default" title="#{msg.msg_novo_dados}">
+						<i class="fas fa-tasks pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+					</p:commandLink>
+				</h:panelGroup>
+
+			</h:panelGroup>
+		</h:panelGroup>
+		<h:outputText value="#{form}:items#{id}:#{bean.avaliacaoOnlineMatriculaVO.codigoPrimeiraQuestaoNaoRespondida}:editorFinish" style="display: none" />
+		<h:panelGroup layout="block" rendered="#{bean.apresentarResultadoAvaliacaoOnline}" style="text-align:center;">
+			<h:outputText styleClass="field  control-label #{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'APROVADO' ? 'text-info' : 'text-danger'}" style="font-style:oblique;font-size:x-large;" value="#{msg_aplic.prt_AvaliacaoOnline_voceEsta}" />
+			<otm:spacer width="10px" />
+			<h:outputText styleClass="field  control-label #{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'APROVADO' ? 'text-info' : 'text-danger'}" style="font-style:oblique;font-size:x-large;" value="#{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum_Apresentar}" />
+			<otm:spacer width="10px" />
+			<h:outputFormat styleClass="field  control-label #{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'APROVADO' ? 'text-info' : 'text-danger'}" style="font-style:oblique;font-size:x-large;" value="#{msg_aplic.prt_AvaliacaoOnline_resultadoAcerto}">
+				<f:param name="{0}" value="#{bean.avaliacaoOnlineMatriculaVO.quantidadeAcertos}"></f:param>
+				<f:param name="{1}" value="#{bean.avaliacaoOnlineMatriculaVO.percentualAcerto}"></f:param>
+				<f:param name="{2}" value="#{bean.avaliacaoOnlineMatriculaVO.quantidadeErros}"></f:param>
+				<f:param name="{3}" value="#{bean.avaliacaoOnlineMatriculaVO.percentualErro}"></f:param>
+			</h:outputFormat>
+			<h:outputText styleClass="field  control-label ml5 #{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'APROVADO' ? 'text-info' : 'text-danger'}" style="font-style:oblique;font-size:x-large;" value="Nota:" />
+			<h:outputText styleClass="field  control-label ml5 #{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'APROVADO' ? 'text-info' : 'text-danger'}" style="font-style:oblique;font-size:x-large;" value="#{bean.avaliacaoOnlineMatriculaVO.nota}">
+				<f:converter converterId="FormatadorNumerico" />
+			</h:outputText>
+		</h:panelGroup>
+		<h:panelGroup layout="block" columns="1" width="100%" rendered="#{bean.apresentarResultadoAvaliacaoOnline and (bean.avaliacaoOnlineMatriculaVO.avaliacaoOnlineVO.apresentarGabaritoProvaAlunoAposDataTerminoPeriodoRealizacao and !bean.mostrarGabarito)}" style="text-align:center;">
+			<h:graphicImage value="#{resource['imagens/aviso.png']}" style="top: 12px;position: relative;width: 27px;right: 11px;"/>
+			<h:outputText styleClass="tituloCampos" style="top:2px;position:relative;" value="O gabarito com as questões respondidas será disponibilizado após a data "/>
+			<h:outputText styleClass="tituloCampos" style="top:2px;position:relative;" value="#{bean.dataLimiteRealizacaoAvaliacaoOnline}">
+				<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+			</h:outputText>
+		</h:panelGroup>
+		<h:panelGroup layout="block" id="panelGridMensagens#{id}" styleClass="row">
+			<otm:mensagem bean="#{bean}"></otm:mensagem>
+		</h:panelGroup>
+		<otm:spacer height="10px" />
+		<h:panelGroup layout="block" styleClass="pd10" id="avaliacao#{id}" width="100%" rendered="#{bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'EM_REALIZACAO' or bean.mostrarGabarito}" >
+
+			<ui:repeat id="items#{id}" rowKeyVar="row" rendered="#{!empty bean.avaliacaoOnlineMatriculaVO.avaliacaoOnlineMatriculaQuestaoVOs}" value="#{bean.avaliacaoOnlineMatriculaVO.avaliacaoOnlineMatriculaQuestaoVOs}" var="questaoListaExercicioItens">
+				<h:panelGroup layout="block" styleClass="row pl10 pr10 pt10 pb10" style="border-bottom:1px solid #cccccc;">
+					<h:panelGroup layout="block" styleClass="row mb5">
+						<h:panelGroup layout="block" style="float:left;position:relative;top:0px" styleClass="mr5">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{questaoListaExercicioItens.ordemApresentacao})" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" id="editorFinishEnunciado" styleClass="field control-label tituloCampos" style="float: left;text-align:left;height:100%;width:85%">
+							<h:outputText escape="false" value="#{questaoListaExercicioItens.questaoVO.enunciado}">
+							</h:outputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" id="opcEditor" style="float: left;width:10%;text-align:right">
+							<otm:commandIcon tooltip="#{questaoListaExercicioItens.questaoVO.ajuda}" rendered="#{questaoListaExercicioItens.questaoVO.isExisteAjuda}" icon="#{msg_botoes.btn_icon_help} iconePequeno" />
+							<otm:commandIcon disabled="true" icon="fas fa-thumbs-up text-info" tooltip="Acertou a Questão" rendered="#{bean.apresentarResultadoAvaliacaoOnline and questaoListaExercicioItens.questaoVO.acertouQuestao and questaoListaExercicioItens.questaoVO.situacaoQuestaoEnum ne 'ANULADA'}" id="acertou" />
+							<otm:commandIcon disabled="true" icon="fas fa-thumbs-down text-danger" tooltip="Errou a Questão" rendered="#{bean.apresentarResultadoAvaliacaoOnline and questaoListaExercicioItens.questaoVO.errouQuestao and questaoListaExercicioItens.questaoVO.situacaoQuestaoEnum ne 'ANULADA'}" id="errou" />
+							<otm:commandIcon disabled="true" icon="far fa-thumbs-down text-primary" tooltip="Questão Anulada - #{questaoListaExercicioItens.questaoVO.motivoAnulacaoQuestao}" rendered="#{bean.apresentarResultadoAvaliacaoOnline and questaoListaExercicioItens.questaoVO.situacaoQuestaoEnum eq 'ANULADA'}" id="anulada" />
+							<otm:commandIcon disabled="true" icon="fas fa-exclamation-triangle text-alert" tooltip="Questão NÃO Respondida" rendered="#{questaoListaExercicioItens.questaoVO.questaoNaoRespondida and !bean.apresentarResultadoAvaliacaoOnline}" id="questaoNaoRespondida" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="float: right;width:3%;text-align:right">
+							<p:commandLink rendered="#{questaoListaExercicioItens.maximixado}" style="position: relative;top: 2px;" update="avaliacao#{id}" action="#{questaoListaExercicioItens.setMaximixado(false)}">
+								<i class="fas fa-sort-up" />
+							</p:commandLink>
+							<p:commandLink rendered="#{!questaoListaExercicioItens.maximixado}" style="position: relative;top: -2px;" update="avaliacao#{id}" action="#{questaoListaExercicioItens.setMaximixado(true)}">
+								<i class="fas fa-sort-down" />
+							</p:commandLink>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup id="columnOpcaoes" rendered="#{questaoListaExercicioItens.maximixado}" layout="block" styleClass="row pl10">
+						<ui:repeat id="subItems" value="#{questaoListaExercicioItens.avaliacaoOnlineMatriculaRespostaQuestaoVOs}" var="opcaoRespostaQuestaoItens">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:panelGroup rendered="#{bean.apresentarResultadoAvaliacaoOnline and (questaoListaExercicioItens.questaoVO.errouQuestao or questaoListaExercicioItens.questaoVO.questaoNaoRespondida)}" layout="block" id="situacaoResposta" styleClass="panelInfQuestao">
+									<otm:commandIcon disabled="true" rendered="#{opcaoRespostaQuestaoItens.opcaoRespostaQuestaoVO.correta and questaoListaExercicioItens.questaoVO.situacaoQuestaoEnum ne 'ANULADA'}" icon="fas fa-check text-info" />
+									<otm:commandIcon disabled="true" rendered="#{!opcaoRespostaQuestaoItens.opcaoRespostaQuestaoVO.correta and questaoListaExercicioItens.questaoVO.situacaoQuestaoEnum ne 'ANULADA'}" icon="fas fa-times text-danger" />
+									<otm:commandIcon disabled="true" rendered="#{questaoListaExercicioItens.questaoVO.situacaoQuestaoEnum eq 'ANULADA'}" icon="fas fa-exclamation text-primary" />
+								</h:panelGroup>
+								<p:commandLink disabled="#{AvaliacaoOnlineMatriculaControle.apresentarResultadoAvaliacaoOnline}" update="items:#{row}:subItems, questoesRespondidas" action="#{AvaliacaoOnlineMatriculaControle.realizarVerificacaoQuestaoUnicaEscolha}" styleClass="panelLetrRes">
+									<h:panelGroup layout="block" style="float:left;">
+										<h:outputText styleClass="field control-label tituloCampos" style="margin-right:3px;" value="#{opcaoRespostaQuestaoItens.opcaoRespostaQuestaoVO.letraCorrespondente}" />
+										<p:commandLink process="@this" style="margin-right:3px;" disabled="#{bean.apresentarResultadoAvaliacaoOnline}" rendered="#{questaoListaExercicioItens.questaoVO.tipoQuestaoEnum eq 'MULTIPLA_ESCOLHA'}" update="#{id}" action="#{bean.realizarVerificacaoQuestaoUnicaEscolhaAvaliacaoOnline}">
+											<h:panelGroup styleClass="#{opcaoRespostaQuestaoItens.marcada ? 'fas fa-check-square fs14 text-default': 'far fa-square fs14  text-default '}" />
+										</p:commandLink>
+										<p:commandLink process="@this" style="margin-right:3px;" disabled="#{bean.apresentarResultadoAvaliacaoOnline}" rendered="#{questaoListaExercicioItens.questaoVO.tipoQuestaoEnum eq 'UNICA_ESCOLHA'}" update="#{id}" action="#{bean.realizarVerificacaoQuestaoUnicaEscolhaAvaliacaoOnline}">
+											<h:panelGroup styleClass="#{opcaoRespostaQuestaoItens.marcada ? 'fas fa-check-circle fs14  text-default': 'far fa-circle fs14  text-default'}" />
+										</p:commandLink>
+									</h:panelGroup>
+									<h:panelGroup layout="block" id="editorFinish" styleClass="tituloCamposOpcaoRespostaQuestao" style="float:left;text-align:left;height:100%;width:90%;">
+										<h:outputText escape="false" styleClass="field control-label tituloCampos #{bean.apresentarResultadoAvaliacaoOnline ? (questaoListaExercicioItens.questaoVO.situacaoQuestaoEnum eq 'ANULADA' ? 'text-primary' : (questaoListaExercicioItens.questaoVO.acertouQuestao ? 'text-info' : 'text-danger')) : ''}" value="#{opcaoRespostaQuestaoItens.opcaoRespostaQuestaoVO.opcaoResposta}">
+										</h:outputText>
+									</h:panelGroup>
+								</p:commandLink>
+							</h:panelGroup>
+						</ui:repeat>
+					</h:panelGroup>
+					<h:panelGroup styleClass="row" layout="block" rendered="#{bean.apresentarResultadoAvaliacaoOnline and questaoListaExercicioItens.maximixado  and questaoListaExercicioItens.questaoVO.situacaoQuestaoEnum eq 'ANULADA'}" id="motivoAnulacao">
+						<h:outputText styleClass="field control-label tituloCampos col-md-12" rendered="#{bean.apresentarResultadoAvaliacaoOnline  and questaoListaExercicioItens.questaoVO.situacaoQuestaoEnum eq 'ANULADA'}" value="Motivo Anulação:" />
+						<h:outputText styleClass="field control-label tituloCampos col-md-12 " value="#{questaoListaExercicioItens.questaoVO.motivoAnulacaoQuestao}" />
+					</h:panelGroup>
+					<h:panelGroup styleClass="row" layout="block" rendered="#{bean.apresentarResultadoAvaliacaoOnline  and questaoListaExercicioItens.maximixado  and questaoListaExercicioItens.questaoVO.isExisteJustificativa}">
+						<h:outputText styleClass="field control-label tituloCampos col-md-12" value="#{msg_aplic.prt_Questao_justificativa}:" />
+						<h:outputText styleClass="field control-label tituloCampos col-md-12 " value="#{questaoListaExercicioItens.questaoVO.justificativa}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row text-right" rendered="#{bean.avaliacaoOnlineMatriculaVO.avaliacaoOnlineVO.apresentarNotaDaQuestao  and questaoListaExercicioItens.maximixado}">
+						<h:panelGroup layout="block" styleClass="col-md-12  text-right" rendered="#{questaoListaExercicioItens.questaoVO.nivelComplexidadeQuestao.facil}">
+							<h:outputText styleClass="field control-label tituloCampos" style="font-style:italic;" value="(Peso:" />
+							<h:outputText styleClass="field control-label tituloCampos" value="#{bean.avaliacaoOnlineMatriculaVO.avaliacaoOnlineVO.notaPorQuestaoNivelFacil}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+							<h:outputText styleClass="field control-label tituloCampos" style="font-style:italic;" value=")" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12  text-right" rendered="#{questaoListaExercicioItens.questaoVO.nivelComplexidadeQuestao.medio}">
+							<h:outputText styleClass="field control-label tituloCampos" style="font-style:italic;" value="(Peso:" />
+							<h:outputText styleClass="field control-label tituloCampos" value="#{bean.avaliacaoOnlineMatriculaVO.avaliacaoOnlineVO.notaPorQuestaoNivelMedio}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+							<h:outputText styleClass="field control-label tituloCampos" style="font-style:italic;" value=")" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12  text-right" rendered="#{questaoListaExercicioItens.questaoVO.nivelComplexidadeQuestao.dificil}">
+							<h:outputText styleClass="field control-label tituloCampos" style="font-style:italic;" value="(Peso:" />
+							<h:outputText styleClass="field control-label tituloCampos" value="#{bean.avaliacaoOnlineMatriculaVO.avaliacaoOnlineVO.notaPorQuestaoNivelDificil}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+							<h:outputText styleClass="field control-label tituloCampos" style="font-style:italic;" value=")" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</ui:repeat>
+		</h:panelGroup>
+		<h:panelGroup layout="block" id="grafico#{id}" rendered="#{bean.apresentarResultadoAvaliacaoOnline and (bean.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum eq 'EM_REALIZACAO' or bean.mostrarGabarito)}" styleClass="row">
+			<h:outputText styleClass="field control-label  tituloCampos title" value="Desempenho por Assunto" rendered="#{bean.avaliacaoOnlineMatriculaVO.isApresentarMonitorConhecimentoPorAssunto}" />
+			<ui:repeat id="graficoAproveitamento" value="#{bean.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" rowKeyVar="row" rendered="#{bean.avaliacaoOnlineMatriculaVO.isApresentarMonitorConhecimentoPorAssunto}" var="graficoItem">
+				<h:panelGroup layout="block" styleClass="row mb5" rendered="#{!graficoItem.geral}" style="border:1px solid #ccc;border-radius:5px;">
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<h:outputText id="assunto" value="#{graficoItem.assunto}" styleClass="field control-label tituloCampos" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<h:outputText id="descricao" styleClass="field control-label  tituloCampos " value="#{graficoItem.descricaoParametro}" style="#{graficoItem.cssNivelAproveitamento}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<h:outputText id="grafico1" escape="false" value="#{graficoItem.graficoAproveitamento}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</ui:repeat>
+			<h:outputText styleClass="field control-label  tituloCampos title" value="Desempenho por Disciplina" rendered="#{!empty bean.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" />
+			<ui:repeat id="graficoAproveitamento2" value="#{bean.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" rowKeyVar="row" rendered="#{!empty bean.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" var="graficoItem">
+				<h:panelGroup layout="block" styleClass="row mb5" rendered="#{graficoItem.geral}" style="border:1px solid #ccc;border-radius:5px;">
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<h:outputText id="assunto2" value="#{graficoItem.assunto}" styleClass="field control-label tituloCampos" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<h:outputText id="descricao2" value="#{graficoItem.descricaoParametro}" styleClass="field control-label tituloCampos" style="#{graficoItem.cssNivelAproveitamento}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<h:outputText id="grafico2" escape="false" value="#{graficoItem.graficoAproveitamento}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</ui:repeat>
+		</h:panelGroup>
+	</h:panelGroup>
+</ui:component>
+</html>

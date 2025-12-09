@@ -1,0 +1,2 @@
+ alter table if exists  periodoChamadaProcSeletivo  add COLUMN if not exists  dataEnvioMensagemBoasVindas timestamp  ;
+  alter table if exists  matricula  add COLUMN  if not exists  dataEnvioNotificacaoMensagemBoasVindas timestamp  ;

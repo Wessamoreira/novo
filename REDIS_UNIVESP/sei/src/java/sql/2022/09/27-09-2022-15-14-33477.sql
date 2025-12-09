@@ -1,0 +1,11 @@
+alter table if exists maparegistroevasaocurso drop column alunosreprovadostodasdisciplinasprimeirosemestre;
+alter table if exists maparegistroevasaocurso add column if not exists qtddisciplinareprovadas int;
+alter table if exists maparegistroevasaocurso add column if not exists motivoCancelamentoTrancamento int;
+SELECT create_constraint('alter table maparegistroevasaocurso ADD CONSTRAINT fk_maparegistroevasaocurso_motivocancelamentotrancamento FOREIGN KEY (motivocancelamentotrancamento) references motivocancelamentotrancamento(codigo) on update restrict on delete restrict;');
+alter table if exists maparegistroevasaocurso add column if not exists justificativa text;
+alter table if exists maparegistroevasaocursomatriculaperiodo add column if not exists erro text;
+alter table if exists maparegistroevasaocursomatriculaperiodo add column if not exists situacaoMapaRegistroEvasaoCursoMatriculaPeriodoEnum varchar(100) default 'AGUARDANDO_PROCESSAMENTO';
+alter table if exists usuario add column if not exists dataultimoacessoblackboard timestamp;
+alter table if exists gradecurricular add column if not exists qtdeanosemestreparaintegralizacaocurso int;
+alter table if exists gradecurricular add column if not exists regracontagemperiodoletivoenum varchar(100) default 'ULTIMO_PERIODO';
+alter table if exists gradecurricular add column if not exists considerarperiodotrancadoparajubilamento boolean default false;

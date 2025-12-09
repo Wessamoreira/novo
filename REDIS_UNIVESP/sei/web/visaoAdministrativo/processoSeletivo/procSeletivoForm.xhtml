@@ -1,0 +1,1296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ProcSeletivo_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAlterarDataProvaProcessoSeletivo" domElementAttachment="parent" shadowOpacity="true" width="750" height="500" resizeable="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ProcessoSeletivo_AlterarDataProva}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkEnvioEmailDataProvaAlterada" />
+					<rich:componentControl target="panelAlterarDataProvaProcessoSeletivo" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formEnvioDataProvaAlterada">
+				<script type="text/javascript">
+					function contar(campo, cont, total) {
+						var tam = document.getElementById(campo).value.length;
+						var total1 = total - 1;
+						if (tam > total1) {
+							document.getElementById(campo).value = document
+									.getElementById(campo).value.substring(0,
+									total1);
+							tam = total;
+							alert('Atenção, você atingiu o limite máximo de caracteres !');
+						}
+						document.getElementById(cont).value = tam + " de "
+								+ total;
+					}
+				</script>
+				<rich:tabPanel id="richTabAlteracaoDataProva" switchType="ajax" headerAlignment="center">
+					<rich:tab id="tabDataProva" header="#{msg_aplic.prt_ProcSeletivo_dataProva}">
+						<h:panelGroup layout="block" styleClass="row" id="panelGridDataMotivoAlteracao">
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_dataProva}" />
+								<otm:calendar id="novaDataProva" value="#{ProcSeletivoControle.dataProvaAlterada}" datePattern="dd/MM/yyyy HH:mm" inputClass="form-control camposObrigatorios" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-10">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_MotivoAlteracaoDataProva}" />
+								<h:inputTextarea id="textAreaMotivoAlteracaoDataProva" rows="6" styleClass="form-control" value="#{ProcSeletivoControle.motivoAlteracaoDataProva}">
+								</h:inputTextarea>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+					<rich:tab id="tabMensagemEmail" header="Mensagem" rendered="#{ProcSeletivoControle.enviarComunicadoCandidatoAlteracaoDataProva}">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_AssuntoEmailAlteracaoProva}" />
+								<h:inputText id="textoAssuntoEmail" maxlength="250" size="50" readonly="false" styleClass="form-control campos" value="#{ProcSeletivoControle.assuntoEmail}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<otm:editor id="mensagem" width="680" height="350" value="#{ProcSeletivoControle.corpoEmail}">
+								</otm:editor>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+					<rich:tab id="tabSms" header="SMS" rendered="#{ProcSeletivoControle.enviarSmsInformativoAlteracaoDataProva}" oncomplete="contar('formEnvioDataProvaAlterada:textarea_sms','formEnvioDataProvaAlterada:contador','150');" switchType="ajax">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-10">
+								<h:inputTextarea id="textarea_sms" onkeyup="contar('formEnvioDataProvaAlterada:textarea_sms','formEnvioDataProvaAlterada:contador','150');" rows="6" styleClass="form-control" value="#{ProcSeletivoControle.corpoSms}">
+								</h:inputTextarea>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:inputText id="contador" maxlength="10" size="10" readonly="true" styleClass="form-control camposSomenteLeitura" style="border:0px; background-color:transparent; color:red; text-align:left; font: 8pt 'Trebuchet MS', verdana, arial, helvetica, sans-serif;" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+				</rich:tabPanel>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_EnviarComunicadoCandidatoAlteracaoDataProva}" />
+					<otm:selectBooleanCheckbox value="#{ProcSeletivoControle.enviarComunicadoCandidatoAlteracaoDataProva}">
+						<a4j:ajax event="change" render="formEnvioDataProvaAlterada" listener="#{ProcSeletivoControle.montarCorpoMensagemNotificacaoEmail}" />
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_EnviarSmsInformativoAlteracaoDataProva}" />
+					<otm:selectBooleanCheckbox value="#{ProcSeletivoControle.enviarSmsInformativoAlteracaoDataProva}">
+						<a4j:ajax event="change" render="formEnvioDataProvaAlterada" listener="#{ProcSeletivoControle.montarCorpoMensagemNotificacaoSms}" />
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_numeroCandidatoNotificadoAlteracaoDataProva}: " rendered="#{ProcSeletivoControle.isApresentarNumeroCandidatoNotificado}" />
+					<h:outputText styleClass="tituloCampos" value="#{ProcSeletivoControle.numeroCandidatoNotificado}" rendered="#{ProcSeletivoControle.isApresentarNumeroCandidatoNotificado}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" id="botaoConfirmarAlteracaoDataProva" oncomplete="#{ProcSeletivoControle.isFecharModalAlterarDataProvaProcessoSeletivo}" image="#{resource['/imagens/botaoConfirm.png']}" action="#{ProcSeletivoControle.realizarAlteracaoDataProvaProcessoSeletivoFuturo}" value="#{msg_aplic.prt_ProcessoSeletivo_alterarDataProvaEnviarEmailCandidato}" render="formEnvioDataProvaAlterada:mensagemAlteracaoDataProvaProcessoSeletivo,dataProva,form:msg" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemAlteracaoDataProvaProcessoSeletivo" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{ProcSeletivoControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelRemoverDataProva" shadowOpacity="true" width="750" autosized="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Remover Datas de Provas Proc. Seletivo"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formRemoverDataProva">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="tituloCampos" value="Período Aplicação Prova Remover" />
+					<otm:calendar id="dataInicialRemover" value="#{ProcSeletivoControle.dataInicialRemover}" datePattern="dd/MM/yyyy" inputClass="form-control camposObrigatorios" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="tituloCampos" value="até" />
+					<otm:calendar id="dataFinalRemover" value="#{ProcSeletivoControle.dataFinalRemover}" datePattern="dd/MM/yyyy" inputClass="form-control camposObrigatorios" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="tituloCampos" value="Remover Provas Horário Específico" />
+					<h:inputText id="horaEspecificaRemover" onkeypress="return mascara(this.formRemoverDataProva, 'formRemoverDataProva:horaEspecificaRemover', '99:99', event);" size="5" maxlength="5" styleClass="form-control campos" value="#{ProcSeletivoControle.horaEspecificaRemover}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="btnRemover" oncomplete="#{rich:component('panelRemoverDataProva')}.hide();" render="form:msg, form:resultadoConsultaDataGabarito, form:panelItemProcSeletivo" action="#{ProcSeletivoControle.removerItemProcSeletivoDataProvaVOPorParametros}" icon="#{msg_botoes.btn_icon_excluir_embutido}" value="Remover" styleClass="btn btn-danger mr5" image="#{resource['/imagens/botaoRemoverDatasProc.png']}" tooltip="#{msg.msg_excluir_dados}" />
+					<otm:commandButton id="btnFechar" oncomplete="#{rich:component('panelRemoverDataProva')}.hide();" render="form:msg, form:resultadoConsultaDataGabarito, form:panelItemProcSeletivo" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-warning" value="Cancelar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDataGabarito" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Gabarito"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDataGabarito">
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="tituloCampos" value="Tipo Prova/Gabarito" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" disabled="#{ProcSeletivoControle.procSeletivoVO.tipoAvaliacaoProcessoSeletivo eq 'ON_LINE'}" value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.tipoProvaGabarito}">
+						<f:selectItems value="#{ProcSeletivoControle.tipoConsultaComboTipoProvaGabarito}" />
+						<a4j:ajax event="change" render="form, formDataGabarito, formDataProva" oncomplete="#{ProcSeletivoControle.modalApresentarTipoProvaGabarito}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Gabarito_tituloForm}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:selectOneMenu id="gabarito" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.procSeletivoGabaritoDataVO.gabaritoVO.codigo}">
+							<f:selectItems value="#{ProcSeletivoControle.listaSelectItemGabaritoProcessoSeletivo}" />
+						</h:selectOneMenu>
+						<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_Gabarito" action="#{ProcSeletivoControle.montarListaSelectItemGabarito}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="formDataGabarito:gabarito" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcessoSeletivoProvaData_disciplinaIdioma}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoGabaritoDataVO.disciplinaIdioma.codigo}">
+						<f:selectItems value="#{ProcSeletivoControle.listaSelectItemDisciplinaIdioma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<otm:commandButton id="btnAddGabarito" render="formDataGabarito" action="#{ProcSeletivoControle.adicionarProcessoSeletivoGabaritoDataVO}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" value="Adicionar" tooltip="#{msg.msg_adicionar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaGabarito" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" footerClass="colunaCentralizada" value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.procSeletivoGabaritoDataVOs}" rows="5" var="gabaritoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Gabarito_tituloForm}" />
+						</f:facet>
+						<h:outputText value="#{gabaritoItens.gabaritoVO.descricao}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Gabarito_grupoDisciplinaProcessoSeletivo}" />
+						</f:facet>
+						<h:outputText value="#{gabaritoItens.gabaritoVO.grupoDisciplinaProcSeletivoVO.descricao}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProcessoSeletivoProvaData_disciplinaIdioma}" />
+						</f:facet>
+						<h:outputText value="#{gabaritoItens.disciplinaIdioma.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ProcSeletivoControle.removerProcessoSeletivoGabaritoDataVO}" render="formDataGabarito" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="#{msg.msg_remover_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formDataGabarito:resultadoConsultaGabarito" maxPages="10" id="scResultadoGabarito" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaGabarito" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{ProcSeletivoControle}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<otm:commandButton icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="Fechar" action="#{ProcSeletivoControle.finalizarDadosProcessoSeletivoProvaData}" oncomplete="#{rich:component('panelDataGabarito')}.hide();" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDataProva" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Prova"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDataProva">
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="tituloCampos" value="Tipo Prova/Gabarito" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" disabled="#{ProcSeletivoControle.procSeletivoVO.tipoAvaliacaoProcessoSeletivo eq 'ON_LINE'}" value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.tipoProvaGabarito}">
+						<f:selectItems value="#{ProcSeletivoControle.tipoConsultaComboTipoProvaGabarito}" />
+						<a4j:ajax event="change" render="form, formDataGabarito, formDataProva" oncomplete="#{ProcSeletivoControle.modalApresentarTipoProvaGabarito}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcessoSeletivoProvaData_prova}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:selectOneMenu id="prova" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.processoSeletivoProvaDataVO.provaProcessoSeletivo.codigo}">
+							<f:selectItems value="#{ProcSeletivoControle.listaSelectItemProvaProcessoSeletivo}" />
+						</h:selectOneMenu>
+						<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_Prova" action="#{ProcSeletivoControle.montarListaSelectItemProva}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="formDataProva:prova" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcessoSeletivoProvaData_disciplinaIdioma}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ProcSeletivoControle.processoSeletivoProvaDataVO.disciplinaIdioma.codigo}">
+						<f:selectItems value="#{ProcSeletivoControle.listaSelectItemDisciplinaIdioma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<otm:commandButton id="btnAddProva" render="formDataProva" action="#{ProcSeletivoControle.adicionarProcessoSeletivoProvaDataVO}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="Adicionar" styleClass="btn btn-primary" tooltip="#{msg.msg_adicionar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaProva" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" footerClass="colunaCentralizada" value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.processoSeletivoProvaDataVOs}" rows="5" var="provaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProcessoSeletivoProvaData_prova}" />
+						</f:facet>
+						<h:outputText value="#{provaItens.provaProcessoSeletivo.descricao}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Gabarito_grupoDisciplinaProcessoSeletivo}" />
+						</f:facet>
+						<h:outputText value="#{provaItens.provaProcessoSeletivo.grupoDisciplinaProcSeletivoVO.descricao}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProcessoSeletivoProvaData_disciplinaIdioma}" />
+						</f:facet>
+						<h:outputText value="#{provaItens.disciplinaIdioma.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ProcSeletivoControle.removerProcessoSeletivoProvaDataVO}" render="formDataProva" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="#{msg.msg_remover_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formDataProva:resultadoConsultaProva" maxPages="10" id="scResultadoProva" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaProva" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{ProcSeletivoControle}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<otm:commandButton icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="Fechar" action="#{ProcSeletivoControle.finalizarDadosProcessoSeletivoProvaData}" oncomplete="#{rich:component('panelDataProva')}.hide();" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" keepVisualState="false" shadowOpacity="true" top="5px" width="950" height="600" style="overflow:auto;">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarCurso}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelink1" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{ProcSeletivoControle.campoConsultaCurso}">
+						<f:selectItems value="#{ProcSeletivoControle.tipoConsultaComboCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCurso" size="10" styleClass="form-control campos" value="#{ProcSeletivoControle.valorConsultaCurso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCurso:mensagemConsultaCurso, formCurso:resultadoConsultaCurso, formCurso:scResultadoCurso" action="#{ProcSeletivoControle.consultarCurso}" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" value="Consultar" tooltip="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCurso" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" footerClass="colunaCentralizada" value="#{ProcSeletivoControle.listaConsultaCurso}" rows="4" var="unidadeensinocursoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ProcSeletivoControle.adicionarProcSeletivoCurso}" focus="nomeCurso" render="formCurso" value="#{unidadeensinocursoItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_turno}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ProcSeletivoControle.adicionarProcSeletivoCurso}" focus="nomeTurno" render=" formCurso" value="#{unidadeensinocursoItens.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column rendered="#{ProcSeletivoControle.utilizarNrVagasPeriodoLetivo}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProcSeletivoCurso_numeroVaga}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:inputText size="5" id="nrVagasPeriodoLetivo" styleClass="form-control campos" maxlength="20" onkeyup="aceitarSomenteValorNumericoPositivo(this)" value="#{unidadeensinocursoItens.nrVagasPeriodoLetivo}">
+								<a4j:ajax event="change" render="resultadoConsultaCurso:nrVagasPeriodoLetivo" />
+							</h:inputText>
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ProcSeletivoControle.adicionarProcSeletivoCurso}" focus="nomeCurso" render="formCurso" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" tooltip="#{msg.msg_adicionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+							<otm:commandButton action="#{ProcSeletivoControle.adicionarProcSeletivoTodosCurso}" focus="nomeCurso" render="formCurso" value="Adicionar Todos os Cursos da Lista" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" image="#{resource['/imagens/botaoAdicionarTodos.png']}" tooltip="#{msg.msg_adicionar_dados}" />
+						</h:panelGroup>
+					</f:facet>
+				</rich:dataTable>
+				<rich:dataScroller align="center" for="formCurso:resultadoConsultaCurso" maxPages="10" id="scResultadoCurso" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				<h:panelGroup layout="block" styleClass="row mn">
+					<h:panelGroup layout="block" styleClass="col-md-12 pn title">
+						<h:outputText styleClass="tituloCampos" value="Lista de Curso por Unidade" />
+					</h:panelGroup>
+					<rich:dataTable id="procSeletivoUnidadeEnsinoCurso" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ProcSeletivoControle.procSeletivoUnidadeEnsinoTemp.procSeletivoCursoVOs}" rows="4" var="procSeletivoCursoItens">
+						<rich:column style="width: 16.66%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText styleClass="titulosCampos" value="#{procSeletivoCursoItens.unidadeEnsinoCurso.curso.nome}" />
+							</h:panelGroup>
+							<rich:tooltip value="#{procSeletivoCursoItens.unidadeEnsinoCurso.curso.nome}" style="z-index: 10000" />
+						</rich:column>
+						<rich:column style="width: 10.66%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_turno}" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText styleClass="titulosCampos" value="#{procSeletivoCursoItens.unidadeEnsinoCurso.turno.nome}" />
+							</h:panelGroup>
+							<rich:tooltip value="#{procSeletivoCursoItens.unidadeEnsinoCurso.turno.nome}" style="z-index: 10000" />
+						</rich:column>
+						<rich:column style="width: 10.66%" rendered="#{ProcSeletivoControle.utilizarNrVagasPeriodoLetivo}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ProcSeletivoCurso_numeroVaga}" />
+							</f:facet>
+							<h:panelGroup>
+								<h:inputText size="5" id="numeroVaga" styleClass="form-control campos" maxlength="20" onkeyup="aceitarSomenteValorNumericoPositivo(this)" value="#{procSeletivoCursoItens.numeroVaga}">
+									<a4j:ajax event="change" render="procSeletivoUnidadeEnsinoCurso:numeroVaga" />
+								</h:inputText>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column style="width: 25.66%">
+							<f:facet name="header">
+								<otm:outputHelp styleClass="text-dark" id="ProcSeletivoCurso_periodoInscricao" value="#{msg_aplic.prt_ProcSeletivoCurso_periodoInscricao}">
+									<h:outputText value="#{msg.msg_ProcSeletivoCurso_periodoInscricao}" />
+								</otm:outputHelp>
+							</f:facet>
+							<h:panelGroup layout="block" styleClass="col-md-5">
+									<otm:calendar datePattern="dd/MM/yyyy HH:mm" styleClass="form-control " id="dataInicioProcSeletivoCurso" value="#{procSeletivoCursoItens.dataInicioProcSeletivoCurso}">
+										
+									</otm:calendar>													
+ 								
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_a}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-5">
+								
+									<otm:calendar datePattern="dd/MM/yyyy HH:mm" styleClass="form-control " id="dataFimProcSeletivoCurso" value="#{procSeletivoCursoItens.dataFimProcSeletivoCurso}">
+										
+									</otm:calendar>
+															</h:panelGroup>
+						</rich:column>
+						<rich:column style="width: 16.66%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ProcSeletivoCurso_grupoDisciplinaProcSeletivo}" />
+							</f:facet>
+							<h:panelGroup>
+								<h:selectOneMenu styleClass="form-control campos" id="grupoDisciplinaProcSeletivo" value="#{procSeletivoCursoItens.grupoDisciplinaProcSeletivo.codigo}">
+									<a4j:ajax event="change" render="procSeletivoUnidadeEnsinoCurso:grupoDisciplinaProcSeletivo" />
+									<f:selectItems value="#{ProcSeletivoControle.listaSelectItemGrupoDisciplinaProcSeletivo}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column style="width: 5.66%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{ProcSeletivoControle.removerProcSeletivoCurso}" render="formCurso, form" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formCurso:procSeletivoUnidadeEnsinoCurso" maxPages="10" id="scResultadoCursoTurno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton action="#{ProcSeletivoControle.validarDadosProcSeletivoCurso}" oncomplete="#{rich:component('panelCurso')}.hide()" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" value="Gravar" image="#{resource['/imagens/botaoConfirm.png']}" tooltip="#{msg.msg_gravar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCurso" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{ProcSeletivoControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelEixo" keepVisualState="false" shadowOpacity="true" top="5px" width="950" height="600" style="overflow:auto;">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_selecionararEixo}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelink2" />
+					<rich:componentControl target="panelEixo" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formEixo">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_EixoCurso_selecionar}" />
+						<h:selectOneMenu id="eixoCurso" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoUnidadeEnsinoEixoCursoVO.eixoCurso.codigo}">
+							<!-- <a4j:ajax event="change" execute="@form" render="formEixo" listener="#{ProcSeletivoControle.montarListaSelectItemEixoCurso}" /> -->
+							<f:selectItems value="#{ProcSeletivoControle.listaSelectItemEixoCurso}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup styleClass="col-md-5">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_EixoCurso_nrVagas}" />
+						<h:inputText size="5" id="nrVagasEixoCurso" styleClass="form-control campos" maxlength="20" onkeyup="aceitarSomenteValorNumericoPositivo(this)" value="#{ProcSeletivoControle.procSeletivoUnidadeEnsinoEixoCursoVO.nrVagasEixoCurso}">
+							<!-- <a4j:ajax event="change" execute="@form" render="formEixo"/> -->
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="" />
+						<otm:spacer width="100%" />
+						<otm:commandButton action="#{ProcSeletivoControle.adicionarProcSeletivoUnidadeEnsinoEixoCursoVO}" render="formEixo" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary pr30 pl20" value="Adicionar" accesskey="7" imediate="true" image="#{resource['/imagens/botaoAdicionar.png']}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+
+				<rich:dataTable id="procSeletivoUnidadeEnsinoEixoCurso" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ProcSeletivoControle.procSeletivoUnidadeEnsinoTemp.procSeletivoUnidadeEnsinoEixoCursoVOs}" rows="4" var="procSeletivoEixoCursoItens">
+					<rich:column style="width: 16.66%">
+						<f:facet name="header">
+							<h:outputText value="Eixo de Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText styleClass="titulosCampos" value="#{procSeletivoEixoCursoItens.eixoCurso.nome}" />
+						</h:panelGroup>
+						<rich:tooltip value="#{procSeletivoEixoCursoItens.eixoCurso.nome}" style="z-index: 10000" />
+					</rich:column>
+					<rich:column style="width: 10.66%">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_EixoCurso_nrVagas}" />
+						</f:facet>
+						<h:panelGroup>
+							<!-- <h:inputText styleClass="titulosCampos" value="#{procSeletivoEixoCursoItens.nrVagasEixoCurso}" /> -->
+							<h:inputText size="5" id="numeroVaga" styleClass="form-control campos" maxlength="20" onkeyup="aceitarSomenteValorNumericoPositivo(this)" value="#{procSeletivoEixoCursoItens.nrVagasEixoCurso}">
+								<a4j:ajax event="change" render="procSeletivoUnidadeEnsinoEixoCursoVO:nrVagasEixoCurso" />
+							</h:inputText>
+						</h:panelGroup>
+						<rich:tooltip value="#{procSeletivoEixoCursoItens.nrVagasEixoCurso}" style="z-index: 10000" />
+					</rich:column>
+					<rich:column style="width: 5.66%">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ProcSeletivoControle.removerProcSeletivoUnidadeEnsinoEixoCursoVO}" render="formEixo" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formEixo:procSeletivoUnidadeEnsinoEixoCurso" maxPages="10" id="scResultadoCursoTurno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton action="#{ProcSeletivoControle.validarDadosProcSeletivoEixoCurso}" oncomplete="#{rich:component('panelCurso')}.hide()" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" value="Gravar" image="#{resource['/imagens/botaoConfirm.png']}" tooltip="#{msg.msg_gravar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCurso" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{ProcSeletivoControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCursoTurno" keepVisualState="false" shadowOpacity="true" top="5px" width="950" height="600" style="overflow:auto;">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Adicionar Curso"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkCT" />
+					<rich:componentControl target="panelCursoTurno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCursoTurno">
+
+				<h:panelGroup layout="block" styleClass="row mn">
+
+					<rich:dataTable id="cursoTurnoList" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ProcSeletivoControle.cursoTurnoVOs}" rows="10" var="cursoTurnoItens">
+						<rich:column style="width: 16.66%" filter="#{FilterFactory.filter('cursoTurno_curso', 'cursoVO.nome', 'TEXTO')}" filterType="custom">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<span class="append-icon right"> <otm:commandIcon tooltip="Limpar Filtro" render="cursoTurnoList" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('cursoTurno_curso')}" />
+									</span>
+									<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('cursoTurno_curso', 'cursoVO.nome', 'TEXTO').filtro}">
+										<a4j:ajax event="change" execute="@form" render="cursoTurnoList" />
+									</h:inputText>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText styleClass="titulosCampos" value="#{cursoTurnoItens.cursoVO.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column style="width: 10.66%" filter="#{FilterFactory.filter('cursoTurno_turno', 'turno.nome', 'TEXTO')}" filterType="custom">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_turno}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<span class="append-icon right"> <otm:commandIcon tooltip="Limpar Filtro" render="cursoTurnoList" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('cursoTurno_turno')}" />
+									</span>
+									<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('cursoTurno_turno', 'turno.nome', 'TEXTO').filtro}">
+										<a4j:ajax event="change" execute="@form" render="cursoTurnoList" />
+									</h:inputText>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText styleClass="titulosCampos" value="#{cursoTurnoItens.turno.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column style="width: 10.66%" rendered="#{ProcSeletivoControle.utilizarNrVagasPeriodoLetivo}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ProcSeletivoCurso_numeroVaga}" />
+							</f:facet>
+							<h:panelGroup>
+								<h:inputText size="5" id="numeroVagaCT" styleClass="form-control campos" maxlength="20" onkeyup="aceitarSomenteValorNumericoPositivo(this)" value="#{cursoTurnoItens.nrVagas}">
+
+								</h:inputText>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column style="width: 25.66%">
+							<f:facet name="header">
+								<otm:outputHelp styleClass="text-dark" id="ProcSeletivoCurso_periodoInscricao" value="#{msg_aplic.prt_ProcSeletivoCurso_periodoInscricao}">
+									<h:outputText value="#{msg.msg_ProcSeletivoCurso_periodoInscricao}" />
+								</otm:outputHelp>
+							</f:facet>
+							<h:panelGroup layout="block" styleClass="col-md-5 h36">
+								<otm:calendar id="dataInicioProcSeletivoCursoCT" value="#{cursoTurnoItens.dataInicioProcSeletivoCurso}" datePattern="dd/MM/yyyy" inputClass="form-control campos" >
+
+								</otm:calendar>
+
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_a}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-5 h36">
+								<otm:calendar id="dataFimProcSeletivoCursoCT"  value="#{cursoTurnoItens.dataFimProcSeletivoCurso}" datePattern="dd/MM/yyyy" inputClass="form-control campos" >
+
+								</otm:calendar>
+
+							</h:panelGroup>
+						</rich:column>
+						<rich:column style="width: 16.66%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ProcSeletivoCurso_grupoDisciplinaProcSeletivo}" />
+							</f:facet>
+							<h:panelGroup>
+								<h:selectOneMenu styleClass="form-control campos" id="grupoDisciplinaProcSeletivoCT" value="#{cursoTurnoItens.grupoDisciplinaProcSeletivo.codigo}">
+									<f:selectItems value="#{ProcSeletivoControle.listaSelectItemGrupoDisciplinaProcSeletivo}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column style="width: 5.66%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{ProcSeletivoControle.adicionarCursoTurno}" render="formCursoTurno, form" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" tooltip="Adicionar Curso" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formCursoTurno:cursoTurnoList" maxPages="10" id="scResultadoCursoTurnoCT" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton oncomplete="#{rich:component('panelCursoTurno')}.hide()" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-default" value="Fechar" tooltip="Fechar" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCursoTurno" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{ProcSeletivoControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{ProcSeletivoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<rich:tabPanel activeTabClass="true" headerAlignment="right">
+				<rich:tab header="Dados Básicos">
+					<h:panelGroup layout="block" styleClass="row mn">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_descricao}" />
+							<h:inputText id="descricao" size="70" maxlength="100" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.procSeletivoVO.descricao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_nivelEducacional}" />
+							<h:selectOneMenu id="nivelEducacional" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.procSeletivoVO.nivelEducacional}">
+								<f:selectItems value="#{ProcSeletivoControle.listaNivelEducacional}" />
+								<f:selectItem itemLabel="Todos" itemValue="TO" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<otm:outputHelp id="ProcSeletivo_tipoAvaliacao" styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_tipoAvaliacao}">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="tituloCamposReduzidos" value="#{msg.help_PorcSeletivo_tipoAvaliacaoProcessoSeletivo_avaliacaoCurricular}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="tituloCamposReduzidos" value="#{msg.help_PorcSeletivo_tipoAvaliacaoProcessoSeletivo_presencial}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="tituloCamposReduzidos" value="#{msg.help_PorcSeletivo_tipoAvaliacaoProcessoSeletivo_online}" />
+								</h:panelGroup>
+							</otm:outputHelp>
+							<h:selectOneMenu id="tipoAvaliacaoProcessoSeletivo" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.procSeletivoVO.tipoAvaliacaoProcessoSeletivo}">
+								<a4j:ajax event="change" execute="@form" render="form" listener="#{ProcSeletivoControle.selecionarTipoProcSeletivo}"></a4j:ajax>
+								<f:selectItems value="#{ProcSeletivoControle.listaSelectItemTipoAvaliacaoProcessoSeletivo}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<otm:outputHelp id="ProcSeletivo_regimeAprovacao" styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_regimeAprovacao}">
+								<h:panelGroup columnClasses="colunaEsquerda, tituloCamposReduzidos">
+									<h:panelGroup>
+										<otm:spacer width="1px" />
+										<h:outputText styleClass="tituloCamposReduzidos" value="#{msg.help_processoSeletivoNotaDisciplina}" />
+									</h:panelGroup>
+									<otm:spacer height="5px" />
+									<h:panelGroup>
+										<otm:spacer width="1px" />
+										<h:outputText styleClass="tituloCamposReduzidos" value="#{msg.help_processoSeletivoQuantidadeAcertos}" />
+									</h:panelGroup>
+									<otm:spacer height="5px" />
+									<h:panelGroup>
+										<otm:spacer width="1px" />
+										<h:outputText styleClass="tituloCamposReduzidos" value="#{msg.help_processoSeletivoQuantidadeAcertosRedacao}" />
+									</h:panelGroup>
+									<otm:spacer height="5px" />
+								</h:panelGroup>
+							</otm:outputHelp>
+							<h:selectOneMenu styleClass="form-control camposObrigatorios" id="regimeAprovacao" value="#{ProcSeletivoControle.procSeletivoVO.regimeAprovacao}">
+								<f:selectItems value="#{ProcSeletivoControle.tipoRegimeAprovacaoCombo}" />
+								<a4j:ajax event="change" render="paneMediaMinimaAprovacao, outQuantidadeAcertosMinimosAprovacao" listener="#{ProcSeletivoControle.limparCamposRegimeAprovacao}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 h36">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_peridoInscricao}" />
+							<otm:calendar id="dataInicio"  value="#{ProcSeletivoControle.procSeletivoVO.dataInicio}"   oninputchange="validarData(this.value,this.id)"  datePattern="dd/MM/yyyy" showApplyButton="false"  inputClass="form-control camposObrigatorios" showFooter="false" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 h36">
+							<h:outputText styleClass="tituloCampos" value="Período Fim" />
+							<otm:calendar id="dataFim"  value="#{ProcSeletivoControle.procSeletivoVO.dataFim}"   oninputchange="validarData(this.value,this.id)"  datePattern="dd/MM/yyyy" showApplyButton="false"  inputClass="form-control camposObrigatorios" showFooter="false" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-1">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ListagemDescontosAlunosRel_ano}" />
+							<h:inputText id="ano" size="4" maxlength="4" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.procSeletivoVO.ano}" onkeypress="aceitarSomenteValorNumerico(this)" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-1">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ListagemDescontosAlunosRel_semestre}" />
+							<h:selectOneMenu styleClass="form-control camposObrigatorios" id="semestre" value="#{ProcSeletivoControle.procSeletivoVO.semestre}">
+								<f:selectItems value="#{ProcSeletivoControle.tipoConsultaComboSemestre}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup id="valorInscricaoQtdeDias">
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_valorInscricao}" />
+								<h:inputText id="valorInscricao" size="10" maxlength="10" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.valorInscricao}" onkeypress="aceitarSomenteValorDecimal(this)" onkeyup="aceitarSomenteValorNumericoPositivo(this);">
+									<f:converter converterId="FormatadorNumerico" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_informarDadosBancario}" />
+								<otm:selectBooleanCheckbox id="informarDadosBancarios" value="#{ProcSeletivoControle.procSeletivoVO.informarDadosBancarios}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="btn-block tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_informarQtdeDiasVencimentoAposInscricao}" />
+								<otm:selectBooleanCheckbox id="informarQtdeDiasVencimentoAposInscricao" value="#{ProcSeletivoControle.procSeletivoVO.informarQtdeDiasVencimentoAposInscricao}">
+									<a4j:ajax event="click" execute="" render="form:valorInscricaoQtdeDias" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ProcSeletivoControle.procSeletivoVO.informarQtdeDiasVencimentoAposInscricao}">
+								<otm:outputHelp id="help_diaVencimento" styleClass="tituloCampos" value="Dias Vencimento">
+									<h:outputText styleClass="tituloCamposReduzidos" value="#{msg.helpQtdeDiasVencimentoAposInscricao}" />
+								</otm:outputHelp>
+								<h:inputText id="qtdeDiasVencimentoAposInscricao" rendered="#{ProcSeletivoControle.procSeletivoVO.informarQtdeDiasVencimentoAposInscricao}" size="2" onkeypress="aceitarSomenteValorNumerico(this)" maxlength="3" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.qtdeDiasVencimentoAposInscricao}" />
+							</h:panelGroup>
+						</h:panelGroup>
+
+						<h:panelGroup id="tipoSelecao" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoAvaliacaoProcessoSeletivo ne 'AVALIACAO_CURRICULAR'}">
+							<h:panelGroup layout="block" styleClass="row mn border rounded mt5" style="height:100px">
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom bg-gray">
+									<h:outputText styleClass="tituloCampos font-weight-bold mr10" value="#{msg_aplic.prt_ProcSeletivo_tipoSelecao}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_tipoSelecaoProcessoSeletivo}" />
+									<otm:selectBooleanCheckbox id="processoSeletivo" disabled="#{ProcSeletivoControle.procSeletivoVO.tipoAvaliacaoProcessoSeletivo eq 'ON_LINE'}" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.tipoProcessoSeletivo}">
+										<a4j:ajax event="click" render="form:valorInscricaoQtdeDias, form" execute="form" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_tipoSelecaoEnem}" />
+									<otm:selectBooleanCheckbox id="enem" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.tipoEnem}">
+										<a4j:ajax event="click" render="form" execute="form" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_tipoSelecaoPortadorDiploma}" />
+									<otm:selectBooleanCheckbox id="portadorDiploma" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.tipoPortadorDiploma}">
+										<a4j:ajax event="click" render="form" execute="form" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_tipoSelecaoTransferencia}" />
+									<otm:selectBooleanCheckbox id="transferencia" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.tipoTransferencia}">
+										<a4j:ajax event="click" render="form" execute="form" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup id="upload">
+							<h:panelGroup layout="block" styleClass="#{ProcSeletivoControle.cssFlagComprovante}" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoEnem}">
+								<h:outputText styleClass="tituloCampos btn-block" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoEnem}" value="#{msg_aplic.prt_ProcSeletivo_uploadComprovanteEnem}" />
+								<otm:selectBooleanCheckbox id="uploadComprovanteEnem" styleClass="form-control campos" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoEnem}" value="#{ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem}">
+									<a4j:ajax event="click" render="form, cssBoolean" execute="form" listener="#{ProcSeletivoControle.limparDadosOrientacao}" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="#{ProcSeletivoControle.cssFlagComprovante}" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoPortadorDiploma}">
+								<h:outputText styleClass="tituloCampos btn-block" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoPortadorDiploma}" value="#{msg_aplic.prt_ProcSeletivo_uploadComprovantePortador}" />
+								<otm:selectBooleanCheckbox id="uploadComprovantePortador" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoPortadorDiploma}" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma}">
+									<a4j:ajax event="click" render="form, cssBoolean" execute="form" listener="#{ProcSeletivoControle.limparDadosOrientacao}" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="#{ProcSeletivoControle.cssFlagComprovante}" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoTransferencia}">
+								<h:outputText styleClass="tituloCampos btn-block" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoTransferencia}" value="#{msg_aplic.prt_ProcSeletivo_obrigarUploadComprovanteTransferencia}" />
+								<otm:selectBooleanCheckbox id="obrigarUploadComprovanteTransferencia" rendered="#{ProcSeletivoControle.procSeletivoVO.tipoTransferencia}" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia}">
+									<a4j:ajax event="click" render="form, cssBoolean" execute="form" listener="#{ProcSeletivoControle.limparDadosOrientacao}" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup id="cssBoolean" layout="block" styleClass="#{ProcSeletivoControle.cssFlagBoolean}">
+							<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_PermitirAlunosMatriculadosInscreverMesmoCurso}" />
+							<otm:selectBooleanCheckbox id="permitirAlunosMatriculadosInscreverMesmoCursoId" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.permitirAlunosMatriculadosInscreverMesmoCurso}">
+								<a4j:ajax event="click" render="form" execute="form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem or ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma or ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia}" />
+						<h:panelGroup layout="block" styleClass="#{(ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem and ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma and ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia) ? 'col-md-4' : ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem and ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma or ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia ? 'col-md-6' : 'col-md-12'}" rendered="#{ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem}">
+							<h:outputText styleClass="tituloCampos" rendered="#{ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem}" value="#{msg_aplic.prt_ProcSeletivo_orientacaoEnem}" />
+							<h:inputTextarea id="orientacaoUploadEnem" rows="3" cols="70" styleClass="form-control" value="#{ProcSeletivoControle.procSeletivoVO.orientacaoUploadEnem}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="#{(ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem and ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma and ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia) ? 'col-md-4' : ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem and ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma or ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia ? 'col-md-6' : 'col-md-12'}" rendered="#{ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma}">
+							<h:outputText styleClass="tituloCampos" rendered="#{ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma}" value="#{msg_aplic.prt_ProcSeletivo_orientacaoPortadorDiploma}" />
+							<h:inputTextarea id="orientacaoUploadPortador" rendered="#{ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma}" rows="3" cols="70" styleClass="form-control" value="#{ProcSeletivoControle.procSeletivoVO.orientacaoUploadPortadorDiploma}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="#{(ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem and ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma and ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia) ? 'col-md-4' : ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia and ProcSeletivoControle.procSeletivoVO.uploadComprovantePortadorDiploma or ProcSeletivoControle.procSeletivoVO.uploadComprovanteEnem ? 'col-md-6' : 'col-md-12'}" rendered="#{ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia}">
+							<h:outputText styleClass="tituloCampos" rendered="#{ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia}" value="#{msg_aplic.prt_ProcSeletivo_orientacaoTransferencia}" />
+							<h:inputTextarea id="orientacaoTransferencia" rendered="#{ProcSeletivoControle.procSeletivoVO.obrigarUploadComprovanteTransferencia}" rows="3" cols="70" styleClass="form-control" value="#{ProcSeletivoControle.procSeletivoVO.orientacaoTransferencia}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ProcSeletivoControle.procSeletivoVO.realizarProvaOnline}">
+							<h:outputText styleClass="tituloCampos" rendered="#{ProcSeletivoControle.procSeletivoVO.realizarProvaOnline}" value="Tempo Realização da Prova On-line (Minutos)" />
+							<h:inputText id="tempoRealizacaoProvaOnline" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.procSeletivoVO.tempoRealizacaoProvaOnline}" onkeypress="aceitarSomenteValorNumerico(this)" onkeyup="aceitarSomenteValorNumericoPositivo(this)" maxlength="9" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ProcSeletivoControle.procSeletivoVO.realizarProvaOnline}">
+							<h:outputText styleClass="tituloCampos btn-block" rendered="#{ProcSeletivoControle.procSeletivoVO.realizarProvaOnline}" value="Possui Termo de Aceite Prova On-line" />
+							<otm:selectBooleanCheckbox id="utilizaTermoAceiteProva" rendered="#{ProcSeletivoControle.procSeletivoVO.realizarProvaOnline}" styleClass="form-control campos" value="#{ProcSeletivoControle.utilizaTermoAceiteProva}">
+								<a4j:ajax event="click" render="form" execute="form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="tituloCampos btn-block" value="Utilizar Autenticação Prova On-line Por E-mail" />
+							<otm:selectBooleanCheckbox id="utilizarAutenticacaoEmail" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.utilizarAutenticacaoEmail}">
+								<a4j:ajax event="click" render="form" execute="form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="tituloCampos btn-block" value="Utilizar Autenticação Prova On-line Por SMS" />
+							<otm:selectBooleanCheckbox id="utilizarAutenticacaoSMS" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.utilizarAutenticacaoSMS}">
+								<a4j:ajax event="click" render="form" execute="form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{ProcSeletivoControle.utilizaTermoAceiteProva}">
+							<h:outputText styleClass="tituloCampos" rendered="#{ProcSeletivoControle.utilizaTermoAceiteProva}" value="Termo Aceite Prova On-line" />
+							<otm:editor width="800" height="120" style="display:inline-block" rendered="#{ProcSeletivoControle.utilizaTermoAceiteProva}" value="#{ProcSeletivoControle.procSeletivoVO.termoAceiteProva}">
+							</otm:editor>
+						</h:panelGroup>
+
+						<!--Campo Seleção !-->
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_documentaoObrigatoria}" />
+							<h:inputTextarea id="documentaoObrigatoria" rows="3" cols="70" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.procSeletivoVO.documentaoObrigatoria}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_requisitosGerais}" />
+							<h:inputTextarea id="requisitosGerais" rows="3" cols="70" styleClass="form-control" value="#{ProcSeletivoControle.procSeletivoVO.requisitosGerais}" />
+						</h:panelGroup>
+
+						<h:panelGroup id="paneMediaMinimaAprovacao">
+							<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!ProcSeletivoControle.calculoMedia}">
+								<otm:outputHelp id="ProcSeletivo_quantidadeAcertosMinimosAprovacao" styleClass="tituloCampos" value="Quantidade de Acertos Mínima" rendered="#{!ProcSeletivoControle.calculoMedia}">
+									<h:outputText value="#{msg_aplic.prt_ProcSeletivo_quantidadeAcertosMinimosAprovacao}" rendered="#{!ProcSeletivoControle.calculoMedia}" />
+								</otm:outputHelp>
+								<h:inputText id="quantidadeAcertosMinimosAprovacao" size="8" maxlength="3" styleClass="form-control campos" rendered="#{!ProcSeletivoControle.calculoMedia}" value="#{ProcSeletivoControle.procSeletivoVO.quantidadeAcertosMinimosAprovacao}" onkeydown="aceitarSomenteValorNumerico(this)" onkeyup="aceitarSomenteValorNumericoPositivo(this)" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ProcSeletivoControle.calculoMedia}">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_mediaMinimaAprovacao}" rendered="#{ProcSeletivoControle.calculoMedia}" />
+								<h:inputText id="mediaMinimaAprovacao" onkeyup="limitarCasasDecimais(this, this.value, #{ProcSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo});" onkeydown="aceitarSomenteValorDecimal(this);" size="8" maxlength="15" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.mediaMinimaAprovacao}">
+									<a4j:ajax event="change" listener="#{ProcSeletivoControle.validarDadosMediaMinimaAprovacao}" render="form:msg" />
+									<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+									<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ProcSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_valorPorAcerto}" />
+								<h:inputText id="valorPorAcerto" size="8" maxlength="3" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.valorPorAcerto}" onkeydown="aceitarSomenteValorDecimal(this);" onkeyup="aceitarSomenteValorNumericoPositivo(this)" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ProcSeletivoControle.apresentarNotaMininaRedacao}">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_notaMinimaRedacao}" rendered="#{ProcSeletivoControle.apresentarNotaMininaRedacao}" />
+								<h:inputText id="notaMinimaRedacao" size="8" maxlength="3" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.notaMinimaRedacao}" rendered="#{ProcSeletivoControle.apresentarNotaMininaRedacao}" onkeydown="aceitarSomenteValorDecimal(this)" onkeyup="aceitarSomenteValorNumericoPositivo(this)" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_nrOpcoesCurso}" />
+							<h:selectOneMenu id="nrOpcoesCurso" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.nrOpcoesCurso}">
+								<f:selectItems value="#{ProcSeletivoControle.listaSelectItemNrOpcoesCursoProcSeletivo}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_tipoLayoutComprovante}" />
+							<h:selectOneMenu id="tipoLayoutuComprovante" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.procSeletivoVO.tipoLayoutComprovante}">
+								<f:selectItems value="#{ProcSeletivoControle.listaSelectItemTipoLayoutComprovante}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_avaliacaoSocioEconomico}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:selectOneMenu id="questionario" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.questionario.codigo}">
+									<f:selectItems value="#{ProcSeletivoControle.listaSelectItemQuestionario}" />
+								</h:selectOneMenu>
+								<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_questionarioCurso" action="#{ProcSeletivoControle.montarListaSelectItemQuestionario}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="form:questionario" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="tituloCampos" value="Campanha Gerar Agenda Inscritos CRM" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:selectOneMenu id="campanhaGerarAgendaInscritos" styleClass="form-control campos" value="#{ProcSeletivoControle.procSeletivoVO.campanhaGerarAgendaInscritos.codigo}">
+									<f:selectItems value="#{ProcSeletivoControle.listaSelectItemCampanha}" />
+								</h:selectOneMenu>
+								<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_campanhaGerarAgendaInscritos" action="#{ProcSeletivoControle.montarListaSelectItemCampanha}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="form:campanhaGerarAgendaInscritos" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6 pn">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_responsavel}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:inputText id="responsavel" readonly="true" size="10" maxlength="10" styleClass="form-control camposSomenteLeitura" value="#{ProcSeletivoControle.procSeletivoVO.responsavel.codigo}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-8">
+								<h:inputText id="responsavel_nomePessoa" styleClass="form-control camposSomenteLeitura" value="#{ProcSeletivoControle.procSeletivoVO.responsavel.nome}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<rich:tab header="Datas Processo Seletivo">
+					<h:panelGroup layout="block" styleClass="row" id="panelItemProcSeletivo">
+						<h:panelGroup id="panelDatasProvasProc">
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="tituloCampos" value="Tipo" />
+								<h:selectOneMenu disabled="#{!empty ProcSeletivoControle.itemProcSeletivoDataProvaVO.processoSeletivoProvaDataVOs or !empty ProcSeletivoControle.itemProcSeletivoDataProvaVO.procSeletivoGabaritoDataVOs or ProcSeletivoControle.procSeletivoVO.tipoAvaliacaoProcessoSeletivo eq 'ON_LINE'}" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.tipoProvaGabarito}">
+									<f:selectItems value="#{ProcSeletivoControle.tipoConsultaComboTipoProvaGabarito}" />
+									<a4j:ajax event="change" render="panelDatasProvasProc, panelBotoesDataProcSeletivo" execute="panelDatasProvasProc, panelBotoesDataProcSeletivo" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 h36">
+								<h:outputText styleClass="tituloCampos mr-2" value="#{msg_aplic.prt_ProcSeletivo_dataProva}" />
+								<otm:commandIcon id="botaoAlterarDataProva" render="formEnvioDataProvaAlterada" oncomplete="#{rich:component('panelAlterarDataProvaProcessoSeletivo')}.show()" action="#{ProcSeletivoControle.realizarContagemCandidatoNotificado}" tooltip="Alterar Data Prova e Enviar Notificação ao Candidato" image="#{resource['/imagens/alterarDataHoraProvaProcessoSeletivo2.png']}" rendered="#{ProcSeletivoControle.isApresentarIconeAlteracaoDataProva}" icon="#{msg_botoes.btn_icon_gravar_embutido}" />
+								<otm:calendar id="dataProva"   value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.dataProva}"    datePattern="dd/MM/yyyy HH:mm"  inputClass="form-control camposObrigatorios" disabled="#{!ProcSeletivoControle.isPermitirEditarDataProva}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 h36">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_dataInicioInternet}" />
+								<otm:calendar id="dataInicioInscricaoDataProva1"   value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.dataInicioInscricao}"    datePattern="dd/MM/yyyy HH:mm"  inputClass="form-control camposObrigatorios" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 h36">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_dataFimInternet}" />
+								<otm:calendar id="dataTerminoInscricaoDataProva2"   value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.dataTerminoInscricao}"    datePattern="dd/MM/yyyy HH:mm"  inputClass="form-control camposObrigatorios" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 h36">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_dataLiberacaoResultado}" />
+								<otm:calendar id="dataLiberacaoResultado"   value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.dataLiberacaoResultado}"    datePattern="dd/MM/yyyy HH:mm"  inputClass="form-control camposObrigatorios" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 h36">
+								<otm:outputHelp id="ProcessoSeletivo_dataLimiteAdiarVencimentoInscricao" styleClass="tituloCampos" value="Adiar Vencimento Inscrição">
+									<h:outputText value="#{msg_aplic.prt_ProcessoSeletivo_dataLimiteAdiarVencimentoInscricao}" />
+								</otm:outputHelp>
+								<otm:calendar id="dataLimiteAdiarVencimentoInscricao"   value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.dataLimiteAdiarVencimentoInscricao}"    datePattern="dd/MM/yyyy"  inputClass="form-control camposObrigatorios" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12" />
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_replicarDatasEHorariosAteDeterminadaDataFutura}" />
+								<otm:selectBooleanCheckbox id="replicarDatasEHorariosAteDeterminadaDataFutura" styleClass="form-control campos" value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.replicarDatasEHorariosAteDeterminadaDataFutura}">
+									<a4j:ajax event="click" render="panelDatasProvasProc" execute="panelDatasProvasProc" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 h36" rendered="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.replicarDatasEHorariosAteDeterminadaDataFutura}">
+								<h:outputText rendered="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.replicarDatasEHorariosAteDeterminadaDataFutura}" styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_dataFuturaReplicarDatasEHorarios}" />
+								<otm:calendar rendered="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.replicarDatasEHorariosAteDeterminadaDataFutura}" id="dataFuturaReplicarDatasEHorarios"   value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.dataFuturaReplicarDatasEHorarios}"    datePattern="dd/MM/yyyy"  inputClass="form-control camposObrigatorios" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.replicarDatasEHorariosAteDeterminadaDataFutura}">
+								<h:outputText rendered="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.replicarDatasEHorariosAteDeterminadaDataFutura}" styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_ignorarFeriadosComoDataPossivelParaProva}" />
+								<otm:selectBooleanCheckbox id="ignorarFeriadosComoDataPossivelParaProva" styleClass="form-control campos" value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.ignorarFeriadosComoDataPossivelParaProva}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.replicarDatasEHorariosAteDeterminadaDataFutura}">
+								<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_ignorarSabadosComoDataPossivelParaProva}" />
+								<otm:selectBooleanCheckbox id="ignorarSabadosComoDataPossivelParaProva" styleClass="form-control campos" value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.ignorarSabadosComoDataPossivelParaProva}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.replicarDatasEHorariosAteDeterminadaDataFutura}">
+								<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcSeletivo_ignorarDomingosComoDataPossivelParaProva}" />
+								<otm:selectBooleanCheckbox id="ignorarDomingosComoDataPossivelParaProva" styleClass="form-control campos" value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.ignorarDomingosComoDataPossivelParaProva}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_ProcessoSeletivo_dataLimiteApresentarDadosVisaoCandidato}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 h36">
+								<otm:calendar id="dataLimiteApresentarDadosVisaoCandidato"   value="#{ProcSeletivoControle.itemProcSeletivoDataProvaVO.dataLimiteApresentarDadosVisaoCandidato}"    datePattern="dd/MM/yyyy"  inputClass="form-control campos" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+							<h:panelGroup id="panelBotoesDataProcSeletivo">
+								<otm:commandButton rendered="#{ProcSeletivoControle.apresentarItemProcSeletivoProva}" id="btnAdicionarItemProva" render="form:msg, form:resultadoConsultaDataProva, form:panelItemProcSeletivo" action="#{ProcSeletivoControle.adicionarItemProcSeletivoDataProva}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary mr5" value="Adicionar Datas" image="#{resource['/imagens/botaoAdicionarDatasProc.png']}" tooltip="#{msg.msg_adicionar_dados}" />
+								<otm:commandButton rendered="#{!ProcSeletivoControle.apresentarItemProcSeletivoProva}" id="brnAdicionarItemGabarito" render="form:msg, form:resultadoConsultaDataGabarito, form:panelItemProcSeletivo" action="#{ProcSeletivoControle.adicionarItemProcSeletivoDataGabarito}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary mr5" value="Adicionar Datas" image="#{resource['/imagens/botaoAdicionarDatasProc.png']}" tooltip="#{msg.msg_adicionar_dados}" />
+								<otm:commandButton id="brnRemoverDatasProva" oncomplete="#{rich:component('panelRemoverDataProva')}.show();" render="form:msg, formRemoverDataProva, form:panelItemProcSeletivo" action="#{ProcSeletivoControle.prepararRemoverItemProcSeletivoDataGabarito}" icon="#{msg_botoes.btn_icon_remover_embutido}" styleClass="btn btn-danger mr5" value="Remover Datas" image="#{resource['/imagens/botaoRemoverDatasProc.png']}" tooltip="#{msg.msg_excluir_dados}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<rich:dataTable id="resultadoConsultaDataProva" render="resultadoConsultaDataProva, scresultadoConsultaDataProva" rows="20" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" footerClass="colunaCentralizada" value="#{ProcSeletivoControle.procSeletivoVO.itemProcSeletivoDataProvaVOs}" var="itemProcSeletivoDataProvaItens">
+							<rich:column style="width: 12.5%" filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaDataProva', 'dataProva_Apresentar', 'TEXTO')}">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProcSeletivo_dataProva}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="16" value="#{FilterFactory.filter('resultadoConsultaDataProva', 'dataProva_Apresentar', 'DATA').filtro}" onkeypress="return mascara(this.form, this.id, '99/99/9999 99:99', event);" maxlength="16">
+											<a4j:ajax event="change" execute="@this" render="form:resultadoConsultaDataProva" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="resultadoConsultaDataProva" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaDataProva')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{itemProcSeletivoDataProvaItens.dataProva_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 12.5%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProcSeletivo_dataInicioInternet}" />
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{itemProcSeletivoDataProvaItens.dataInicioInscricao_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 12.5%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProcSeletivo_dataFimInternet}" />
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{itemProcSeletivoDataProvaItens.dataTerminoInscricao_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 12.5%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProcSeletivo_dataLiberacaoResultado}" />
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{itemProcSeletivoDataProvaItens.dataLiberacaoResultado_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 12.5%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProcessoSeletivo_dataLimiteAdiarVencimentoInscricao}" />
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{itemProcSeletivoDataProvaItens.dataLimiteAdiarVencimentoInscricao}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 17.5%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProcessoSeletivo_dataLimiteApresentarDadosVisaoCandidato}" />
+								</f:facet>
+								<h:panelGroup>
+									<otm:calendar id="dlAIc" datePattern="dd/MM/yyyy"  inputClass="form-control campos" value="#{itemProcSeletivoDataProvaItens.dataLimiteApresentarDadosVisaoCandidato}" />
+										
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 5.5%">
+								<f:facet name="header">
+									<h:outputText value="Prova/Gabarito" />
+								</f:facet>
+								<otm:commandIcon action="#{ProcSeletivoControle.inicializarDadosProcessoSeletivoProvaData}" rendered="#{itemProcSeletivoDataProvaItens.tipoProvaGabarito eq 'PR' or ProcSeletivoControle.procSeletivoVO.realizarProvaOnline}" render="formDataProva" icon="#{msg_botoes.btn_icon_lista_embutido} iconePequeno" oncomplete="#{rich:component('panelDataProva')}.show();" tooltip="Adicionar Prova" title="Adicionar Prova" />
+								<otm:commandIcon action="#{ProcSeletivoControle.inicializarDadosProcessoSeletivoGabaritoData}" rendered="#{itemProcSeletivoDataProvaItens.tipoProvaGabarito eq 'GA' and !ProcSeletivoControle.procSeletivoVO.realizarProvaOnline}" render="formDataGabarito" icon="#{msg_botoes.btn_icon_gabarito_embutido} iconePequeno" oncomplete="#{rich:component('panelDataGabarito')}.show();" tooltip="Adicionar Gabarito" title="Adicionar Gabarito" />
+							</rich:column>
+							<rich:column style="width: 5.5%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_bt.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon id="editarItemProcSeletivoDataProva" action="#{ProcSeletivoControle.editarItemProcSeletivoDataProva}" render="form:resultadoConsultaDataGabarito, form:msg, form:panelItemProcSeletivo" icon="#{msg_botoes.btn_icon_editar} iconePequeno" image="#{resource['/imagens/botaoEditar.png']}" tooltip="#{msg.msg_dados_editar}" />
+								<otm:commandIcon id="removerItemProcSeletivoDataProva" action="#{ProcSeletivoControle.removerItemProcSeletivoDataProva}" render="form:resultadoConsultaDataProva, form:msg" icon="#{msg_botoes.btn_icon_remover} iconePequeno" image="#{resource['/imagens/botaoRemover.png']}" tooltip="#{msg.msg_remover_dados}" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller for="resultadoConsultaDataProva" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scresultadoConsultaDataProva" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+					</h:panelGroup>
+				</rich:tab>
+				<rich:tab header="Unidade de Ensino/Cursos Envolvidos">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<rich:fileUpload listHeight="0" noDuplicate="true" execute="@form" acceptedTypes="xlsx" fileUploadListener="#{ProcSeletivoControle.inicializarDadosProcSeletivoUnidadeEnsinoExcel}" render="form" maxFilesQuantity="1" addLabel="Carregar arquivo para Unidade Ensino/ Eixo de Curso/ Número de vagas" clearLabel="Cancelar" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo Permitido  150MB" progressLabel="Enviando" uploadLabel="Enviar" serverErrorLabel="Falha de Transmissão" id="uploadArquivo" immediateUpload="true" ontyperejected="alert('Formato inválido. Formatos Suportados: (.xlsx, .xlsm, .xlsb, .xltx)')">
+							<a4j:ajax event="uploadcomplete" render="form:procSeletivoUnidadeEnsinoVO, form:msg" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-10">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivoUnidadeEnsino_tituloForm}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:selectOneMenu id="ProcSeletivoUnidadeEnsino_unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.procSeletivoUnidadeEnsinoVO.unidadeEnsino.codigo}">
+									<f:selectItems value="#{ProcSeletivoControle.listaSelectItemUnidadeEnsino}" />
+								</h:selectOneMenu>
+								<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_ProcSeletivoUnidadeEnsino_unidadeEnsino" action="#{ProcSeletivoControle.montarListaSelectItemUnidadeEnsino}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" immediate="true" render="form:ProcSeletivoUnidadeEnsino_unidadeEnsino" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+							<otm:spacer width="100%" />
+							<otm:commandButton action="#{ProcSeletivoControle.adicionarProcSeletivoUnidadeEnsino}" render="form" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary pr30 pl30" value="Adicionar" accesskey="7" image="#{resource['/imagens/botaoAdicionar.png']}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+						<rich:dataTable id="procSeletivoUnidadeEnsinoVO" rows="10" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{ProcSeletivoControle.procSeletivoVO.procSeletivoUnidadeEnsinoVOs}" var="procSeletivoUnidadeEnsinoItens">
+							<rich:column filterType="custom" filter="#{FilterFactory.filter('procSeletivoUnidadeEnsinoItens_unidadeEnsino_codigo', 'unidadeEnsino.codigo', 'INTEIRO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="row">
+										<h:outputText value="Cod. Unidade" />
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<span class="append-icon right"> <otm:commandIcon tooltip="Limpar Filtro" render="procSeletivoUnidadeEnsinoVO" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('procSeletivoUnidadeEnsinoItens_unidadeEnsino_codigo')}" />
+											</span>
+											<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('procSeletivoUnidadeEnsinoItens_unidadeEnsino_codigo', 'unidadeEnsino.codigo', 'INTEIRO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="procSeletivoUnidadeEnsinoVO" />
+											</h:inputText>
+										</h:panelGroup>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText value="#{procSeletivoUnidadeEnsinoItens.unidadeEnsino.codigo}" />
+							</rich:column>
+							<rich:column filterType="custom" filter="#{FilterFactory.filter('procSeletivoUnidadeEnsinoItens_unidadeEnsino_nome', 'unidadeEnsino.nome', 'TEXTO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="row">
+										<h:outputText value="#{msg_aplic.prt_ProcSeletivoUnidadeEnsino_unidadeEnsino}" />
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<span class="append-icon right"> <otm:commandIcon tooltip="Limpar Filtro" render="procSeletivoUnidadeEnsinoVO" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('procSeletivoUnidadeEnsinoItens_unidadeEnsino_nome')}" />
+											</span>
+											<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('procSeletivoUnidadeEnsinoItens_unidadeEnsino_nome', 'unidadeEnsino.nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="procSeletivoUnidadeEnsinoVO" />
+											</h:inputText>
+										</h:panelGroup>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText value="#{procSeletivoUnidadeEnsinoItens.unidadeEnsino.nome}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Adicionar Cursos" />
+									<h:panelGroup layout="block" styleClass="row text-center">
+										<otm:commandButton id="adicionarCursoLote" value="Adicionar" oncomplete="#{rich:component('panelCursoTurno')}.show()" render="formCursoTurno" action="#{ProcSeletivoControle.consultarCursoTurno}" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_adicionar_embutido}" tooltip="Adicionar Curso Para Todas as Unidades" accesskey="7" />
+									</h:panelGroup>
+								</f:facet>
+								<h:panelGroup>
+									<otm:commandIcon id="consultaDadosCurso" action="#{ProcSeletivoControle.selecionarProcSeletivoUnidadeEnsino}" focus="nomeCurso" tooltip="Localizar Curso" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show()" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" />
+								</h:panelGroup>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Vagas por eixo" />
+								</f:facet>
+								<h:panelGroup>
+									<otm:commandIcon id="selecionarEixo" action="#{ProcSeletivoControle.selecionarProcSeletivoUnidadeEnsino}" tooltip="Localizar Eixo" render="formEixo" oncomplete="#{rich:component('panelEixo')}.show()" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" />
+								</h:panelGroup>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									<h:panelGroup layout="block" styleClass="row text-center">
+										<otm:commandButton id="removerItemVendaTodas" value="Remover" render="form" onclick="return confirm('Deseja remover todas as unidades de ensino? Ao confirmar será removido apenas as unidade que não possuem inscrição.')" action="#{ProcSeletivoControle.removerProcSeletivoUnidadeEnsinoTodas}" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_remover_embutido}" tooltip="Remover Todas as Unidades" accesskey="7" />
+									</h:panelGroup>
+								</f:facet>
+								<h:panelGroup>
+									<otm:commandIcon id="removerItemVenda" render="form" onclick="return confirm('Deseja remover a unidade de ensino?')" action="#{ProcSeletivoControle.removerProcSeletivoUnidadeEnsino}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" accesskey="7" image="#{resource['/imagens/botaoRemover.png']}" />
+								</h:panelGroup>
+							</rich:column>
+							<f:facet name="footer">
+								<rich:dataScroller></rich:dataScroller>
+							</f:facet>
+						</rich:dataTable>
+					</h:panelGroup>
+				</rich:tab>	
+		         <rich:tab header="Periodo de Chamada Processo Seletivo">
+					<h:panelGroup layout="block" styleClass="row" id="panelPeriodoChamadaProcSeletivo">
+						<h:panelGroup id="panelPeriodoChamadaProc">
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_nrChamadaProcSel}" />
+								<h:selectOneMenu  styleClass="form-control camposObrigatorios" value="#{ProcSeletivoControle.periodoChamadaProcSeletivoVO.nrChamada}">
+									<f:selectItems value="#{ProcSeletivoControle.tipoConsultaComboNrChamadaProcSeletivo}" />
+									<a4j:ajax event="change"  execute="@this" />
+								</h:selectOneMenu>
+							</h:panelGroup>							
+							<h:panelGroup layout="block" styleClass="col-md-2 ">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_periodoInicialChamadaProcSel}" />
+								<otm:calendar id="periodoInicialChamadaProcSeletivo" oninputchange="return validarDataHora(this.value, this.id)" oninputkeypress="return mascara(this.form, this.id, '99/99/9999 99:99', event);" value="#{ProcSeletivoControle.periodoChamadaProcSeletivoVO.periodoInicialChamada}" enableManualInput="true" popup="true" inputSize="16" datePattern="dd/MM/yyyy HH:mm" showApplyButton="true" cellWidth="24px" cellHeight="24px" inputClass="form-control camposObrigatorios" showFooter="true" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 ">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_periodoFinalChamadaProcSel}" />
+								<otm:calendar id="periodoFinalChamadaProcSeletivo" oninputchange="return validarDataHora(this.value, this.id)" oninputkeypress="return mascara(this.form, this.id, '99/99/9999 99:99', event);" value="#{ProcSeletivoControle.periodoChamadaProcSeletivoVO.periodoFinalChamada}" enableManualInput="true" popup="true" inputSize="16" datePattern="dd/MM/yyyy HH:mm" showApplyButton="true" cellWidth="24px" cellHeight="24px" inputClass="form-control camposObrigatorios" showFooter="true" />
+							</h:panelGroup>	
+							<h:panelGroup layout="block" styleClass="col-md-3 ">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_PeriodoInicialAdicionalUploadDocumentoinDeferidoChamadaProcSel}" />
+								<otm:calendar id="periodoInicialAdicionalUploadDocumentoDeferidoChamadaProcSel" oninputchange="return validarDataHora(this.value, this.id)" oninputkeypress="return mascara(this.form, this.id, '99/99/9999 99:99', event);" value="#{ProcSeletivoControle.periodoChamadaProcSeletivoVO.periodoInicialUploadDocumentoIndeferido}" enableManualInput="true" popup="true" inputSize="16" datePattern="dd/MM/yyyy HH:mm" showApplyButton="true" cellWidth="24px" cellHeight="24px" inputClass="form-control campos" showFooter="true" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3 ">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_PeriodoFinalAdicionalUploadDocumentoinDeferidoChamadaProcSel}" />
+								<otm:calendar id="periodoFinalAdicionalUploadDocumentoDeferidoChamadaProcSel" oninputchange="return validarDataHora(this.value, this.id)" oninputkeypress="return mascara(this.form, this.id, '99/99/9999 99:99', event);" value="#{ProcSeletivoControle.periodoChamadaProcSeletivoVO.periodoFinalUploadDocumentoIndeferido}" enableManualInput="true" popup="true" inputSize="16" datePattern="dd/MM/yyyy HH:mm" showApplyButton="true" cellWidth="24px" cellHeight="24px" inputClass="form-control campos" showFooter="true" />
+							</h:panelGroup>	
+							<h:panelGroup layout="block" styleClass="col-md-2 ">
+								  <h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_DataEnvioMensagemAtivacaoMatriculaChamadaProcSel}" />
+								  <otm:calendar id="dataEnvioMensagemAtivacaoMatriculaChamadaProcessoSeletivo" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)"  value="#{ProcSeletivoControle.periodoChamadaProcSeletivoVO.dataEnvioMensagemAtivacaoMatricula}" enableManualInput="true" popup="true" inputSize="10" datePattern="dd/MM/yyyy" showApplyButton="true" cellWidth="24px" cellHeight="24px" inputClass="form-control campos" showFooter="true" />
+							</h:panelGroup>												
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" />
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+							<h:panelGroup>
+								<otm:commandButton  id="btnAdicionarPeriodoChamada" render="form:msg, form:resultadoConsultaPeriodoChamada, form:panelPeriodoChamadaProcSeletivo , form:panelPeriodoChamadaProc" action="#{ProcSeletivoControle.adicionarPeriodoChamadaProcSeletivoVO}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary mr5" value="Adicionar Periodo da Chamada" image="#{resource['/imagens/botaoAdicionarDatasProc.png']}" tooltip="#{msg.msg_adicionar_dados}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<rich:dataTable id="resultadoConsultaPeriodoChamada" render="resultadoConsultaPeriodoChamada ,scresultadoConsultaPeriodoChamada" rows="20" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" footerClass="colunaCentralizada" value="#{ProcSeletivoControle.procSeletivoVO.periodoChamadaProcSeletivoVOs}" var="periodoChamadaProcSelItens">
+						
+							<rich:column style="width: 12.5%" filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaPeriodoChamada', 'nrChamada_Apresentar', 'TEXTO')}">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProcSeletivo_nrChamadaProcSel}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="16" value="#{FilterFactory.filter('resultadoConsultaPeriodoChamada', 'nrChamada_Apresentar', 'TEXTO').filtro}"  maxlength="3">
+											<a4j:ajax event="change" execute="@this" render="form:resultadoConsultaPeriodoChamada" />
+										</h:inputText>
+										<span class="append-icon right"> 
+										   <otm:commandIcon render="resultadoConsultaPeriodoChamada" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaPeriodoChamada')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{periodoChamadaProcSelItens.nrChamada_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 12.5%" >
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_periodoInicialChamadaProcSel}" />									
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{periodoChamadaProcSelItens.periodoInicialChamada_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>							
+							<rich:column style="width: 12.5%" >							
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_ProcSeletivo_periodoFinalChamadaProcSel}" />
+									
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{periodoChamadaProcSelItens.periodoFinalChamada_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>	
+							<rich:column style="width: 12.5%" >
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_PeriodoInicialAdicionalUploadDocumentoinDeferidoChamadaProcSel}" />									
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{periodoChamadaProcSelItens.periodoInicialAdicionalUploadDocumentoIndeferido_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>							
+							<rich:column style="width: 12.5%" >							
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_PeriodoFinalAdicionalUploadDocumentoinDeferidoChamadaProcSel}" />
+									
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{periodoChamadaProcSelItens.periodoFinalAdicionalUploadDocumentoIndeferido_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 12.5%" >							
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_DataEnvioMensagemAtivacaoMatriculaChamadaProcSel}" />									
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText value="#{periodoChamadaProcSelItens.dataEnvioMensagemAtivacaoMatricula_Apresentar}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>											
+							<rich:column style="width: 5.5%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_bt.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon id="editarPeriodoChamadaProcSeletivo" action="#{ProcSeletivoControle.editarPeriodoChamadaProcSeletivo}" render="form:resultadoConsultaPeriodoChamada, form:msg, form:panelPeriodoChamadaProcSeletivo" icon="#{msg_botoes.btn_icon_editar} iconePequeno" image="#{resource['/imagens/botaoEditar.png']}" tooltip="#{msg.msg_dados_editar}" />
+								<otm:commandIcon id="removerPeriodoChamadaProcSeletivo" action="#{ProcSeletivoControle.removerPeriodoChamadaProcSeletivo}" render="form:resultadoConsultaPeriodoChamada, form:msg" icon="#{msg_botoes.btn_icon_remover} iconePequeno" image="#{resource['/imagens/botaoRemover.png']}" tooltip="#{msg.msg_remover_dados}" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller for="resultadoConsultaPeriodoChamada" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scresultadoConsultaPeriodoChamada" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+					</h:panelGroup>
+				</rich:tab>		
+			</rich:tabPanel>
+			<h:panelGroup styleClass="tabMensagens">
+				<h:panelGroup id="msg">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{ProcSeletivoControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton id="novo" immediate="true" action="#{ProcSeletivoControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" accesskey="1" />
+					<otm:commandButton id="salvar" action="#{ProcSeletivoControle.gravar}" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark mr5 ml5" value="Gravar" accesskey="2">
+						<!-- 						<a4j:ajax render="form" execute="form" /> -->
+					</otm:commandButton>
+					<otm:commandButton id="excluir" action="#{ProcSeletivoControle.excluir}" icon="#{msg_botoes.btn_icon_excluir_embutido}" styleClass="btn btn-danger mr5" value="Excluir" accesskey="3" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+					<otm:commandButton id="consultar" immediate="true" action="#{ProcSeletivoControle.inicializarConsultar}" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" value="Consultar" accesskey="4" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<script>
+			document.getElementById("form:descricao").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

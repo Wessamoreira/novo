@@ -1,0 +1,1 @@
+alter table public.estagio add column if not exists sqlmensagem text;

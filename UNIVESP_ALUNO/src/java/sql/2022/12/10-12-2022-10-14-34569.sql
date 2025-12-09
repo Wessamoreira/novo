@@ -1,0 +1,1 @@
+	alter table if exists ConfiguracaoGeralSistema add column if not exists habilitarRecursoInativacaoCredenciasAlunosFormados boolean default false;

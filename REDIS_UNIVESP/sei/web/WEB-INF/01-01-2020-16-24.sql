@@ -1,0 +1,1 @@
+update catalogo set nivelBibliografico = 'MO' where nivelBibliografico is null or nivelBibliografico = '';

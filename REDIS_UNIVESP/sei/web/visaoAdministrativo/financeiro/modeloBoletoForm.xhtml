@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ModeloBoleto_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<title><h:outputText value="#{msg_aplic.prt_ModeloBoleto_tituloForm}" /></title>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelSelecionarImagem" shadowOpacity="true" width="400" height="150" onshow="document.getElementById('formImagem:upload').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ModeloBoleto_imagem}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkSelecinarImagem" />
+					<rich:componentControl target="panelSelecionarImagem" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagem">
+				<h:panelGroup layout="block" columns="1" width="100%" columnClasses="colunaCentralizada">
+					<h:outputText value="Selecione uma imagem para o boleto." styleClass="field control-label tituloCampos" />
+					<h:panelGroup layout="block" columns="2" width="100%">
+						<h:graphicImage url="#{resource['/imagens/pictures.png']}" />
+						<h:panelGroup>
+							<rich:fileUpload listHeight="50" listWidth="250" noDuplicate="true" maxFilesQuantity="100" fileUploadListener="#{ModeloBoletoControle.uploadImagem}" onupload="#{rich:component('panelSelecionarImagem')}.hide()" addLabel="Selecionar" clearLabel="Cancelar" doneLabel="Pronto" clearAllLabel="Limpar" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido 100 MB" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" id="upload" immediateUpload="true" autoclear="true" acceptedTypes="png,gif,jpg,jpeg,ico,bmp">
+								<a4j:ajax event="uploadcomplete" render="form:imagem, form:panelGridMensagens" />
+							</rich:fileUpload>
+							<a4j:mediaOutput id="imagem" element="img" onclick="#{rich:component('panelSelecionarImagem')}.show()" rendered="#{ModeloBoletoControle.modeloBoletoVO.existeImagem}" style="position:relative; left:0px; top:0px;" cacheable="false" session="true" createContent="#{ModeloBoletoControle.paint}" value="#{ImagemData}" mimeType="image/jpeg">
+								<f:param value="#{ModeloBoletoControle.timeStamp}" />
+							</a4j:mediaOutput>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{ModeloBoletoControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" id="panelGridForm" columns="1" styleClass="tabForm" width="100%">
+				<h:panelGroup layout="block" styleClass="row">
+					<rich:tabPanel>
+						<rich:tab header="#{msg_aplic.prt_ContaCorrente_dadosBasicos}">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_nome}" />
+									<h:inputText id="nome" size="50" maxlength="50" styleClass="form-control camposObrigatorios" value="#{ModeloBoletoControle.modeloBoletoVO.nome}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="TAG p/ substituir por valor" />
+									<h:inputText size="50" styleClass="form-control camposSomenteLeitura" value="[(0.00033)%]" readonly="true" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="field control-label tituloCampos btn-block" value="Apresentar apenas desconto na instrução do boleto" />
+									<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{ModeloBoletoControle.modeloBoletoVO.apenasDescontoInstrucaoBoleto}">
+										<a4j:ajax event="change" render="form" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_ocultarCodBarraLinhaDigitavel}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{ModeloBoletoControle.modeloBoletoVO.ocultarCodBarraLinhaDigitavel}">
+											<a4j:ajax event="change" render="form" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_utilizarDescricaoDescontoPersonalizado}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{ModeloBoletoControle.modeloBoletoVO.utilizarDescricaoDescontoPersonalizado}">
+											<a4j:ajax event="change" render="form" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_observacoesGerais1}" rendered="#{!ModeloBoletoControle.modeloBoletoVO.utilizarDescricaoDescontoPersonalizado}" />
+									<h:panelGroup rendered="#{!ModeloBoletoControle.modeloBoletoVO.utilizarDescricaoDescontoPersonalizado}" layout="block" styleClass="col-md-12 pn">
+										<h:inputTextarea id="observacoesGerais1" cols="100" rows="3" onkeyup="return contar('form:observacoesGerais1','form:contadorObservacoes1', '250');" styleClass="form-control campos" value="#{ModeloBoletoControle.modeloBoletoVO.observacoesGerais1}" />
+										<span class="append-icon right"> <h:outputText id="contadorObservacoes1" styleClass="field control-label tituloCampos" />
+										</span>
+										<!-- 										<h:inputText id="contadorObservacoes1" size="10" maxlength="10" style="position:relative;left:5px;top:-6px;" styleClass="form-control camposSomenteLeitura" /> -->
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_observacoesGerais2}" rendered="#{!ModeloBoletoControle.modeloBoletoVO.utilizarDescricaoDescontoPersonalizado}" />
+									<h:panelGroup rendered="#{!ModeloBoletoControle.modeloBoletoVO.utilizarDescricaoDescontoPersonalizado}" layout="block" styleClass="col-md-12 pn">
+										<h:inputTextarea id="observacoesGerais2" cols="100" rows="3" onkeyup="return contar('form:observacoesGerais2','form:contadorObservacoes2', '250');" styleClass="form-control campos" value="#{ModeloBoletoControle.modeloBoletoVO.observacoesGerais2}" />
+										<!-- 										<h:inputText id="contadorObservacoes2" size="10" maxlength="10" style="position:relative;left:5px;top:-6px;" styleClass="form-control camposSomenteLeitura" /> -->
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_localPagamento}" />
+									<h:inputText id="localPagamento" size="100" maxlength="100" styleClass="form-control camposObrigatorios" value="#{ModeloBoletoControle.modeloBoletoVO.localPagamento}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+
+						<rich:tab header="#{msg_aplic.prt_ContaCorrente_dadosDescontoPersonalizado}" rendered="#{ModeloBoletoControle.modeloBoletoVO.utilizarDescricaoDescontoPersonalizado}">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6 pn border rounded">
+									<h:panelGroup layout="block" styleClass="row mn border rounded bg-gray p5">
+										<h:outputText styleClass="tituloCampos" value="Tags Utilizadas Somente nas Instruções do Boleto"></h:outputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5 mt5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.ANTES_ATE_DEPOIS}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.TOTAL_DESCONTOS}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_ALUNO}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_CONVENIO}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_INSTITUCIONAL}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_PROGRESSIVO}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_RATEIO}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.VALOR_TOTAL}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="CODIGO_ADMINISTRATIVO" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6 pn border rounded">
+									<h:panelGroup layout="block" styleClass="row mn border rounded bg-gray p5">
+										<h:outputText styleClass="tituloCampos" value="Tags Utilizadas Somente no Topo e Rodapé do Boleto"></h:outputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5 mt5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="DATA_MAXIMO_RECEBIMENTO" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="CODIGO_ADMINISTRATIVO" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="NR_PARCELA" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="MULTA [(0.02)%]" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="JUROS [(0.00033)%]" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="MULTA_VALOR" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="JURO_VALOR" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_textoTopo}" />
+									<otm:editor id="textoTopo" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.textoTopo}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao1}" />
+									<otm:editor id="instrucao1" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao1}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao2}" />
+									<otm:editor id="instrucao2" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao2}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao3}" />
+									<otm:editor id="instrucao3" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao3}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao4}" />
+									<otm:editor id="instrucao4" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao4}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao5}" />
+									<otm:editor id="instrucao5" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao5}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao6}" />
+									<otm:editor id="instrucao6" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao6}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_textoRodape}" />
+									<otm:editor id="textoRodape" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.textoRodape}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+						<rich:tab header="#{msg_aplic.prt_ContaCorrente_dadosDescontoPersonalizadoInferior}" rendered="#{ModeloBoletoControle.modeloBoletoVO.utilizarDescricaoDescontoPersonalizado}">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6 pn border rounded">
+									<h:panelGroup layout="block" styleClass="row mn border rounded bg-gray p5">
+										<h:outputText styleClass="tituloCampos" value="Tags Utilizadas Somente nas Instruções do Boleto"></h:outputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5 mt5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.ANTES_ATE_DEPOIS}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.TOTAL_DESCONTOS}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_ALUNO}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_CONVENIO}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_INSTITUCIONAL}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_PROGRESSIVO}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.DESCONTO_RATEIO}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ModeloBoletoControle.modeloBoletoVO.VALOR_TOTAL}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="CODIGO_ADMINISTRATIVO" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6 pn border rounded">
+									<h:panelGroup layout="block" styleClass="row mn border rounded bg-gray p5">
+										<h:outputText styleClass="tituloCampos" value="Tags Utilizadas Somente no Topo e Rodapé do Boleto"></h:outputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5 mt5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="DATA_MAXIMO_RECEBIMENTO" />
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="CODIGO_ADMINISTRATIVO" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="NR_PARCELA" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="MULTA [(0.02)%]" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="JUROS [(0.00033)%]" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="MULTA_VALOR" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+										<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="JURO_VALOR" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_textoTopoInferior}" />
+									<otm:editor id="textoTopoInferior" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.textoTopoInferior}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao1Inferior}" />
+									<otm:editor id="instrucao1Inferior" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao1Inferior}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao2Inferior}" />
+									<otm:editor id="instrucao2Inferior" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao2Inferior}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao3Inferior}" />
+									<otm:editor id="instrucao3Inferior" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao3Inferior}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao4Inferior}" />
+									<otm:editor id="instrucao4Inferior" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao4Inferior}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao5Inferior}" />
+									<otm:editor id="instrucao5Inferior" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao5Inferior}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_instrucao6Inferior}" />
+									<otm:editor id="instrucao6Inferior" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.instrucao6Inferior}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ModeloBoleto_textoRodapeInferior}" />
+									<otm:editor id="textoRodapeInferior" height="100" width="750" value="#{ModeloBoletoControle.modeloBoletoVO.textoRodapeInferior}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+					</rich:tabPanel>
+				</h:panelGroup>
+				<h:panelGroup layout="block" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup layout="block" columns="1" width="100%" styleClass="tabMensagens">
+						<h:panelGroup layout="block" id="mensagem" columns="1" width="100%" columnClasses="colunaEsquerda">
+							<h:outputText styleClass="field control-label mensagem col-md-12" value="#{ModeloBoletoControle.mensagem}" />
+							<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{ModeloBoletoControle.mensagemDetalhada}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup styleClass="barraFlutuanteInferior " layout="block">
+						<otm:commandButton id="novo" immediate="true" action="#{ModeloBoletoControle.novo}" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="salvar" action="#{ModeloBoletoControle.gravar}" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" title="#{msg.msg_gravar_dados}" accesskey="2" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="excluir" onclick="return confirm('#{msg.msg_ConfirmaExclusao}');" action="#{ModeloBoletoControle.excluir}" value="#{msg_botoes.btn_excluir}" styleClass="btn btn-danger btn-excluir" title="#{msg.msg_excluir_dados}" accesskey="3" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="consultar" immediate="true" action="#{ModeloBoletoControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="4" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<script>
+	document.getElementById("form:nome").focus();
+</script>
+	</ui:define>
+</ui:composition>
+</html>

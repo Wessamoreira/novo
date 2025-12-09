@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS matricula ALTER COLUMN disciplinasprocseletivo TYPE TEXT;

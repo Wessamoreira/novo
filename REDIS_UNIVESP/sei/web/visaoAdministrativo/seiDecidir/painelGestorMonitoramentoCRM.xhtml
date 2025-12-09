@@ -1,0 +1,838 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_PainelGestor_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:panelGroup layout="block" styleClass="row">
+				<rich:panel id="panelFiltroUnidadeEnsino">
+					<f:facet name="header">
+						<h:panelGroup layout="block" styleClass="p5">
+							<i class="fas fa-filter mr5"></i>
+							<h:outputText rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="Ocultar Filtros" />
+							<h:outputText rendered="#{!PainelGestorControle.filtrarUnidadeEnsino}" styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="Apresentar Filtros" />
+
+							<otm:commandIcon rendered="#{!PainelGestorControle.filtrarUnidadeEnsino}" styleClass="float-right mr10" action="#{PainelGestorControle.setFiltrarUnidadeEnsino(true)}" render="panelFiltroUnidadeEnsino" icon="fas fa-expand-alt fs14">
+
+							</otm:commandIcon>
+							<otm:commandIcon rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" styleClass="float-right mr10" action="#{PainelGestorControle.setFiltrarUnidadeEnsino(false)}" render="panelFiltroUnidadeEnsino" icon="fas fa-compress-alt fs14">
+
+							</otm:commandIcon>
+
+
+						</h:panelGroup>
+					</f:facet>
+					<h:panelGroup layout="block" rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-6" id="filtroPeriodo">
+							<h:outputText styleClass="field control-label tituloCampos col-md-12 pn" value="#{msg_aplic.prt_PainelGestor_periodoDe}" />
+							<h:panelGroup layout="block" styleClass="col-md-6 pn">
+								<otm:calendar id="dataInicio" showWeekDaysBar="false" showWeeksBar="false" showFooter="false" locale="pt_BR" oninputkeypress="return mascara(this.form, this.id, '99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarDataMesAno(this.value,this.id)" enableManualInput="true" datePattern="MM/yyyy" inputSize="7" styleClass="form-control camposObrigatorios" value="#{PainelGestorControle.dataInicio}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6 pn pl5">
+								<otm:calendar id="dataTermino" showWeekDaysBar="false" showWeeksBar="false" showFooter="false" locale="pt_BR" oninputkeypress="return mascara(this.form, this.id, '99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarDataMesAno(this.value,this.id)" enableManualInput="true" datePattern="MM/yyyy" inputSize="7" styleClass="form-control camposObrigatorios" value="#{PainelGestorControle.dataFinal}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="fields tituloCampos btn-block" value="Selecionar Todas as Unidades de Ensino" />
+							<otm:selectBooleanCheckbox id="marcarTodasUnidadeEnsino" value="#{PainelGestorControle.marcarTodasUnidadeEnsino}">
+								<a4j:ajax event="change" listener="#{PainelGestorControle.marcarTodasUnidadesEnsinoAction}" render="form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+						<a4j:repeat id="filtros" var="unidadeEnsinoItens" value="#{PainelGestorControle.unidadeEnsinoVOs}">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText value="#{unidadeEnsinoItens.nome}" styleClass="tituloCampos btn-block" />
+								<otm:selectBooleanCheckbox id="unidade#{unidadeEnsinoItens.codigo}" value="#{unidadeEnsinoItens.filtrarUnidadeEnsino}">
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row text-center" id="btns">
+						<otm:commandButton type="submit" value="Gerar Relatório" icon="fas fa-chart-pie" oncomplete="criarGraficoMonitoramentoPreInscricao();" render="form" action="#{PainelGestorControle.consultarDadosIniciaisPainelGestorMonitoramentoCRM}" />
+						<otm:spacer width="5px" />
+						<a4j:commandLink styleClass="btn btn-info" rendered="#{LoginControle.permissaoAcessoMenuVO.painelGestorAcademico}" value="#{msg_botoes.btn_monitorarAcademico}" title="#{msg_botoes.btn_monitorarAcademico}" action="#{PainelGestorControle.consultarDadosMonitoramentoAcademico}">
+							<i class="fas fa-university pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener target="#{PainelGestorControle.paginaVoltarDesconto}" value="painelGestorMonitoramentoCRM" />
+						</a4j:commandLink>
+						<otm:spacer rendered="#{LoginControle.permissaoAcessoMenuVO.painelGestorMonitorarConsultor}" width="5px" />
+						<a4j:commandLink value="#{msg_botoes.btn_monitorarConsultor}" rendered="#{LoginControle.permissaoAcessoMenuVO.painelGestorMonitorarConsultor}" title="#{msg_botoes.btn_monitorarConsultor}" action="#{PainelGestorControle.consultarDadosPainelGestorMonitoramentoConsultor}" styleClass="btn btn-warning">
+							<i class="fas fa-user-tie pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener target="#{PainelGestorControle.paginaVoltarDesconto}" value="painelGestorMonitoramentoCRM" />
+						</a4j:commandLink>
+						<otm:spacer rendered="#{LoginControle.permissaoAcessoMenuVO.painelGestorMonitorarPorSegmentacao}" width="5px" />
+						<a4j:commandLink value="#{msg_botoes.btn_monitorarSegmentacao}" rendered="#{LoginControle.permissaoAcessoMenuVO.painelGestorMonitorarPorSegmentacao}" title="#{msg_botoes.btn_monitorarSegmentacao}" action="#{PainelGestorControle.consultarDadosPainelGestorMonitoramentoPorSegmentacao}" styleClass="btn btn-success">
+							<i class="fas fa-clipboard-list pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener target="#{PainelGestorControle.paginaVoltarDesconto}" value="painelGestorMonitoramentoCRM" />
+						</a4j:commandLink>
+						<otm:spacer width="5px" />
+						<a4j:commandLink value="Voltar" immediate="true" styleClass="btn btn-info" action="painelGestor.xhtml?faces-redirect=true">
+							<i class="#{msg_botoes.btn_icon_voltar} pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+						</a4j:commandLink>
+					</h:panelGroup>
+				</rich:panel>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row mt20">
+				<otm2:dashpanel id="panelMoniPros" cols="12">
+					<ui:define name="header">
+						<h:outputText value="Monitoramento Prospects"></h:outputText>
+					</ui:define>
+					<ui:define name="body">
+						<h:panelGroup layout="block" styleClass="col-md-12 ">
+							<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+								<otm2:panel name="panelTotalProspects" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+									<ui:define name="header">
+										<h:outputText styleClass="field control-label text-white" value="Total Prospects" />
+									</ui:define>
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsCadastrados}">
+												<h:outputText styleClass="field control-label text-info fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsCadastrados}" />
+												<h:outputText styleClass="text-info fs10 btn-block" value="(Geral)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsCadastradosMatriculado}">
+												<h:outputText styleClass="field control-label text-success  fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsCadastradosMatriculado}" />
+												<h:outputText styleClass="text-success fs10 btn-block" value="(Matrículado]"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsCadastradosNaoMatriculado}">
+												<h:outputText styleClass="field control-label text-danger fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsCadastradosNaoMatriculado}" />
+												<h:outputText styleClass="text-danger fs10 btn-block" value="(Não Matrículado)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+								<otm2:panel name="panelProspectsAgendaPeriodo" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+									<ui:define name="header">
+										<h:outputText styleClass="field control-label text-white" value="Agenda no Período" />
+									</ui:define>
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsComAgenda}">
+												<h:outputText styleClass="field control-label text-info fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsComAgenda}" />
+												<h:outputText styleClass="text-info fs10 btn-block" value="(Geral)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsComAgendaMatriculado}">
+												<h:outputText styleClass="field control-label text-success  fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsComAgendaMatriculado}" />
+												<h:outputText styleClass="text-success fs10 btn-block" value="(Matrículado]"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsComAgendaNaoMatriculado}">
+												<h:outputText styleClass="field control-label text-danger fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsComAgendaNaoMatriculado}" />
+												<h:outputText styleClass="text-danger fs10 btn-block" value="(Não Matrículado)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+								<otm2:panel name="panelSemAgendaPeriodo" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+									<ui:define name="header">
+										<h:outputText styleClass="field control-label text-white" value="Sem Agenda no Período" />
+									</ui:define>
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemAgenda}">
+												<h:outputText styleClass="field control-label text-info fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsSemAgenda}" />
+												<h:outputText styleClass="text-info fs10 btn-block" value="(Geral)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsSemAgendaMatriculado}">
+												<h:outputText styleClass="field control-label text-success  fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsSemAgendaMatriculado}" />
+												<h:outputText styleClass="text-success fs10 btn-block" value="(Matrículado]"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsSemAgendaNaoMatriculado}">
+												<h:outputText styleClass="field control-label text-danger fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsSemAgendaNaoMatriculado}" />
+												<h:outputText styleClass="text-danger fs10 btn-block" value="(Não Matrículado)"></h:outputText>
+											</a4j:commandLink>
+
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+								<otm2:panel name="panelCConsultor" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+									<ui:define name="header">
+										<h:outputText styleClass="field control-label text-white" value="Prospect's Com Consultor" />
+									</ui:define>
+
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsComConsultor}">
+												<h:outputText styleClass="field control-label text-info fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsComConsultorResponsavel}" />
+												<h:outputText styleClass="text-info fs10 btn-block" value="(Geral)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsComConsultorMatriculado}">
+												<h:outputText styleClass="field control-label text-success  fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsComConsultorResponsavelMatriculado}" />
+												<h:outputText styleClass="text-success fs10 btn-block" value="(Matrículado]"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsComConsultorNaoMatriculado}">
+												<h:outputText styleClass="field control-label text-danger fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsComConsultorResponsavelNaoMatriculado}" />
+												<h:outputText styleClass="text-danger fs10 btn-block" value="(Não Matrículado)"></h:outputText>
+											</a4j:commandLink>
+
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+								<otm2:panel name="panelSConsultor" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+									<ui:define name="header">
+										<h:outputText styleClass="field control-label text-white" value="Prospect's Sem Consultor" />
+									</ui:define>
+
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemConsultor}">
+												<h:outputText styleClass="field control-label text-info fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsSemConsultorResponsavel}" />
+												<h:outputText styleClass="text-info fs10 btn-block" value="(Geral)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsSemConsultorMatriculado}">
+												<h:outputText styleClass="field control-label text-success  fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsSemConsultorResponsavelMatriculado}" />
+												<h:outputText styleClass="text-success fs10 btn-block" value="(Matrículado]"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink render="form" action="#{PainelGestorControle.consultarTodosProspectsSemConsultorNaoMatriculado}">
+												<h:outputText styleClass="field control-label text-danger fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsSemConsultorResponsavelNaoMatriculado}" />
+												<h:outputText styleClass="text-danger fs10 btn-block" value="(Não Matrículado)"></h:outputText>
+											</a4j:commandLink>
+
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+
+
+							<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+								<otm2:panel name="panelNCConsultor1" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+									<ui:define name="header">
+										<h:outputText styleClass="field control-label text-white" value="Não Contactado à " />
+										<rich:inplaceInput styleClass="field control-label text-white" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.periodoUltimoContato1}" />
+										<otm:spacer width="5px" />
+										<h:outputText styleClass="field control-label text-white" value="Meses" />
+									</ui:define>
+
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemContatoPeriodo1}">
+												<h:outputText styleClass="field control-label text-info fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsNaoContactadoPeriodo1}" />
+												<h:outputText styleClass="text-info fs10 btn-block" value="(Geral)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemContatoPeriodo1Matriculado}">
+												<h:outputText styleClass="field control-label text-success fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsNaoContactadoPeriodo1Matriculado}" />
+												<h:outputText styleClass="text-success fs10 btn-block" value="(Matrículado]"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemContatoPeriodo1NaoMatriculado}">
+												<h:outputText styleClass="field control-label text-danger fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsNaoContactadoPeriodo1NaoMatriculado}" />
+												<h:outputText styleClass="text-danger fs10 btn-block" value="(Não Matrículado)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+
+							<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+								<otm2:panel name="panelNCConsultor2" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+									<ui:define name="header">
+										<h:outputText styleClass="field control-label text-white" value="Não Contactado à " />
+										<rich:inplaceInput styleClass="field control-label text-white" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.periodoUltimoContato2}" />
+										<otm:spacer width="5px" />
+										<h:outputText styleClass="field control-label text-white" value="Meses" />
+									</ui:define>
+
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemContatoPeriodo2}">
+												<h:outputText styleClass="field control-label text-info fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsNaoContactadoPeriodo2}" />
+												<h:outputText styleClass="text-info fs10 btn-block" value="(Geral)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemContatoPeriodo2Matriculado}">
+												<h:outputText styleClass="field control-label text-success fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsNaoContactadoPeriodo2Matriculado}" />
+												<h:outputText styleClass="text-success fs10 btn-block" value="(Matrículado]"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemContatoPeriodo2NaoMatriculado}">
+												<h:outputText styleClass="field control-label text-danger fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsNaoContactadoPeriodo2NaoMatriculado}" />
+												<h:outputText styleClass="text-danger fs10 btn-block" value="(Não Matrículado)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+
+							<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+								<otm2:panel name="panelNCConsultor3" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+									<ui:define name="header">
+										<h:outputText styleClass="field control-label text-white" value="Não Contactado à " />
+										<rich:inplaceInput styleClass="field control-label text-white" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.periodoUltimoContato3}" />
+										<otm:spacer width="5px" />
+										<h:outputText styleClass="field control-label text-white" value="Meses" />
+									</ui:define>
+
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemContatoPeriodo2}">
+												<h:outputText styleClass="field control-label text-info fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsNaoContactadoPeriodo3}" />
+												<h:outputText styleClass="text-info fs10 btn-block" value="(Geral)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemContatoPeriodo2Matriculado}">
+												<h:outputText styleClass="field control-label text-success fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsNaoContactadoPeriodo3Matriculado}" />
+												<h:outputText styleClass="text-success fs10 btn-block" value="(Matrículado]"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+											<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsSemContatoPeriodo3NaoMatriculado}">
+												<h:outputText styleClass="field control-label text-danger fs20" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.quantidadeTotalProspectsNaoContactadoPeriodo3NaoMatriculado}" />
+												<h:outputText styleClass="text-danger fs10 btn-block" value="(Não Matrículado)"></h:outputText>
+											</a4j:commandLink>
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+
+
+							<a4j:repeat value="#{PainelGestorControle.painelGestorMonitoramentoCRM.painelGestorMonitoramentoDetalheCRMVOs}" var="prospectMesItens" rowKeyVar="row">
+								<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+									<otm2:panel name="paneMes#{row}" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+										<ui:define name="header">
+											<h:outputText styleClass="field control-label text-white" value="Atendimentos Mês #{prospectMesItens.mesAnoEnum.mesAbreviado}/#{prospectMesItens.ano}" />
+										</ui:define>
+										<ui:define name="body">
+											<h:panelGroup layout="block" styleClass="col-md-3 text-center">
+
+												<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsMesAnoAbordado}">
+													<h:outputText styleClass="field control-label text-info fs20" value="#{prospectMesItens.quantidadeMes}" />
+													<h:outputText styleClass="text-info fs10 btn-block" value="(Abordados)" />
+												</a4j:commandLink>
+											</h:panelGroup>
+
+
+											<h:panelGroup layout="block" styleClass="col-md-3 text-center">
+
+												<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsMesFinalizadoSucesso}">
+													<h:outputText styleClass="field control-label text-success fs20" value="#{prospectMesItens.quantidadeFinalizadoSucessoMes}" />
+													<h:outputText styleClass="text-success fs10 btn-block" value="(Finalizados c/ Sucesso}" />
+												</a4j:commandLink>
+											</h:panelGroup>
+
+											<h:panelGroup layout="block" styleClass="col-md-3 text-center">
+
+
+												<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsMesMatriculado}">
+													<h:outputText styleClass="field control-label text-success fs20" value="#{prospectMesItens.quantidadeMatriculaMes}" />
+													<h:outputText styleClass="text-success fs10 btn-block" value="(Matriculados)" />
+												</a4j:commandLink>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3 text-center">
+
+
+												<a4j:commandLink action="#{PainelGestorControle.consultarTodosProspectsMesAnoReagendado}">
+													<h:outputText styleClass="field control-label text-warning fs20" value="#{prospectMesItens.quantidadeReagendamentoMes}" />
+													<h:outputText styleClass="text-warning fs10 btn-block" value="(Reagendados)" />
+												</a4j:commandLink>
+											</h:panelGroup>
+										</ui:define>
+									</otm2:panel>
+								</h:panelGroup>
+
+							</a4j:repeat>
+						</h:panelGroup>
+					</ui:define>
+				</otm2:dashpanel>
+			</h:panelGroup>
+			<a4j:commandButton style="cursor:pointer;display:none" id="detalharGraficoProspect" action="#{PainelGestorControle.selecionarLegendaGraficoProspect}">
+			</a4j:commandButton>
+			<h:inputText id="opcaoGrafico" style="display:none" value="#{PainelGestorControle.opcao}" />
+			<h:inputText id="nomeGrafico" style="display:none" value="#{PainelGestorControle.nome}" />
+			<h:inputText id="codigoGrafico" style="display:none" value="#{PainelGestorControle.codigo}" />
+
+			<script type="text/javascript" charset="UTF-8">
+										(function($) {
+											$.ajaxSetup({
+												cache : false
+											});
+
+											detalharGraficoProspect = function(codigo, campo, nome) {												
+												document.getElementById("form:opcaoGrafico").value = campo;
+												document.getElementById("form:nomeGrafico").value = nome;
+												document.getElementById("form:codigoGrafico").value = codigo;
+												fireElement("form:detalharGraficoProspect");
+												
+											};
+										
+								}(jQuery));
+							</script>
+			<h:panelGroup layout="block" styleClass="row">
+				<otm2:dashpanel id="panelMonitorarProspects" rendered="#{PainelGestorControle.montarGraficoMonitoramentoCRMProspectVisible}" cols="6">
+					<ui:define name="header">
+						<h:outputText value="Prospects Por Unidade Ensino"></h:outputText>
+					</ui:define>
+
+					<ui:define name="body">
+						<h:panelGroup layout="block" styleClass="row" style="height:300px; overflow:auto">
+
+
+							<div id="graficoProspectBar" class="col-md-12"></div>
+
+							<script type="text/javascript" charset="UTF-8">
+										(function($) {
+											$.ajaxSetup({
+												cache : false
+											});
+
+											$(document).ready(function() {
+												criarGraficoProspectBar();
+											});
+											
+																						
+											criarGraficoProspectBar = function() {
+
+												Highcharts.chart('graficoProspectBar', {
+
+													chart : {
+														type : "pie",														
+														backgroundColor : "#FFF",
+														height : 300,
+														marginTop : 10
+													},
+													credits : {
+														enabled : false
+													},
+													title : {
+														text : '',
+														align : 'center',
+														useHTML : true,
+														y : 5
+													},
+													plotOptions : {
+														pie : {
+															point : {
+																events : {
+																	click : function(event) {
+																		detalharGraficoProspect(this.codigo, this.campo, this.name);
+																	},
+																	legendItemClick : function(event) {
+																		detalharGraficoProspect(this.codigo, this.campo, this.name);
+																	}
+																}
+															},
+
+															allowPointSelect : true,
+															cursor : 'pointer',
+															dataLabels : {
+																enabled : true,
+																format : '<b>{point.name}</b>:{point.percentage:.1f}% - {point.y}'															
+															},
+															showInLegend : true
+
+														}
+													},
+													legend : {
+														layout : 'horizontal',
+														align : 'center',
+														labelFormat : '<b>{name}</b>:{percentage:.1f}% - {y}',
+													},
+													tooltip : {
+														pointFormat : '<b>{series.name}</b>:{point.percentage:.1f}% - {point.y}'
+													},
+
+													series : [ {
+														name:'Prospects Por Unidade Ensino',
+														visible : ${PainelGestorControle.montarGraficoMonitoramentoCRMProspectVisible},
+														data : [ ${PainelGestorControle.montarDataGraficoMonitoramentoCRMProspect} ]
+													} ]
+												});
+												
+											};
+
+										}(jQuery));
+									</script>
+						</h:panelGroup>
+
+					</ui:define>
+				</otm2:dashpanel>
+				<otm2:dashpanel id="panelMonitorarEntrada" rendered="#{!empty PainelGestorControle.montarDataGraficoMonitoramentoCRMComoficouSabendoInstituicao}" cols="6">
+					<ui:define name="header">
+						<h:outputText value="Como Ficou Sabendo da Instituição"></h:outputText>
+					</ui:define>
+					<ui:define name="body">
+						<h:panelGroup id="panelGraficoComoFicouSabendoInstituicao" layout="block" styleClass="row" style="height:300px; overflow:auto">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="Situação" />
+								<h:selectOneMenu styleClass="form-control campos form-control-input-table" value="#{PainelGestorControle.situacaoProspect}">
+									<a4j:ajax event="change" oncomplete="criarGraficoComoFicouSabendoInstituicao();" listener="#{PainelGestorControle.realizarGeracaoGraficoMonitoramentoProspectComoFicouSabendoInstituicao}" render="form:panelGraficoComoFicouSabendoInstituicao" />
+									<f:selectItems value="#{PainelGestorControle.listaSelectItemSituacaoProspect}" />
+								</h:selectOneMenu>
+
+							</h:panelGroup>
+							<h:panelGroup id="graficoComoFicouSabendoInstituicao" styleClass="col-md-12">
+
+							</h:panelGroup>
+
+							<script type="text/javascript" charset="UTF-8">
+									(function($) {
+										$.ajaxSetup({
+											cache : false
+										});
+
+										$(document).ready(
+														function() {
+															criarGraficoComoFicouSabendoInstituicao();
+														});
+									
+
+																					
+										criarGraficoComoFicouSabendoInstituicao = function() {
+
+											var options = {
+
+												chart : {
+													type : "pie",
+													renderTo : "form\:graficoComoFicouSabendoInstituicao",
+													backgroundColor : "#FFF",
+													height : 250,
+													marginTop : 0
+												},
+												credits : {
+													enabled : false
+												},
+												title : {
+													text : '',
+													align : 'left',
+													useHTML : true,
+													y : 5
+												},
+												plotOptions : {
+													pie : {
+														point : {
+															events : {
+																click : function(event) {
+																	detalharGraficoProspect(this.codigo, this.campo, this.name);
+																},
+																legendItemClick : function(event) {
+																	detalharGraficoProspect(this.codigo, this.campo, this.name);
+																}
+															}
+														},
+
+														allowPointSelect : true,
+														cursor : 'pointer',
+														dataLabels : {
+															enabled : true,
+															format : '<b>{point.name}</b>:{point.percentage:.1f}% - {point.y}'															
+														},
+														showInLegend : true
+
+													}
+												},
+												legend : {
+													layout : 'horizontal',
+													align : 'center',
+													labelFormat : '<b>{name}</b>:{percentage:.1f}% - {y}',
+												},
+												tooltip : {
+													pointFormat : '<b>{series.name}</b>:{point.percentage:.1f}% - {point.y}'
+												},
+
+												series : [ {
+													visible : ${!empty PainelGestorControle.montarDataGraficoMonitoramentoCRMComoficouSabendoInstituicao},
+													data : [ ${PainelGestorControle.montarDataGraficoMonitoramentoCRMComoficouSabendoInstituicao} ]
+												} ]
+											};
+											var chart3 = new Highcharts.Chart(
+													options);
+										};
+
+									}(jQuery));
+								</script>
+
+						</h:panelGroup>
+
+					</ui:define>
+				</otm2:dashpanel>
+			</h:panelGroup>
+
+			<h:panelGroup layout="block" styleClass="row" rendered="#{!empty PainelGestorControle.painelGestorMonitoramentoCRM.painelGestorMonitoramentoDetalhePreInscricaoCRMVOs}">
+				<otm2:dashpanel id="panelPreInscr" cols="12">
+					<ui:define name="header">
+						<h:outputText value="Monitoramento Pré-Inscrições"></h:outputText>
+					</ui:define>
+					<ui:define name="body">
+
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-6 pn">
+								<a4j:repeat rowKeyVar="row" var="detalheItens" value="#{PainelGestorControle.painelGestorMonitoramentoCRM.painelGestorMonitoramentoDetalhePreInscricaoCRMVOs}">
+									<h:panelGroup layout="block" styleClass="col-md-4  mt10">
+										<otm2:panel name="paneMesPre#{row}" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassPanel="p5" stylePanel=" ">
+											<ui:define name="header">
+												<h:outputText styleClass="text-white" value="Pré-inscrições de #{detalheItens.mesAnoEnum.mesAbreviado}/#{detalheItens.ano}" />
+											</ui:define>
+											<ui:define name="body">
+
+												<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+													<h:outputText styleClass="field control-label text-info fs20" value="#{detalheItens.quantidadeDia}" />
+													<h:outputText value="(#{msg_aplic.prt_PainelGestorMonitoramentoCRM_hoje}}" styleClass="btn-block text-info fs10" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-4  text-center">
+													<h:outputText styleClass="field control-label text-success fs20" value="#{detalheItens.quantidadeSemana}" />
+													<h:outputText value="(#{msg_aplic.prt_PainelGestorMonitoramentoCRM_semana})" styleClass="btn-block text-success fs10" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-4  text-center">
+													<h:outputText styleClass="field control-label text-warning fs20" value="#{detalheItens.quantidadeMes}" />
+													<h:outputText value="#{msg_aplic.prt_PainelGestorMonitoramentoCRM_mes}" styleClass="btn-block text-warning fs10" />
+												</h:panelGroup>
+											</ui:define>
+											<ui:define name="footer">
+												<h:panelGroup layout="block" styleClass="col-md-12  text-center">
+													<a4j:commandLink alt="Detalhar Por Consultor" title="Detalhar Por Consultor" action="#{PainelGestorControle.consultarDadosDetalheConsultorPainelGestorMonitoramentoCRM}">
+														<i class="btn btn-primary fas fa-user-tie  iconePequeno" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+														<f:setPropertyActionListener value="PRE_INSCRICAO" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.painelGestorTipoMonitoramentoCRMEnum}" />
+														<f:setPropertyActionListener value="PRE_INSCRICAO" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.painelGestorMonitoramentoDetalheCRMVO.painelGestorTipoMonitoramentoCRMEnum}" />
+														<f:setPropertyActionListener value="" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.consultor.pessoa.nome}" />
+														<f:setPropertyActionListener value="0" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.consultor.pessoa.codigo}" />
+														<f:setPropertyActionListener value="0" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.consultor.codigo}" />
+														<f:setPropertyActionListener value="" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.curso.nome}" />
+														<f:setPropertyActionListener value="0" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.curso.codigo}" />
+													</a4j:commandLink>
+													<a4j:commandLink alt="Detalhar Por Curso" title="Detalhar Por Curso" action="#{PainelGestorControle.consultarDadosDetalheCursoPainelGestorMonitoramentoCRM}">
+
+														<i class="btn btn-info fas fa-swatchbook  iconePequeno" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+														<f:setPropertyActionListener value="PRE_INSCRICAO" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.painelGestorTipoMonitoramentoCRMEnum}" />
+														<f:setPropertyActionListener value="PRE_INSCRICAO" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.painelGestorMonitoramentoDetalheCRMVO.painelGestorTipoMonitoramentoCRMEnum}" />
+														<f:setPropertyActionListener value="" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.consultor.pessoa.nome}" />
+														<f:setPropertyActionListener value="0" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.consultor.pessoa.codigo}" />
+														<f:setPropertyActionListener value="0" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.consultor.codigo}" />
+														<f:setPropertyActionListener value="" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.curso.nome}" />
+														<f:setPropertyActionListener value="0" target="#{PainelGestorControle.painelGestorMonitoramentoCRM.curso.codigo}" />
+													</a4j:commandLink>
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+								</a4j:repeat>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:panelGroup layout="block" id="graficoPreInscricao" styleClass="col-md-12">
+								</h:panelGroup>
+
+								<script type="text/javascript" charset="UTF-8">
+									(function($) {
+										$.ajaxSetup({
+											cache : false
+										});
+
+										$(document).ready(
+														function() {
+															criarGraficoMonitoramentoPreInscricao();
+														});
+										
+										criarGraficoMonitoramentoPreInscricao = function() {
+
+											var options = {
+												
+												chart : {
+													type : "spline",
+													renderTo : "form\:graficoPreInscricao",
+													backgroundColor : "#FFF",
+													marginTop : 20,													
+													height : 300,
+													spacingLeft : 0,
+												},
+												credits : {
+													enabled : false
+												},
+												title : {
+													text : '',
+													align : 'left',
+													useHTML : true,
+													y : 5
+												},
+												xAxis : {
+													type : 'datetime',
+
+													labels : {
+														formatter : function() {
+															return (Highcharts
+																	.dateFormat(
+																			'%b',
+																			this.value) == 'Apr' ? 'Abr'
+																	: Highcharts
+																			.dateFormat(
+																					'%b',
+																					this.value) == 'May' ? 'Mai'
+																			: Highcharts
+																					.dateFormat(
+																							'%b',
+																							this.value) == 'Aug' ? 'Ago'
+																					: Highcharts
+																							.dateFormat(
+																									'%b',
+																									this.value) == 'Sep' ? 'Set'
+																							: Highcharts
+																									.dateFormat(
+																											'%b',
+																											this.value) == 'Oct' ? 'Out'
+																									: Highcharts
+																											.dateFormat(
+																													'%b',
+																													this.value) == 'Dec' ? 'Dez'
+																											: Highcharts
+																													.dateFormat(
+																															'%b',
+																															this.value))
+																	+ '/'
+																	+ Highcharts
+																			.dateFormat(
+																					'%y',
+																					this.value);
+														},
+														rotation : -75.0,
+														step : 0,
+														style : {
+															fontSize : '10px'
+														},
+														align : 'right'
+													}
+
+												},
+
+												yAxis : {
+													title : {
+														text : ''
+													},
+													labels : {
+														formatter : function() {
+															return Highcharts
+																	.numberFormat(
+																			(this.value),
+																			0,
+																			',',
+																			'.')
+																	+ ' Inscrições';
+														},
+														style : {
+															fontSize : '10px'
+														},
+														align : 'right'
+													},
+
+												},
+												tooltip : {
+													formatter : function() {
+														return ''
+																+ (Highcharts
+																		.dateFormat(
+																				'%b',
+																				this.x) == 'Apr' ? 'Abr'
+																		: Highcharts
+																				.dateFormat(
+																						'%b',
+																						this.x) == 'May' ? 'Mai'
+																				: Highcharts
+																						.dateFormat(
+																								'%b',
+																								this.x) == 'Aug' ? 'Ago'
+																						: Highcharts
+																								.dateFormat(
+																										'%b',
+																										this.x) == 'Sep' ? 'Set'
+																								: Highcharts
+																										.dateFormat(
+																												'%b',
+																												this.x) == 'Oct' ? 'Out'
+																										: Highcharts
+																												.dateFormat(
+																														'%b',
+																														this.x) == 'Dec' ? 'Dez'
+																												: Highcharts
+																														.dateFormat(
+																																'%b',
+																																this.x))
+																+ '/'
+																+ Highcharts
+																		.dateFormat(
+																				'%y',
+																				this.x)
+																+ ' - '
+																+ Highcharts
+																		.numberFormat(
+																				(this.y),
+																				0,
+																				',',
+																				'.')
+																+ ' Inscrições';
+													}
+												},
+
+												series : [ {
+													name : 'Pré-Inscrições',
+													color : '#3399FF',
+													pointInterval : 30 * 24 * 3600 * 1000,
+													visible : ${PainelGestorControle.montarGraficoMonitoramentoCRMPreInscricaoVisible},
+													showInLegend : false,
+													data : [ ${PainelGestorControle.montarDataGraficoMonitoramentoCRMPreInscricao} ]
+												} ]
+
+											};
+											var chart = new Highcharts.Chart(
+													options);
+
+										}
+
+									}(jQuery));
+								</script>
+							</h:panelGroup>
+						</h:panelGroup>
+					</ui:define>
+				</otm2:dashpanel>
+			</h:panelGroup>
+
+
+
+
+
+
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

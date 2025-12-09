@@ -1,0 +1,1 @@
+alter table configuracaoged add column if not exists ambienteProvedorAssinaturaEnum varchar(255) default 'HOMOLOGACAO';

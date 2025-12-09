@@ -1,0 +1,2 @@
+alter table negociacaocontareceber add column agenteNegativacaoCobrancaContaReceber int;
+alter table negociacaocontareceber add constraint fk_negociacaocontareceber_agente foreign key (agenteNegativacaoCobrancaContaReceber) references  agenteNegativacaoCobrancaContaReceber(codigo) on update restrict on delete restrict ;

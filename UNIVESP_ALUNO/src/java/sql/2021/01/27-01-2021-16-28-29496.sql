@@ -1,0 +1,1 @@
+alter table logExclusaoMatricula alter column turma type varchar(100);

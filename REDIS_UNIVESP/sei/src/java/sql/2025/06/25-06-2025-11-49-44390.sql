@@ -1,0 +1,11 @@
+ALTER TABLE documentoassinado ALTER COLUMN codigoprovedordeassinatura TYPE VARCHAR(100) USING codigoprovedordeassinatura::VARCHAR(100);
+ALTER TABLE documentoassinadopessoa ALTER COLUMN codigoassinatura TYPE VARCHAR(100) USING codigoassinatura::VARCHAR(100);
+ALTER TABLE documentoassinadopessoa add column if not exists urlprovedordeassinatura varchar(255);
+alter table configuracaoged add column if not exists habilitarIntegracaoTechCert boolean default false;
+alter table configuracaoged add column if not exists ambienteImpresaOficialEnumTechCert varchar(255) default 'HOMOLOGACAO';
+alter table configuracaoged add column if not exists urlIntegracaoImprensaOficialHomologacaoTechCert varchar(255);
+alter table configuracaoged add column if not exists urlIntegracaoImprensaOficialProducaoTechCert  varchar(255);
+alter table configuracaoged add column if not exists tokenImprensaOficialTechCert varchar(255);
+alter table configuracaoged add column if not exists tokenImprensaOficialTechCertHomologacao varchar(255);
+alter table configuracaoged add column if not exists apikeyTechCert varchar(255);
+alter table configuracaoged add column if not exists tipoprovedorassinaturaTechCertenum varchar(100) default 'ASSINATURA_ELETRONICA';

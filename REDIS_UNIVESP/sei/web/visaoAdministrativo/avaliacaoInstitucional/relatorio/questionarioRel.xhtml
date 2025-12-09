@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Questionario_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{QuestionarioRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questionario_tituloForm}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText id="nomeQuestionario" value="#{QuestionarioRelControle.questionarioVO.descricao}" styleClass="form-control camposSomenteLeitura" disabled="true" readonly="true" />
+					<span class="append-icon right"> <otm:commandIcon id="consultaDadosQuestionario" tooltip="Localizar Questionário" render="formQuestionario" oncomplete="#{rich:component('panelQuestionario')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosQuestionario" tooltip="Limpas Dados" action="#{QuestionarioRelControle.limparQuestionario}" render="#{QuestionarioRelControle.limparQuestionario}" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row">
+				<otm:mensagem bean="#{QuestionarioRelControle}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton id="imprimirPDF" render="form" oncomplete="#{QuestionarioRelControle.download}" action="#{QuestionarioRelControle.imprimirPDF}" value="Gerar Relatório (PDF)" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger dark btn-imprimir" />
+			</h:panelGroup>
+		</h:form>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelQuestionario" onshow="document.getElementById('formQuestionario:valorConsultaQuestionario').focus()" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Questionário" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink1" />
+					<rich:componentControl target="panelQuestionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formQuestionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaQuestionario" value="#{QuestionarioRelControle.campoConsultaQuestionario}">
+						<f:selectItems value="#{QuestionarioRelControle.tipoConsultaCombo}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaQuestionario" size="10" styleClass="form-control campos" value="#{QuestionarioRelControle.valorConsultaQuestionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formQuestionario:mensagemConsultaQuestionario, formQuestionario:resultadoConsultaQuestionario, formQuestionario:scResultadoQuestionario" action="#{QuestionarioRelControle.consultarQuestionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaQuestionario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{QuestionarioRelControle.listaConsultaQuestionario}" rows="5" var="questionarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Questionario_descricao}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{QuestionarioRelControle.selecionarQuestionario}" focus="nomeQuestionario" render="form" oncomplete="#{rich:component('panelQuestionario')}.hide()" value="#{questionarioItens.descricao}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Questionario_situacao}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{QuestionarioRelControle.selecionarQuestionario}" focus="nomeQuestionario" render="form" oncomplete="#{rich:component('panelQuestionario')}.hide()" value="#{questionarioItens.situacao_Apresentar}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{QuestionarioRelControle.selecionarQuestionario}" tooltip="Selecionar" render="form" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" oncomplete="#{rich:component('panelQuestionario')}.hide()" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formQuestionario:resultadoConsultaQuestionario" maxPages="10" id="scResultadoQuestionario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaQuestionario">
+					<otm:mensagem bean="#{QuestionarioRelControle}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<script>
+			document.getElementById("form:nomeQuestionario").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

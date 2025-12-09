@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_LocalArmazenamento_tituloForm}" />
+	</ui:define>
+	<script>
+		document.getElementById("form:valorConsulta").focus();
+	</script>
+	<ui:define name="conteudo">
+		<rich:popupPanel styleClass="modalMaximizado" id="panelArvore" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_LocalArmazenamento_localArmazenamentoSuperior}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelArvore" />
+					<rich:componentControl target="panelArvore" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formArvore">
+				<rich:tree selectedClass="form-control camposSomenteLeitura text-left" toggleType="client" value="#{LocalArmazenamentoControle.localArmazenamentoVO.arvoreLocalArmazenamento}" var="item" execute="@this" iconClass="fas fa-warehouse mr5 bg-none">
+					<rich:treeNode iconClass="botoes" expanded="#{item.maximizarTree}">
+						<h:outputText styleClass="field control-label tituloCampos" style="font-size:10pt" value="#{item.data.localArmazenamento}" />
+					</rich:treeNode>
+				</rich:tree>
+			</h:form>
+		</rich:popupPanel>
+		<h:form id="form">
+			<h:commandLink action="#{LocalArmazenamentoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-12">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4">
+				<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{LocalArmazenamentoControle.consultarPor}">
+					<f:selectItems value="#{LocalArmazenamentoControle.listaSelectItemConsultarPor}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:inputText id="valorConsulta" styleClass="form-control campos" value="#{LocalArmazenamentoControle.controleConsultaOtimizado.valorConsulta}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<a4j:commandLink id="consultar" render="form" action="#{LocalArmazenamentoControle.consultarDados}" accesskey="2" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar">
+					<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+					<f:setPropertyActionListener target="#{LocalArmazenamentoControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+					<f:setPropertyActionListener target="#{LocalArmazenamentoControle.controleConsultaOtimizado.page}" value="1" />
+				</a4j:commandLink>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+			<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{LocalArmazenamentoControle.controleConsultaOtimizado}" rendered="#{LocalArmazenamentoControle.controleConsultaOtimizado.apresentarListaConsulta}" rows="10" var="localArmazenamentoLista">
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_LocalArmazenamento_unidadeEnsino}" />
+					</f:facet>
+					<h:commandLink action="#{LocalArmazenamentoControle.editar}" id="unidadeEnsino" value="#{localArmazenamentoLista.unidadeEnsinoVO.nome}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_LocalArmazenamento_localArmazenamento}" />
+					</f:facet>
+					<h:commandLink action="#{LocalArmazenamentoControle.editar}" id="localArmazenamento" value="#{localArmazenamentoLista.localArmazenamento}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_LocalArmazenamento_localArmazenamentoSuperior}" />
+					</f:facet>
+					<h:commandLink action="#{LocalArmazenamentoControle.editar}" id="localArmazenamentoSuperior" value="#{localArmazenamentoLista.localArmazenamentoSuperiorVO.localArmazenamento}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<h:panelGroup layout="block" styleClass="btn-group">
+						<a4j:commandLink render="formArvore" rendered="#{localArmazenamentoLista.isPossuiLocalSuperior}" oncomplete="#{rich:component('panelArvore')}.show()" action="#{LocalArmazenamentoControle.consultarArvoreLocalArmazenamentoSuperior}" style="top:-2px;position:relative" styleClass="btn btn-default fas fa-sitemap fa-rotate-180 border-radius-all iconePequeno mr5">
+							<f:setPropertyActionListener target="#{LocalArmazenamentoControle.localArmazenamentoVO}" value="#{localArmazenamentoLista}" />
+						</a4j:commandLink>
+						<a4j:commandLink render="formArvore" oncomplete="#{rich:component('panelArvore')}.show()" action="#{LocalArmazenamentoControle.consultarArvoreLocalArmazenamentoInferior}" styleClass="btn btn-default fas fa-sitemap border-radius-all iconePequeno mr5" style="top:-2px;position:relative">
+							<f:setPropertyActionListener target="#{LocalArmazenamentoControle.localArmazenamentoVO}" value="#{localArmazenamentoLista}" />
+						</a4j:commandLink>
+						<otm:commandIcon action="#{LocalArmazenamentoControle.editar}" tooltip="Editar" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+					</h:panelGroup>
+				</rich:column>
+				<f:facet name="footer">
+					<rich:dataScroller align="center" for="items" id="paginador" page="#{LocalArmazenamentoControle.controleConsultaOtimizado.page}" scrollListener="#{LocalArmazenamentoControle.consultarDadosPaginador}" rendered="#{LocalArmazenamentoControle.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup layout="block" styleClass="col-md-12">
+				<otm:mensagem bean="#{VagasControle}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton id="novo" action="#{LocalArmazenamentoControle.novo}" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>
+

@@ -1,0 +1,2 @@
+alter table requerimentodisciplina drop constraint if exists fk_requerimentodisciplina_requerimento;
+alter table requerimentodisciplina add constraint fk_requerimentodisciplina_requerimento foreign key (requerimento) references requerimento(codigo) on delete cascade;

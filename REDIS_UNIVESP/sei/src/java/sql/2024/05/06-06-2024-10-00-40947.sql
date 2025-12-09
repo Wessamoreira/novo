@@ -1,0 +1,1 @@
+ALTER TABLE tiporequerimento ADD COLUMN IF NOT EXISTS enviarNotificacaoRequerente boolean DEFAULT true;

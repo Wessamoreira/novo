@@ -1,0 +1,1 @@
+create index idx_historiconotablackboard_sala_situacao on historiconotablackboard (salaAulaBlackboardPessoa, situacaohistoriconotablackboardenum);

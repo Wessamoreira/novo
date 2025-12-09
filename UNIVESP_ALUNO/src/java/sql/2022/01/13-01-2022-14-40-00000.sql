@@ -1,0 +1,1 @@
+alter table if exists historiconotablackboard add column if not exists motivoDeferimentoIndeferimento text;

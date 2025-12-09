@@ -1,0 +1,4 @@
+ALTER TABLE IF EXISTS tiporequerimento ADD COLUMN IF NOT EXISTS validarVagasPorNumeroComputadoresConsiderandoCurso  boolean default false;
+
+  ALTER TABLE public.tiporequerimentocursotransferenciacurso drop CONSTRAINT fk_tiporequerimentocursotrasferenciacurso_tiporequerimentocurso;
+  ALTER TABLE public.tiporequerimentocursotransferenciacurso ADD CONSTRAINT fk_tiporequerimentocursotrasferenciacurso_tiporequerimentocurso FOREIGN KEY (tiporequerimentocurso) REFERENCES tiporequerimentocurso(codigo) ON DELETE cascade;

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:rich="http://richfaces.org/rich" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:a4j="http://richfaces.org/a4j" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:panelGroup layout="block" styleClass="row mn" rendered="#{ConfiguracaoAcademicoControle.abrirModalDefinicaoDisciplinaFilhaComposicao}">
+
+	<a4j:repeat id="listaHisFilha" rowKeyVar="row2" value="#{ConfiguracaoAcademicoControle.historicoFilhaComposicaoVOs}" var="histVO">
+		<otm2:panel name="panelListaHisFilha_#{row2+1}" styleClassFooter="dn" renderedControl="true">
+			<ui:define name="header">
+				<h:outputText styleClass="tituloCampos font-weight-bold" value="#{histVO.disciplina.nome}" />
+				<h:panelGroup style="float:right">
+					<h:outputText styleClass="tituloCampos font-weight-bold mr5" value="CH: #{histVO.cargaHorariaDisciplina}" />
+					<h:outputText styleClass="tituloCampos font-weight-bold mr5" value="CR: #{histVO.creditoDisciplina}" />
+				</h:panelGroup>
+			</ui:define>
+			<ui:define name="control">
+				<a4j:commandLink status="region" render="formLogCalculoNota" oncomplete="#{rich:component('panelLogCalculoNota')}.show()" id="helpLogCalculo2">
+					<span class="#{msg_botoes.btn_icon_help2_embutido} text-dark mr10 fs16"></span>
+					<f:setPropertyActionListener value="#{histVO.logCalculoNota}" target="#{ConfiguracaoAcademicoControle.logCalculoNota}">
+					</f:setPropertyActionListener>
+					<rich:tooltip style="z-index: 10000" value="Click para ver o Log Cálculo Nota"></rich:tooltip>
+				</a4j:commandLink>
+			</ui:define>
+			<ui:define name="body">
+				<h:panelGroup layout="block" styleClass="row mn">
+					<a4j:repeat rowKeyVar="row" value="#{histVO.configuracaoAcademico.configuracaoAcademicaNotaUtilizarVOs}" var="confNota">
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:panelGroup id="colunaNotaItem" rendered="#{confNota.apresentarNota and confNota.utilizarNota}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{confNota.titulo}" />
+							</h:panelGroup>
+							<h:panelGroup id="colunaNotalistaHisFilha" rendered="#{confNota.apresentarNota and confNota.utilizarNota}">
+								<a4j:region>
+									<h:inputText id="notalistaHisFilha" size="4" rendered="#{!confNota.utilizarNotaPorConceito}" styleClass="#{!confNota.notaTipoLancamento or histVO.configuracaoAcademico.bloquearNotaComposta(confNota.nota.numeroNota)?'camposSomenteLeitura':'campos'} form-control" value="#{confNota.notaDigitada}" onkeypress="aceitarSomenteValorDecimal(this);" readonly="#{!confNota.notaTipoLancamento or histVO.configuracaoAcademico.bloquearNotaComposta(confNota.nota.numeroNota)}">
+										<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+										<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{histVO.configuracaoAcademico.quantidadeCasasDecimaisPermitirAposVirgula}" />
+										<a4j:ajax status="region" render="notalistaHisFilha, panelGridMensagens" listener="#{ConfiguracaoAcademicoControle.checarFormatarValoresNota(histVO, confNota.notaDigitada, false, confNota.nota.numeroNota)}" event="change" execute="@this" />
+									</h:inputText>
+									<h:selectOneMenu id="notaConceitolistaHisFilha" styleClass="#{!confNota.notaTipoLancamento or histVO.configuracaoAcademico.bloquearNotaComposta(confNota.nota.numeroNota)?'camposSomenteLeitura':'campos'} form-control" readonly="#{!confNota.notaTipoLancamento}" disabled="#{!confNota.notaTipoLancamento or histVO.configuracaoAcademico.bloquearNotaComposta(confNota.nota.numeroNota)}" rendered="#{confNota.utilizarNotaPorConceito or histVO.configuracaoAcademico.bloquearNotaComposta(confNota.nota.numeroNota)}" value="#{confNota.notaConceitoSeleciada.codigo}">
+										<a4j:ajax status="region" render="listaHisFilha" listener="#{ConfiguracaoAcademicoControle.checarFormatarValoresNota(histVO, confNota.notaConceitoSelecionada, true, confNota.nota.numeroNota)}" execute="listaHisFilha" event="change" />
+										<f:selectItems value="#{confNota.listaSelectItemNotaConceito}" />
+									</h:selectOneMenu>
+								</a4j:region>
+							</h:panelGroup>
+						</h:panelGroup>
+					</a4j:repeat>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="Situação" />
+						<h:inputText readonly="true" size="20" styleClass="form-control camposSomenteLeitura" id="situacaoItem" value="#{histVO.situacao_Apresentar}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="Frequência" />
+						<h:inputText id="frequenciaItem" size="4" styleClass="form-control campos" maxlength="3" value="#{histVO.freguencia}">
+							<f:converter converterId="FormatadorNumerico" />
+							<a4j:ajax render="frequenciaItem" status="region" event="change" execute="@this" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="Média Final" />
+						<a4j:region>
+							<h:inputText id="mediaFinalItem" size="4" rendered="#{histVO.mediaFinalConceito.codigo == 0}" styleClass="form-control camposSomenteLeitura" value="#{histVO.mediaFinal}" readonly="true">
+								<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+								<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{histVO.configuracaoAcademico.quantidadeCasasDecimaisPermitirAposVirgula}" />
+							</h:inputText>
+							<h:inputText id="mediaFinalConceitoItem" size="4" rendered="#{histVO.mediaFinalConceito.codigo > 0}" maxlength="20" styleClass="form-control camposSomenteLeitura" value="#{histVO.mediaFinalConceito.conceitoNota}" readonly="true">
+							</h:inputText>
+						</a4j:region>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn">
+					<rich:dataTable width="100%" rendered="#{!empty histVO.historicoNotaVOs}" value="#{histVO.historicoNotaVOs}" var="historicoNotaItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Nota Recuperação" />
+							</f:facet>
+							<h:outputText styleClass="field control-label tituloCampos" value="#{historicoNotaItens.tituloNota}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Agrupamento Nota" />
+							</f:facet>
+							<h:outputText styleClass="field control-label tituloCampos" value="#{historicoNotaItens.agrupamentoNota.valorApresentar}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Situação Recuperação" />
+							</f:facet>
+							<h:outputText styleClass="field control-label tituloCampos" value="#{historicoNotaItens.situacaoRecuperacaoNota.valorApresentar}" />
+						</rich:column>
+					</rich:dataTable>
+				</h:panelGroup>
+			</ui:define>
+		</otm2:panel>
+	</a4j:repeat>
+</h:panelGroup>
+</html>

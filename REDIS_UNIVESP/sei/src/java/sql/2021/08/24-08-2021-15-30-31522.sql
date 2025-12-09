@@ -1,0 +1,1 @@
+alter table atendimento alter column telefone type varchar(15);

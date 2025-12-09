@@ -1,0 +1,1659 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:h="http://xmlns.jcp.org/jsf/html" 
+      xmlns:f="http://xmlns.jcp.org/jsf/core" 
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+      xmlns:p="http://primefaces.org/ui" 
+      xmlns:otm="http://java.sun.com/jsf/composite/otm" 
+      xmlns:otm2="http://www.otimize-ti.com.br" 
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+
+<ui:composition template="/visaoAluno/template/visaoAluno.xhtml">
+
+	<style>
+        .modalWidth60 {
+            width: 60% !important;
+            height: 100% !important;
+            left: 22% !important;
+            top: 10% !important;
+        }
+        /* Ajuste para ícones do dashboard no PrimeFaces */
+        .ui-draggable-dragging {
+            z-index: 999999 !important;
+        }
+    </style>
+
+	<ui:define name="tituloNavegador">
+		SEI - Visão Aluno
+	</ui:define>
+
+	<ui:define name="modal">
+
+		<h:outputScript>$(document).ready(function(){abrirModalContratoCertisign();});</h:outputScript>
+		<h:outputScript>$(document).ready(function(){abrirModalContratoTechCert();});</h:outputScript>
+		<h:outputScript>$(document).ready(function(){abrirModalAtaColacaoGrauCertisign();});</h:outputScript>
+		<h:outputScript>$(document).ready(function(){abrirModalAtaColacaoGrauTechCert();});</h:outputScript>
+		<h:outputScript>$(document).ready(function(){abrirModalTermoEstagioNaoContratoCertisign();});</h:outputScript>
+		<h:outputScript>$(document).ready(function(){abrirModalTermoEstagioNaoContratoTechCert();});</h:outputScript>
+		<h:outputScript>$(document).ready(function(){abrirModalTermoEstagioContratoTechCert();});</h:outputScript>
+
+		<p:remoteCommand name="verificarModal" oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}" />
+
+		<p:dialog styleClass="modalMaximizado50" id="panelPrimeiroAcesso"
+			widgetVar="panelPrimeiroAcesso" modal="true" appendTo="@(body)"
+			width="650" height="350" header="Primeiro Acesso"
+			visible="#{VisaoAlunoControle.apresentarModalResetarSenha}"
+			responsive="true">
+
+			<h:form id="formPrimeiroAcesso">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos"
+							value="Bem Vindo! Esse é seu primeiro acesso ao portal, altere sua senha de acesso abaixo!" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mt-2">
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<h:outputText styleClass="field control-label tituloCampos"
+							value="#{msg_aplic.prt_Usuario_username}" />
+						<h:inputText id="usernamePrimeiroAcesso" size="20"
+							styleClass="form-control camposSomenteLeitura" readonly="true"
+							disabled="true"
+							value="#{VisaoAlunoControle.usuarioLogado.username}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<h:outputText styleClass="field control-label tituloCampos"
+							value="#{msg_aplic.prt_Usuario_senha}" />
+						<h:inputSecret maxlength="200" id="senhaPrimeiroAcesso" size="20"
+							onkeyup="javascript:verifica('formPrimeiroAcesso:senhaPrimeiroAcesso')"
+							styleClass="form-control camposObrigatorios"
+							value="#{VisaoAlunoControle.senha}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2 ">
+					<otm:spacer width="100%" />
+					<h:outputText styleClass="field control-label tituloCampos"
+						value="Nível Segurança" />
+					<div id="page-wrap"></div>
+				</h:panelGroup>
+				<h:panelGroup layout="block"
+					styleClass="barra-btn-flutuante-modal-50">
+                    <otm:commandButton id="alterarSenhaPrimeiroAcesso"
+						styleClass="btn btn-dark"
+						action="#{VisaoAlunoControle.alterarSenhaPrimeiroAcesso}"
+						update="formPrimeiroAcesso, form"
+						oncomplete="#{VisaoAlunoControle.oncompleteModal}" accesskey="2"
+						value="Gravar" icon="#{msg_botoes.btn_icon_gravar_embutido}" />
+					<otm:commandButton id="logout" styleClass="btn btn-danger ml5"
+						action="#{LoginControle.logoutVisao}"
+						update="formMensagem, formPrimeiroAcesso, panelMensagem, panelPrimeiroAcesso"
+						accesskey="2" value="Sair" icon="fas fa-sign-out-alt" />
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog styleClass="modalMaximizado"
+			id="panelAlertaAlunoPendenciaDocumentacaoMatricula"
+			widgetVar="panelAlertaAlunoPendenciaDocumentacaoMatricula"
+			modal="true" appendTo="@(body)" responsive="true" width="750"
+			height="500" header="Atenção"
+			visible="#{VisaoAlunoControle.apresentarModalAlertarAlunoPendenciaDocumentacaoMatricula}">
+			<h:form id="formAlertaAlunoPendenciaDocumentacaoMatricula">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText escape="false"
+							value="#{VisaoAlunoControle.mensagemAlertaAlunoPendenciaDocumentacaoMatricula}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<otm:spacer />
+				<h:panelGroup layout="block"
+					styleClass="barra-btn-flutuante-modal-80">
+					<h:panelGroup layout="block" styleClass="w-100 text-center">
+                        <otm:commandButton
+							action="#{VisaoAlunoControle.inicializarMenuEntregaDocumentos}"
+							oncomplete="PF('panelAlertaAlunoPendenciaDocumentacaoMatricula').hide();"
+							process="@this"
+							update="formAlertaAlunoPendenciaDocumentacaoMatricula"
+							accesskey="1" value="Entregar Documento"
+							icon="fas fa-hand-holding" styleClass="btn btn-info" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog styleClass="modalMaximizado50"
+			id="panelAlertaAlunoContratoNaoAssinado"
+			widgetVar="panelAlertaAlunoContratoNaoAssinado" modal="true"
+			appendTo="@(body)" responsive="true" width="500" height="200"
+			header="Alerta"
+			visible="#{VisaoAlunoControle.matricula.alunoNaoAssinouContratoMatricula and VisaoAlunoControle.matricula.mensagemAlertaAlunoNaoAssinouContratoMatricula ne ''}">
+			<h:form id="formAlertaAlunoContratoNaoAssinado">
+				<h:outputText escape="false"
+					value="#{VisaoAlunoControle.matricula.mensagemAlertaAlunoNaoAssinouContratoMatricula}" />
+				<h:panelGroup layout="block"
+					styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton
+						action="#{VisaoAlunoControle.fecharModalAlertarAlunoContratoNaoAssinado}"
+						oncomplete="PF('panelAlertaAlunoContratoNaoAssinado').hide();"
+						process="@this" update="formAlertaAlunoContratoNaoAssinado"
+						accesskey="1" value="Fechar" styleClass="btn btn-primary"
+						icon="fa fa-times" />
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog styleClass="modalMaximizado100" id="panelMensagem"
+			widgetVar="panelMensagem" modal="true" appendTo="@(body)"
+			responsive="true" width="750" height="500" header="Comunicação"
+			visible="#{ComunicacaoInternaControle.abrirRichModalMensagem}"
+			onShow="document.getElementById('formAluno:valorConsultaAlunoModal').focus();">
+			<h:form id="formMensagem">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block"
+						rendered="#{ComunicacaoInternaControle.lerComunicado}"
+						styleClass="col-md-12">
+						<otm:editor readonly="true"
+							contents="height: calc(100vh - 180px) !important; "
+							id="mensagemResposta2"
+							value="#{ComunicacaoInternaControle.comunicacaoInternaVO.mensagem}">
+						</otm:editor>
+					</h:panelGroup>
+					<h:panelGroup layout="block"
+						rendered="#{ComunicacaoInternaControle.responderComunicado}"
+						styleClass="col-md-12">
+						<otm:editor contents="height: calc(100vh - 180px) !important; "
+							rendered="#{ComunicacaoInternaControle.responderComunicado}"
+							id="mensagemResposta"
+							value="#{ComunicacaoInternaControle.comunicacaoInternaResposta.mensagem}">
+						</otm:editor>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" id="paMensagemMsg"
+					rendered="#{ComunicacaoInternaControle.responderComunicado}">
+					<otm:mensagem bean="#{ComunicacaoInternaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup id="paMensagem"
+					styleClass="barra-btn-flutuante-modal-100" layout="block"
+					rendered="#{!VisaoAlunoControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<p:commandLink id="gravarRecadoRespostaMsg"
+							oncomplete="verificarModal()"
+							rendered="#{ComunicacaoInternaControle.responderComunicado}"
+							action="#{ComunicacaoInternaControle.responderLeituraObrigatoriaOuMarketing}"
+							update="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing, form"
+							process="@this" accesskey="2" styleClass="btn btn-info"
+							value="Enviar Resposta">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left"
+								style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</p:commandLink>
+						<p:commandLink
+							rendered="#{ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}"
+							action="#{ComunicacaoInternaControle.inicializarDadosResponderComunicado}"
+							value="#{msg_bt.btn_responder}" update="formMensagem"
+							styleClass="btn btn-primary">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left"
+								style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</p:commandLink>
+						<otm:commandButton styleClass="btn btn-info" id="reMarcarLidas"
+							oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}"
+							action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}"
+							rendered="#{!ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}"
+							process="@this"
+							update="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing"
+							accesskey="1" value="Marcar como Lida"
+							icon="#{msg_botoes.btn_icon_responder_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup styleClass="barra-btn-flutuante-modal-100"
+					layout="block"
+					rendered="#{VisaoAlunoControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<otm:commandButton value="Fechar" styleClass="btn btn-danger"
+							icon="#{msg_botoes.btn_icon_fechar_embutido}"
+							action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}"
+							oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}"
+							process="@this"
+							update="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog styleClass="modalMaximizado50"
+			id="panelErroAcessoConteudoEstudo2"
+			widgetVar="panelErroAcessoConteudoEstudo2" modal="true"
+			appendTo="@(body)" responsive="true" width="550" height="350"
+			header="Estudo Online Informa"
+			onShow="document.getElementById('formErroAcessoConteudoEstudo:valorConsultaProrrogar').focus();">
+
+			<f:facet name="icons">
+				<h:graphicImage value="#{resource['imagens/close.png']}"
+					styleClass="icon-close-modal" style="cursor:pointer;margin-top:3px"
+					onclick="PF('panelErroAcessoConteudoEstudo2').hide()" />
+			</f:facet>
+
+			<h:form id="formErroAcessoConteudoEstudo2">
+				<h:panelGroup layout="block" styleClass="row"
+					id="panelGridMensagens">
+					<otm:mensagem bean="#{VisaoAlunoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog styleClass="modalMaximizado100" id="panelMarketing"
+			widgetVar="panelMarketing" modal="true" appendTo="@(body)"
+			responsive="true" header="Marketing"
+			visible="#{ComunicacaoInternaControle.abrirRichModalMarketing}">
+
+			<h:form id="formAnexoMarketing">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block"
+						rendered="#{ComunicacaoInternaControle.comunicacaoInternaVO.existeArquivo and ComunicacaoInternaControle.lerComunicado}"
+						styleClass="col-md-12 text-center">
+						<h:graphicImage styleClass="imagem-comunicao-mural"
+							value="#{ComunicacaoInternaControle.paintArquivoMarketing1}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block"
+						rendered="#{ComunicacaoInternaControle.responderComunicado}"
+						styleClass="col-md-12">
+						<otm:editor contents="height: calc(100vh - 180px) !important; "
+							rendered="#{ComunicacaoInternaControle.responderComunicado}"
+							id="mensagemRespostaMarketing"
+							value="#{ComunicacaoInternaControle.comunicacaoInternaResposta.mensagem}">
+						</otm:editor>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup id="paMensagemMarke"
+					rendered="#{ComunicacaoInternaControle.responderComunicado}"
+					layout="block">
+					<otm:mensagem bean="#{ComunicacaoInternaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup id="paBotaoMarketing"
+					styleClass="barra-btn-flutuante-modal-100" layout="block"
+					rendered="#{!VisaoAlunoControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<otm:commandButton styleClass="btn btn-info"
+							oncomplete="verificarModal()" id="gravarRecadoRespostaMarke"
+							rendered="#{ComunicacaoInternaControle.responderComunicado}"
+							action="#{ComunicacaoInternaControle.responderLeituraObrigatoriaOuMarketing}"
+							update="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing"
+							accesskey="2" value="Enviar Resposta"
+							icon="#{msg_botoes.btn_icon_responder_embutido}">
+						</otm:commandButton>
+						<otm:commandButton styleClass="btn btn-primary"
+							update="panelMarketing, formAnexoMarketing, panelMensagem"
+							rendered="#{ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}"
+							action="#{ComunicacaoInternaControle.inicializarDadosResponderComunicado}"
+							value="#{msg_bt.btn_responder}"
+							icon="#{msg_botoes.btn_icon_responder_embutido}" />
+
+						<otm:commandButton styleClass="btn btn-info" id="reMarcarLidasMar"
+							action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}"
+							rendered="#{!ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}"
+							process="@this"
+							update="formMensagem, formAnexoMarketing, panelMarketing"
+							accesskey="1" value="Marcar Como Lida"
+							icon="#{msg_botoes.btn_icon_responder_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup styleClass="barra-btn-flutuante-modal-100"
+					layout="block"
+					rendered="#{VisaoAlunoControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<otm:commandButton value="Fechar" styleClass="btn btn-danger"
+							icon="#{msg_botoes.btn_icon_fechar_embutido}"
+							action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}"
+							oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}"
+							process="@this"
+							update="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelMensagemGoogleMeet"
+			widgetVar="panelMensagemGoogleMeet" modal="true" appendTo="@(body)"
+			responsive="true" width="250" height="250" header="Atenção">
+
+			<f:facet name="icons">
+				<h:graphicImage value="#{resource['imagens/close.png']}"
+					styleClass="icon-close-modal" style="cursor:pointer"
+					onclick="PF('panelMensagemGoogleMeet').hide()" />
+			</f:facet>
+
+			<h:form id="formMensagemGoogleMeet">
+				<otm:mensagem bean="#{VisaoAlunoControle}" />
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelDocumentoContratoAssinadoPendente"
+			widgetVar="panelDocumentoContratoAssinadoPendente"
+			styleClass="modalMaximizado" modal="true" appendTo="@(body)"
+			responsive="true" header="Documento Pendente"
+			visible="#{VisaoAlunoControle.apresentarModalPendenciaContratoAssinado and VisaoAlunoControle.documentoAssinadoPessoa.codigo ne 0}">
+
+			<h:form id="formDocumentoContratoAssinadoPendente">
+				<h:panelGroup layout="block" style="width:99%">
+					<iframe src="#{VisaoAlunoControle.caminhoPreviewContrato}"
+						height="450px" frameborder="0"
+						style="border: 0; width: 100% !important; heigth: auto !important"></iframe>
+				</h:panelGroup>
+				<h:panelGroup layout="block"
+					styleClass="barra-btn-flutuante-modal-80">
+					<otm:assinaturaDigitalButton id="registrarAssinaturaContrato"
+						bean="#{VisaoAlunoControle}"
+						action="#{VisaoAlunoControle.registrarAssinaturaContratoPorAluno}"
+						update="formDocumentoContratoAssinadoPendente"
+						styleClass="btn btn-success"
+						oncomplete="PF('panelDocumentoContratoAssinadoPendente').hide();"
+						icon="far fa-thumbs-up" value="Aceitar" />
+					<otm:assinaturaDigitalButton id="regeitarAssinaturaContrato"
+						bean="#{VisaoAlunoControle}" style="margin-left:20px"
+						update="formMotivoNaoAceite"
+						styleClass="btn btn-danger btn-excluir"
+						oncomplete="PF('panelMotivoNaoAceite').show();"
+						icon="far fa-thumbs-down" value="Rejeitar" />
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelDocumentoContratoAssinado"
+			widgetVar="panelDocumentoContratoAssinado"
+			styleClass="modalMaximizado" modal="true" appendTo="@(body)"
+			responsive="true" header="Documento Assinado">
+
+			<h:form id="formDocumentoContratoAssinado">
+				<h:panelGroup layout="block" style="width:99%">
+					<iframe src="#{VisaoAlunoControle.caminhoPreviewContrato}"
+						width="780" height="500" frameborder="0" style="border: 0"></iframe>
+				</h:panelGroup>
+				<h:panelGroup layout="block"
+					style="width:100%; text-align:center; margin-top: 2%">
+					<p:commandLink id="fecharModal" styleClass="botoes"
+						style="width: 86px;height: 23px;text-align: end;" value="Fechar"
+						title="Fechar" update="formDocumentoContratoAssinado"
+						oncomplete="PF('panelDocumentoContratoAssinado').hide();">
+						<h:graphicImage class="fas fa-times"
+							style="font-size: 18px;text-align: right;position: relative;right: 61px;top: 2px;border-style: hidden;"></h:graphicImage>
+					</p:commandLink>
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelMotivoNaoAceite" widgetVar="panelMotivoNaoAceite"
+			styleClass="modalMaximizado50" modal="true" appendTo="@(body)"
+			responsive="true"
+			header="#{msg_aplic.prt_Requerimento_motivoNaoAceiteCertificado}">
+
+			<f:facet name="icons">
+				<h:graphicImage value="#{resource['/imagens/close.png']}"
+					styleClass="icon-close-modal" style="cursor:pointer"
+					onclick="PF('panelMotivoNaoAceite').hide()" />
+			</f:facet>
+
+			<h:form id="formMotivoNaoAceite">
+				<h:panelGroup layout="block" style="width:99%">
+					<h:inputTextarea id="motivoNaoAceite" rows="5" style="width:100%"
+						styleClass="form-control camposObrigatoriosTextArea"
+						value="#{VisaoAlunoControle.documentoAssinadoPessoa.motivoRejeicao}" />
+				</h:panelGroup>
+				<otm:spacer />
+				<h:panelGrid columns="1" columnClasses="colunaCentralizada"
+					width="100%">
+					<otm:commandButton
+						render="formMotivoNaoAceite, form , formDocumentoContratoAssinadoPendente"
+						action="#{VisaoAlunoControle.registrarIndeferimentoContratoPorAluno}"
+						styleClass="btn btn-dark btn-gravar"
+						oncomplete="PF('panelMotivoNaoAceite').hide();PF('panelDocumentoContratoAssinadoPendente').hide();"
+						value="#{msg_botoes.btn_gravar}" />
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelMotivoNaoAceiteAtaColacaoGrau"
+			widgetVar="panelMotivoNaoAceiteAtaColacaoGrau"
+			styleClass="modalMaximizado50" modal="true" appendTo="@(body)"
+			responsive="true" header="Mótivo não aceite Documento Ata">
+
+			<f:facet name="icons">
+				<h:graphicImage value="#{resource['/imagens/close.png']}"
+					styleClass="icon-close-modal" style="cursor:pointer"
+					onclick="PF('panelMotivoNaoAceiteAtaColacaoGrau').hide()" />
+			</f:facet>
+
+			<h:form id="formMotivoNaoAceiteAtaColacaoGrau">
+				<h:panelGroup layout="block" style="width:99%">
+					<h:inputTextarea id="motivoNaoAceiteAta" rows="5"
+						style="width:100%"
+						styleClass="form-control camposObrigatoriosTextArea"
+						value="#{VisaoAlunoControle.documentoAssinadoPessoaAtaColacaoGrau.motivoRejeicao}" />
+				</h:panelGroup>
+				<otm:spacer />
+				<h:panelGrid columns="1" columnClasses="colunaCentralizada"
+					width="100%">
+					<otm:commandButton
+						render="formMotivoNaoAceiteAtaColacaoGrau, form , formDocumentoAtaColocaoGrauAssinadoPendente"
+						action="#{VisaoAlunoControle.registrarIndeferimentoAtaColacaoGrauPorAluno}"
+						styleClass="btn btn-dark btn-gravar"
+						oncomplete="PF('panelMotivoNaoAceiteAtaColacaoGrau').hide();PF('panelDocumentoAtaColocaoGrauAssinadoPendente').hide();"
+						value="#{msg_botoes.btn_gravar}" />
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelDocumentoAtaColacaoGrauAssinado"
+			widgetVar="panelDocumentoAtaColacaoGrauAssinado"
+			styleClass="modalMaximizado" modal="true" appendTo="@(body)"
+			responsive="true" header="Documento Assinado">
+
+			<h:form id="formDocumentoAtaColacaoGrauAssinado">
+				<h:panelGroup layout="block" style="width:99%">
+					<iframe src="#{VisaoAlunoControle.caminhoPreviewDocumentoAta}"
+						width="780" height="500" frameborder="0" style="border: 0"></iframe>
+				</h:panelGroup>
+				<h:panelGroup layout="block"
+					style="width:100%; text-align:center; margin-top: 2%">
+					<p:commandLink id="fecharModalAta" styleClass="botoes"
+						style="width: 86px;height: 23px;text-align: end;" value="Fechar"
+						title="Fechar" update="formDocumentoAtaColacaoGrauAssinado"
+						oncomplete="PF('panelDocumentoAtaColacaoGrauAssinado').hide();">
+						<h:graphicImage class="fas fa-times"
+							style="font-size: 18px;text-align: right;position: relative;right: 61px;top: 2px;border-style: hidden;"></h:graphicImage>
+					</p:commandLink>
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelDocumentoAtaColocaoGrauAssinadoPendente"
+			widgetVar="panelDocumentoAtaColocaoGrauAssinadoPendente"
+			styleClass="modalMaximizado" modal="true" appendTo="@(body)"
+			responsive="true" header="Documento Ata Colação Grau Pendente"
+			visible="#{VisaoAlunoControle.apresentarModalPendenciaAtaColacaoGrauAssinado and VisaoAlunoControle.documentoAssinadoPessoaAtaColacaoGrau.codigo ne 0 and VisaoAlunoControle.periodoValidoApresentarModalPendenciaAtaColacaoGrauAssinado}">
+
+			<h:form id="formDocumentoAtaColocaoGrauAssinadoPendente">
+				<h:panelGroup layout="block" style="width:99%">
+					<iframe src="#{VisaoAlunoControle.caminhoPreviewDocumentoAta}"
+						height="450px" frameborder="0"
+						style="border: 0; width: 100% !important; heigth: auto !important"></iframe>
+				</h:panelGroup>
+				<h:panelGroup layout="block"
+					styleClass="barra-btn-flutuante-modal-80">
+					<otm:assinaturaDigitalButton id="registrarAssinaturaAtaColacaoGrau"
+						bean="#{VisaoAlunoControle}"
+						action="#{VisaoAlunoControle.registrarAssinaturaAtaColacaoGrauPorAluno}"
+						render="formDocumentoAtaColocaoGrauAssinadoPendente"
+						styleClass="btn btn-success"
+						oncomplete="PF('panelDocumentoAtaColocaoGrauAssinadoPendente').hide();"
+						icon="far fa-thumbs-up" value="Aceitar" />
+					<otm:assinaturaDigitalButton id="regeitarAssinaturaAtaColacaoGrau"
+						bean="#{VisaoAlunoControle}" style="margin-left:20px"
+						render="formMotivoNaoAceiteAtaColacaoGrau"
+						styleClass="btn btn-danger btn-excluir"
+						oncomplete="PF('panelMotivoNaoAceiteAtaColacaoGrau').show();"
+						icon="far fa-thumbs-down" value="Rejeitar" />
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelMotivoNaoAceiteTermoEstagioNaoObrigatorio"
+			widgetVar="panelMotivoNaoAceiteTermoEstagioNaoObrigatorio"
+			styleClass="modalMaximizado50" modal="true" appendTo="@(body)"
+			responsive="true"
+			header="Mótivo não aceite Termo Estagio Não Obrigatório">
+
+			<f:facet name="icons">
+				<h:graphicImage value="#{resource['/imagens/close.png']}"
+					styleClass="icon-close-modal" style="cursor:pointer"
+					onclick="PF('panelMotivoNaoAceiteTermoEstagioNaoObrigatorio').hide()" />
+			</f:facet>
+
+			<h:form id="formMotivoNaoAceiteTermoEstagioNaoObrigatorio">
+				<h:panelGroup layout="block" style="width:99%">
+					<h:inputTextarea id="motivoNaoAceiteTermoEstagioNaoObrigatorio"
+						rows="5" style="width:100%"
+						styleClass="form-control camposObrigatoriosTextArea"
+						value="#{VisaoAlunoControle.documentoAssinadoPessoaTermoEstagioNaoObrigatorio.motivoRejeicao}" />
+				</h:panelGroup>
+				<otm:spacer />
+				<h:panelGrid columns="1" columnClasses="colunaCentralizada"
+					width="100%">
+					<otm:commandButton
+						render="formMotivoNaoAceiteTermoEstagioNaoObrigatorio, form, formTermoEstagioNaoObrigatorioAssinadoPendente"
+						action="#{VisaoAlunoControle.registrarIndeferimentoTermoEstagioNaoObrigatorioPorAluno}"
+						styleClass="btn btn-dark btn-gravar"
+						oncomplete="PF('panelMotivoNaoAceiteTermoEstagioNaoObrigatorio').hide(); PF('panelTermoEstagioNaoObrigatorioAssinadoPendente').hide();"
+						value="#{msg_botoes.btn_gravar}" />
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelTermoEstagioNaoObrigatorioAssinado"
+			widgetVar="panelTermoEstagioNaoObrigatorioAssinado"
+			styleClass="modalMaximizado" modal="true" appendTo="@(body)"
+			responsive="true" header="Documento Assinado">
+
+			<h:form id="formTermoEstagioNaoObrigatorioAssinado">
+				<h:panelGroup layout="block" style="width:99%">
+					<iframe
+						src="#{VisaoAlunoControle.caminhoPreviewTermoEstagioNaoObrigatorio}"
+						width="780" height="500" frameborder="0" style="border: 0" />
+				</h:panelGroup>
+				<h:panelGroup layout="block"
+					style="width:100%; text-align:center; margin-top: 2%">
+					<p:commandLink id="fecharModalTermoEstagioNaoObrigatorio"
+						styleClass="botoes"
+						style="width: 86px; height: 23px; text-align: end;" value="fechar"
+						title="fechar" update="formTermoEstagioNaoObrigatorioAssinado"
+						oncomplete="PF('panelTermoEstagioNaoObrigatorioAssinado').hide();">
+						<h:graphicImage class="fas fa-times"
+							style="font-size: 18px; text-align: right; position: relative; right: 61px; top: 2px; border-style: hidden;"></h:graphicImage>
+					</p:commandLink>
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="panelTermoEstagioNaoObrigatorioAssinadoPendente"
+			widgetVar="panelTermoEstagioNaoObrigatorioAssinadoPendente"
+			styleClass="modalMaximizado" modal="true" appendTo="@(body)"
+			responsive="true" header="Termo de Estagio Não Obrigatório"
+			visible="#{VisaoAlunoControle.apresentarModalPendenciaTermoEstagioNaoObrigatorio and VisaoAlunoControle.documentoAssinadoPessoaTermoEstagioNaoObrigatorio.codigo ne 0 and VisaoAlunoControle.periodoValidoApresentarModalPendenciaTermoEstagioNaoObrigatorio}">
+
+			<h:form id="formTermoEstagioNaoObrigatorioAssinadoPendente">
+				<h:panelGroup layout="block" style="width:99%">
+					<iframe
+						src="#{VisaoAlunoControle.caminhoPreviewTermoEstagioNaoObrigatorio}"
+						height="450px" frameborder="0"
+						style="border: 0; width: 100% !important; heigth: auto !important"></iframe>
+				</h:panelGroup>
+				<h:panelGroup layout="block"
+					style="width:100%; text-align:center; margin-top: 2%">
+					<otm:assinaturaDigitalButton
+						id="registrarAssinaturaTermoEstagioNaoObrigatorio"
+						bean="#{VisaoAlunoControle}"
+						action="#{VisaoAlunoControle.registrarAssinaturaTermoEstagioNaoObrigatorioPorAluno}"
+						render="formTermoEstagioNaoObrigatorioAssinadoPendente"
+						styleClass="btn btn-success"
+						oncomplete="PF('panelTermoEstagioNaoObrigatorioAssinadoPendente').hide();"
+						icon="far fa-thumbs-up" value="Aceitar" />
+					<otm:assinaturaDigitalButton
+						id="regeitarAssinaturaTermoEstagioNaoObrigatorio"
+						bean="#{VisaoAlunoControle}" style="margin-left:20px"
+						render="formMotivoNaoAceiteTermoEstagioNaoObrigatorio"
+						styleClass="btn btn-danger btn-excluir"
+						oncomplete="PF('panelMotivoNaoAceiteTermoEstagioNaoObrigatorio').show();"
+						icon="far fa-thumbs-down" value="Rejeitar" />
+				</h:panelGroup>
+			</h:form>
+		</p:dialog>
+
+		<ui:include src="alterarSenhaAlunoContaGsuiteModal.xhtml" />
+
+	</ui:define>
+
+	<ui:define name="subTituloPagina">
+		<h:form id="formTitulo">
+			<h:panelGroup layout="block" styleClass="col-md-5"
+				rendered="#{VisaoAlunoControle.usuarioLogado.isApresentarVisaoPais}">
+				<h:selectOneMenu id="selectNomeAluno"
+					styleClass="form-control pn fs12 bg-transparent"
+					style="border: none;width:100%"
+					value="#{VisaoAlunoControle.matricula.aluno.codigo}">
+					<f:selectItems value="#{VisaoAlunoControle.listaSelectItemAluno}" />
+					<p:ajax event="change" oncomplete="irHomeAluno()"
+						listener="#{VisaoAlunoControle.montarDadosMatricula}"
+						update="form" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block"
+				styleClass="#{VisaoAlunoControle.usuarioLogado.isApresentarVisaoPais ? 'col-md-7' : ''}">
+				<h:selectOneMenu id="selectMatriculaAluno"
+					styleClass="form-control pn fs12 bg-transparent"
+					style="border: none;width:100%"
+					value="#{VisaoAlunoControle.matricula.matricula}">
+					<f:selectItems
+						value="#{VisaoAlunoControle.listaSelectItemMatriculaCursoTurnoTopoAluno}" />
+					<p:ajax event="change" oncomplete="irHomeAluno()"
+						listener="#{VisaoAlunoControle.selecionarCursoTopo}" update="form" />
+					<p:remoteCommand name="irHomeAluno"
+						action="#{VisaoAlunoControle.navegarTela}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<h:panelGroup layout="block" rendered="#{!LoginControle.appMovel}"
+			id="dragDropDashs">
+		</h:panelGroup>
+		<h:form id="form" styleClass="w-100">
+
+			<p:remoteCommand name="registrarAssinaturaSEI"
+				oncomplete="#{VisaoAlunoControle.registrarAssinaturaSEI()}"></p:remoteCommand>
+			<p:remoteCommand name="abrirModalContratoCertisign"
+				oncomplete="#{VisaoAlunoControle.abrirModalContratoCertisign()}"></p:remoteCommand>
+			<p:remoteCommand name="abrirModalContratoTechCert"
+				oncomplete="#{VisaoAlunoControle.abrirModalContratoTechCert()}"></p:remoteCommand>
+			<p:remoteCommand name="abrirModalAtaColacaoGrauCertisign"
+				oncomplete="#{VisaoAlunoControle.abrirModalAtaColacaoGrauCertisign()}"></p:remoteCommand>
+			<p:remoteCommand name="abrirModalAtaColacaoGrauTechCert"
+				oncomplete="#{VisaoAlunoControle.abrirModalAtaColacaoGrauTechCert()}"></p:remoteCommand>
+			<p:remoteCommand name="abrirModalTermoEstagioNaoContratoCertisign"
+				oncomplete="#{VisaoAlunoControle.abrirModalTermoEstagioNaoContratoCertisign()}"></p:remoteCommand>
+			<p:remoteCommand name="abrirModalTermoEstagioNaoContratoTechCert"
+				oncomplete="#{VisaoAlunoControle.abrirModalTermoEstagioNaoContratoTechCert()}"></p:remoteCommand>
+			<p:remoteCommand name="abrirModalTermoEstagioContratoTechCert"
+				oncomplete="#{VisaoAlunoControle.abrirModalTermoEstagioContratoTechCert()}"></p:remoteCommand>
+
+			<h:panelGroup layout="block"
+				rendered="#{VisaoAlunoControle.isApresentarCampoAno and !LoginControle.appMovel}"
+				id="timeLineEstudo" styleClass=" text-center">
+
+				<ui:repeat
+					value="#{VisaoAlunoControle.listaSelectItemAnoSemestre}"
+					var="anoSemestre" varStatus="status">
+					<p:commandLink
+						title="Clique Para Listas das Disciplinas de #{anoSemestre.value}"
+						rendered="#{!empty anoSemestre.value}"
+						update=":form:wrapperPanelGeral, :form:timeLineEstudo" 
+						action="#{VisaoAlunoControle.consultarDadosMatriculaPorSelecaoAnoSemestre}"
+						styleClass="#{anoSemestre.value eq VisaoAlunoControle.filtroAnoSemestreTelaInicial ? 'timeline-anoSemestre select' : 'timeline-anoSemestre info'}">
+						<f:setPropertyActionListener value="#{anoSemestre.value}"
+							target="#{VisaoAlunoControle.filtroAnoSemestreTelaInicial }"></f:setPropertyActionListener>
+						<h:outputText styleClass="fs10 font-bold"
+							style="position:relative; top:-7px" value="#{anoSemestre.value}" />
+					</p:commandLink>
+					<h:panelGroup
+						rendered="#{!empty anoSemestre.value and status.index lt (fn:length(VisaoAlunoControle.listaSelectItemAnoSemestre) - 1)}"
+						styleClass="timeline-separador-anoSemestre">
+					</h:panelGroup>
+				</ui:repeat>
+
+			</h:panelGroup>
+
+			<h:panelGroup layout="block" id="menuTopo"
+				rendered="#{VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}"
+				styleClass="row pt-2 pb-2 pl-3 pr-3">
+			</h:panelGroup>
+			
+			<h:panelGroup layout="block" id="wrapperPanelGeral">
+			
+				<h:panelGroup layout="block" id="panelGeral"
+					rendered="#{VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}"
+					styleClass="row" style="display:flex !important">
+	
+					<otm:linksUteis bean="#{LoginControle}"
+						dashBoardLinksUteis="#{LoginControle.dashBoardLinksUteis}">
+	
+						<h:panelGroup id="panelIconSistemaProvas" styleClass="col-md-4"
+							layout="block"
+							rendered="#{VisaoAlunoControle.isSistemaProvasHabilitado}">
+							<p:commandLink id="botaoAcessoSistemaProvasMestreGR"
+								action="#{VisaoAlunoControle.realizarCriacaoAcessoSistemasProvasMestreGR()}"
+								oncomplete="#{VisaoAlunoControle.oncompleteModal}">
+								<h:panelGroup
+									styleClass="p-2 border rounded bg-secundary text-center mb-2 col-md-12">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<i class="far fa-file-alt"></i>
+										<p:tooltip rendered="#{!LoginControle.appMovel}"
+											followMouse="true" for="panelIconSistemaProvas"
+											value="Apresentar #{msg_aplic.prt_SistemaProvas}"></p:tooltip>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12"
+										style="padding-bottom: 22px;">
+										<h:outputText styleClass="field control-label tituloCampos"
+											value="#{msg_aplic.prt_SistemaProvas}"></h:outputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</p:commandLink>
+						</h:panelGroup>
+	
+					</otm:linksUteis>
+	
+					<h:panelGroup id="DISCIPLINAS_ALUNO"
+						style="order:#{VisaoAlunoControle.dashboardMinhasDisciplinas.ordem}"
+						layout="block" styleClass="col-md-6"
+						rendered="#{!empty VisaoAlunoControle.listaMatriculaPeriodoTurmaDisciplinaVOs and !VisaoAlunoControle.dashboardMinhasDisciplinas.ocultar}">
+	
+						<p:droppable for="dashboardMinhasDisciplinas">
+							<p:ajax listener="#{VisaoAlunoControle.registrarPosicaoDashboard}"
+								update=":form:wrapperPanelGeral" />
+						</p:droppable>
+	
+						<p:draggable for="dashboardMinhasDisciplinas" revert="true"
+							stack=".ui-panel" />
+	
+						<otm2:dashpanel id="dashboardMinhasDisciplinas" cols="12">
+							<ui:define name="header">
+								<i
+									class="#{VisaoAlunoControle.dashboardMinhasDisciplinas.icone} mr-2 fs12 fonteHeaderDashboard"></i>
+								<h:outputLabel styleClass="fs12 fonteHeaderDashboard"
+									value="#{VisaoAlunoControle.dashboardMinhasDisciplinas.titulo} " />
+								<h:selectOneMenu
+									styleClass="pn bn ml5 fonteHeaderDashboard card-header"
+									style="border:none !important;"
+									rendered="#{!empty VisaoAlunoControle.listaSelectItemAnoSemestre}"
+									value="#{VisaoAlunoControle.filtroAnoSemestreTelaInicial}">
+									<f:selectItems
+										value="#{VisaoAlunoControle.listaSelectItemAnoSemestre}"></f:selectItems>
+									<p:ajax event="change"
+										update=":form:wrapperPanelGeral, :form:timeLineEstudo"
+										listener="#{VisaoAlunoControle.consultarDadosMatriculaPorSelecaoAnoSemestre}"></p:ajax>
+								</h:selectOneMenu>
+								<p:commandLink
+									action="#{VisaoAlunoControle.consultarMatriculaPeriodoTurmaDisciplinaOnline}"
+									id="consultarMinhasDisciplinas" update=":form:DISCIPLINAS_ALUNO"
+									styleClass="border-0 bg-transparent float-right p-0"
+									title="Atualizar Lista Disciplinas">
+									<i
+										class="fas fa-sync-alt text-center mr-2 fs12 fonteHeaderDashboard" />
+								</p:commandLink>
+	
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block"
+									rendered="#{VisaoAlunoControle.dashboardMinhasDisciplinas.maximizado}"
+									styleClass="w-100 scroller-x scroller-y-hidden"
+									style="max-height:600px">
+	
+	
+									<h:panelGroup layout="block"
+										styleClass="col-md-12 border-bottom mb5">
+										<h:outputText escape="false"
+											rendered="#{!empty VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoSituacaoAcademicaAluno and VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.inicializado}"
+											value="#{VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoSituacaoAcademicaAluno}"></h:outputText>
+									</h:panelGroup>
+	
+									<h:panelGroup layout="block"
+										styleClass="col-md-12 mb5 border-bottom bg-gray">
+										<h:inputText pt:placeholder="Filtre aqui sua disciplina"
+											styleClass="form-control campos form-control-input-table border-0 bg-transparent"
+											value="#{FilterFactory.filter('disciplinasAluno', 'disciplina.nome', 'TEXTO').filtro}">
+											<p:ajax event="change" update="DISCIPLINAS_ALUNO"
+												process="@form"></p:ajax>
+										</h:inputText>
+									</h:panelGroup>
+									<ui:repeat
+										value="#{VisaoAlunoControle.listaMatriculaPeriodoTurmaDisciplinaVOs}"
+										var="matriculaPeriodoTurmaDisciplinaItem">
+										<h:panelGroup styleClass="w-100 p-2 border-bottom"
+											rendered="#{FilterFactory.filter('disciplinasAluno', 'disciplina.nome', 'TEXTO').accept(matriculaPeriodoTurmaDisciplinaItem)}"
+											style="order:#{matriculaPeriodoTurmaDisciplinaItem.ordemEstudoOnline}"
+											layout="block">
+											<h:panelGroup layout="block" styleClass="row">
+												<h:panelGroup layout="block" styleClass="col-md-12">
+													<h:outputText
+														styleClass="field control-label tituloCampos fs12"
+														title="#{matriculaPeriodoTurmaDisciplinaItem.professor.nome}"
+														value="#{matriculaPeriodoTurmaDisciplinaItem.disciplina.abreviatura} - #{matriculaPeriodoTurmaDisciplinaItem.disciplina.nome}" />
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup layout="block"
+												rendered="#{matriculaPeriodoTurmaDisciplinaItem.codigo ne 0}"
+												styleClass="row">
+												<h:panelGroup layout="block"
+													rendered="#{matriculaPeriodoTurmaDisciplinaItem.turmaPratica.codigo eq 0 and matriculaPeriodoTurmaDisciplinaItem.turmaTeorica.codigo eq 0}"
+													styleClass="col-md-12">
+													<h:outputText
+														styleClass="field control-label tituloCampos fs10"
+														value="#{matriculaPeriodoTurmaDisciplinaItem.turma.identificadorTurma}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block"
+													rendered="#{matriculaPeriodoTurmaDisciplinaItem.turmaPratica.codigo ne 0}"
+													styleClass="col-md-6">
+													<h:outputText
+														styleClass="field control-label tituloCampos fs10"
+														title="Turma Prática"
+														value="T. Prática: #{matriculaPeriodoTurmaDisciplinaItem.turmaPratica.identificadorTurma}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block"
+													rendered="#{matriculaPeriodoTurmaDisciplinaItem.turmaTeorica.codigo ne 0}"
+													styleClass="col-md-6">
+													<h:outputText
+														styleClass="field control-label tituloCampos fs10"
+														title="Turma Teórica"
+														value="T. Teórica: #{matriculaPeriodoTurmaDisciplinaItem.turmaTeorica.identificadorTurma}" />
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="row ">
+												<h:panelGroup layout="block"
+													rendered="#{!empty matriculaPeriodoTurmaDisciplinaItem.periodoEstudoApresentar}"
+													styleClass="col-md-5 text-left">
+													<i class="fas fa-history fs12 mr-2 tituloCampos"></i>
+													<h:outputText
+														styleClass="field control-label tituloCampos fs10"
+														value="#{matriculaPeriodoTurmaDisciplinaItem.periodoEstudoApresentar}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3 text-right">
+													<h:outputText
+														styleClass="field control-label tituloCampos fs10 pull-right"
+														value="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.situacao_Apresentar}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block"
+													rendered="#{LoginControle.permissaoAcessoMenuVO.minhasFaltas and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso and !matriculaPeriodoTurmaDisciplinaItem.historicoVO.ocultarFrequenciaFalta}"
+													styleClass="col-md-2 text-right">
+													<p:commandLink id="btMinhasFaltasAluno"
+														style="cursor:pointer"
+														action="#{VisaoAlunoControle.inicializarMenuMinhasFaltas}"
+														title="Acessar Minhas Faltas">
+														<f:setPropertyActionListener
+															value="#{VisaoAlunoControle.filtroAnoSemestreTelaInicial}"
+															target="#{VisaoAlunoControle.filterAnoSemestre}"></f:setPropertyActionListener>
+														<h:outputText
+															styleClass="field control-label tituloCampos fs10 pull-right"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.configuracaoAcademico.tipoApresentarFrequenciaVisaoAluno ne 'PO'}"
+															value="Faltas: #{matriculaPeriodoTurmaDisciplinaItem.historicoVO.totalFalta}" />
+														<h:outputText id="frequencia"
+															styleClass="field control-label tituloCampos fs10 pull-right"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.configuracaoAcademico.tipoApresentarFrequenciaVisaoAluno eq 'PO'}"
+															value="Freq.: #{matriculaPeriodoTurmaDisciplinaItem.historicoVO.freguencia}(%)" />
+													</p:commandLink>
+	
+												</h:panelGroup>
+												<h:panelGroup layout="block"
+													rendered="#{LoginControle.permissaoAcessoMenuVO.minhasNotas and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso and matriculaPeriodoTurmaDisciplinaItem.historicoVO.calendarioLancamentoNotaVO.apresentarCalculoMediaFinalVisaoAluno and ((matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinalConceito.codigo eq 0 and matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinal ne null) or (matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinalConceito.codigo > 0) or (matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinalConceito.codigo eq 0 and matriculaPeriodoTurmaDisciplinaItem.historicoVO.configuracaoAcademico.apresentarTextoSemNotaCampoNuloHistorico
+	 and matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinal eq null))}"
+													styleClass="col-md-2 text-right">
+													<p:commandLink id="btMinhasNotasAluno"
+														style="cursor:pointer; pull-right"
+														action="#{VisaoAlunoControle.inicializarMenuMinhasNotas}"
+														title="Acessar Minhas Notas">
+														<f:setPropertyActionListener
+															value="#{VisaoAlunoControle.filtroAnoSemestreTelaInicial}"
+															target="#{VisaoAlunoControle.filterAnoSemestre}"></f:setPropertyActionListener>
+														<h:outputText
+															styleClass="field control-label tituloCampos fs10 "
+															value="MF: " />
+														<h:outputText
+															styleClass="field control-label tituloCampos fs10 "
+															value="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinal}"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinalConceito.codigo eq 0 and matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinal ne null}">
+															<f:converter
+																converterId="FormatadorNumericoPermitindoValoresNulos" />
+															<f:attribute
+																name="quantidadeCasasDecimaisPermitirAposVirgula"
+																value="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.configuracaoAcademico.quantidadeCasasDecimaisPermitirAposVirgula}" />
+														</h:outputText>
+														<h:outputText
+															styleClass="field control-label tituloCampos fs10 "
+															value="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinalTexto}"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinalConceito.codigo eq 0 and matriculaPeriodoTurmaDisciplinaItem.historicoVO.configuracaoAcademico.apresentarTextoSemNotaCampoNuloHistorico
+	 and matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinal eq null}" />
+														<h:outputText
+															styleClass="field control-label tituloCampos fs10 "
+															value="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinalConceito.conceitoNota}"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.historicoVO.mediaFinalConceito.codigo > 0}" />
+													</p:commandLink>
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="row mt-2">
+												<h:panelGroup layout="block"
+													styleClass="col-md-12 text-right" style="line-height: 32px;">
+	
+													<p:commandLink id="btDownload"
+														rendered="#{LoginControle.permissaoAcessoMenuVO.downloadArquivo and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso and !matriculaPeriodoTurmaDisciplinaItem.ocultarDownload}"
+														style="cursor:pointer"
+														action="#{VisaoAlunoControle.navegarRecursoSelecionandoDisciplina('downloadArquivo.xhtml')}"
+														title="Download Material">
+														<i class="fas fa-download text-center text-gray-700 mr-3"></i>
+														<h:outputLabel styleClass="text-alerta-contador-central"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.qtdeMaterialDownload > 0}"
+															value="#{matriculaPeriodoTurmaDisciplinaItem.qtdeMaterialDownload}" />
+													</p:commandLink>
+													<p:commandLink id="btAcessoEAD" title="Acessar Ambiente EAD"
+														rendered="#{!IntegracaoEADIPOGControle.apresentarMenuEADIPOG and !VisaoAlunoControle.matricula.curso.utilizarRecursoAvaTerceiros and matriculaPeriodoTurmaDisciplinaItem.permiteAcessoEAD}"
+														action="#{VisaoAlunoControle.realizarAcessoEstudoOnline('estudoOnlineForm.xhtml')}"
+														oncomplete="#{VisaoAlunoControle.modalPanelErroAcessoConteudoEstudo}"
+														update="formErroAcessoConteudoEstudo, formErroAcessoConteudoEstudo:panelGridMensagens"
+														style="cursor:pointer">
+														<i class="fa fa-globe text-center text-gray-700 mr-3" />
+													</p:commandLink>
+													<p:commandLink id="btConteudo"
+														title="Acessar Conteúdo do EAD"
+														rendered="#{!IntegracaoEADIPOGControle.apresentarMenuEADIPOG and !VisaoAlunoControle.matricula.curso.utilizarRecursoAvaTerceiros and (matriculaPeriodoTurmaDisciplinaItem.existeConteudo or matriculaPeriodoTurmaDisciplinaItem.permiteAcessoEAD)}"
+														action="#{VisaoAlunoControle.realizarAcessoEstudoOnline('conteudoAlunoForm.xhtml')}"
+														oncomplete="#{VisaoAlunoControle.modalPanelErroAcessoConteudoEstudo}"
+														update="formErroAcessoConteudoEstudo, formErroAcessoConteudoEstudo:panelGridMensagens"
+														style="cursor:pointer">
+														<i class="fab fa-readme text-center text-gray-700 mr-3" />
+													</p:commandLink>
+													<p:commandLink id="btAvaliacaoOnline"
+														rendered="#{!IntegracaoEADIPOGControle.apresentarMenuEADIPOG and !VisaoAlunoControle.matricula.curso.utilizarRecursoAvaTerceiros and matriculaPeriodoTurmaDisciplinaItem.permiteAcessoEAD and matriculaPeriodoTurmaDisciplinaItem.qtdeAvaliacaoOnline ne 0}"
+														style="cursor:pointer" title="Avaliação On-line"
+														action="#{VisaoAlunoControle.realizarAcessoEstudoOnline('avaliacaoOnlineMatriculaCons.xhtml')}"
+														oncomplete="#{VisaoAlunoControle.modalPanelErroAcessoConteudoEstudo}"
+														update="formErroAcessoConteudoEstudo, formErroAcessoConteudoEstudo:panelGridMensagens">
+														<i
+															class="fab fa-autoprefixer text-center text-gray-700 mr-3"></i>
+														<h:outputLabel styleClass="text-alerta-contador"
+															value="#{matriculaPeriodoTurmaDisciplinaItem.qtdeAvaliacaoOnline}" />
+													</p:commandLink>
+													<p:commandLink id="btExercicio"
+														rendered="#{LoginControle.permissaoAcessoMenuVO.listaExercicioAluno and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso and matriculaPeriodoTurmaDisciplinaItem.qtdeListaExercicio > 0}"
+														style="cursor:pointer" title="Lista Exercício"
+														action="#{VisaoAlunoControle.inicializarListaExercicioVisaoAlunoSelecionandoDisciplina}">
+														<i class="fas fa-list-ol text-center text-gray-700 mr-3"></i>
+														<h:outputLabel styleClass="text-alerta-contador-central"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.qtdeListaExercicio > 0}"
+															value="#{matriculaPeriodoTurmaDisciplinaItem.qtdeListaExercicio}" />
+													</p:commandLink>
+	
+													<p:commandLink id="btAtividade"
+														rendered="#{LoginControle.permissaoAcessoMenuVO.atividadeDiscursivaAluno and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}"
+														action="#{VisaoAlunoControle.navegarRecursoSelecionandoDisciplina('atividadeDiscursivaAlunoCons.xhtml')}"
+														style="cursor:pointer" title="Atividade Discursiva">
+														<i class="fas fa-file-alt text-center text-gray-700 mr-3"></i>
+														<h:outputLabel styleClass="text-alerta-contador-central"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.qtdeAtividadeDiscursiva > 0}"
+															value="#{matriculaPeriodoTurmaDisciplinaItem.qtdeAtividadeDiscursiva}" />
+													</p:commandLink>
+													<p:commandLink id="btForum"
+														rendered="#{LoginControle.permissaoAcessoMenuVO.forumAluno and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}"
+														action="#{VisaoAlunoControle.navegarRecursoSelecionandoDisciplina('forumAlunoCons.xhtml')}"
+														style="cursor:pointer" title="Fórum">
+														<i class="fab fa-forumbee text-center text-gray-700 mr-3"></i>
+														<h:outputLabel styleClass="text-alerta-contador-central"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.qtdeForum > 0}"
+															value="#{matriculaPeriodoTurmaDisciplinaItem.qtdeForum}" />
+													</p:commandLink>
+													<p:commandLink id="btDuvida"
+														rendered="#{LoginControle.permissaoAcessoMenuVO.duvidaProfessorAluno and !IntegracaoEADIPOGControle.apresentarMenuEADIPOG and !VisaoAlunoControle.matricula.curso.utilizarRecursoAvaTerceiros and matriculaPeriodoTurmaDisciplinaItem.permiteAcessoEAD}"
+														style="cursor:pointer" title="Dúvida Professor"
+														action="#{VisaoAlunoControle.realizarAcessoEstudoOnline('duvidaProfessorAlunoCons.xhtml')}"
+														oncomplete="#{VisaoAlunoControle.modalPanelErroAcessoConteudoEstudo}"
+														update="formErroAcessoConteudoEstudo, formErroAcessoConteudoEstudo:panelGridMensagens">
+														<i
+															class="far fa-question-circle text-center text-gray-700 mr-3"></i>
+														<h:outputLabel styleClass="text-alerta-contador-central"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.qtdeDuvidaProfessor > 0}"
+															value="#{matriculaPeriodoTurmaDisciplinaItem.qtdeDuvidaProfessor}" />
+													</p:commandLink>
+													<h:panelGroup layout="block"
+														rendered="#{!empty matriculaPeriodoTurmaDisciplinaItem.salaAulaBlackboardVO.linkSalaAulaBlackboard}">
+														<p:commandButton
+															id="btnMatriculaPeriodoTurmaDisciplinaBlackboard"
+															image="#{resource['/imagens/blackboard_logo.png']}"
+															style="width:20px; height:20px; position:relative; top:5px;"
+															action="#{VisaoAlunoControle.realizarNavegacaoBlackboardPorMatriculaPeriodoTurmaDisciplina}"
+															oncomplete="navegacaoGoogleMeet('#{matriculaPeriodoTurmaDisciplinaItem.salaAulaBlackboardVO.linkSalaAulaBlackboard}')" />
+														<p:tooltip followMouse="true"
+															for="btnMatriculaPeriodoTurmaDisciplinaBlackboard"
+															showDelay="500">
+															<h:panelGrid columns="1"
+																columnClasses="colunaEsquerda, tituloCamposReduzidos">
+																<h:panelGroup layout="block">
+																	<h:outputText value="Entrar Blackboard" />
+																	<h:outputText
+																		value="#{VisaoAlunoControle.calendarioDataEventoRsVO.listaPessoaEmailInstitucionalVO_ApresentarHtml}"
+																		escape="false" />
+																</h:panelGroup>
+															</h:panelGrid>
+														</p:tooltip>
+														<otm:spacer width="10px" />
+													</h:panelGroup>
+													<h:panelGroup layout="block"
+														rendered="#{!empty matriculaPeriodoTurmaDisciplinaItem.salaAulaBlackboardGrupoVO.linkSalaAulaBlackboard}">
+														<p:commandButton
+															id="btnMatriculaPeriodoTurmaDisciplinaGrupoBlackboard"
+															image="#{resource['/imagens/blackboard_logo.png']}"
+															style="width:20px; height:20px; position:relative; top:5px;"
+															action="#{VisaoAlunoControle.realizarNavegacaoBlackboardGrupoPorMatriculaPeriodoTurmaDisciplina}"
+															oncomplete="navegacaoGoogleMeet('#{matriculaPeriodoTurmaDisciplinaItem.salaAulaBlackboardGrupoVO.linkSalaAulaBlackboard}')" />
+														<p:tooltip followMouse="true"
+															for="btnMatriculaPeriodoTurmaDisciplinaGrupoBlackboard"
+															showDelay="500">
+															<h:panelGrid columns="1"
+																columnClasses="colunaEsquerda, tituloCamposReduzidos">
+																<h:panelGroup layout="block">
+																	<h:outputText value="Entrar no Grupo da Blackboard" />
+																	<h:outputText
+																		value="#{VisaoAlunoControle.calendarioDataEventoRsVO.listaPessoaEmailInstitucionalVO_ApresentarHtml}"
+																		escape="false" />
+																</h:panelGroup>
+															</h:panelGrid>
+														</p:tooltip>
+														<otm:spacer width="10px" />
+													</h:panelGroup>
+													<h:panelGroup layout="block"
+														rendered="#{!empty matriculaPeriodoTurmaDisciplinaItem.classroomGoogleVO.linkClassroom}">
+														<p:commandButton
+															id="btnMatriculaPeriodoTurmaDisciplinaClassroom"
+															image="#{resource['/imagens/classroom.png']}"
+															style="width:20px; height:20px; position:relative; top:5px;"
+															action="#{VisaoAlunoControle.realizarNavegacaoClassroomPorMatriculaPeriodoTurmaDisciplina}"
+															oncomplete="navegacaoGoogleMeet('#{matriculaPeriodoTurmaDisciplinaItem.classroomGoogleVO.linkClassroom}')" />
+														<p:tooltip followMouse="true"
+															for="btnMatriculaPeriodoTurmaDisciplinaClassroom"
+															showDelay="500">
+															<h:panelGrid columns="1"
+																columnClasses="colunaEsquerda, tituloCamposReduzidos">
+																<h:panelGroup layout="block">
+																	<h:outputText value="Entrar Classroom" />
+																	<h:outputText
+																		value="#{VisaoAlunoControle.calendarioDataEventoRsVO.listaPessoaGsuiteVO_ApresentarHtml}"
+																		escape="false" />
+																</h:panelGroup>
+															</h:panelGrid>
+														</p:tooltip>
+														<otm:spacer width="10px" />
+													</h:panelGroup>
+													<h:panelGroup layout="block"
+														styleClass="col-md-12 text-center mt5">
+														<p:commandLink id="btnEntregarRelatorioFacilitador"
+															styleClass="btn btn-info" value="Entregar Relatório"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.apresentarRelatoriofinalfacilitador}"
+															action="#{VisaoAlunoControle.visualizarEntregaRelatorioFinalFacilitador}"
+															execute="@this">
+															<span
+																class="#{msg_botoes.btn_icon_adicionar_circular_embutido} pull-left"
+																style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+														</p:commandLink>
+														<otm:spacer width="10px" />
+														<p:commandLink id="btnAcompanharRelatorioFacilitador"
+															styleClass="btn btn-dark" value="Acompanhar Relatório"
+															rendered="#{matriculaPeriodoTurmaDisciplinaItem.apresentarConsultarRelatoriofinalfacilitador}"
+															action="#{VisaoAlunoControle.visualizarEntregaRelatorioFinalFacilitador}"
+															execute="@this">
+															<span
+																class="#{msg_botoes.btn_icon_lupa_embutido} pull-left"
+																style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+														</p:commandLink>
+													</h:panelGroup>
+												</h:panelGroup>
+											</h:panelGroup>
+										</h:panelGroup>
+	
+									</ui:repeat>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:dashpanel>
+	
+					</h:panelGroup>
+	
+					<otm:bannerMarketing bean="#{VisaoAlunoControle}"
+						dashboardMarketing="#{VisaoAlunoControle.dashboardBannerMarketing}"
+						height="300px"></otm:bannerMarketing>
+	
+					<h:panelGroup id="EVOLUCAO_ACADEMICA_ATIVIDADE_COMPLEMENTAR"
+						style="order:#{VisaoAlunoControle.dashboardAtividadeComplementar.ordem}"
+						rendered="#{!empty VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoAtividadeComplementar and VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.inicializado and !VisaoAlunoControle.dashboardAtividadeComplementar.ocultar}"
+						styleClass="col-md-6" layout="block">
+	
+						<p:droppable for="dashboardAtivComp">
+							<p:ajax listener="#{VisaoAlunoControle.registrarPosicaoDashboard}"
+								update=":form:wrapperPanelGeral" />
+						</p:droppable>
+						<p:draggable for="dashboardAtivComp" revert="true"
+							stack=".ui-panel" />
+	
+						<otm2:dashpanel id="dashboardAtivComp" styleClass="p-0" cols="12">
+							<ui:define name="header">
+								<i
+									class="#{VisaoAlunoControle.dashboardAtividadeComplementar.icone} mr-2 fonteHeaderDashboard"></i>
+								<h:outputLabel
+									value="#{VisaoAlunoControle.dashboardAtividadeComplementar.titulo}"
+									styleClass="fonteHeaderDashboard" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block"
+									rendered="#{VisaoAlunoControle.dashboardAtividadeComplementar.maximizado}"
+									styleClass="w-100 p-2 scroller-x" style="min-height:230px">
+									<h:panelGroup layout="block" styleClass="row">
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<h:outputText escape="false"
+												rendered="#{!empty VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoAtividadeComplementar and VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.inicializado}"
+												value="#{VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoAtividadeComplementar}"></h:outputText>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block"
+										rendered="#{LoginControle.permissaoAcessoMenuVO.atividadeComplementarAluno and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}"
+										styleClass="col-md-12 text-center">
+										<p:commandLink styleClass="field control-label tituloCampos"
+											id="clinkAcessoAtivComp"
+											action="#{VisaoAlunoControle.inicializarMenuAtividadeComplementar}">
+											<i class="fas fa-address-book mr-2"></i>
+											<h:outputText
+												value="Ir Para o #{msg_aplic.prt_VisaoAluno_atividadeComplementar}" />
+										</p:commandLink>
+									</h:panelGroup>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:dashpanel>
+					</h:panelGroup>
+	
+					<h:panelGroup id="EVOLUCAO_ACADEMICA_ESTAGIO"
+						style="order:#{VisaoAlunoControle.dashboardEstagio.ordem}"
+						rendered="#{VisaoAlunoControle.apresentarDashboardEstagio and !VisaoAlunoControle.dashboardEstagio.ocultar}"
+						styleClass="col-md-6" layout="block">
+	
+						<p:droppable for="dashboardEstagio">
+							<p:ajax listener="#{VisaoAlunoControle.registrarPosicaoDashboard}"
+								update=":form:wrapperPanelGeral" />
+						</p:droppable>
+						<p:draggable for="dashboardEstagio" revert="true" stack=".ui-panel" />
+	
+						<otm2:dashpanel id="dashboardEstagio" styleClass="p-0" cols="12">
+							<ui:define name="header">
+								<i
+									class="#{VisaoAlunoControle.dashboardEstagio.icone} mr-2 fonteHeaderDashboard"></i>
+								<h:outputLabel
+									value="#{VisaoAlunoControle.dashboardEstagio.titulo}"
+									styleClass="fonteHeaderDashboard" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block"
+									rendered="#{VisaoAlunoControle.dashboardEstagio.maximizado}"
+									styleClass="w-100 p-2 scroller-x" style="min-height:230px">
+									<h:panelGroup layout="block" styleClass="row"
+										rendered="#{VisaoAlunoControle.matriculaIntegralizacaoCurricularVO.percentualCumpridoLiberarEstagio lt 100}">
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<h:outputText escape="false"
+												rendered="#{!empty VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoEstagioNaoLiberado}"
+												value="#{VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoEstagioNaoLiberado}"></h:outputText>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="row"
+										rendered="#{VisaoAlunoControle.matriculaIntegralizacaoCurricularVO.percentualCumpridoLiberarEstagio lt 100}">
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<otm2:panel name="panelEstagioNaoLiberadoExigidoAluno"
+												styleClass="border rounded " styleClassFooter="pn"
+												stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+												<ui:define name="header">
+													<h:outputText
+														value="Exigidos - #{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaExigida} h" />
+												</ui:define>
+												<ui:define name="body">
+													<h:panelGroup layout="block" styleClass="row">
+														<ui:repeat
+															id="repeatEstagioNaoLiberadoGradeCurricularEstagioVO"
+															value="#{EstagioObrigatorioControle.matricula.gradeCurricularAtual.listaGradeCurricularEstagioVO}"
+															var="gradeCurricularEstagioItens">
+															<h:panelGroup layout="block" styleClass="col-md-4">
+																<h:panelGroup layout="block" styleClass="row"
+																	style="text-align:center; height:20px;">
+																	<h:outputText
+																		value="#{gradeCurricularEstagioItens.nome}"
+																		style="font-size: 12px !important;" />
+																</h:panelGroup>
+																<h:panelGroup layout="block" styleClass="row"
+																	style="text-align:center">
+																	<h:outputText styleClass="title"
+																		value="#{gradeCurricularEstagioItens.totalCargaHorarioEstagio}h / #{gradeCurricularEstagioItens.cargaHorarioObrigatorio}h"
+																		style="font-size: 18px !important; border: none;" />
+																</h:panelGroup>
+															</h:panelGroup>
+														</ui:repeat>
+													</h:panelGroup>
+												</ui:define>
+											</otm2:panel>
+										</h:panelGroup>
+									</h:panelGroup>
+	
+	
+									<h:panelGroup layout="block" styleClass="row"
+										rendered="#{VisaoAlunoControle.matriculaIntegralizacaoCurricularVO.percentualCumpridoLiberarEstagio ge 100}">
+										<h:panelGroup layout="block" styleClass="col-md-12"
+											rendered="#{!empty VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoEstagio and VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.inicializado}">
+											<h:outputText escape="false"
+												value="#{VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoEstagio}"></h:outputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block"
+											rendered="#{VisaoAlunoControle.isApresentarMenusPrimeiroAcesso and LoginControle.permissaoAcessoMenuVO.estagioAluno}"
+											styleClass="col-md-12 text-center">
+											<p:commandLink styleClass="field control-label tituloCampos"
+												id="clinkAcessoEstagio"
+												action="#{VisaoAlunoControle.inicializarMenuEstagio}">
+												<i class="fas fa-child mr-2"></i>
+												<h:outputText
+													value="Ir Para o #{msg_aplic.prt_Estagio_tituloForm}"
+													style="font-size: 15px;font-weight: bold;" />
+											</p:commandLink>
+										</h:panelGroup>
+									</h:panelGroup>
+	
+									<h:panelGroup layout="block" styleClass="row"
+										rendered="#{VisaoAlunoControle.matriculaIntegralizacaoCurricularVO.percentualCumpridoLiberarEstagio ge 100}">
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-8">
+												<otm2:panel name="panelEstagioExigidoAluno"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText
+															value="Exigidos - #{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaExigida} h" />
+													</ui:define>
+													<ui:define name="body">
+														<h:panelGroup layout="block" styleClass="row">
+															<ui:repeat id="repeatGradeCurricularEstagioVO"
+																value="#{EstagioObrigatorioControle.matricula.gradeCurricularAtual.listaGradeCurricularEstagioVO}"
+																var="gradeCurricularEstagioItens">
+																<h:panelGroup layout="block" styleClass="col-md-4">
+																	<h:panelGroup layout="block" styleClass="row"
+																		style="text-align:center; height:20px;">
+																		<h:outputText
+																			value="#{gradeCurricularEstagioItens.nome}"
+																			style="font-size: 12px !important;" />
+																	</h:panelGroup>
+																	<h:panelGroup layout="block" styleClass="row"
+																		style="text-align:center">
+																		<h:outputText styleClass="title"
+																			value="#{gradeCurricularEstagioItens.totalCargaHorarioEstagio}h / #{gradeCurricularEstagioItens.cargaHorarioObrigatorio}h"
+																			style="font-size: 18px !important; border: none;" />
+																	</h:panelGroup>
+																</h:panelGroup>
+															</ui:repeat>
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-4">
+												<otm2:panel name="panelEstagioPendenteAluno"
+													styleClass="border rounded " styleClassFooter="p5"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Pendentes" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaPendentes} h"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															style="text-align:center; height:20px;"
+															rendered="#{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaPendentes ne 0 and LoginControle.permissaoAcessoMenuVO.estagioAluno}">
+															<p:commandLink update="form" process="form"
+																value="Cadastrar"
+																action="#{EstagioObrigatorioControle.novoEstagioAluno}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-4">
+												<otm2:panel name="panelEstagioAguardandoAssinaturaAluno"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Aguardando Assinatura" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaAguardandoAssinatura} h"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															rendered="#{LoginControle.permissaoAcessoMenuVO.estagioAluno}"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarNavegacaoEstagioAguardandoAssinaturaAluno}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-4">
+												<otm2:panel name="panelEstagioRealizandoAluno"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Realizando" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaRealizando} h"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															rendered="#{LoginControle.permissaoAcessoMenuVO.estagioAluno}"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarNavegacaoEstagioRealizandoAluno}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-4">
+												<otm2:panel name="panelEstagioEmAnaliseAluno"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Em Análise" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaEmAnalise} h"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															rendered="#{LoginControle.permissaoAcessoMenuVO.estagioAluno}"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarNavegacaoEstagioEmAnaliseAluno}" />
+														</h:panelGroup>
+													</ui:define>
+	
+												</otm2:panel>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-4">
+												<otm2:panel name="panelEstagioEmCorrecaoAlunoVisao"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Em Correção Aluno" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaEmCorrecaoAluna} h"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															rendered="#{LoginControle.permissaoAcessoMenuVO.estagioAluno}"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarNavegacaoEstagioEmCorrecaoAluno}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-4">
+												<otm2:panel name="panelEstagioIndeferidoAluno"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Indeferido" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaIndeferido} h"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															rendered="#{LoginControle.permissaoAcessoMenuVO.estagioAluno}"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarNavegacaoEstagioIndeferidoAluno}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-4">
+												<otm2:panel name="panelEstagioDeferidoAluno"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Deferido" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardEstagioVO.cargaHorariaDeferido} h"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															rendered="#{LoginControle.permissaoAcessoMenuVO.estagioAluno}"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarNavegacaoEstagioDeferidoAluno}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:dashpanel>
+					</h:panelGroup>
+	
+					<h:panelGroup id="INTEGRALIZACAO_CURRICULAR"
+						style="order:#{VisaoAlunoControle.dashboardIntegralizacaoCurricular.ordem}"
+						styleClass="col-md-6" layout="block"
+						rendered="#{VisaoAlunoControle.apresentarDashboardIntegralizacao}">
+	
+						<otm2:dashpanel id="dashboardIntegralizacaoCurricular"
+							styleClass="p-0" cols="12">
+							<ui:define name="header">
+								<i
+									class="#{VisaoAlunoControle.dashboardIntegralizacaoCurricular.icone} mr-2 fonteHeaderDashboard"></i>
+								<h:outputLabel
+									value="#{VisaoAlunoControle.dashboardIntegralizacaoCurricular.titulo}"
+									styleClass="fonteHeaderDashboard" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block"
+									styleClass="col-md-12 border-bottom mb5">
+									<h:outputText escape="false"
+										rendered="#{!empty VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoIntegralizacaoCurricular and VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.inicializado}"
+										value="#{VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoIntegralizacaoCurricular}"></h:outputText>
+								</h:panelGroup>
+	
+								<h:panelGroup layout="block"
+									styleClass=" #{VisaoAlunoControle.corDoTextoJubilamento} row ">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<i class="fas fa-hourglass-end mr-2 fonteHeaderDashboard"></i>
+										<h:outputText
+											value="O período para integralização curricular é até #{VisaoAlunoControle.matricula.gradeCurricularAtual.prazojubilamento}." />
+									</h:panelGroup>
+								</h:panelGroup>
+	
+							</ui:define>
+						</otm2:dashpanel>
+					</h:panelGroup>
+	
+					<h:panelGroup id="MAPA_ESTAGIO"
+						style="order:#{VisaoAlunoControle.dashboardMapaEstagio.ordem}"
+						rendered="#{VisaoAlunoControle.usuarioLogado.usuarioFacilitador and !VisaoAlunoControle.dashboardMapaEstagio.ocultar}"
+						styleClass="col-md-6" layout="block">
+	
+						<p:droppable for="dashboardMapaEstagio">
+							<p:ajax listener="#{VisaoAlunoControle.registrarPosicaoDashboard}"
+								update=":form:wrapperPanelGeral" />
+						</p:droppable>
+						<p:draggable for="dashboardMapaEstagio" revert="true"
+							stack=".ui-panel" />
+	
+						<otm2:dashpanel id="dashboardMapaEstagio" styleClass="p-0"
+							cols="12">
+							<ui:define name="header">
+								<i
+									class="#{VisaoAlunoControle.dashboardMapaEstagio.icone} mr-2 fonteHeaderDashboard"></i>
+								<h:outputLabel
+									value="#{VisaoAlunoControle.dashboardMapaEstagio.titulo} usuarioFacilitador"
+									styleClass="fonteHeaderDashboard" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block"
+									rendered="#{VisaoAlunoControle.dashboardMapaEstagio.maximizado}"
+									styleClass="w-100 p-2 scroller-x" style="min-height:230px">
+									<h:panelGroup layout="block" styleClass="row">
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-3">
+												<otm2:panel name="panelEstagioEmAnalise"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Em Análise" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardMapaEstagioVO.cargaHorariaEmAnalise}"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarVisualizacaoEstagioEmAnaliseFacilitador}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3">
+												<otm2:panel name="panelEstagioEmCorrecaoAluno"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Em Correção Aluno" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardMapaEstagioVO.cargaHorariaEmCorrecaoAluna}"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarVisualizacaoEstagioEmCorrecaoFacilitador}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3">
+												<otm2:panel name="panelEstagioIndeferido"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Indeferido" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardMapaEstagioVO.cargaHorariaIndeferido}"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarVisualizacaoEstagioIndeferidoFacilitador}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3">
+												<otm2:panel name="panelEstagioDeferido"
+													styleClass="border rounded " styleClassFooter="pn"
+													stylePanel="width: 100% !important; margin-bottom: 10px !important; padding:10px !important;">
+													<ui:define name="header">
+														<h:outputText value="Deferido" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="title"
+															value="#{EstagioObrigatorioControle.dashboardMapaEstagioVO.cargaHorariaDeferido}"
+															style="font-size: 18px !important; border: none; text-align:center" />
+														<h:panelGroup layout="block" styleClass="row"
+															style="text-align:center; height:20px;">
+															<p:commandLink update="form" process="form"
+																value="Visualizar"
+																action="#{EstagioObrigatorioControle.realizarVisualizacaoEstagioDeferidoFacilitador}" />
+														</h:panelGroup>
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:dashpanel>
+					</h:panelGroup>
+	
+					<h:panelGroup
+						rendered="#{VisaoAlunoControle.matriculaIntegralizacaoCurricularVO.percentualPermitirIniciarTcc > 0}"
+						id="TCC" style="order:#{VisaoAlunoControle.dashboardTcc.ordem}"
+						styleClass="col-md-6" layout="block">
+	
+						<p:droppable for="dashboardTcc">
+							<p:ajax listener="#{VisaoAlunoControle.registrarPosicaoDashboard}"
+								update=":form:wrapperPanelGeral" />
+						</p:droppable>
+						<p:draggable for="dashboardTcc" revert="true" stack=".ui-panel" />
+	
+						<otm2:dashpanel id="dashboardTcc" styleClass="p-0" cols="12">
+							<ui:define name="header">
+								<i
+									class="#{VisaoAlunoControle.dashboardTcc.icone} mr-2 fonteHeaderDashboard"></i>
+								<h:outputLabel value="#{VisaoAlunoControle.dashboardTcc.titulo}"
+									styleClass="fonteHeaderDashboard" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<h:outputText escape="false"
+											value="#{VisaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoTcc}"></h:outputText>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup
+									rendered="#{VisaoAlunoControle.matricula.salaAulaBlackboardTcc.codigo ne 0}"
+									layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="row"
+										style="text-align:center">
+										<otm:commandImage
+											action="#{VisaoAlunoControle.realizarNavegacaoSalaAulaBlackboardPorTcc}"
+											oncomplete="navegacaoIde('#{VisaoAlunoControle.matricula.salaAulaBlackboardTcc.linkSalaAulaBlackboard}')"
+											value="Acessar Sala Aula de Ambientação TCC"
+											tooltip="Realizar login na Sala Aula Blackboard Tcc"
+											image="#{resource['/imagens/blackboard_logo.png']}" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup
+									rendered="#{VisaoAlunoControle.matricula.salaAulaBlackboardTcc.codigo ne 0}"
+									layout="block" styleClass="col-md-12 text-center mt5">
+									<otm:commandButton styleClass="btn btn-info" icon="fas fa-child"
+										value="Escolher/Acompanhar Grupo de TCC" id="clinkAcessoTcc"
+										action="#{VisaoAlunoControle.inicializarMenuTcc}">
+									</otm:commandButton>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:dashpanel>
+					</h:panelGroup>
+	
+					<h:panelGroup id="PROJETO_INTEGRADOR"
+						style="order:#{VisaoAlunoControle.dashboardProjetoIntegrador.ordem}"
+						rendered="#{VisaoAlunoControle.calendarioAgrupamentoProjetoIntegrador.periodoLiberado and !VisaoAlunoControle.dashboardProjetoIntegrador.ocultar}"
+						styleClass="col-md-6" layout="block">
+	
+						<p:droppable for="dashboardProjetoIntegrador">
+							<p:ajax listener="#{VisaoAlunoControle.registrarPosicaoDashboard}"
+								update=":form:wrapperPanelGeral" />
+						</p:droppable>
+						<p:draggable for="dashboardProjetoIntegrador" revert="true"
+							stack=".ui-panel" />
+	
+						<otm2:dashpanel id="dashboardProjetoIntegrador" styleClass="p-0"
+							cols="12">
+							<ui:define name="header">
+								<i
+									class="#{VisaoAlunoControle.dashboardProjetoIntegrador.icone} mr-2 fonteHeaderDashboard"></i>
+								<h:outputLabel
+									value="#{VisaoAlunoControle.dashboardProjetoIntegrador.titulo}"
+									styleClass="fonteHeaderDashboard" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+									<p:commandLink styleClass="field control-label tituloCampos"
+										id="clinkAcessoPI"
+										action="#{VisaoAlunoControle.inicializarMenuProjetoIntegrador}">
+										<i class="fas fa-child mr-2"></i>
+										<h:outputText
+											value="Clique aqui para fazer a Escolha/Ateração do Grupo de Projeto Integrador o período de escolha será do dia #{VisaoAlunoControle.calendarioAgrupamentoProjetoIntegrador.dataInicial_Apresentar} à #{VisaoAlunoControle.calendarioAgrupamentoProjetoIntegrador.dataFinal_Apresentar}"
+											style="font-size: 15px;font-weight: bold;" />
+									</p:commandLink>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:dashpanel>
+					</h:panelGroup>
+	
+				</h:panelGroup> </h:panelGroup> </h:form>
+
+		<script>
+			(function($) {
+				$(document).ready(function() {
+					focus('preferencia:btnIconPreferencia');
+				});
+
+			})(jQuery);
+		</script>
+
+	</ui:define>
+</ui:composition>
+</html>

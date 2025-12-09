@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_PerfilAcesso_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{PerfilAcessoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PerfilAcesso_nome}" />
+					<h:inputText id="nome" size="70" maxlength="100" styleClass="form-control camposObrigatorios" value="#{PerfilAcessoControle.perfilAcessoVO.nome}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PerfilAcesso_ambiente}" />
+					<h:selectOneMenu id="ambiente" value="#{PerfilAcessoControle.perfilAcessoVO.ambiente}" styleClass="form-control camposObrigatorios">
+						<f:selectItems value="#{PerfilAcessoControle.listaSelectItemAmbientes}" />
+						<a4j:ajax event="change" listener="#{PerfilAcessoControle.realizarGeracaoListaPermissaoPorAmbiente}" render="form" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Carregar Perfil Acesso " />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:selectOneMenu id="codPerfilAcesso" styleClass="form-control campos" value="#{PerfilAcessoControle.perfilAcessoCarregar.codigo}">
+							<f:selectItems value="#{PerfilAcessoControle.listaSelectItemCodPerfilAcesso}" />
+						</h:selectOneMenu>
+						<span class="append-icon right mr10 mt5"> <otm:commandIcon icon="#{msg_botoes.btn_icon_atualizar_embutido}" id="atualizar_codPerfilAcesso" action="#{PerfilAcessoControle.atualizarPermissaoPerfilAcesso}" render="form" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="panelModulo" layout="block" styleClass="row row-overflow text-center">
+				<h:panelGroup rendered="#{PerfilAcessoControle.perfilAcessoVO.ambiente eq 'ADMINISTRATIVA'}" layout="block" style="min-width: 99.5%;width:max-content !important" styleClass="row border rounded p5 ml5 text-center">
+					<h:outputText styleClass="title mt5" value="Módulos" />
+					<h:panelGroup layout="block" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandButton id="botaoModulo" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/logo_sei.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'TODOS'? '':'opacity:0.3;'}" render="form:panelModulo, form:panelSubModulo, form:panelPermissao">
+							<f:setPropertyActionListener for="botaoModulo" target="#{PerfilAcessoControle.modulo}" value="TODOS" />
+							<f:setPropertyActionListener for="botaoModulo" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+						</a4j:commandButton>
+						<h:outputText styleClass="#{PerfilAcessoControle.modulo eq 'TODOS'? 'tituloCampos':''} btn-block mt5 fs10" value="Todos" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" id="linkAdministrativo" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkAdministrativo" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/administrativo1.png']}" style="height:40px; #{PerfilAcessoControle.modulo eq 'ADMINISTRATIVO'? '':'opacity:0.3;'}" render="form:panelModulo, form:panelSubModulo, form:panelPermissao">
+							<i class="fas fa-users-cog fs50"></i>
+							<f:setPropertyActionListener for="btnlinkAdministrativo" target="#{PerfilAcessoControle.modulo}" value="ADMINISTRATIVO" />
+							<f:setPropertyActionListener for="btnlinkAdministrativo" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloAdministrativo}" value="Você não possui acesso a este módulo" target="linkAdministrativo" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloAdministrativo? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'ADMINISTRATIVO'? 'tituloCampos':''}  btn-block mt5 fs10" value="Administrativo" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkAcademico" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkAcademico" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/academico1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'ACADEMICO'? '':'opacity:0.3;'}" render="form:panelModulo, form:panelSubModulo, form:panelPermissao">
+							<i class="fas fa-university fs50"></i>
+							<f:setPropertyActionListener for="btnlinkAcademico" target="#{PerfilAcessoControle.modulo}" value="ACADEMICO" />
+							<f:setPropertyActionListener for="btnlinkAcademico" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloAcademico}" value="Você não possui acesso a este módulo" target="linkAcademico" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloAcademico? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'ACADEMICO'? 'tituloCampos':''}   btn-block mt5 fs10" value="Acadêmico" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkFinanceiro" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkFinanceiro" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/financeiro1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'FINANCEIRO'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-money-check-alt fs50"></i>
+							<f:setPropertyActionListener for="btnlinkFinanceiro" target="#{PerfilAcessoControle.modulo}" value="FINANCEIRO" />
+							<f:setPropertyActionListener for="btnlinkFinanceiro" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloFinanceiro}" value="Você não possui acesso a este módulo" target="linkFinanceiro" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloFinanceiro? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'FINANCEIRO'? 'tituloCampos':''} btn-block mt5 fs10" value="Financeiro" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkCompras" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkCompras" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/compras1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'COMPRAS'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-cart-plus fs50"></i>
+							<f:setPropertyActionListener for="btnlinkCompras" target="#{PerfilAcessoControle.modulo}" value="COMPRAS" />
+							<f:setPropertyActionListener for="btnlinkCompras" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloCompras}" value="Você não possui acesso a este módulo" target="linkCompras" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloCompras? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'COMPRAS'? 'tituloCampos':''} btn-block mt5 fs10" value="Compras" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="btnlinkEstagio" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="linkEstagio" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/estagio1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'ESTAGIO'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-id-badge fs50"></i>
+							<f:setPropertyActionListener for="btnlinkEstagio" target="#{PerfilAcessoControle.modulo}" value="ESTAGIO" />
+							<f:setPropertyActionListener for="btnlinkEstagio" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloEstagio}" value="Você não possui acesso a este módulo" target="linkEstagio" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloEstagio? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'ESTAGIO'? 'tituloCampos':''} btn-block mt5 fs10" value="Estágio" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkPainelGestor" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkPainelGestor" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/seiDecidir1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'SEI_DECIDIR'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-chart-pie fs50"></i>
+							<f:setPropertyActionListener for="linkPainelGestor" target="#{PerfilAcessoControle.modulo}" value="SEI_DECIDIR" />
+							<f:setPropertyActionListener for="linkPainelGestor" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloSeiDecidir}" value="Você não possui acesso a este módulo" target="linkPainelGestor" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloSeiDecidir? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'SEI_DECIDIR'? 'tituloCampos':''} btn-block mt5 fs10" value="Sei Decidir" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkProcessoSeletivo" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkProcessoSeletivo" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/processoSeletivo1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'PROCESSO_SELETIVO'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-user-tag fs50"></i>
+							<f:setPropertyActionListener for="linkProcessoSeletivo" target="#{PerfilAcessoControle.modulo}" value="PROCESSO_SELETIVO" />
+							<f:setPropertyActionListener for="linkProcessoSeletivo" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloProcessoSeletivo}" value="Você não possui acesso a este módulo" target="linkProcessoSeletivo" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloProcessoSeletivo? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'PROCESSO_SELETIVO'? 'tituloCampos':''} btn-block mt5 fs10" value="Proc. Seletivo" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkEAD" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkEAD" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/ead1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'EAD'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-globe fs50"></i>
+							<f:setPropertyActionListener for="btnlinkEAD" target="#{PerfilAcessoControle.modulo}" value="EAD" />
+							<f:setPropertyActionListener for="btnlinkEAD" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloEad}" value="Você não possui acesso a este módulo" target="linkEAD" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloEad? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'EAD'? 'tituloCampos':''} btn-block mt5 fs10" value="EAD" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="btnlinkBiblioteca" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="linkBiblioteca" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/biblioteca1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'BIBLIOTECA'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-atlas fs50"></i>
+							<f:setPropertyActionListener for="btnlinkBiblioteca" target="#{PerfilAcessoControle.modulo}" value="BIBLIOTECA" />
+							<f:setPropertyActionListener for="btnlinkBiblioteca" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloBiblioteca}" value="Você não possui acesso a este módulo" target="linkBiblioteca" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloBiblioteca? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'BIBLIOTECA'? 'tituloCampos':''} btn-block mt5 fs10" value="Biblioteca" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkPatrimonio" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkPatrimonio" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/patrimonio1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'PATRIMONIO'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-barcode fs50"></i>
+							<f:setPropertyActionListener for="btnlinkPatrimonio" target="#{PerfilAcessoControle.modulo}" value="PATRIMONIO" />
+							<f:setPropertyActionListener for="btnlinkPatrimonio" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloPatrimonio}" value="Você não possui acesso a este módulo" target="linkPatrimonio" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloPatrimonio? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'PATRIMONIO'? 'tituloCampos':''} btn-block mt5 fs10" value="Patrimônio" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkCRM" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkCRM" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/crm1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'CRM'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-headset fs50"></i>
+							<f:setPropertyActionListener for="btnlinkCRM" target="#{PerfilAcessoControle.modulo}" value="CRM" />
+							<f:setPropertyActionListener for="btnlinkCRM" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloCrm}" value="Você não possui acesso a este módulo" target="linkCRM" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloCrm? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'CRM'? 'tituloCampos':''} btn-block mt5 fs10" value="CRM" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkAvaliacaoInstitucional" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkAvaliacaoInstitucional" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/avaliacaoInstitucional1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'AVALIACAO_INSTITUCIONAL'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-file-invoice fs50"></i>
+							<f:setPropertyActionListener for="btnlinkAvaliacaoInstitucional" target="#{PerfilAcessoControle.modulo}" value="AVALIACAO_INSTITUCIONAL" />
+							<f:setPropertyActionListener for="btnlinkAvaliacaoInstitucional" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloAvaliacaoInstitucional}" value="Você não possui acesso a este módulo" target="linkAvaliacaoInstitucional" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloAvaliacaoInstitucional? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'AVALIACAO_INSTITUCIONAL'? 'tituloCampos':''} btn-block mt5 fs10" value="Ava.Institucional" />
+					</h:panelGroup>
+
+<!-- 							<h:panelGroup layout="block" id="linkBancoCurriculo" style="width:90px;float:left" styleClass="mr5 p10 text-center"> -->
+<!-- 								<a4j:commandLink id="btnlinkBancoCurriculo" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/bancoCurriculos1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'BANCO_DE_CURRICULOS'? '':'opacity:0.3'}" render="form"> -->
+<!-- 									<i class="fas fa-id-card fs50"></i> -->
+<!-- 									<f:setPropertyActionListener for="btnlinkBancoCurriculo" target="#{PerfilAcessoControle.modulo}" value="BANCO_DE_CURRICULOS" /> -->
+<!-- 									<f:setPropertyActionListener for="btnlinkBancoCurriculo" target="#{PerfilAcessoControle.subModulo}" value="TODOS" /> -->
+<!-- 									<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloBancoDeCurriculo}" value="Você não possui acesso a este módulo" target="linkBancoCurriculo" /> -->
+<!-- 								</a4j:commandLink> -->
+<!-- 								<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloBancoDeCurriculo? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'BANCO_DE_CURRICULOS'? 'tituloCampos':''} btn-block mt5 fs10" value="Banco de Curr." /> -->
+<!-- 							</h:panelGroup> -->
+
+					<h:panelGroup layout="block" id="linkPlanoOrcamentario" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkPlanoOrcamentario" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/planoOrcamentario1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'PLANO_ORCAMENTARIO'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-balance-scale fs50"></i>
+							<f:setPropertyActionListener for="btnlinkPlanoOrcamentario" target="#{PerfilAcessoControle.modulo}" value="PLANO_ORCAMENTARIO" />
+							<f:setPropertyActionListener for="btnlinkPlanoOrcamentario" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloPlanoOrcamentario}" value="Você não possui acesso a este módulo" target="linkPlanoOrcamentario" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloPlanoOrcamentario? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'PLANO_ORCAMENTARIO'? 'tituloCampos':''} btn-block mt5 fs10" value="Pla.Orçamentário" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkNotaFiscal" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkNotaFiscal" disabled="#{!AplicacaoControle.cliente.permitirAcessoModuloNotaFiscal}" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/notaFiscal1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'NOTA_FISCAL'? '':'opacity:0.3'}" render="form">
+							<i class="fas fa-receipt fs50"></i>
+							<f:setPropertyActionListener for="btnlinkNotaFiscal" target="#{PerfilAcessoControle.modulo}" value="NOTA_FISCAL" />
+							<f:setPropertyActionListener for="btnlinkNotaFiscal" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloNotaFiscal}" value="Você não possui acesso a este módulo" target="linkNotaFiscal" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloNotaFiscal? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'NOTA_FISCAL'? 'tituloCampos':''} btn-block mt5 fs10" value="Nota Fiscal" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" id="linkRh" style="width:90px;float:left" styleClass="mr5 p10 text-center">
+						<a4j:commandLink id="btnlinkRh" action="#{PerfilAcessoControle.montarListaPerfilAcessoSubModuloEnum}" image="#{resource['imagens/visaoAdmistrativo/recursosHumanos1.png']}" style="height:40px;#{PerfilAcessoControle.modulo eq 'RH'? '' :'opacity:0.3'}" render="form">
+							<i class="fas fa-users fs50 "></i>
+							<f:setPropertyActionListener for="btnlinkRh" target="#{PerfilAcessoControle.modulo}" value="RH" />
+							<f:setPropertyActionListener for="btnlinkRh" target="#{PerfilAcessoControle.subModulo}" value="TODOS" />
+							<rich:tooltip followMouse="false" direction="topLeft" horizontalOffset="0" verticalOffset="0" rendered="#{!AplicacaoControle.cliente.permitirAcessoModuloRH}" value="Você não possui acesso a este módulo" target="linkRh" />
+						</a4j:commandLink>
+						<h:outputText style="#{!AplicacaoControle.cliente.permitirAcessoModuloRH? 'color:red':''}" styleClass="#{PerfilAcessoControle.modulo eq 'RH'? 'tituloCampos':''} btn-block mt5 fs10" value="Recursos Humanos" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="panelSubModulo" layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="row row-overflow text-center" rendered="#{PerfilAcessoControle.perfilAcessoVO.ambiente eq 'ADMINISTRATIVA' and not empty PerfilAcessoControle.listaPerfilAcessoSubModuloEnums}">
+					<h:panelGroup layout="block" style="min-width: 99.5%;width:max-content !important" styleClass="row border rounded p5 ml5 text-center">
+						<h:outputText styleClass="title mt5" value="Sub-Módulos - #{PerfilAcessoControle.modulo.valorApresentar}" />
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<a4j:repeat value="#{PerfilAcessoControle.listaPerfilAcessoSubModuloEnums}" var="subModulo">
+								<h:panelGroup layout="block" style="min-width:80px;float:left" styleClass="text-center p10 #{PerfilAcessoControle.subModulo eq subModulo ? 'btn-default rounded text-white' : ''}">
+									<a4j:commandLink render="form">
+										<f:setPropertyActionListener target="#{PerfilAcessoControle.subModulo}" value="#{subModulo}" />
+										<h:outputText styleClass="#{PerfilAcessoControle.subModulo eq subModulo? 'tituloCampos fs12':'tituloCampos fs10'} btn-block " value="#{subModulo.descricao}" />
+									</a4j:commandLink>
+								</h:panelGroup>
+							</a4j:repeat>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="permissao" layout="block" styleClass="row mt10">
+				<otm2:panel name="panelSituacao" styleClassFooter="dn" opened="false">
+					<ui:define name="header">
+						<i class="fas fa-filter mr5"></i>
+						<h:outputText value="Permissão" />
+					</ui:define>
+					<ui:define name="body">
+						<h:panelGroup layout="block" styleClass="row border rounded " style="height:200px">
+							<h:panelGroup layout="block" styleClass="col-md-12 border-bottom bg-gray">
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos font-weight-bold mr10" value="Total" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="totalOpc" value="#{PerfilAcessoControle.permissaoVO.total}">
+											<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissaoTotal}" render="permissao" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos font-weight-bold mr10" value="Total (Sem Excluir)" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="totalSemExcluirOpc" value="#{PerfilAcessoControle.permissaoVO.totalSemExcluir}">
+											<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissaoTotalSemExcluir}" render="permissao" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="Incluir" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox id="incluirOpc" disabled="#{PerfilAcessoControle.permissaoVO.total or PerfilAcessoControle.permissaoVO.totalSemExcluir}" value="#{PerfilAcessoControle.permissaoVO.incluir}">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissao}" render="permissao" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="Excluir" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox id="excluirOpc" disabled="#{PerfilAcessoControle.permissaoVO.total or PerfilAcessoControle.permissaoVO.totalSemExcluir}" value="#{PerfilAcessoControle.permissaoVO.excluir}">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissao}" render="permissao" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="Alterar" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox disabled="#{PerfilAcessoControle.permissaoVO.total or PerfilAcessoControle.permissaoVO.totalSemExcluir}" value="#{PerfilAcessoControle.permissaoVO.alterar}" id="alterarOpc">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissao}" render="permissao" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="Consultar" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox disabled="#{PerfilAcessoControle.permissaoVO.total or PerfilAcessoControle.permissaoVO.totalSemExcluir}" value="#{PerfilAcessoControle.permissaoVO.consultar}" id="consultarOpc">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissao}" render="permissao" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</ui:define>
+				</otm2:panel>
+				<h:panelGroup layout="block" styleClass="row mt10">
+					<h:panelGroup layout="block" styleClass="col-md-6 ">
+						<h:outputText styleClass="field control-label tituloCampos tituloCamposReduzidos" value="Funcionalidades" />
+						<h:selectOneMenu value="#{PerfilAcessoControle.permissaoVO.marcarFuncionalidades}" styleClass="form-control campos">
+							<f:selectItems value="#{PerfilAcessoControle.listaSelectItemFuncionalidade}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup style="margin:10px" layout="block" styleClass="col-md-12 text-center">
+					<otm:commandButton icon="#{msg_botoes.btn_icon_selecionar_embutido}" styleClass="btn btn-default dark" value="Replicar Permissões" action="#{PerfilAcessoControle.realizarReplicacaoPermissao}" tooltip="Replicar Item(s) Selecionado(s) para Todas Entidades do Módulo e Sub-Módulo selecionado" render="panelPermissao, msg" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="panelPermissao" layout="block" styleClass="row row-overflow">
+				<rich:dataTable id="resultadoCadastro" style="width:100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{PerfilAcessoControle.perfilAcessoVO.permissaoVOs}" rows="10" var="permissaoItem" filterVar="permissaoItem">
+					<rich:column rendered="#{PerfilAcessoControle.perfilAcessoVO.ambiente eq 'ADMINISTRATIVA'}">
+						<f:facet name="header">
+							<h:outputText value="Módulo - Sub Módulo " />
+						</f:facet>
+						<h:outputText value="#{permissaoItem.permissao.descricaoModuloSubModulo}" />
+					</rich:column>
+					<rich:column filter="#{PerfilAcessoControle.filtrarEntidade}" filterType="custom">
+						<f:facet name="header">
+							<h:panelGroup>
+								<h:outputText value="Cadastro " />
+								<h:inputText styleClass="form-control campos form-control-input-table " value="#{PerfilAcessoControle.filtroCadastro}">
+									<a4j:ajax event="change" render="form" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{permissaoItem.titulo}" />
+						<rich:tooltip rendered="#{!empty permissaoItem.ajuda}" value="#{permissaoItem.ajuda}" />
+					</rich:column>
+					<rich:column filter="#{PerfilAcessoControle.filtrarPermissao}" filterType="custom">
+						<f:facet name="header">
+							<h:panelGroup>
+								<h:outputText value="Permissão " />
+								<h:selectOneMenu value="#{PerfilAcessoControle.filtroPermissao}" styleClass="form-control campos form-control-input-table">
+									<f:selectItems value="#{PerfilAcessoControle.listaSelectItemFiltrarPermissoes}" />
+									<a4j:ajax event="change" execute="@this" render="form:resultadoCadastro, form:resultadoFuncionalidade" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</f:facet>
+						<h:panelGroup id="panelPermissaoItem" style="display:block; text-align:center; width:460px">
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="tituloCamposReduzidos" value="Total" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox id="totalListOPC" value="#{permissaoItem.total}">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissaoItemTotal}" render="resultadoCadastro:panelPermissaoItem, resultadoCadastro:resultadoFuncionalidade" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" styleClass="tituloCamposReduzidos" value="Total (Sem Excluir)" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" value="#{permissaoItem.totalSemExcluir}" id="totalSemExcluirListOPC">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissaoItemTotalSemExcluir}" render="resultadoCadastro:panelPermissaoItem, resultadoCadastro:resultadoFuncionalidade" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" styleClass="tituloCamposReduzidos" value="Incluir" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" disabled="#{permissaoItem.total or permissaoItem.totalSemExcluir}" value="#{permissaoItem.incluir}" id="incluirListaOPC">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissaoItem}" render="resultadoCadastro:panelPermissaoItem, resultadoCadastro:resultadoFuncionalidade" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" styleClass="tituloCamposReduzidos" value="Excluir" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" disabled="#{permissaoItem.total or permissaoItem.totalSemExcluir}" value="#{permissaoItem.excluir}" id="excluirListOpc">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissaoItem}" render="resultadoCadastro:panelPermissaoItem, resultadoCadastro:resultadoFuncionalidade" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" styleClass="tituloCamposReduzidos" value="Alterar" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" disabled="#{permissaoItem.total or permissaoItem.totalSemExcluir}" value="#{permissaoItem.alterar}" id="alterarListaOpc">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissaoItem}" render="resultadoCadastro:panelPermissaoItem, resultadoCadastro:resultadoFuncionalidade" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" styleClass="tituloCamposReduzidos" value="Consultar" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox rendered="#{permissaoItem.permissao.tipoPerfilAcesso.isEntidade}" disabled="#{permissaoItem.total or permissaoItem.totalSemExcluir}" value="#{permissaoItem.consultar}" id="consultarListaOpc">
+										<a4j:ajax event="change" execute="@this" listener="#{PerfilAcessoControle.realizarMarcacaoPermissaoItem}" render="resultadoCadastro:panelPermissaoItem, resultadoCadastro:resultadoFuncionalidade" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:column>
+					<rich:column filter="#{PerfilAcessoControle.filtrarEntidade}" filterType="custom" width="200px">
+						<f:facet name="header">
+							<h:panelGroup>
+								<h:outputText value="Funcionalidade " />
+								<h:inputText styleClass="form-control campos form-control-input-table" value="#{PerfilAcessoControle.filtroFuncionalidade}">
+									<a4j:ajax event="change" render="panelPermissao" execute="@this" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:panelGroup id="resultadoFuncionalidade" layout="block" style="overflow:auto; width:100%; max-height:150px; border-left: solid 1px #dadada;">
+							<h:panelGroup rendered="#{fn:length(permissaoItem.funcionalidades) > 1}" layout="block" styleClass="row text-left border-bottom pb5">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos btn-block" value="Marcar/Desmarcar Todas Funcionalidades" />
+									<otm:selectBooleanCheckbox id="marcarFuncionalidadesPorEntidade" disabled="#{empty permissaoItem.permissoes}" value="#{permissaoItem.marcarFuncionalidadesPorEntidade}">
+										<a4j:ajax event="change" listener="#{PerfilAcessoControle.realizarMarcacaoFuncionalidadesPorEntidade}" render="resultadoFuncionalidade" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<rich:dataTable rendered="#{not empty permissaoItem.funcionalidades}" value="#{permissaoItem.funcionalidades}" var="funcionalidadeItens">
+								<rich:column style="border: 0;" filter="#{PerfilAcessoControle.filtrarFuncionalidade}" filterType="custom">
+									<h:panelGroup layout="block" styleClass="row text-left">
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{funcionalidadeItens.titulo}" />
+											<otm:selectBooleanCheckbox id="marcarFuncionalidadesPorEntidade" disabled="#{empty permissaoItem.permissoes}" value="#{funcionalidadeItens.total}" rendered="#{not empty funcionalidadeItens.titulo}" />
+											<rich:tooltip rendered="#{!empty funcionalidadeItens.ajuda}" value="#{funcionalidadeItens.ajuda}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller for="resultadoCadastro" maxPages="10" align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" execute="form" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+			</h:panelGroup>
+
+			<h:panelGroup id="msg" layout="block">
+				<otm:mensagem bean="#{PerfilAcessoControle}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton id="novo" immediate="true" action="#{PerfilAcessoControle.novo}" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+				<otm:commandButton id="salvar" render="form" style="margin-left: 10px;" action="#{PerfilAcessoControle.gravar}" value="#{msg_botoes.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" />
+				<otm:commandButton id="excluir" style="margin-left: 10px;" onclick="return confirm('Confirma exclusão dos dados?');" action="#{PerfilAcessoControle.excluir}" icon="#{msg_botoes.btn_icon_remver_embutido}" value="Excluir" accesskey="3" styleClass="btn btn-danger dark btn-excluir" />
+				<otm:commandButton id="consultar" style="margin-left: 10px;" immediate="true" action="#{PerfilAcessoControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" accesskey="4" styleClass="btn btn-default btn-consultar" />
+				<otm:commandButton id="clonar" style="margin-left: 10px;" immediate="true" action="#{PerfilAcessoControle.clonar}" icon="#{msg_botoes.btn_icon_clonar_embutido}" styleClass="btn btn-primary dark btn_icon_clonar_embutido" value="Clonar" accesskey="4" />
+			</h:panelGroup>
+
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

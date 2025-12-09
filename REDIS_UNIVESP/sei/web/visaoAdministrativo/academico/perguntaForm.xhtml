@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{PerguntaControle.tituloPagina}" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<style type="text/css">
+.dataGridSemBorda .rf-dg-c {
+	border: none !important;
+}
+</style>
+		<script>
+			window.onload = function() {
+				document.getElementById("form:descricao").focus();
+			}
+		</script>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelPergunta" onshow="document.getElementById('formPergunta:valorConsultaPergunta').focus()" shadowOpacity="true" top="0" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_questionario_pergunta}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['imagens/close.png']}" style="cursor:pointer" id="hidelinkPergunta">
+						<rich:componentControl target="panelPergunta" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPergunta">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaPergunta" value="#{PerguntaControle.campoConsultaPergunta}">
+						<f:selectItems value="#{PerguntaControle.tipoConsultaComboPergunta}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaPergunta" size="10" styleClass="form-control campos" value="#{PerguntaControle.valorConsultaPergunta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultar" render="formPergunta:mensagemConsultarPergunta, formPergunta:resultadoConsultarPergunta, formPergunta:scResultadoPergunta" action="#{PerguntaControle.consultarPergunta}" styleClass="btn btn-default" value="consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="#{msg_botoes.btn_icon_lupa_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;" />
+						<f:setPropertyActionListener target="#{PerguntaControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{PerguntaControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultarPergunta" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{PerguntaControle.listaConsultaPergunta}" rows="5" var="perguntaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pergunta_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{PerguntaControle.selecionarPergunta}" focus="form:PerguntaQuestionario_pergunta" render="form, formPergunta">
+								<h:outputText value="#{perguntaItens.codigo}" />
+							</a4j:commandLink>
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pergunta_descricao}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{PerguntaControle.selecionarPergunta}" focus="form:PerguntaQuestionario_pergunta" render="form, formPergunta">
+								<h:inputTextarea cols="60" rows="2" styleClass="form-control" readonly="true" value="#{perguntaItens.descricao}" />
+							</a4j:commandLink>
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pergunta_tipoResposta}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{PerguntaControle.selecionarPergunta}" render="form, formPergunta" value="#{perguntaItens.tipoResposta_Apresentar}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{PerguntaControle.selecionarPergunta}" render="form, formPergunta" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller for="formPergunta:resultadoConsultarPergunta" maxPages="10" id="scResultadoPergunta" page="#{PerguntaControle.controleConsultaOtimizado.page}" scrollListener="#{PerguntaControle.scrollerListener}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultarPergunta" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup columns="1" width="100%">
+						<h:outputText styleClass="mensagem" value="#{PerguntaControle.mensagem}" />
+						<h:outputText styleClass="mensagemDetalhada" value="#{PerguntaControle.mensagemDetalhada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:inputText id="idControlador" style="display:none" size="90" value="#{PerguntaControle.idControlador}"></h:inputText>
+			<h:commandLink action="#{PerguntaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-1">
+				<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pergunta_codigo}" />
+				<h:inputText id="codigo" size="10" maxlength="10" readonly="true" styleClass="form-control" value="#{PerguntaControle.perguntaVO.codigo}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12">
+				<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pergunta_descricao}" />
+				<h:inputTextarea id="descricao" cols="70" rows="3" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaVO.descricao}">
+					<a4j:ajax event="change" render="form" execute="form" />
+				</h:inputTextarea>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha ? 'col-md-4' : 'col-md-6'}">
+				<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pergunta_tipoResposta}" />
+				<h:selectOneMenu id="tipoResposta" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaVO.tipoResposta}">
+					<f:selectItems value="#{PerguntaControle.listaSelectItemTipoRespostaPergunta}" />
+					<a4j:ajax event="change" render="@form" oncomplete="document.getElementById('form:tipoResposta').focus();" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}">
+				<h:outputText styleClass="tituloCampos" value="Layout" rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}" />
+				<h:selectOneMenu id="layoutPergunta" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaVO.layoutPergunta}">
+					<f:selectItems value="#{PerguntaControle.listaSelectItemLayoutPergunta}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}">
+				<h:outputText rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}" styleClass="tituloCampos" value="#{msg_aplic.prt_Pergunta_tipoApresentacaoResultado}" />
+				<h:selectOneMenu id="tipoResultadoGrafico" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaVO.tipoResultadoGrafico}">
+					<f:selectItem itemLabel="Pizza" itemValue="GRAFICO_PIZZA" />
+					<f:selectItem itemLabel="Coluna" itemValue="GRAFICO_COLUNA" />
+					<f:selectItem itemLabel="Lista" itemValue="LISTA" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center m5" rendered="#{PerguntaControle.perguntaVO.tipoRespostaListaCampos}">
+				<otm:commandButton rendered="#{PerguntaControle.perguntaVO.tipoRespostaListaCampos}" id="consultaDadosPergunta" styleClass="btn btn-default" focus="formPergunta:valorConsultaPergunta" value="Consultar Pergunta" icon="#{msg_botoes.btn_icon_lupa_embutido}" render="form" title="Adicionar Pergunta" oncomplete="#{rich:component('panelPergunta')}.show();" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{PerguntaControle.perguntaVO.tipoRespostaNumerico}">
+				<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pergunta_quantidadeCasasDecimais}" rendered="#{PerguntaControle.perguntaVO.tipoRespostaNumerico}" />
+				<h:selectOneMenu rendered="#{PerguntaControle.perguntaVO.tipoRespostaNumerico}" id="quantidadeCasasDecimais" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaVO.quantidadeCasasDecimais}">
+					<f:selectItems value="#{PerguntaControle.quantidadeCasasDecimaisCombo}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{PerguntaControle.perguntaVO.tipoRespostaData}">
+				<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pergunta_mascaraData}" rendered="#{PerguntaControle.perguntaVO.tipoRespostaData}" />
+				<h:selectOneMenu rendered="#{PerguntaControle.perguntaVO.tipoRespostaData}" id="mascaraData" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaVO.mascaraData}">
+					<f:selectItems value="#{PerguntaControle.mascaraDataCombo}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{PerguntaControle.perguntaVO.tipoRespostaHora}">
+				<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pergunta_mascaraHora}" rendered="#{PerguntaControle.perguntaVO.tipoRespostaHora}" />
+				<h:selectOneMenu rendered="#{PerguntaControle.perguntaVO.tipoRespostaHora}" id="mascaraHora" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaVO.mascaraHora}">
+					<f:selectItems value="#{PerguntaControle.mascaraHoraCombo}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{PerguntaControle.perguntaVO.tipoRespostaUpload}">
+				<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pergunta_extensao}" />
+				<h:inputText id="extensaoTipoResposta" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaVO.extensaoTipoResposta}" />
+			</h:panelGroup>
+			<h:panelGroup id="pgPerguntaItens" rendered="#{!empty PerguntaControle.perguntaVO.perguntaItemVOs and PerguntaControle.perguntaVO.tipoResposta eq 'LC'}">
+				<a4j:repeat rowKeyVar="rowlistaPergunta" id="listaPergunta" var="perguntaItemItens" value="#{PerguntaControle.perguntaVO.perguntaItemVOs}">
+					<h:panelGroup layout="block" styleClass="row mn">
+						<h:panelGroup id="panelResposta">
+							<h:panelGroup layout="block" styleClass="row mb5 p10 bg-gray-100 rounded mt5">
+								<h:panelGroup layout="block" style="float: left;text-align:left;height:100%;width:calc(100% - 50px)">
+									<h:outputText id="pergunta" style="color: black;" value="#{rowlistaPergunta+1}  #{perguntaItemItens.perguntaVO.descricao}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="rowIcon" style="#{perguntaItemItens.perguntaVO.tipoRespostaMultiplaEscolha or perguntaItemItens.perguntaVO.tipoRespostaSimplesEscolha ? 'border: solid 1px #cacaca; border-radius: 5px 5px 5px 5px; margin-bottom: 5px !important' : 'margin-bottom: 5px !important'}">
+								<a4j:repeat styleClass="dataGridSemBorda" rendered="#{(perguntaItemItens.perguntaVO.tipoRespostaMultiplaEscolha or perguntaItemItens.perguntaVO.tipoRespostaSimplesEscolha) and perguntaItemItens.perguntaVO.layoutHorizontal}" id="listaResposta2" var="respostaItens" value="#{perguntaItemItens.perguntaVO.respostaPerguntaVOs}">
+									<h:panelGroup layout="block" styleClass="#{perguntaItemItens.perguntaVO.cssPergunta} p5">
+										<h:panelGroup style="float: left">
+											<h:panelGroup rendered="#{perguntaItemItens.perguntaVO.tipoRespostaMultiplaEscolha}" styleClass="mr5">
+												<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-square fs14 ': 'far fa-square fs14'}"></h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup rendered="#{perguntaItemItens.perguntaVO.tipoRespostaSimplesEscolha}" styleClass="mr5">
+												<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-circle fs14  ': 'far fa-circle fs14'}"></h:panelGroup>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup style="display:block;float:left;width:calc(100% - 60px);">
+											<h:outputText style="color: black;" escape="false" value="#{respostaItens.descricao}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText size="20" rendered="#{respostaItens.selecionado and respostaItens.apresentarRespostaAdicional}" maxlength="250" styleClass="form-control campos" value="#{respostaItens.respostaAdicional}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</a4j:repeat>
+								<a4j:repeat rendered="#{(perguntaItemItens.perguntaVO.tipoRespostaMultiplaEscolha or perguntaItemItens.perguntaVO.tipoRespostaSimplesEscolha) and !perguntaItemItens.perguntaVO.layoutHorizontal}" id="listaResposta" var="respostaItens" width="100%" value="#{perguntaItemItens.perguntaVO.respostaPerguntaVOs}">
+									<h:panelGroup layout="block" styleClass="rowIcon p5">
+										<h:panelGroup style="float: left">
+											<h:panelGroup rendered="#{perguntaItemItens.perguntaVO.tipoRespostaMultiplaEscolha}" styleClass="mr5">
+												<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-square fs14 ': 'far fa-square fs14   '}"></h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup rendered="#{perguntaItemItens.perguntaVO.tipoRespostaSimplesEscolha}" styleClass="mr5">
+												<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-circle fs14  ': 'far fa-circle fs14  '}"></h:panelGroup>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup style="display:block;float:left;width:calc(100% - 60px);">
+											<h:outputText style="color: black;" escape="false" value="#{respostaItens.descricao}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText size="20" rendered="#{respostaItens.selecionado and respostaItens.apresentarRespostaAdicional}" maxlength="250" styleClass="form-control campos" value="#{respostaItens.respostaAdicional}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</a4j:repeat>
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{perguntaItemItens.perguntaVO.tipoRespostaTextual}">
+									<h:inputTextarea id="pergText" readonly="true" value="#{perguntaItemItens.perguntaVO.texto}" rows="5" cols="75" style="width:98%" styleClass="form-control">
+									</h:inputTextarea>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{perguntaItemItens.perguntaVO.tipoRespostaNumerico}">
+									<h:inputText id="pergNumero" size="20" readonly="true" maxlength="20" styleClass="form-control campos" value="#{perguntaItemItens.perguntaVO.campoNumerico}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{perguntaItemItens.perguntaVO.tipoRespostaData}">
+									<otm:calendar readonly="true" id="pergData" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" inputSize="10" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" value="#{perguntaItemItens.perguntaVO.campoData}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{perguntaItemItens.perguntaVO.tipoRespostaHora}">
+									<h:inputText id="pergHora" size="20" readonly="true" maxlength="20" styleClass="form-control campos" value="#{perguntaItemItens.perguntaVO.campoHora}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{perguntaItemItens.perguntaVO.tipoRespostaListaSuspensa}">
+									<h:selectOneMenu id="pergListaSuspensa" styleClass="form-control campos">
+										<f:selectItems value="#{perguntaItemItens.perguntaVO.respostaPerguntaVOs}" var="respostaPerguntaItem" itemLabel="#{respostaPerguntaItem.descricao}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{perguntaItemItens.perguntaVO.tipoRespostaVerdadeiroFalso}">
+									<otm:selectBooleanCheckbox id="pergVerdadeiroFalso" disabled="true" value="#{perguntaItemItens.perguntaVO.campoVerdadeiroFalso}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<style>
+						.rowIcon {
+							display: inline-block;
+							width: 100%;
+							flex-wrap: wrap;
+							margin: 0 !important;
+							flex-wrap: wrap;
+						}
+					</style>
+					<h:panelGroup layout="block" styleClass="rowIcon border rounded bg-gray pt5 pr5 text-right">
+						<otm:commandIcon render="dados" id="removerItem" immediate="true" action="#{PerguntaControle.removerPerguntaItem}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Excluir Pergunta" accesskey="7" />
+						<otm:commandIcon ignoreDupResponses="true" rendered="#{rowlistaPergunta gt 0 and rowlistaPergunta lt PerguntaControle.perguntaVO.numeroOpcoesPerguntas}" action="#{PerguntaControle.subirOpcaoPergunta}" icon="#{msg_botoes.btn_icon_subir} iconePequeno" tooltip="Subir" render="listaPergunta" execute="listaPergunta" />
+						<otm:commandIcon ignoreDupResponses="true" rendered="#{(rowlistaPergunta+1) lt PerguntaControle.perguntaVO.numeroOpcoesPerguntas}" action="#{PerguntaControle.descerOpcaoPergunta}" icon="#{msg_botoes.btn_icon_descer} iconePequeno" tooltip="Descer" render="listaPergunta" execute="listaPergunta" />
+					</h:panelGroup>
+				</a4j:repeat>
+			</h:panelGroup>
+			<h:panelGroup rendered="#{PerguntaControle.perguntaVO.escopoPergunta ne 'PLANO_ENSINO'}">
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<otm:outputHelp id="Pergunta_perguntaEscopoPublico" styleClass="tituloCampos" value="#{msg_aplic.prt_Pergunta_perguntaEscopoPublico}">
+						<h:outputText value="#{msg.help_Pergunta_perguntaEscopoPublico}" />
+					</otm:outputHelp>
+					<otm:selectBooleanCheckbox id="perguntaEscopoPublico" value="#{PerguntaControle.perguntaVO.perguntaEscopoPublico}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row mn mt5" id="resposta" rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha or PerguntaControle.perguntaVO.tipoRespostaListaSuspensa}">
+				<otm2:panel name="panel1"  renderedControl="false"  styleClassFooter="dn">
+					<ui:define name="header">
+						<h:outputText styleClass="tituloCamposResultado" value="#{msg_aplic.prt_RespostaPergunta_tituloForm}" />
+					</ui:define>
+					<ui:define name="body">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_RespostaPergunta_descricao}" />
+							<h:inputText id="respostaPergunta_descricao" size="70" maxlength="250" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.respostaPerguntaVO.descricao}">
+								
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}">
+							<otm:outputHelp id="RespostaPergunta_agrupador" styleClass="tituloCampos" value="#{msg_aplic.prt_RespostaPergunta_agrupador}" rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}">
+								<h:outputText value="#{msg.help_Pergunta_perguntaAgrupador}" />
+							</otm:outputHelp>
+							<h:inputText id="respostaPergunta_agrupador" onkeydown="aceitarSomenteValorNumerico(this)" size="5" maxlength="5" styleClass="form-control campos" value="#{PerguntaControle.respostaPerguntaVO.agrupador}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}">
+							<otm:outputHelp id="RespostaPergunta_nota" styleClass="tituloCampos" value="#{msg_aplic.prt_RespostaPergunta_nota}">
+								<h:outputText value="#{msg.help_Pergunta_perguntaNota}" />
+							</otm:outputHelp>
+							<h:inputText id="respostaPergunta_nota" onkeydown="aceitarSomenteValorDecimal(this)" size="5" maxlength="5" styleClass="form-control campos" value="#{PerguntaControle.respostaPerguntaVO.nota}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_RespostaPergunta_apresentarRespostaAdicional}" rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}" />
+							<otm:selectBooleanCheckbox id="apresentarRespostaAdicional" value="#{PerguntaControle.respostaPerguntaVO.apresentarRespostaAdicional}" rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+							<otm:commandButton id="btnAdicionarListaSuspensa" render="form:resposta, form:msg, form:respostaPerguntaVO" action="#{PerguntaControle.adicionarRespostaPergunta}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="Adicionar" accesskey="5" styleClass="btn btn-primary" />
+						</h:panelGroup>
+					</ui:define>
+				</otm2:panel>
+			</h:panelGroup>
+			<h:panelGroup id="respostaPerguntaVO" rendered="#{!PerguntaControle.perguntaVO.tipoRespostaTextual}">
+				<rich:dataTable id="respostaPerguntaVOs" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaCentralizada" rendered="#{!empty PerguntaControle.perguntaVO.respostaPerguntaVOs}" value="#{PerguntaControle.perguntaVO.respostaPerguntaVOs}" var="respostaPerguntaItem" rowKeyVar="row">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_RespostaPergunta_descricao}" />
+						</f:facet>
+						<h:outputText style="white-space: pre-wrap" value="#{respostaPerguntaItem.descricao}" />
+					</rich:column>
+					<rich:column rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_RespostaPergunta_agrupador}" />
+						</f:facet>
+						<h:inputText size="5" id="agrupador_item" onkeydown="aceitarSomenteValorNumerico(this)" maxlength="5" styleClass="form-control campos" value="#{respostaPerguntaItem.agrupador}" />
+					</rich:column>
+					<rich:column rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_RespostaPergunta_nota}" />
+						</f:facet>
+						<h:inputText size="5" id="nota_item" maxlength="5" onkeydown="aceitarSomenteValorDecimal(this)" styleClass="form-control campos" value="#{respostaPerguntaItem.nota}">
+							<f:converter converterId="FormatadorNumerico"></f:converter>
+						</h:inputText>
+					</rich:column>
+					<rich:column rendered="#{PerguntaControle.perguntaVO.tipoRespostaMultiplaEscolha or PerguntaControle.perguntaVO.tipoRespostaSimplesEscolha}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_RespostaPergunta_apresentarRespostaAdicional}" />
+						</f:facet>
+						<otm:selectBooleanCheckbox value="#{respostaPerguntaItem.apresentarRespostaAdicional}">
+							<a4j:ajax event="click" render="this.id" />
+						</otm:selectBooleanCheckbox>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<h:panelGroup>
+							<otm:commandIcon id="editarItemVenda" render="form:resposta, form:msg, respostaPerguntaVO" action="#{PerguntaControle.editarRespostaPergunta}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar" image="#{resource['imagens/botaoEditar.png']}" accesskey="6" />
+							<otm:commandIcon id="removerItemVenda" render="form:resposta, form:msg, respostaPerguntaVO" action="#{PerguntaControle.removerRespostaPergunta}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" image="#{resource['imagens/botaoRemover.png']}" accesskey="7" />
+							<f:verbatim>
+								<h:outputText value="    " />
+							</f:verbatim>
+							<otm:commandIcon ignoreDupResponses="true" rendered="#{row gt 0 and row lt PerguntaControle.perguntaVO.numeroOpcoes}" action="#{PerguntaControle.subirOpcaoRespostaQuestao}" icon="#{msg_botoes.btn_icon_subir} iconePequeno" tooltip="Subir" image="#{resource['imagens/botaoSubir.png']}" render="respostaPerguntaVO" />
+							<f:verbatim>
+								<h:outputText value="    " />
+							</f:verbatim>
+							<otm:commandIcon ignoreDupResponses="true" rendered="#{(row+1) lt PerguntaControle.perguntaVO.numeroOpcoes}" action="#{PerguntaControle.descerOpcaoRespostaQuestao}" icon="#{msg_botoes.btn_icon_descer} iconePequeno" tooltip="Descer" image="#{resource['imagens/botaoDescer.png']}" render="respostaPerguntaVO" />
+						</h:panelGroup>
+					</rich:column>
+				</rich:dataTable>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row mn mt5" id="perguntaChecklist" rendered="#{PerguntaControle.perguntaVO.escopoPergunta eq 'ESTAGIO'}">
+				<otm2:panel name="panel_checklist" renderedControl="false" styleClassFooter="dn">
+					<ui:define name="header">
+						<h:outputText styleClass="tituloCamposResultado" value="Checklist" />
+					</ui:define>
+					<ui:define name="body">
+						<h:panelGroup layout="block" styleClass="col-md-9">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_RespostaPergunta_descricao}" />
+							<h:inputText id="perguntaChecklist_descricao" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaChecklistVO.descricao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-1">
+							<h:outputText value="#{msg_aplic.prt_MotivosPadroesEstagio_statusAtivoInativoEnum}" styleClass="field control-label tituloCampos" />
+							<h:selectOneMenu id="perguntaChecklist_statusAtivoInativoEnum" styleClass="form-control camposObrigatorios" value="#{PerguntaControle.perguntaChecklistVO.statusAtivoInativoEnum}">
+								<f:selectItems value="#{EnumControle.comboboxStatusAtivoInativoEnum}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 text-center pt4">
+							<otm:spacer width="100%"></otm:spacer>
+							<otm:commandButton render="form:perguntaChecklist, form:msg" action="#{PerguntaControle.adicionarPerguntaChecklistVO}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary pr35 pl35" value="Adicionar" accesskey="5" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+						<rich:dataTable id="listaPerguntaChecklist" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaCentralizada" rendered="#{!empty PerguntaControle.perguntaVO.listaPerguntaChecklistVO}" value="#{PerguntaControle.perguntaVO.listaPerguntaChecklistVO}" var="perguntaChecklistItens" rowKeyVar="row">
+							<rich:column style="width:70%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_RespostaPergunta_descricao}" />
+								</f:facet>
+								<h:outputText style="white-space: pre-wrap" value="#{perguntaChecklistItens.descricao}" />
+							</rich:column>
+							<rich:column style="width:20%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_MotivosPadroesEstagio_statusAtivoInativoEnum}" />
+								</f:facet>
+								<h:selectOneMenu id="perguntaChecklist_statusAtivoInativoEnumFiltro" styleClass="form-control camposObrigatorios" value="#{perguntaChecklistItens.statusAtivoInativoEnum}">
+									<f:selectItems value="#{EnumControle.comboboxStatusAtivoInativoEnum}" />
+								</h:selectOneMenu>
+							</rich:column>
+							<rich:column style="width:10%">
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<h:panelGroup layout="block">
+									<otm:commandIcon id="editarperguntaChecklist" render="form:perguntaChecklist, form:msg" action="#{PerguntaControle.editarPerguntaChecklistVO}" tooltip="Editar Checklist" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+									<otm:commandIcon id="removerperguntaChecklist" render="form:perguntaChecklist, form:msg" action="#{PerguntaControle.removerPerguntaChecklistVO}" tooltip="Remover Checklist" icon="#{msg_botoes.btn_icon_remover} iconePequeno" />
+								</h:panelGroup>
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller for="listaPerguntaChecklist" id="sclistaPerguntaChecklist" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+					</ui:define>
+				</otm2:panel>
+			</h:panelGroup>
+			<h:panelGroup id="msg" layout="block" styleClass="row">
+				<otm:mensagem bean="#{PerguntaControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<h:panelGroup>
+					<otm:commandButton id="novo" immediate="true" action="#{PerguntaControle.novo}" value="#{msg_botoes.btn_novo}" image="#{resource['imagens/botaoNovo.png']}" alt="#{msg.msg_novo_dados}" accesskey="1" styleClass="btn btn-info btn-novo" />
+					<f:verbatim>
+						<h:outputText value="    " />
+					</f:verbatim>
+					<otm:commandButton render="form" execute="form" id="salvar" action="#{PerguntaControle.gravar}" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Gravar" image="#{resource['imagens/botaoGravar.png']}" alt="#{msg.msg_gravar_dados}" accesskey="2" styleClass="btn btn-dark mr5 ml5" />
+					<f:verbatim>
+						<h:outputText value="    " />
+					</f:verbatim>
+					<otm:commandButton id="excluir" onclick="return confirm('Confirma exclusão dos dados?');" action="#{PerguntaControle.excluir}" icon="#{msg_botoes.btn_icon_remover_embutido}" value="Excluir" image="#{resource['imagens/botaoExcluir.png']}" alt="#{msg.msg_excluir_dados}" accesskey="3" styleClass="btn btn-danger mr5" />
+					<f:verbatim>
+						<h:outputText value="    " />
+					</f:verbatim>
+					<otm:commandButton id="consultar" immediate="true" action="#{PerguntaControle.inicializarConsultar}" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" image="#{resource['imagens/botaoConsultar.png']}" alt="#{msg.msg_consultar_dados}" accesskey="4" styleClass="btn btn-default" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

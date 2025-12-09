@@ -1,0 +1,1656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br" xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+<h:head>
+</h:head>
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Requerimento" />
+	</ui:define>
+
+	<style type="text/css">
+.panelUnidadeImpar {
+	width: 100%;
+	min-height: 50px;
+	height: 100%;
+	float: left;
+	margin-top: 5px;
+	border: 1px solid #808080;
+	background-color: #F4F4F4;
+	border-radius: 3px;
+	text-align: left;
+}
+
+.panelUnidade {
+	width: 100%;
+	min-height: 50px;
+	height: 100%;
+	float: left;
+	margin-top: 5px;
+	border: 1px solid #B3B3B3;
+	background-color: #FFF;
+	border-radius: 3px;
+	text-align: left;
+}
+.barra-btn-flutuante-modal-100 {
+	position: fixed;
+	width: 99.0%;
+	background-color: #dedede;
+	padding: 10px 5px 5px 5px;
+	left: 0.2%;
+	border-radius: 0px 0px 10px 10px;
+	margin: 0 auto;
+	bottom: -0.5%;
+	z-index: 1;
+	text-align: center;
+	min-height: 35px;
+}
+</style>
+
+	<h:outputScript name="jquery.color.js" library="script/crop" />
+	<h:outputScript name="jquery.Jcrop.js" library="script/crop" />
+	<h:outputStylesheet name="jquery.Jcrop.css" library="script/crop" />
+	<h:outputScript name="webcam.js" library="script/webcam" />
+
+	<ui:define name="modal">
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelRequerimentoRequerimentoExistente" domElementAttachment="parent" autosized="false" shadowOpacity="true" top="10" width="400" height="190">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Requerimento_requerimentoExiste}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkRequerimentoRequerimentoExistente">
+						<rich:componentControl target="panelRequerimentoRequerimentoExistente" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formRequerimentoExistente">
+				<h:panelGroup>
+					<h:outputText id="requerimentoExiste" value="#{RequerimentoControle.msgRequerimentoExistente}" />
+				</h:panelGroup>
+				<otm:spacer />
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<h:panelGroup>
+						<a4j:commandLink value="Sim" styleClass="btn btn-info" render="form" image="#{resource['imagens/botaoSim.png']}" oncomplete="#{rich:component('panelRequerimentoRequerimentoExistente')}.hide();" action="#{RequerimentoControle.verificarApresentacaoQuestionarioAoGravar}" alt="Sim">
+							<span class="#{msg_botoes.btn_icon_confirmar_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;" />
+							<f:setPropertyActionListener target="#{RequerimentoControle.requerimentoValidado}" value="true" />
+						</a4j:commandLink>
+						<otm:spacer width="5px" />
+						<a4j:commandLink value="Não" styleClass="btn btn-danger" immediate="true" render="form" oncomplete="#{rich:component('panelRequerimentoRequerimentoExistente')}.hide();" image="#{resource['imagens/botaoNao.png']}" alt="Não" action="#{RequerimentoControle.novoVisaoAluno}">
+							<span class="#{msg_botoes.btn_icon_cancelar_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;" />
+							<f:setPropertyActionListener target="#{RequerimentoControle.requerimentoValidado}" value="true" />
+						</a4j:commandLink>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelNovoRequerimento" domElementAttachment="parent" autosized="false" shadowOpacity="true" top="10" width="350" height="190">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Requerimento_novoRequerimento}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkNovoRequerimento">
+						<rich:componentControl target="panelNovoRequerimento" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNovoRequerimento">
+				<h:panelGroup>
+					<h:outputText id="novoRequerimento" value="#{RequerimentoControle.msgNovoRequerimento}" />
+				</h:panelGroup>
+				<otm:spacer />
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="form" action="#{RequerimentoControle.novo}" oncomplete="#{RequerimentoControle.oncompleteModal}; #{rich:component('panelNovoRequerimento')}.hide();" value="Confirmar" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" image="#{resource['/imagens/botaoConfirmar2.png']}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelInteracaoRequerimentoHistoricoResponder" autosized="false" shadowOpacity="true" top="100" width="600" onshow="document.getElementById('formInteracaoRequerimentoHistoricoResponder:interacaoRespostaComentario').focus()" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Requerimento_RequerimentoHistorico_InteracaoRequerimentoHistorico_reponderComentario }"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkInteracaoRequerimentoHistoricoResponder">
+						<rich:componentControl target="panelInteracaoRequerimentoHistoricoResponder" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formInteracaoRequerimentoHistoricoResponder">
+				<h:panelGroup columnClasses="colunaCentralizada" width="100%">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:inputTextarea id="interacaoRespostaComentario" rows="15" value="#{RequerimentoControle.interacaoRequerimentoHistoricoFilho.interacao}" style="margin-top:-2px;width:100%" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<otm:commandButton id="responderComentario" icon="#{msg_botoes.btn_icon_responder_embutido}" value="Responder" image="#{resource['/imagens/botaoResponder.png']}" oncomplete="#{rich:component('panelInteracaoRequerimentoHistoricoResponder')}.hide();" action="#{RequerimentoControle.persistirRespostaInteracaoRequerimentoHistorico}" styleClass="btn btn-primary" render="form:items:#{row}:panelInforma" />
+						<otm:spacer width="5px" />
+						<otm:commandButton id="cancelarResponderComentario" value="Cancelar" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" oncomplete="#{rich:component('panelInteracaoRequerimentoHistoricoResponder')}.hide();" immediate="true" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" shadowOpacity="true" width="750" onshow="document.getElementById('formFuncionario:valorConsultaFuncionarioSecundario').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_funcionario}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink2Funcionario" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionarioSecundario" value="#{RequerimentoControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{RequerimentoControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaFuncionarioSecundario" size="10" styleClass="form-control campos" value="#{RequerimentoControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formFuncionario:mensagemConsultaFuncionarioSecundario, formFuncionario:resultadoConsultaFuncionarioSecundario, formFuncionario:scResultadoFuncionarioSecundario" action="#{RequerimentoControle.consultarFuncionario}" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" value="Consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFuncionarioSecundario" style="width:100%" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RequerimentoControle.listaConsultaFuncionario}" rows="5" var="funcionarioItem">
+					<rich:column style="text-align: center !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarFuncionario}" render="form:nomeFuncionario, formObsTramite:nomeFuncionarioProximoTramite" oncomplete="#{rich:component('panelFuncionario')}.hide()" value="#{funcionarioItem.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column style="text-align: center !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarFuncionario}" render="form:nomeFuncionario, formObsTramite:nomeFuncionarioProximoTramite" oncomplete="#{rich:component('panelFuncionario')}.hide()" value="#{funcionarioItem.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column style="text-align: center !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarFuncionario}" render="form:nomeFuncionario, formObsTramite:nomeFuncionarioProximoTramite" oncomplete="#{rich:component('panelFuncionario')}.hide()" value="#{funcionarioItem.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column style="text-align: center !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RequerimentoControle.selecionarFuncionario}" render="form:nomeFuncionario, formObsTramite:nomeFuncionarioProximoTramite" oncomplete="#{rich:component('panelFuncionario')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formFuncionario:resultadoConsultaFuncionarioSecundario" maxPages="10" id="scResultadoFuncionarioSecundario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaFuncionarioSecundario" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelExcluir" shadowOpacity="true" width="220" height="120">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Excluir"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluir">
+				<h:panelGroup width="100%" columnClasses="colunaAlinhamento" styleClass="tabForm">
+					<h:outputText value="#{msg_aplic.prt_RenovarMatricula_confirmarExclusao}" styleClass="tituloCamposNegrito" />
+					<otm:spacer width="20px" />
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton icon="#{msg_botoes.btn_icon_confirmar_embutido}" render="form, formArquivo" styleClass="btn btn-info" oncomplete="#{rich:component('panelExcluir')}.hide()" action="#{RequerimentoControle.removerArquivoRequerimento}" value="Excluir" />
+						<otm:spacer width="5px" />
+						<otm:commandButton icon="#{msg_botoes.btn_icon_cancelar_embutido}" immediate="true" render="panelLinkArquivo" oncomplete="#{rich:component('panelExcluir')}.hide()" styleClass="btn btn-danger" value="Não Excluir" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelMotivoIndeferimento" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Requerimento_motivoIndeferimento}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMotivoIndeferimento">
+				<h:panelGroup id="motivoIndeferimento">
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_tipoTrabalhoConclusaoCurso}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+						<h:selectOneMenu styleClass="form-control campos" id="tipoTrabalhoConclusaoCurso" value="#{RequerimentoControle.requerimentoVO.tipoTrabalhoConclusaoCurso}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+							<a4j:ajax execute="formMotivoIndeferimento" render="formMotivoIndeferimento" />
+							<f:selectItems value="#{RequerimentoControle.listaSelectItemTipoTrabalhoConclusaoCurso}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+						<h:outputText value="#{msg_aplic.prt_Catalogo_titulo} #{RequerimentoControle.requerimentoVO.tipoTrabalhoConclusaoCurso eq 'AR' ? 'Artigo' : 'Monografia'}" styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+						<h:inputText styleClass="form-control camposObrigatorios" size="50" value="#{RequerimentoControle.requerimentoVO.tituloMonografia}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+						<h:outputText value="#{msg_aplic.prt_Titulo_orientador} #{RequerimentoControle.requerimentoVO.tipoTrabalhoConclusaoCurso eq 'AR' ? 'Artigo' : 'Monografia'}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+						<h:inputText size="50" value="#{RequerimentoControle.requerimentoVO.orientadorMonografia}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RequerimentoControle.podeInserirNota and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nota TCC" rendered="#{RequerimentoControle.podeInserirNota and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+						<h:inputText size="8" maxlength="50" styleClass="form-control camposObrigatorios" rendered="#{RequerimentoControle.podeInserirNota and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" onkeydown="aceitarSomenteValorDecimal(this)" value="#{RequerimentoControle.requerimentoHistoricoVO.notaTCC}">
+							<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+						<h:outputText value="#{msg_aplic.prt_Requerimento_notaFinalTCC}" styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+						<h:inputText size="8" styleClass="form-control camposObrigatorios" maxlength="50" onkeydown="aceitarSomenteValorDecimal(this)" value="#{RequerimentoControle.requerimentoVO.notaMonografia}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+							<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+							<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="1" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText value="#{msg_aplic.prt_Requerimento_observacao}" styleClass="field control-label tituloCampos" />
+						<h:inputTextarea cols="60" rows="5" value="#{RequerimentoControle.requerimentoVO.motivoIndeferimento}" styleClass="form-control campos" />
+					</h:panelGroup>
+					<otm:spacer width="20px" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<h:panelGroup>
+						<otm:commandButton styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Indeferir" render="form" image="#{resource['imagens/botaoIndeferir.png']}" oncomplete="#{rich:component('panelMotivoIndeferimento')}.hide();" action="#{RequerimentoControle.indeferirRequerimento}" alt="Indeferir" />
+						<otm:spacer width="5px" />
+						<otm:commandButton icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" immediate="true" render="panelLinkArquivo" oncomplete="#{rich:component('panelMotivoIndeferimento')}.hide();" styleClass="btn btn-danger" alt="Fechar" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelMotivoDeferimento" shadowOpacity="true" width="220" autosized="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Requerimento_motivoDeferimento}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMotivoDeferimento">
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_tipoTrabalhoConclusaoCurso}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+					<h:selectOneMenu styleClass="form-control campos" id="tipoTrabalhoConclusaoCurso" value="#{RequerimentoControle.requerimentoVO.tipoTrabalhoConclusaoCurso}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+						<a4j:ajax execute="formMotivoDeferimento" render="formMotivoDeferimento" />
+						<f:selectItems value="#{RequerimentoControle.listaSelectItemTipoTrabalhoConclusaoCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+					<h:outputText value="#{msg_aplic.prt_Catalogo_titulo} #{RequerimentoControle.requerimentoVO.tipoTrabalhoConclusaoCurso eq 'AR' ? 'Artigo' : 'Monografia'}" styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+					<h:inputText styleClass="form-control camposObrigatorios" size="50" value="#{RequerimentoControle.requerimentoVO.tituloMonografia}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+					<h:outputText value="#{msg_aplic.prt_Titulo_orientador} #{RequerimentoControle.requerimentoVO.tipoTrabalhoConclusaoCurso eq 'AR' ? 'Artigo' : 'Monografia'}" styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+					<h:inputText size="50" value="#{RequerimentoControle.requerimentoVO.orientadorMonografia}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RequerimentoControle.podeInserirNota and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Nota TCC" rendered="#{RequerimentoControle.podeInserirNota and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+					<h:inputText size="8" maxlength="50" styleClass="form-control camposObrigatorios" rendered="#{RequerimentoControle.podeInserirNota and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC' }" onkeydown="aceitarSomenteValorDecimal(this)" value="#{RequerimentoControle.requerimentoHistoricoVO.notaTCC}">
+						<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+					<h:outputText value="#{msg_aplic.prt_Requerimento_notaFinalTCC}" styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+					<h:inputText size="8" styleClass="form-control camposObrigatorios" maxlength="50" onkeydown="aceitarSomenteValorDecimal(this)" value="#{RequerimentoControle.requerimentoVO.notaMonografia}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+						<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+						<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="1" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText value="#{msg_aplic.prt_Requerimento_observacao}" styleClass="field control-label tituloCampos" />
+					<h:inputTextarea cols="60" rows="5" value="#{RequerimentoControle.requerimentoVO.motivoDeferimento}" styleClass="form-control campos" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<h:panelGroup>
+						<otm:commandButton value="Deferir" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" render="form,formNovoRequerimento" image="#{resource['imagens/botaoAutorizar.png']}" oncomplete="#{rich:component('panelMotivoDeferimento')}.hide(); #{RequerimentoControle.oncompleteModal};" action="#{RequerimentoControle.deferirRequerimento}" alt="Deferir" />
+						<otm:spacer width="5px" />
+						<otm:commandButton value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" immediate="true" render="panelLinkArquivo" oncomplete="#{rich:component('panelMotivoDeferimento')}.hide();" styleClass="btn btn-danger" alt="Fechar" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelObsTramite" shadowOpacity="true" width="750" autosized="true" onshow="document.getElementById('formObsTramite:textAreaObsTramite').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Observação para Envio Requerimento Departamento #{RequerimentoControle.nomeProximoDepartamentoTramite}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formObsTramite">
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RequerimentoControle.abrirOpcaoInformarFuncionarioProximoTramite}">
+					<h:outputText styleClass="tituloCampos" rendered="#{!RequerimentoControle.funcionarioTramiteCoordenadorEspecifico and RequerimentoControle.abrirOpcaoInformarFuncionarioProximoTramite}" value="Resp. Próximo Trâmite" />
+					<h:outputText styleClass="tituloCampos" rendered="#{RequerimentoControle.funcionarioTramiteCoordenadorEspecifico and RequerimentoControle.abrirOpcaoInformarFuncionarioProximoTramite}" value="Coord. Curso Próximo Trâmite" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" rendered="#{RequerimentoControle.funcionarioTramiteCoordenadorEspecifico}" value="#{RequerimentoControle.funcionarioProximoTramite.pessoa.codigo}">
+						<f:selectItems value="#{RequerimentoControle.listaSelectItemCoordenadorEspecifico}" />
+					</h:selectOneMenu>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText size="34" maxlength="50" rendered="#{!RequerimentoControle.funcionarioTramiteCoordenadorEspecifico}" readonly="true" id="nomeFuncionarioProximoTramite" styleClass="form-control camposSomenteLeituraObrigatorio" value="#{RequerimentoControle.funcionarioProximoTramite.pessoa.nome}" />
+						<otm:commandIcon rendered="#{!RequerimentoControle.funcionarioTramiteCoordenadorEspecifico}" id="consultarFuncionarioResponsavelProximoTramite" tooltip="Func. Próximo Trâmite" render="formFuncionario" oncomplete="#{rich:component('panelFuncionario')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RequerimentoControle.podeInserirNota and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Nota TCC" rendered="#{RequerimentoControle.podeInserirNota and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo == 'TC'}" />
+					<h:inputText size="8" maxlength="50" onkeydown="aceitarSomenteValorDecimal(this)" value="#{RequerimentoControle.requerimentoHistoricoVO.notaTCC}">
+						<f:converter converterId="FormatadorNumerico" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText value="#{msg_aplic.prt_Requerimento_observacao}" styleClass="field control-label tituloCampos" />
+					<h:inputTextarea id="textAreaObsTramite" cols="60" rows="5" value="#{RequerimentoControle.requerimentoHistoricoVO.observacaoDepartamento}" styleClass="form-control campos" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<h:panelGroup>
+						<otm:commandButton icon="#{msg_botoes.btn_icon_enviar_email_embutido}" styleClass="btn btn-primary" render="form, mensagemFunc, formObsTramite" execute="@form, @formObsTramite" image="#{resource['imagens/botaoEnviarProxDpto.png']}" oncomplete="#{RequerimentoControle.acaoModalQuestionarioRequerimentoHistorico}" action="#{RequerimentoControle.enviarRequerimentoProximoDepartamento}" value="Enviar para próximo departamento" />
+						<otm:spacer width="5px" />
+						<a4j:commandLink oncomplete="#{rich:component('panelObsTramite')}.hide();" styleClass="btn btn-danger" value="Fechar">
+							<span class="fas fa-times pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+							<f:setPropertyActionListener target="#{RequerimentoControle.abrirOpcaoInformarFuncionarioProximoTramite}" value="false" />
+							<f:setPropertyActionListener target="#{RequerimentoControle.funcionarioTramiteCoordenadorEspecifico}" value="false" />
+						</a4j:commandLink>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemFunc" width="100%" columnClasses="colunaEsquerda">
+					<h:outputText styleClass="field control-label mensagem col-md-12" value="#{RequerimentoControle.mensagem}" />
+					<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{RequerimentoControle.mensagemDetalhada}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDepartamentoAnterior" shadowOpacity="true" width="280" height="120" onshow="document.getElementById('formDepartamentoAnterior:observacaoRetorno').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Retornar Departamento Anterior"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDepartamentoAnterior">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Requerimento_departamentoAnterior}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.tipoRequerimentoDepartamentoAnterior}">
+						<f:selectItems value="#{RequerimentoControle.tipoRequerimentoDepartamentoRetornarVOs}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Requerimento_motivoRetorno}" />
+					<h:inputTextarea id="observacaoRetorno" cols="60" rows="5" value="#{RequerimentoControle.motivoRetornoDepartamento}" styleClass="camposTextAreaObrigatorio" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCidade" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<h:panelGroup>
+						<otm:commandButton icon="#{msg_botoes.btn_icon_enviar_email_embutido}" styleClass="btn btn-primary" render="form, formDepartamentoAnterior" image="#{resource['/imagens/botaoEnviarDptoAnterior.png']}" oncomplete="#{RequerimentoControle.acaoModalDepartamentoAnterior}" action="#{RequerimentoControle.enviarRequerimentoDepartamentoAnterior}" value="Enviar para departamento anterior" />
+						<otm:spacer width="5px" />
+						<otm:commandButton value="Cancelar" immediate="true" oncomplete="#{rich:component('panelDepartamentoAnterior')}.hide()" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" alt="Fechar" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelQuestionario" shadowOpacity="false" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Questionario_tituloForm}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelQuestionario" />
+					<rich:componentControl target="panelQuestionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formQuestionario">
+				<h:panelGroup layout="block" styleClass="row">
+					<a4j:repeat id="listaPergunta" rowKeyVar="row" var="perguntaItens" value="#{RequerimentoControle.requerimentoVO.questionarioVO.perguntaQuestionarioVOs}">
+						<h:panelGroup layout="block" styleClass="row mb5 p10 bg-gray-100 rounded">
+							<h:panelGroup layout="block" style="float: left;text-align:left;height:100%;width:calc(100% - 50px)">
+								<h:outputText style="color: black;" escape="false" value="#{row+1})  #{perguntaItens.pergunta.descricao}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<a4j:region>
+							<h:panelGroup layout="block" styleClass="row mn">
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom" rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and perguntaItens.pergunta.layoutHorizontal}">
+									<a4j:repeat rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and perguntaItens.pergunta.layoutHorizontal}" id="listaResposta" var="respostaItens" value="#{perguntaItens.pergunta.respostaPerguntaVOs}">
+										<h:panelGroup layout="block" styleClass="row pl10 mb5">
+											<div class="col-md-12">
+												<h:panelGroup layout="block" style="float:left;">
+													<a4j:commandLink id="multimaEscolha3" rendered="#{perguntaItens.pergunta.tipoResposta eq 'ME'}" styleClass="mr5" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" render="formQuestionario" execute="@formQuestionario" action="#{RequerimentoControle.validarDadosListaResposta}">
+														<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-square fs14 ': 'far fa-square fs14   '}"></h:panelGroup>
+													</a4j:commandLink>
+													<a4j:commandLink id="unicaEscolha4" rendered="#{perguntaItens.pergunta.tipoResposta eq 'SE'}" styleClass="mr5" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" render="formQuestionario" execute="@formQuestionario" action="#{RequerimentoControle.validarDadosListaResposta}">
+														<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-circle fs14  ': 'far fa-circle fs14  '}"></h:panelGroup>
+													</a4j:commandLink>
+												</h:panelGroup>
+												<h:panelGroup style="display:block;float:left;width:calc(100% - 60px);">
+													<h:outputText style="color: black;" escape="false" value="#{respostaItens.descricao}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 pn">
+													<h:inputText size="20" rendered="#{respostaItens.selecionado and respostaItens.apresentarRespostaAdicional}" maxlength="250" styleClass="form-control campos" value="#{respostaItens.respostaAdicional}">
+														<a4j:ajax event="change" execute="@this" />
+													</h:inputText>
+												</h:panelGroup>
+											</div>
+										</h:panelGroup>
+									</a4j:repeat>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom" rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and !perguntaItens.pergunta.layoutHorizontal}">
+									<a4j:repeat id="listaResposta2" var="respostaItens" value="#{perguntaItens.pergunta.respostaPerguntaVOs}">
+										<h:panelGroup layout="block" style="float:left;">
+											<a4j:commandLink id="multimaEscolha5" rendered="#{perguntaItens.pergunta.tipoResposta eq 'ME'}" styleClass="mr5" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" render="formQuestionario" execute="@formQuestionario" action="#{RequerimentoControle.validarDadosListaResposta}">
+												<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-square fs14 ': 'far fa-square fs14   '}"></h:panelGroup>
+											</a4j:commandLink>
+											<a4j:commandLink id="unicaEscolha6" rendered="#{perguntaItens.pergunta.tipoResposta eq 'SE'}" styleClass="mr5" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" render="formQuestionario" execute="@formQuestionario" action="#{RequerimentoControle.validarDadosListaResposta}">
+												<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-circle fs14  ': 'far fa-circle fs14  '}"></h:panelGroup>
+											</a4j:commandLink>
+										</h:panelGroup>
+										<h:panelGroup style="display:block;float:left;width:calc(100% - 60px);">
+											<h:outputText style="color: black;" escape="false" value="#{respostaItens.descricao}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText size="20" rendered="#{respostaItens.selecionado and respostaItens.apresentarRespostaAdicional}" maxlength="250" styleClass="form-control campos" value="#{respostaItens.respostaAdicional}">
+												<a4j:ajax event="change" execute="@this" />
+											</h:inputText>
+										</h:panelGroup>
+									</a4j:repeat>
+								</h:panelGroup>
+							</h:panelGroup>
+						</a4j:region>
+						<h:panelGroup layout="block" styleClass="col-md-12 border-bottom mb5 pb5" rendered="#{perguntaItens.pergunta.tipoRespostaTextual}">
+							<h:inputTextarea styleClass="form-control" value="#{perguntaItens.pergunta.texto}" readonly="#{!RequerimentoControle.requerimentoVO.novoObj}" />
+						</h:panelGroup>
+					</a4j:repeat>
+				</h:panelGroup>
+				<h:panelGroup width="100%" styleClass="tabMensagens" id="tabMensagensQuestionario">
+					<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100" rendered="#{RequerimentoControle.requerimentoVO.novoObj}">
+						<otm:commandButton id="salvar2" action="#{RequerimentoControle.gravarRequerimentoComQuestionario}" oncomplete="#{RequerimentoControle.acaoModalQuestionario}" value="Gravar" icon="#{msg_botoes.btn_icon_gravar_embutido}" accesskey="2" styleClass="btn btn-dark" render="form, formQuestionario" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelQuestionarioRequerimentoHistorico" shadowOpacity="false" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Questionario_tituloForm}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelQuestionarioRequerimentoHistorico" />
+					<rich:componentControl target="panelQuestionarioRequerimentoHistorico" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formQuestionarioRequerimentoHistorico">
+				<h:panelGroup layout="block" styleClass="row">
+					<a4j:repeat id="listaPerguntaRequerimentoHistorico" rowKeyVar="row" var="perguntaItens" value="#{RequerimentoControle.requerimentoHistoricoVO.questionario.perguntaQuestionarioVOs}">
+						<h:panelGroup layout="block" styleClass="row mb5 p10 bg-gray-100 rounded">
+							<h:panelGroup layout="block" style="float: left;text-align:left;height:100%;width:calc(100% - 50px)">
+								<h:outputText style="color: black;" escape="false" value="#{row+1})  #{perguntaItens.pergunta.descricao}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<a4j:region>
+							<h:panelGroup layout="block" styleClass="row mn">
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom" rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and perguntaItens.pergunta.layoutHorizontal}">
+									<a4j:repeat rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and perguntaItens.pergunta.layoutHorizontal}" id="listaRespostaRequerimentoHistorico" var="respostaItens" value="#{perguntaItens.pergunta.respostaPerguntaVOs}">
+										<h:panelGroup layout="block" styleClass="row pl10 mb5">
+											<div class="col-md-12">
+												<h:panelGroup layout="block" style="float:left;">
+													<a4j:commandLink rendered="#{perguntaItens.pergunta.tipoResposta eq 'ME'}" styleClass="mr5" disabled="#{!RequerimentoControle.permiteAlterarQuestionarioRequerimentoHistorico}" render="formQuestionarioRequerimentoHistorico" execute="@formQuestionarioRequerimentoHistorico" action="#{RequerimentoControle.validarDadosListaRespostaRequerimentoHistorico}">
+														<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-square fs14 ': 'far fa-square fs14   '}"></h:panelGroup>
+													</a4j:commandLink>
+													<a4j:commandLink rendered="#{perguntaItens.pergunta.tipoResposta eq 'SE'}" styleClass="mr5" disabled="#{!RequerimentoControle.permiteAlterarQuestionarioRequerimentoHistorico}" render="formQuestionarioRequerimentoHistorico" execute="@formQuestionarioRequerimentoHistorico" action="#{RequerimentoControle.validarDadosListaRespostaRequerimentoHistorico}">
+														<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-circle fs14  ': 'far fa-circle fs14  '}"></h:panelGroup>
+													</a4j:commandLink>
+												</h:panelGroup>
+												<h:panelGroup id="editorFinish" style="display:block;float:left;width:calc(100% - 60px);">
+													<h:outputText style="color: black;" escape="false" value="#{respostaItens.descricao}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 pn">
+													<h:inputText size="20" rendered="#{respostaItens.selecionado and respostaItens.apresentarRespostaAdicional}" readonly="#{!RequerimentoControle.permiteAlterarQuestionarioRequerimentoHistorico}" maxlength="250" styleClass="form-control campos" value="#{respostaItens.respostaAdicional}">
+														<a4j:ajax event="change" execute="@this" />
+													</h:inputText>
+												</h:panelGroup>
+											</div>
+										</h:panelGroup>
+									</a4j:repeat>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom" rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and !perguntaItens.pergunta.layoutHorizontal}">
+									<a4j:repeat id="listaRespostaRequerimentoHistorico2" var="respostaItens" value="#{perguntaItens.pergunta.respostaPerguntaVOs}">
+										<h:panelGroup layout="block" style="float:left;">
+											<a4j:commandLink rendered="#{perguntaItens.pergunta.tipoResposta eq 'ME'}" styleClass="mr5" disabled="#{!RequerimentoControle.permiteAlterarQuestionarioRequerimentoHistorico}" render="formQuestionarioRequerimentoHistorico" execute="@formQuestionarioRequerimentoHistorico" action="#{RequerimentoControle.validarDadosListaRespostaRequerimentoHistorico}">
+												<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-square fs14 ': 'far fa-square fs14   '}"></h:panelGroup>
+											</a4j:commandLink>
+											<a4j:commandLink rendered="#{perguntaItens.pergunta.tipoResposta eq 'SE'}" styleClass="mr5" disabled="#{!RequerimentoControle.permiteAlterarQuestionarioRequerimentoHistorico}" render="formQuestionarioRequerimentoHistorico" execute="@formQuestionarioRequerimentoHistorico" action="#{RequerimentoControle.validarDadosListaRespostaRequerimentoHistorico}">
+												<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-circle fs14  ': 'far fa-circle fs14  '}"></h:panelGroup>
+											</a4j:commandLink>
+										</h:panelGroup>
+										<h:panelGroup style="display:block;float:left;width:calc(100% - 60px);">
+											<h:outputText style="color: black;" escape="false" value="#{respostaItens.descricao}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText size="20" rendered="#{respostaItens.selecionado and respostaItens.apresentarRespostaAdicional}" maxlength="250" styleClass="form-control campos" value="#{respostaItens.respostaAdicional}">
+												<a4j:ajax event="change" execute="@this" />
+											</h:inputText>
+										</h:panelGroup>
+									</a4j:repeat>
+								</h:panelGroup>
+							</h:panelGroup>
+						</a4j:region>
+						<h:panelGroup layout="block" styleClass="col-md-12 border-bottom mb5 pb5" rendered="#{perguntaItens.pergunta.tipoRespostaTextual}">
+							<h:inputTextarea styleClass="form-control" value="#{perguntaItens.pergunta.texto}" readonly="#{!RequerimentoControle.permiteAlterarQuestionarioRequerimentoHistorico}" />
+						</h:panelGroup>
+					</a4j:repeat>
+				</h:panelGroup>
+				<h:panelGroup width="100%" styleClass="tabMensagens" id="tabMensagensQuestionario3">
+					<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100" rendered="#{RequerimentoControle.permiteAlterarQuestionarioRequerimentoHistorico}">
+						<otm:commandButton id="salva3" rendered="#{RequerimentoControle.permiteAlterarQuestionarioRequerimentoHistorico}" action="#{RequerimentoControle.gravarQuestionarioTramite}" oncomplete="#{RequerimentoControle.acaoModalQuestionarioRequerimentoHistorico}" value="Gravar" execute="@form, @formObsTramite" accesskey="2" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" render="form, formQuestionario, formObsTramite" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelCapturarImagemWebCam" overlapEmbedObjects="true" shadowOpacity="false" onshow="showWebCamAPP()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_tirarFoto}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelCapturarImagemWebCam" />
+					<rich:componentControl target="panelCapturarImagemWebCam" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formWebCam">
+				<div id="my_camera" style="width: 320px; height: 240px;"></div>
+				<br />
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton style="margin-right:5px" icon="#{msg_botoes.btn_icon_camera_embutido}" value="Tirar Foto" action="#{RequerimentoControle.executarCapturarFotoWebCam}" oncomplete="take_snapshot('../UploadServlet');" styleClass="btn btn-default" />
+					<otm:commandButton style="margin-right:5px" icon="fas fa-image-polaroid" value="Nova Foto" onclick="Webcam.unfreeze();" styleClass="btn btn-default" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Gravar" styleClass="btn btn-dark" render="formImagem, foto2" onclick="#{rich:component('panelCapturarImagemWebCam')}.hide(); #{rich:component('panelImagem')}.show()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelArquivoRequerimento" shadowOpacity="false">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_uploadArquivos}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelImagemRequerimento">
+						<rich:componentControl target="panelArquivoRequerimento" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formArquivo">
+				<script type="text/javascript">
+				jQuery(function($) {
+					$(document).ready(function() {
+						$("#formArquivo\\:foto2").Jcrop({
+							onSelect : showCoords,
+							onChange : showCoords,
+							bgColor : 'black',
+							bgOpacity : .3,
+							setSelect : [ 1, 1, 85, 113 ],
+							minSize : [ 31, 21 ],
+							maxSize : [ 600, 450 ]
+						});
+					});
+				});
+				function showCoords(c) {
+					var valorX = document.getElementById('formArquivo:x');
+					valorX.value = c.x;
+
+					var valorY = document.getElementById('formArquivo:y');
+					valorY.value = c.y;
+
+					var valorW = document.getElementById('formArquivo:w');
+					valorW.value = c.w;
+
+					var valorH = document.getElementById('formArquivo:h');
+					valorH.value = c.h;
+				};
+			</script>
+				<h:panelGroup layout="block" styleClass="col-md-12 pn border rounded bg-gray mb5" style="padding: 10px !important" rendered="#{RequerimentoControle.exibirBotao  and  RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}">
+					<otm:commandButton icon="#{msg_botoes.btn_icon_zoomPlus_embutido}" styleClass="btn btn-primary mr2" action="#{RequerimentoControle.executarZoomIn}" render="formArquivo, foto2" value="Aumentar Zoom" rendered="#{RequerimentoControle.exibirBotao  and  RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}" style="margin-right: 2px;" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_zoomMinus_embutido}" styleClass="btn btn-danger mr2" action="#{RequerimentoControle.executarZoomOut}" render="formArquivo, foto2" value="Diminuir Zoom" rendered="#{RequerimentoControle.exibirBotao  and  RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}" style="margin-right: 2px;" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_girar_esquerda_embutido}" styleClass="btn btn-warning mr2" action="#{RequerimentoControle.rotacionar90GrausParaEsquerda}" render="formArquivo, foto2" value="Girar 90º para Esquerda" rendered="#{RequerimentoControle.exibirBotao  and  RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}" style="margin-right: 2px;" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_girar_direita_embutido}" styleClass="btn btn-info mr2" action="#{RequerimentoControle.rotacionar90GrausParaDireita}" render="formArquivo, foto2" value="Girar 90º para Direita" rendered="#{RequerimentoControle.exibirBotao  and  RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}" style="margin-right: 2px;" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_girar_180_embutido}" styleClass="btn btn-success mr2" action="#{RequerimentoControle.rotacionar180Graus}" render="formArquivo, foto2" value="Girar 180º" rendered="#{RequerimentoControle.exibirBotao  and  RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}" style="margin-right: 2px;" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_recortar_embutido}" styleClass="btn btn-dark" oncomplete="#{RequerimentoControle.oncompleteModal}" action="#{RequerimentoControle.recortarFoto}" render="formArquivo, foto2" value="Recorte a foto" rendered="#{RequerimentoControle.exibirBotao  and  RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{RequerimentoControle.exibirBotao and  RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}" layout="block" style="float:left; clear:both;overflow:auto; min-width:455px; min-height:120px ; width:600px; height:500px;">
+					<h:graphicImage url="#{RequerimentoControle.showFotoCrop}" id="foto2" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{RequerimentoControle.exibirBotao and  !RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}" layout="block" style=" width:100%; height:500px;text-align:center">
+					<h:outputText style="display:block; width:100%;text-align:center" value="#{RequerimentoControle.requerimentoVO.arquivoVO.nome}" styleClass="tituloCampos" />
+					<otm:commandIcon value="Download" icon="#{msg_botoes.btn_icon_download_embutido}" styleClass="btn btn-primary pr30 pl30" oncomplete="location.href='../DownloadSV'" action="#{RequerimentoControle.realizarDownloadArquivoRequerimento}" id="arquivoUpado" />
+				</h:panelGroup>
+				<h:panelGroup style="display:none" layout="block">
+					<h:panelGrid style="display:none" columns="6">
+						<h:panelGroup>
+							<h:outputText value="X" />
+							<h:inputText size="4" id="x" value="#{RequerimentoControle.x}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="Y" />
+							<h:inputText size="4" id="y" value="#{RequerimentoControle.y}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="largura" />
+							<h:inputText size="4" id="w" value="#{RequerimentoControle.largura}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="altura" />
+							<h:inputText size="4" id="h" value="#{RequerimentoControle.altura}" />
+						</h:panelGroup>
+					</h:panelGrid>
+				</h:panelGroup>
+				<h:panelGroup styleClass="col-md-12 border-bottom mb5 pb5" rendered="#{!empty RequerimentoControle.requerimentoVO.tipoRequerimento.orientacaoUploadArquivo}" layout="block">
+					<h:outputText styleClass="tituloCampos col-md-12 pn" value="Orientações do anexo: #{RequerimentoControle.requerimentoVO.tipoRequerimento.orientacaoUploadArquivo}" />
+					<h:outputText styleClass="tituloCampos" value="Extensões permitidas: #{RequerimentoControle.requerimentoVO.tipoRequerimento.extensaoArquivo}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn">
+					<rich:fileUpload acceptedTypes="#{RequerimentoControle.requerimentoVO.tipoRequerimento.extensaoArquivo}" listHeight="15" listWidth="600" noDuplicate="true" fileUploadListener="#{RequerimentoControle.upLoadArquivo}" maxFilesQuantity="1" addLabel="Selecionar Arquivo" clearAllLabel="Cancelar" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo 2MB" uploadLabel="Enviar" serverErrorLabel="Tamanho Máximo Permitido 2MB" id="uploadImagemBanner" immediateUpload="true" rendered="#{RequerimentoControle.exibirUpload}" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+						<a4j:ajax listener="#{RequerimentoControle.renderizarUpload}" event="uploadcomplete" render="formArquivo, foto2, panelLinkArquivo" />
+					</rich:fileUpload>
+					<br />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton icon="#{msg_botoes.btn_icon_camera_embutido}" styleClass="btn btn-primary mr5" value="Tirar Foto" oncomplete="#{rich:component('panelArquivoRequerimento')}.hide(); #{rich:component('panelCapturarImagemWebCam')}.show()" render="formArquivo, foto2" title="Tirar Foto" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.isUploudImagem}" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark mr5" action="#{RequerimentoControle.adicionarArquivoRequerimento}" value="Gravar" oncomplete="#{rich:component('panelArquivoRequerimento')}.hide()" render="tabMensagensAux, mrMsg, mensagemDetalhada, panelLinkArquivo, form:mensagem" image="#{resource['imagens/botaoGravar.png']}" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" value="Cancelar" action="#{RequerimentoControle.cancelar}" oncomplete="#{rich:component('panelArquivoRequerimento')}.hide();" render="formArquivo, panelLinkArquivo" title="Cancelar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTramiteDepartamentos" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Trâmite Previsto Execução Requerimento"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink17" />
+					<rich:componentControl target="panelTramiteDepartamentos" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTramiteDepartamentos">
+				<h:panelGroup width="100%">
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:outputText styleClass="tituloFormulario" value="Trâmite Previsto" />
+					</h:panelGroup>
+					<rich:dataTable id="resultadoTramitePrevisto" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipoRequerimentoDepartamentoVOs}" rows="5" var="tipoRequerimentoDepartamentoItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TipoRequerimento_departamentoResponsavel}" />
+							</f:facet>
+							<h:outputText value="#{tipoRequerimentoDepartamentoItens.departamento.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Prazo Execução" />
+							</f:facet>
+							<h:outputText value="#{tipoRequerimentoDepartamentoItens.prazoExecucao}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Observação" />
+							</f:facet>
+							<h:outputText rendered="#{tipoRequerimentoDepartamentoItens.observacaoObrigatoria}" value="Obrigatória" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Pode Indeferir" />
+							</f:facet>
+							<h:outputText rendered="#{tipoRequerimentoDepartamentoItens.podeIndeferirRequerimento}" value="Sim" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formTramiteDepartamentos:resultadoTramitePrevisto" maxPages="10" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup id="mensagemConsultaTramitePrevisto" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelLayoutRequerimento" shadowOpacity="true" width="420" height="80">
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkLayoutRequerimento" />
+					<rich:componentControl target="panelLayoutRequerimento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Requerimento_Layout}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLayout">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText value="#{msg_aplic.prt_Requerimento_Escolha_Layout}" styleClass="field control-label tituloCampos"></h:outputText>
+					<h:selectOneMenu id="tipoLayout" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.tipoLayout}">
+						<f:selectItems value="#{RequerimentoControle.listaSelectItemTipoLayout}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="form" value="Comprovante" icon="#{msg_botoes.btn_icon_gerar_relatorio_embutido}" styleClass="btn btn-primary" action="#{RequerimentoControle.realizarImpressaoPDFEdicao}" oncomplete="#{RequerimentoControle.download}; #{rich:component('panelLayoutRequerimento')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelGravadoComSucesso" shadowOpacity="true" width="450" height="120">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Dados Gravados"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formGravadoComSucesso">
+				<h:panelGroup width="100%" columnClasses="colunaAlinhamento" styleClass="tabForm">
+					<h:outputText style="word-wrap: break-word;text-align: justify;" value="#{RequerimentoControle.msgRequerimentoImagemGravadoComSucesso}" styleClass="tituloCamposNegrito" />
+					<h:outputText style="word-wrap: break-word;text-align: justify;" value="#{RequerimentoControle.msgRequerimentoPossuiValor}" styleClass="tituloCamposNegrito" />
+					<otm:spacer width="20px" />
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton value="Ok" icon="#{msg_botoes.btn_icon_ok_embutido}" styleClass="btn btn-info" immediate="true" oncomplete="#{rich:component('panelGravadoComSucesso')}.hide()" image="#{resource['/imagens/botaoOK.png']}" alt="OK" render="form, form:matricula" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelPagamento" width="900" height="650" domElementAttachment="parent">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Formas de Pagamento" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidePagamento" />
+					<rich:componentControl target="panelPagamento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPagamento">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText style="word-wrap: break-word;text-align: justify;" value="#{RequerimentoControle.msgRequerimentoImagemGravadoComSucesso}" styleClass="tituloCamposNegrito" />
+					<h:outputText style="word-wrap: break-word;text-align: justify;" value="#{RequerimentoControle.msgRequerimentoPossuiValor}" styleClass="tituloCamposNegrito" />
+					<otm:spacer width="20px" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton icon="#{msg_botoes.btn_icon_cartao_de_credito_embutido}" styleClass="btn btn-default" value="Cartão de Crédito" rendered="#{RequerimentoControle.requerimentoVO.permitirRecebimentoCartaoCreditoOnline}" action="#{RequerimentoControle.montarDadosPagamentoOnlineCartaoCredito}" disabled="#{RequerimentoControle.desativarBotaoCartaoCredito}" render="formPagamento" image="#{resource['/imagens/cartaoCredito.jpg']}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" style="font-size: 25px;" value="#{msg_aplic.prt_NegociacaoRecebimento_valorTotal}: " />
+					<otm:spacer width="5px" />
+					<h:outputText id="totalNegociacao2" styleClass="field control-label tituloCampos" style="font-size: 20px;" value="#{RequerimentoControle.negociacaoRecebimentoVO.valorTotal}">
+						<f:converter converterId="FormatadorNumerico" />
+					</h:outputText>
+					<h:outputText styleClass="field control-label tituloCampos" style="font-size: 25px;" rendered="#{RequerimentoControle.isApresentarResiduoPagamentoOnline}" value="#{msg_aplic.prt_NegociacaoRecebimento_valorRestante}: " />
+					<otm:spacer width="5px" rendered="#{RequerimentoControle.isApresentarResiduoPagamentoOnline}" />
+					<h:outputText id="residuo" rendered="#{RequerimentoControle.isApresentarResiduoPagamentoOnline}" style="font-size: 20px;" styleClass="field control-label tituloCampos" value="#{RequerimentoControle.negociacaoRecebimentoVO.residuo}">
+						<f:converter converterId="FormatadorNumerico" />
+					</h:outputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<otm:commandButton icon="#{msg_botoes.btn_icon_contrato_embutido}" styleClass="btn btn-default" value="Boleto Bancário" action="#{RequerimentoControle.realizarRecebimentoBoletoBancario}" oncomplete="#{RequerimentoControle.download}; #{rich:component('panelPagamento')}.hide()" render="formPagamento" image="#{resource['/imagens/boleto.jpg']}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" style="width:100%; height: 400px; overflow:auto;position: relative;top: 8px;">
+					<rich:list id="items" rowKeyVar="row" value="#{RequerimentoControle.negociacaoRecebimentoVO.formaPagamentoNegociacaoRecebimentoVOs}" rendered="#{RequerimentoControle.negociacaoRecebimentoVO.pagamentoCartaoCredito}" var="formaPagamentoItem" style="width:100%;">
+						<rich:panel header="Cartão de Crédito #{formaPagamentoItem.quantidadeCartao}" style="text-align:left;width:99%;height:100%;margin-top:5px;float:left;">
+							<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+								<otm:commandButton styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_remver_embutido}" value="Remover Cartão de Crédito" render="formPagamento" action="#{RequerimentoControle.removerCartaoCredito}" image="#{resource['/imagens/close.png']}" />
+							</h:panelGroup>
+							<h:panelGroup width="80%" style="float: left;" styleClass="colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada">
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NegociacaoRecebimento_operadora}" />
+									<h:selectOneMenu id="configuracaoFinanceiroCartao" styleClass="form-control camposObrigatorios" value="#{formaPagamentoItem.configuracaoFinanceiroCartaoVO.codigo}">
+										<f:selectItems value="#{formaPagamentoItem.listaSelectItemConfiguracaoFinanceiroCartao}" />
+										<a4j:ajax event="change" render="formPagamento:items" listener="#{RequerimentoControle.consultarConfiguracaoFinanceiroCartao}" />
+									</h:selectOneMenu>
+									<h:panelGroup>
+										<h:outputText styleClass="field control-label tituloCampos" value="Valor Mínimo para Recebimento R$" />
+										<h:outputText styleClass="field control-label tituloCampos" value="#{formaPagamentoItem.configuracaoFinanceiroCartaoVO.valorMinimoParaRecebimentoCartao}">
+											<f:converter converterId="FormatadorNumerico" />
+											<!-- 												<a4j:ajax event="change" render="formPagamento" /> -->
+										</h:outputText>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormaPagamentoNegociacaoRecebimento_valorRecebimento}" />
+									<h:inputText id="valor" size="20" maxlength="20" styleClass="form-control camposObrigatorios" value="#{formaPagamentoItem.valorRecebimento}">
+										<f:converter converterId="FormatadorNumerico" />
+										<a4j:ajax event="change" render="formPagamento" listener="#{RequerimentoControle.calcularTotalPago}" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4" id="nomeCartaoCredito">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormaPagamentoNegociacaoRecebimento_nomaCartaoCredito}" />
+									<h:inputText size="40" maxlength="40" styleClass="form-control camposObrigatorios" value="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.nomeCartaoCredito}">
+										<a4j:ajax event="change" render="nomeCartaoCredito" />
+									</h:inputText>
+									<h:graphicImage url="#{resource['/imagens/sucesso.gif']}" rendered="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.validarCampoNomeCartaoCredito}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" id="numeroCartaoCredito">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormaPagamentoNegociacaoRecebimento_numeroCartao}" />
+									<h:inputText size="20" maxlength="20" styleClass="form-control camposObrigatorios" value="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.numeroCartao}">
+										<a4j:ajax event="change" render="numeroCartaoCredito, formPagamento:panelGroupMensagens" listener="#{RequerimentoControle.validarNumeroCartaoCredito}" />
+									</h:inputText>
+									<h:graphicImage url="#{resource['/imagens/sucesso.gif']}" rendered="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.validarCampoNumeroCartaoCredito}" />
+								</h:panelGroup>
+								<h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2" id="mesValidade">
+										<h:outputText styleClass="field control-label tituloCampos" value="Mês Vencimento" />
+										<h:inputText size="2" maxlength="2" onkeydown="aceitarSomenteValorDecimal(this)" styleClass="form-control camposObrigatorios" value="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.mesValidade}">
+											<a4j:ajax event="change" render="mesValidade" />
+										</h:inputText>
+										<h:graphicImage url="#{resource['/imagens/sucesso.gif']}" rendered="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.validarCampoMesVencimentoCartaoCredito}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2" id="anoValidade">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormaPagamentoNegociacaoRecebimento_anoVencimento}" />
+										<h:inputText size="4" maxlength="4" onkeydown="aceitarSomenteValorDecimal(this)" styleClass="form-control camposObrigatorios" value="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.anoValidade}">
+											<a4j:ajax event="change" render="anoValidade" />
+										</h:inputText>
+										<h:graphicImage url="#{resource['/imagens/sucesso.gif']}" rendered="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.validarCampoAnoVencimentoCartaoCredito}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2" id="codigoVerificacao">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormaPagamentoNegociacaoRecebimento_codigoDeVerificacao}" />
+										<h:inputText size="3" maxlength="3" onkeydown="aceitarSomenteValorDecimal(this)" styleClass="form-control camposObrigatorios" value="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.codigoVerificacao}">
+											<a4j:ajax event="change" render="codigoVerificacao, imagensCartao" listener="#{RequerimentoControle.esconderDicaCVCartaoCredito}" />
+											<a4j:ajax event="click" render="imagensCartao" listener="#{RequerimentoControle.apresentarDicaCVCartaoCredito}" />
+										</h:inputText>
+										<h:graphicImage url="#{resource['/imagens/sucesso.gif']}" rendered="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.validarCampoCVCartaoCredito}" />
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup width="20%" id="imagensCartao" rendered="#{formaPagamentoItem.configuracaoFinanceiroCartaoVO.codigo ne 0}" styleClass="colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada">
+								<h:graphicImage id="imgIcone3" rendered="#{!formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.apresentarDicaCVCartaoCredito}" url="#{resource['/imagens/cartao/#{formaPagamentoItem.configuracaoFinanceiroCartaoVO.operadoraCartaoVO.operadoraCartaoCreditoEnum.caminhoImagem}']}" width="150" height="80" />
+								<h:graphicImage id="imgIcone5" rendered="#{formaPagamentoItem.formaPagamentoNegociacaoRecebimentoCartaoCreditoVO.apresentarDicaCVCartaoCredito}" url="#{resource['/imagens/cartao/exemploCVC.png']}" width="150" height="80" />
+							</h:panelGroup>
+						</rich:panel>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px" rendered="#{row eq  RequerimentoControle.negociacaoRecebimentoVO.sizeListaFormaRecebimentoCartaoCreditoVOs}">
+							<otm:commandButton style="margin-right:5px" icon="fas fa-usd-circle" styleClass="btn btn-default" value="Realizar Recebimento" action="#{RequerimentoControle.realizarRecebimentoCartaoCredito}" rendered="#{RequerimentoControle.negociacaoRecebimentoVO.pagamentoCartaoCredito}" oncomplete="#{RequerimentoControle.modalPagamentoOnline}; #{RequerimentoControle.modalConfirmacaoPagamento}" render="panelGroupMensagens, form, formConfirmacaoPagamento" image="#{resource['/imagens/pagar.png']}" />
+							<otm:commandButton icon="#{msg_botoes.btn_icon_cartao_de_credito_embutido}" styleClass="btn btn-default" value="Pagar Com Mais de Um Cartão" action="#{RequerimentoControle.adicionarNovoCartaoCredito}" rendered="#{RequerimentoControle.negociacaoRecebimentoVO.pagamentoCartaoCredito}" render="formPagamento" image="#{resource['/imagens/pagarComMaisDeUmCartao.png']}" />
+						</h:panelGroup>
+					</rich:list>
+				</h:panelGroup>
+				<h:panelGroup id="panelGroupMensagens">
+					<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelConfirmacaoPagamento" width="650" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Confirmação de pagamento" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkConfirmacaoPagamento" />
+					<rich:componentControl target="panelConfirmacaoPagamento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConfirmacaoPagamento">
+				<h:panelGroup width="100%">
+					<h:panelGroup layout="block" style="text-align: center;">
+						<h:graphicImage id="imgIcone7" url="#{resource['/imagens/dadosGravadosComSucesso.png']}" />
+						<h:outputText styleClass="field control-label tituloCampos" style="font-size: 25px;position:relative;top:-17px;" value="Pagamento Realizado com Sucesso!" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton icon="#{msg_botoes.btn_icon_imprimir_embutido}" styleClass="btn btn-primary" value="Imprimir Comprovante" action="#{RequerimentoControle.imprimirComprovanteRecebimento}" oncomplete="#{rich:component('panelConfirmacaoPagamento')}.hide(); #{RequerimentoControle.comprovanteRecebimentoRelControle.download}" render="form" image="#{resource['/imagens/botaoEmitirComprovante.png']}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAutorizarPagamento" shadowOpacity="true" width="800" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Autorizar Pagamento" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAutorizarPagamento">
+				<h:panelGroup rendered="#{!RequerimentoControle.permitirAutorizarPagamento}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="Informe o username e senha do usuário que tenha permissão para realizar esta operação." />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+						<h:inputText id="usernameLiberar" size="20" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.usuarioLiberarOperacaoFuncionalidade}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_msg_senha}" />
+						<h:inputSecret id="senhaLiberar" size="20" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.senhaLiberarOperacaoFuncionalidade}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_dataVencimentoContaReceber}" />
+					<otm:calendar id="dataVencimentoContaReceber2" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputSize="10" value="#{RequerimentoControle.requerimentoVO.dataVencimentoContaReceber}" />
+				</h:panelGroup>
+				<h:outputText styleClass="field control-label tituloCampos" value="Gostaria de Confirmar a Autorização de Pagamento deste Requerimento?" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton action="#{RequerimentoControle.realizarAutorizacaoPagamentoRequerimento}" render="form" execute="formAutorizarPagamento" image="#{resource['/imagens/botaoAutorizacaoPgto.png']}" value="Autorização Pagamento Requerimento" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" oncomplete="#{RequerimentoControle.oncompleteModal}" alt="Gravar" />
+					<otm:spacer width="5px" />
+					<otm:commandButton execute="@this" render="dataVencimentoContaReceber" action="#{RequerimentoControle.cancelarAutorizacaoPagamentoRequerimento}" styleClass="btn btn-danger" value="Cancelar Autorização Pagamento Requerimento" icon="#{msg_botoes.btn_icon_cancelar_embutido}" oncomplete="#{rich:component('panelAutorizarPagamento')}.hide()" alt="Fechar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDefIndefSolicitacaoIsencao" shadowOpacity="true" width="600" height="300" autosized="false">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Deferir/Indeferir Solicitação Isenção Pagamento" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDefIndefSolicitacaoIsencao">
+				<h:panelGroup rendered="#{!RequerimentoControle.permitirUsuarioDeferirIndeferirSolicitacaoIsencaoTaxa}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Informe o username e senha do usuário que tenha permissão para realizar esta operação." />
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+						<h:inputText id="usernameLiberar" autocomplete="off" size="20" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.usuarioLiberarOperacaoFuncionalidade}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_msg_senha}" />
+						<h:inputSecret id="senhaLiberar" autocomplete="off" size="20" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.senhaLiberarOperacaoFuncionalidade}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_motivo}" />
+					<h:inputTextarea styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.requerimentoVO.motivoDeferimentoIndeferimentoIsencaoTaxa}" />
+					<h:outputText style="width:100%" styleClass="field control-label tituloCampos" value="* Obrigatório Apenas Para Indeferir" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagem2" width="100%" columnClasses="colunaEsquerda">
+					<h:outputText styleClass="field control-label mensagem col-md-12" value="#{RequerimentoControle.mensagem}" />
+					<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{RequerimentoControle.mensagemDetalhada}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton id="btndeftaxa" action="#{RequerimentoControle.realizarDeferimentoSolicitacaoIsencaoTaxa}" render="form, mensagem2" execute="formDefIndefSolicitacaoIsencao" image="#{resource['/imagens/botaoDeferir.png']}" value="Deferir" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" oncomplete="#{RequerimentoControle.oncompleteModal}" alt="Deferir" />
+					<otm:spacer width="5px" />
+					<otm:commandButton id="btnindeftaxa" execute="formDefIndefSolicitacaoIsencao" render="form, mensagem2" action="#{RequerimentoControle.realizarIndeferimentoSolicitacaoIsencaoTaxa}" image="#{resource['/imagens/botaoIndeferir.png']}" value="Indeferir" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" oncomplete="#{RequerimentoControle.oncompleteModal}" alt="Indeferir" />
+					<otm:spacer width="5px" />
+					<otm:commandButton id="btncancelarindeftaxa" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelDefIndefSolicitacaoIsencao')}.hide()" alt="Fechar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelSolicitacaoIsencao" width="650" onshow="focus('formSolicitacaoIsencao:justificativaSolicitacaoIsencao')" overlapEmbedObjects="true" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Solicitar Isenção de Pagamento" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formSolicitacaoIsencao">
+				<h:panelGroup id="panelGroupMensagens">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText value="#{RequerimentoControle.requerimentoVO.tipoRequerimento.orientacaoDocumentoComprovanteIsencaoTaxaRequerimento}" styleClass="tituloCamposNegrito" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText value="#{msg_aplic.prt_Requerimento_justificativa}" styleClass="field control-label tituloCampos" />
+						<h:inputTextarea id="justificativaSolicitacaoIsencao" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.requerimentoVO.justificativaSolicitacaoIsencao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.solicitarAnexoComprovanteIsencaoTaxaRequerimento}">
+						<h:outputText value="#{msg_aplic.prt_Requerimento_comprovante}" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.solicitarAnexoComprovanteIsencaoTaxaRequerimento}" styleClass="field control-label tituloCampos" />
+						<rich:fileUpload acceptedTypes="PDF, pdf, png, jpg, jpeg, gif, bitmap, csv, xls, xlsX, doc, docx, txt, PNG, JPEG, JPG, GIF, BITMAP, CSV, XLS, XLSX, DOC, DOCX, TXT" listHeight="15" listWidth="600" noDuplicate="true" fileUploadListener="#{RequerimentoControle.upLoadComprovanteSolicitacaoIsencaoTaxa}" maxFilesQuantity="1" addLabel="Selecionar Arquivo" clearAllLabel="Cancelar" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo 2MB" uploadLabel="Enviar" serverErrorLabel="Tamanho Máximo Permitido 2MB" id="uploadIsencao" immediateUpload="true" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.solicitarAnexoComprovanteIsencaoTaxaRequerimento}">
+							<a4j:ajax event="uploadcomplete" render="formConfirmacaoPagamento" />
+						</rich:fileUpload>
+						<h:outputText value="#{RequerimentoControle.requerimentoVO.comprovanteSolicitacaoIsencao.descricao}" styleClass="field control-label tituloCampos" />
+					</h:panelGroup>
+					<h:panelGroup id="mensagemConsultaSolRep" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+						<otm:commandButton style="margin-right:5px" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" value="Gravar" action="#{RequerimentoControle.realizarSolicitacaoIsencaoTaxa}" oncomplete="#{RequerimentoControle.oncompleteModal}" render="formSolicitacaoIsencao, form" image="#{resource['/imagens/botaoSolicitarIsencao.png']}" execute="formSolicitacaoIsencao" />
+						<otm:commandButton icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" value="Cancelar Solicitação" action="#{RequerimentoControle.cancelarSolicitacaoIsencaoTaxa}" oncomplete="#{rich:component('panelSolicitacaoIsencao')}.hide()" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{RequerimentoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<rich:tabPanel width="100%" activeItem="#{RequerimentoControle.abaAtiva}" switchType="ajax">
+				<rich:tab id="richTab" name="richTab" render="form" header="Dados Básicos" action="#{RequerimentoControle.navegarAba('richTab', 'requerimentoProfessorForm.xhtml')}">
+					<h:panelGroup id="dadosAba1" layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-1">
+							<h:outputText styleClass="field control-label tituloCampos" value="Requerimento" />
+							<h:inputText id="codigo" required="true" size="8" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.codigo}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-5">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_unidadeEnsino}" />
+							<h:selectOneMenu id="unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.requerimentoVO.unidadeEnsino.codigo}" disabled="#{RequerimentoControle.isExisteUnidadeEnsinoLogada or !RequerimentoControle.requerimentoVO.novoObj}">
+								<a4j:ajax event="change" listener="#{RequerimentoControle.montarListaSelectItemTipoRequerimento}" render="form" />
+								<f:selectItems value="#{RequerimentoControle.listaSelectItemUnidadeEnsino}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="Data" />
+							<h:inputText readonly="true" id="data" onkeypress="return mascara(this.form, 'form:data', '99/99/9999', event);" required="true" size="10" maxlength="10" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.data}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:inputText>
+							<h:message for="data" styleClass="field control-label mensagemDetalhada col-md-12" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_tipoRequerimento}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:selectOneMenu id="tipoRequerimento" rendered="#{RequerimentoControle.requerimentoVO.novoObj}" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.requerimentoVO.tipoRequerimento.codigo}" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}">
+									<a4j:ajax event="change" listener="#{RequerimentoControle.selecionarTipoRequerimento(true)}" render="form" />
+									<f:selectItems value="#{RequerimentoControle.listaSelectItemTipoRequerimento}" />
+								</h:selectOneMenu>
+								<h:inputText styleClass="form-control camposSomenteLeitura" rendered="#{!RequerimentoControle.requerimentoVO.novoObj}" readonly="true" value="#{RequerimentoControle.requerimentoVO.tipoRequerimento.nome}" />
+								<span class="#{RequerimentoControle.requerimentoVO.novoObj ? 'append-icon right mr10' : 'append-icon right'}"> <otm:commandIcon id="atualizar_tipoRequerimento" action="#{RequerimentoControle.montarListaSelectItemTipoRequerimento}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" render="form:tipoRequerimento" rendered="#{RequerimentoControle.requerimentoVO.novoObj}" /> <h:outputText rendered="#{RequerimentoControle.requerimentoVO.exigePagamento}" value="#{RequerimentoControle.requerimentoVO.numeroVia}#{msg_aplic.prt_Requerimento_via}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and !empty RequerimentoControle.requerimentoVO.matricula.matricula}">
+							<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and !empty RequerimentoControle.requerimentoVO.matricula.matricula}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_matricula}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and !empty RequerimentoControle.requerimentoVO.matricula.matricula}">
+								<h:inputText id="matricula" size="25" maxlength="25" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.matricula.matricula}">
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-8" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and !empty RequerimentoControle.requerimentoVO.matricula.matricula}">
+								<h:inputText id="matriculaPessoa" styleClass="form-control camposSomenteLeitura" readonly="true" maxlength="50" value="#{RequerimentoControle.requerimentoVO.matricula.aluno.nome}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and !RequerimentoControle.isRequerimentoPessoaLogada and empty RequerimentoControle.requerimentoVO.matricula.matricula}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_pessoa}" />
+							<h:inputText id="nomePessoa" styleClass="form-control camposSomenteLeitura" readonly="true" maxlength="50" value="#{RequerimentoControle.requerimentoVO.pessoa.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_situacao}" />
+							<h:inputText size="35" maxlength="30" id="situacao" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.situacao_Apresentar}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_situacaoFinanceira}" />
+							<h:inputText id="situacaoFinanceira" size="32" maxlength="50" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{RequerimentoControle.requerimentoVO.situacaoFinanceira_Apresentar}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{!empty RequerimentoControle.requerimentoVO.tipoRequerimento.orientacao}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TipoRequerimento_orientacao}" />
+							<h:inputTextarea rows="6" readonly="true" styleClass="form-control campos" value="#{RequerimentoControle.requerimentoVO.tipoRequerimento.orientacao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RequerimentoControle.requerimentoVO.apresentarDadosSolicitacaoIsencaoTaxa}">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Requerimento_situacaoSolicitacaoIsencao}" rendered="#{RequerimentoControle.requerimentoVO.apresentarDadosSolicitacaoIsencaoTaxa}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.situacaoIsencaoTaxa.valorApresentar}" />
+								<span class="append-icon right"> <otm:commandIcon oncomplete="location.href='../../DownloadSV'" tooltip="#{msg_aplic.prt_Requerimento_comprovante}  Isenção Taxa Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido}" image="#{resource['imagens/botaoDownload.png']}" action="#{RequerimentoControle.downloadComprovanteSolicitacaoIsencaoTaxa}" rendered="#{RequerimentoControle.requerimentoVO.comprovanteSolicitacaoIsencao.codigo > 0}" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_dollar_embutido}" action="#{RequerimentoControle.limparUsuarioSenhaOperacaoFuncionalidade}" rendered="#{RequerimentoControle.requerimentoVO.aguardandoDeferimentoIndeferimentoSolicitacaoIsencaoTaxa and !RequerimentoControle.isRequerimentoPessoaLogada}" oncomplete="#{rich:component('panelDefIndefSolicitacaoIsencao')}.show()" tooltip="Deferir/Indeferir Isenção Pagamento" render="formDefIndefSolicitacaoIsencao" image="#{resource['./imagens/botaoDeferirIndeferirIsencaoTaxa.png']}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RequerimentoControle.requerimentoVO.apresentarDadosSolicitacaoIsencaoTaxa}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_justificativa} Isenção Taxa" />
+							<h:inputTextarea readonly="true" styleClass="form-control campos" value="#{RequerimentoControle.requerimentoVO.justificativaSolicitacaoIsencao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RequerimentoControle.requerimentoVO.apresentarDadosConfirmacaoSolicitacaoIsencaoTaxa}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{RequerimentoControle.requerimentoVO.labelConfirmacaoSolicitacaoIsencaoTaxa}" />
+							<h:inputTextarea readonly="true" rows="3" styleClass="form-control campos" value="#{RequerimentoControle.requerimentoVO.motivoDeferimentoIndeferimentoIsencaoTaxa}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{RequerimentoControle.requerimentoVO.responsavelDeferimentoIndeferimentoIsencaoTaxa.codigo > 0}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{RequerimentoControle.requerimentoVO.labelResponsavelConfirmacaoSolicitacaoIsencaoTaxa}" />
+							<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.responsavelDeferimentoIndeferimentoIsencaoTaxa.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RequerimentoControle.requerimentoVO.responsavelDeferimentoIndeferimentoIsencaoTaxa.codigo > 0}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{RequerimentoControle.requerimentoVO.labelDataConfirmacaoSolicitacaoIsencaoTaxa}" />
+							<h:inputText styleClass="form-control camposSomenteLeitura" readonly="true" value="#{RequerimentoControle.requerimentoVO.dataDeferimentoIndeferimentoIsencaoTaxa}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{RequerimentoControle.labelDepartamento}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText maxlength="50" readonly="true" id="departamentoResponsavel_nomeDepartamento" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.departamentoResponsavel.nome}" />
+								<span class="append-icon right"> <otm:commandIcon rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tramitaEntreDepartamentos}" oncomplete="#{rich:component('panelTramiteDepartamentos')}.show();" action="#{RequerimentoControle.prepararHistoricoTramiteDepartamentos}" render="formTramiteDepartamentos" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="Visualizar Trâmite Previsto Entre Departamentos para Execução do Requerimento" /> <otm:commandIcon rendered="#{RequerimentoControle.requerimentoVO.existeQuestionarioDepartamentoAtual}" render="formQuestionarioRequerimentoHistorico" oncomplete="#{RequerimentoControle.acaoModalQuestionarioRequerimentoHistorico}" action="#{RequerimentoControle.visualizarQuestionarioTramiteAtual}" icon="#{msg_botoes.btn_icon_verificar_embutido}" tooltip="Visualizar Questionario Tramite Atual" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="Func. Responsável" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText maxlength="50" readonly="true" id="nomeFuncionario" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.funcionarioVO.pessoa.nome}" />
+								<span class="append-icon right"> <otm:commandIcon rendered="#{LoginControle.permissaoAcessoMenuVO.permiteAlterarFuncionarioResponsavel}" id="funcionarioResponsavel" focus="nome" tooltip="Alterar Func. Responsável" render="formFuncionario" oncomplete="#{rich:component('panelFuncionario')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isPermiteInformarDisciplina}" id="disciplina">
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isPermiteInformarDisciplina}" styleClass="field control-label tituloCampos" value="Disciplina" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText rendered="#{RequerimentoControle.disciplinaVazia or !RequerimentoControle.requerimentoVO.tipoPessoaAluno}" readonly="true" maxlength="100" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.disciplina.nome}">
+								</h:inputText>
+								<h:selectOneMenu styleClass="form-control camposObrigatorios" rendered="#{!RequerimentoControle.disciplinaVazia and RequerimentoControle.requerimentoVO.tipoPessoaAluno}" value="#{RequerimentoControle.requerimentoVO.disciplina.codigo}">
+									<a4j:ajax event="change" listener="#{RequerimentoControle.executarVerificacaoProfessorMinistrouAula}" render="form:dadosAba1, form:pgBotoes" execute="form:dadosAba1, form:pgBotoes" />
+									<f:selectItems value="#{RequerimentoControle.listaSelectItemDisciplina}" />
+								</h:selectOneMenu>
+								<span class="append-icon right mr10"> <otm:commandIcon icon="#{msg_botoes.btn_icon_lupa_embutido}" rendered="#{RequerimentoControle.disciplinaVazia and !RequerimentoControle.requerimentoVO.tipoPessoaAluno}" oncomplete="#{rich:component('panelDisciplina')}.show()" render="formDisciplina" tooltip="Consultar Disciplina" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_limpar_embutido}" rendered="#{RequerimentoControle.disciplinaVazia and !RequerimentoControle.requerimentoVO.tipoPessoaAluno}" render="form:disciplina" action="#{RequerimentoControle.limparDisciplina}" tooltip="Limpar Dados Disciplina" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_gravar_embutido}" rendered="#{!RequerimentoControle.disciplinaVazia and RequerimentoControle.requerimentoVO.tipoPessoaAluno and RequerimentoControle.requerimentoVO.codigo gt 0}" action="#{RequerimentoControle.gravarDisciplina}" tooltip="Gravar Disciplina" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{(RequerimentoControle.requerimentoVO.novoObj  and RequerimentoControle.requerimentoVO.tipoRequerimento.permiteIncluirDisciplinaPorEquivalencia and RequerimentoControle.requerimentoVO.disciplina.codigo ne 0) or (!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.disciplinaPorEquivalencia)}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Incluir Disciplina Por Equivalência"></h:outputText>
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" value="#{RequerimentoControle.requerimentoVO.disciplinaPorEquivalencia}">
+									<a4j:ajax event="change" execute="@this" render="todosBotoes, novoRequerimento" listener="#{RequerimentoControle.montarListaMapaEquivalenciaDisciplinaIncluir}" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{RequerimentoControle.requerimentoVO.disciplinaPorEquivalencia}">
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.disciplinaPorEquivalencia}" styleClass="field control-label tituloCampos" value="Disciplina Por Equivalência"></h:outputText>
+							<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.disciplinaPorEquivalencia}" value="#{RequerimentoControle.requerimentoVO.mapaEquivalenciaDisciplinaCursadaVO.disciplinaApresentar}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.turmaReposicao.codigo ne 0}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Turma Reposição" />
+							<h:inputText value="#{RequerimentoControle.requerimentoVO.turmaReposicao.identificadorTurma}" readonly="true" styleClass="form-control camposSomenteLeitura" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.turmaReposicao.codigo ne 0}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Unidade Ensino Reposição" />
+							<h:inputText value="#{RequerimentoControle.requerimentoVO.turmaReposicao.unidadeEnsino.nome}" readonly="true" styleClass="form-control camposSomenteLeitura" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.salaLocalAulaVO.codigo ne 0}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Local Aula" />
+							<h:inputText value="#{RequerimentoControle.requerimentoVO.salaLocalAulaVO.localAula.local}" readonly="true" styleClass="form-control camposSomenteLeitura" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.turmaReposicao.codigo ne 0 and RequerimentoControle.requerimentoVO.dataInicioAula != null ? 'col-md-2' : 'col-md-6'}" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.salaLocalAulaVO.codigo ne 0}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Sala Aula" />
+							<h:inputText value="#{RequerimentoControle.requerimentoVO.salaLocalAulaVO.sala}" readonly="true" styleClass="form-control camposSomenteLeitura" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.turmaReposicao.codigo ne 0 and RequerimentoControle.requerimentoVO.dataInicioAula != null}">
+							<h:outputText rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.dataInicioAula != null}" styleClass="field control-label tituloCampos" value="Período Aula" />
+							<h:inputText styleClass="form-control camposSomenteLeitura" readonly="true" value="#{RequerimentoControle.requerimentoVO.dataInicioAula}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.turmaReposicao.codigo ne 0 and RequerimentoControle.requerimentoVO.dataInicioAula != null}">
+							<h:outputText value=" à " />
+							<h:inputText styleClass="form-control camposSomenteLeitura" readonly="true" value="#{RequerimentoControle.requerimentoVO.dataTerminoAula}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoReposicao and RequerimentoControle.requerimentoVO.turmaReposicao.codigo ne 0 and !empty RequerimentoControle.requerimentoVO.mensagemChoqueHorario}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Choque Horário" />
+							<h:inputTextarea value="#{RequerimentoControle.requerimentoVO.mensagemChoqueHorario}" readonly="true" styleClass="form-control camposSomenteLeitura" />
+						</h:panelGroup>
+						<!-- 						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo}" id="curso"> -->
+						<!-- 							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo}" styleClass="field control-label tituloCampos" value="Curso" /> -->
+						<!-- 							<h:panelGroup layout="block" styleClass="col-md-12 pn"> -->
+						<!-- 								<h:inputText readonly="true" maxlength="100" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.curso.nome}"> -->
+						<!-- 								</h:inputText> -->
+						<!-- 								<span class="append-icon right"> <otm:commandIcon styleClass="#{msg_botoes.btn_icon_lupa_embutido}" rendered="#{RequerimentoControle.requerimentoVO.novoObj}" oncomplete="#{rich:component('panelCurso')}.show();" style="position:relative; top:4px; left:-11px;" render="formCurso" alt="Consultar Curso" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_limpar_embutido}" rendered="#{RequerimentoControle.requerimentoVO.novoObj}" render="form:curso, form:turno" style="position:relative; top:4px; left:-21px;" action="#{RequerimentoControle.limparCurso}" alt="Limpar Dados Curso" /> -->
+						<!-- 								</span> -->
+						<!-- 							</h:panelGroup> -->
+						<!-- 						</h:panelGroup> -->
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo}" id="turno">
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo}" styleClass="field control-label tituloCampos" value="Turno" />
+							<h:inputText readonly="true" maxlength="100" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.turno.nome}">
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RequerimentoControle.requerimentoVO.isIndeferido}">
+							<h:outputText styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.requerimentoVO.isIndeferido}" value="#{msg_aplic.prt_Requerimento_motivoIndeferimento}" />
+							<h:inputTextarea styleClass="form-control campos" rendered="#{RequerimentoControle.requerimentoVO.isIndeferido}" value="#{RequerimentoControle.requerimentoVO.motivoIndeferimento}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_observacao}" />
+							<h:inputTextarea id="observacao" rows="3" styleClass="form-control campos" value="#{RequerimentoControle.requerimentoVO.observacao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RequerimentoControle.requerimentoVO.isDeferido}">
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.isDeferido}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_motivoDeferimento}" />
+							<h:inputTextarea rendered="#{RequerimentoControle.requerimentoVO.isDeferido}" value="#{RequerimentoControle.requerimentoVO.motivoDeferimento}" styleClass="form-control campos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" id="panelLinkArquivo" rendered="#{RequerimentoControle.isPermitirUploadArquivo}">
+							<h:outputText styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo eq 'AD'}" value="Documento Comprobratório - Histórico/Diploma" />
+							<h:outputText styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo ne 'AD'}" value="Arquivo Anexo" />
+							<h:panelGroup layout="block" styleClass="form-control" rendered="#{RequerimentoControle.isPermitirUploadArquivo}">
+								<h:outputText rendered="#{RequerimentoControle.requerimentoVO.isPossuiArquivo}" styleClass="tituloCampos ml-2" value="#{RequerimentoControle.requerimentoVO.arquivoVO.nome}" />
+								<otm:commandIcon id="upload" icon="#{msg_botoes.btn_icon_upload_embutido} iconePequeno float-right" render="formArquivoRequerimento, arquivoUpload, mensagem" tooltip="Upload Arquivo" oncomplete="#{RequerimentoControle.abrirModalUpload}" action="#{RequerimentoControle.validarPessoaSelecionada}" rendered="#{RequerimentoControle.isNaoExisteArquivo}" styleClass="mr5" />
+								<a4j:commandLink id="downloadArquivoRequerimentoVisaoAdm" styleClass="mr5 float-right" oncomplete="#{RequerimentoControle.requerimentoVO.arquivoVO.servidorArquivoOnline eq 'APACHE'} ? location.href='../DownloadSV' : abrirPopup('../DownloadSV', 'DownloadSV_#{RequerimentoControle.requerimentoVO.arquivoVO.codigo}',950,595)" title="Download Arquivo" action="#{RequerimentoControle.realizarDownloadArquivo(RequerimentoControle.requerimentoVO.arquivoVO)}" rendered="#{RequerimentoControle.requerimentoVO.isPossuiArquivoBanco}">
+									<span class="#{msg_botoes.btn_icon_download_embutido} iconePequeno " />
+								</a4j:commandLink>
+								<otm:commandIcon icon="#{msg_botoes.btn_icon_remover_embutido} iconePequeno text-danger float-right" styleClass="mr5" id="removerItemArquivo" oncomplete="#{rich:component('panelExcluir')}.show()" render="form" rendered="#{RequerimentoControle.requerimentoVO.isPossuiArquivo}" tooltip="Excluir Arquivo" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup id="panelCep" rendered="#{RequerimentoControle.isPermitirInformarEnderecoEntrega and RequerimentoControle.isRequerimentoPessoaLogada}">
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="tituloCampos" rendered="#{RequerimentoControle.isPermitirInformarEnderecoEntrega and RequerimentoControle.isRequerimentoPessoaLogada}" value="#{msg_aplic.prt_Pessoa_CEP}" />
+								<a4j:region id="regionCep">
+									<h:inputText id="CEP" onkeypress="return mascara(this.form, 'form:CEP', '99.999-999', event);" size="10" maxlength="10" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.requerimentoVO.CEP}">
+										<a4j:ajax event="change" listener="#{RequerimentoControle.carregarEnderecoPessoa}" render="panelCep, panelSetor, panelComplemento, cidade" />
+									</h:inputText>
+								</a4j:region>
+							</h:panelGroup>
+							<a4j:status for="regionCep">
+								<f:facet name="start">
+									<h:panelGroup>
+										<h:graphicImage width="15px" value="#{resource['/imagens/ajax.gif']}" />
+									</h:panelGroup>
+								</f:facet>
+							</a4j:status>
+							<f:verbatim>
+								<h:outputText value="  " />
+							</f:verbatim>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pessoa_endereco}" />
+								<f:verbatim>
+									<h:outputText value="  " />
+								</f:verbatim>
+								<h:inputText id="endereco" size="50" maxlength="100" styleClass="form-control campos" value="#{RequerimentoControle.requerimentoVO.endereco}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup id="panelSetor" rendered="#{RequerimentoControle.isPermitirInformarEnderecoEntrega and RequerimentoControle.isRequerimentoPessoaLogada}">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.isPermitirInformarEnderecoEntrega and RequerimentoControle.isRequerimentoPessoaLogada}" value="#{msg_aplic.prt_Pessoa_setor}" />
+								<h:inputText id="setor" size="54" maxlength="50" styleClass="form-control campos" value="#{RequerimentoControle.requerimentoVO.setor}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_numero}" />
+								<h:inputText id="numero" size="7" maxlength="20" styleClass="form-control campos" value="#{RequerimentoControle.requerimentoVO.numero}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup id="panelComplemento" rendered="#{RequerimentoControle.isPermitirInformarEnderecoEntrega and RequerimentoControle.isRequerimentoPessoaLogada}">
+							<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.isPermitirInformarEnderecoEntrega and RequerimentoControle.isRequerimentoPessoaLogada}">
+								<h:outputText styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.isPermitirInformarEnderecoEntrega and RequerimentoControle.isRequerimentoPessoaLogada}" value="#{msg_aplic.prt_Pessoa_complemento}" />
+								<h:inputText id="complemento" size="30" maxlength="100" styleClass="form-control campos" value="#{RequerimentoControle.requerimentoVO.complemento}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.isPermitirInformarEnderecoEntrega}">
+								<h:outputText styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.isPermitirInformarEnderecoEntrega}" value="#{msg_aplic.prt_Pessoa_cidade}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:inputText readonly="true" id="cidade" size="38" maxlength="30" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.cidade.nome}" />
+									<span class="append-icon right"> <otm:commandIcon id="consultaCidades" focus="nomeCidade" tooltip="Localizar Cidade" render="formCidade" oncomplete="#{rich:component('panelCidade')}.show()" action="#{RequerimentoControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" immediate="true" />
+									</span>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos mr2" value="#{msg_aplic.prt_Requerimento_dataPrevistaFinalizacao}" />
+							<otm:commandIcon rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.tipoRequerimento.permitirAlterarDataPrevisaoConclusaoRequerimento and RequerimentoControle.isResponsavelPessoaLogada}" action="#{RequerimentoControle.alterarDataPrevistaFinalizacaoRequerimento}" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" tooltip="Alterar Data Prevista Finalização Requerimento" image="#{resource['/imagens/iconeSalvar.gif']}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+								<otm:calendar id="dataPrevistaFinalizacao" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" disabled="#{!RequerimentoControle.requerimentoVO.tipoRequerimento.permitirAlterarDataPrevisaoConclusaoRequerimento or !RequerimentoControle.isResponsavelPessoaLogada}" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputSize="10" required="true" value="#{RequerimentoControle.requerimentoVO.dataPrevistaFinalizacao}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RequerimentoControle.requerimentoVO.dataFinalizacao ne null}">
+							<h:outputText styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.requerimentoVO.dataFinalizacao ne null}" value="#{msg_aplic.prt_Requerimento_dataFinalizacao}" />
+							<h:inputText id="dataFinalizacao" readonly="true" rendered="#{RequerimentoControle.requerimentoVO.dataFinalizacao ne null}" onkeypress="return mascara(this.form, 'form:dataFinalizacao', '99/99/9999', event);" size="10" maxlength="10" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.dataFinalizacao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RequerimentoControle.isPossuiValor}">
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.exigePagamento}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_valor}" />
+							<h:inputText id="valor" required="true" readonly="true" size="10" maxlength="10" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.valor}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{RequerimentoControle.requerimentoVO.isApresentarEmitirBoleto}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_dataVencimentoContaReceber}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText id="dataVencimentoContaReceber" styleClass="form-control camposSomenteLeitura" size="10" readonly="true" value="#{RequerimentoControle.requerimentoVO.dataVencimentoContaReceber}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:inputText>
+								<span class="append-icon right"> <h:outputLink value="../BoletoBancarioSV?codigoContaReceber=#{RequerimentoControle.requerimentoVO.contaReceber}&amp;titulo=requerimento" rendered="#{RequerimentoControle.requerimentoVO.isApresentarEmitirBoleto and RequerimentoControle.isRequerimentoPessoaLogada}">
+										<span class="#{msg_botoes.btn_icon_download_embutido} fs11"></span>
+									</h:outputLink> <otm:commandIcon oncomplete="#{rich:component('panelEmissaoBloqueada')}.show()" tooltip="Imprimir Boleto" render="formEmissaoBloqueada" icon="#{msg_botoes.btn_icon_imprimir_embutido}" image="#{resource['./imagens/botaoEmitirBoleto2.png']}" rendered="#{RequerimentoControle.requerimentoVO.contaReceberVO.codigo ne 0 and RequerimentoControle.requerimentoVO.contaReceberVO.situacao eq 'AR' and !RequerimentoControle.requerimentoVO.contaReceberVO.permiteImprimirBoleto and !RequerimentoControle.requerimentoVO.contaReceberVO.permiteImprimirBoletoLinkBanco and RequerimentoControle.requerimentoVO.situacaoFinanceira ne 'AP' and RequerimentoControle.isRequerimentoPessoaLogada}" /> <otm:commandIcon action="#{RequerimentoControle.realizarDefinicaoVencimentoContaReceberRequerimento}" oncomplete="#{rich:component('panelAutorizarPagamento')}.show()" title="Autorizar Pagamento" render="formAutorizarPagamento" icon="#{msg_botoes.btn_icon_pagamento_embutido}" tooltip="Autorizar Pagamento"
+										rendered="#{RequerimentoControle.requerimentoVO.apresentarBotaoAutorizarPagamento and !RequerimentoControle.isRequerimentoPessoaLogada}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.apresentarSituacaoTramite}">
+							<h:outputText styleClass="field control-label tituloCampos" rendered="#{RequerimentoControle.apresentarSituacaoTramite}" value="#{msg_aplic.prt_TipoRequerimento_situacao} Trâmite" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{RequerimentoControle.apresentarSituacaoTramite}">
+								<h:selectOneMenu id="sitTramita" styleClass="form-control campos" value="#{RequerimentoControle.requerimentoHistoricoVO.situacaoRequerimentoDepartamentoVO.codigo}" disabled="#{RequerimentoControle.isRequerimentoPessoaLogada}" rendered="#{RequerimentoControle.apresentarSituacaoTramite}">
+									<f:selectItems value="#{RequerimentoControle.listaSelectItemSituacaoRequerimentoDepartamento}" />
+								</h:selectOneMenu>
+								<span class="append-icon right mr10"> <otm:commandIcon id="salvarSitTra" action="#{RequerimentoControle.alterarSituacaoDepartamento}" icon="#{msg_botoes.btn_icon_gravar_embutido}" tooltip="Alterar Situação Departamento" image="#{resource['imagens/iconeSalvar.gif']}" rendered="#{!RequerimentoControle.isRequerimentoPessoaLogada}" render="form:mensagem" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransferenciaInterna}">
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransferenciaInterna}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_unidadeEnsinoTransferenciaInterna}" />
+							<h:selectOneMenu id="unidadeEnsinoTransferenciaInterna" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.requerimentoVO.unidadeEnsinoTransferenciaInternaVO.codigo}" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransferenciaInterna}">
+								<f:selectItems value="#{RequerimentoControle.listaSelectItemUnidadeEnsino}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.isApresentarTipoRequerente}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_tipoRequerente}" />
+							<h:selectOneMenu id="tipoPessoa" disabled="#{RequerimentoControle.permitirUsuarioConsultarIncluirApenasRequerimentosProprios}" styleClass="form-control camposObrigatorios" rendered="#{RequerimentoControle.isApresentarTipoRequerente}" value="#{RequerimentoControle.requerimentoVO.tipoPessoa}">
+								<a4j:ajax event="change" execute="@this" render="form:dadosAba1" />
+								<f:selectItems value="#{RequerimentoControle.listaSelectItemTipoPessoa}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and (RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo or RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransferenciaInterna)}">
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_tituloForm}" />
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransferenciaInterna}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_cursoEnsinoTransferenciaInterna}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText id="cursoReq" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo}" size="50" readonly="true" maxlength="100" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.curso.nome}" />
+								<h:inputText id="cursoTransferen" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransferenciaInterna}" size="50" readonly="true" maxlength="100" styleClass="form-control camposSomenteLeituraObrigatorio" value="#{RequerimentoControle.requerimentoVO.cursoTransferenciaInternaVO.nome}" />
+								<span class="append-icon right"> <otm:commandIcon icon="#{msg_botoes.btn_icon_lupa_embutido}" rendered="#{RequerimentoControle.requerimentoVO.novoObj}" oncomplete="#{rich:component('panelCurso')}.show();" render="formCurso" tooltip="Consultar Curso" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_limpar_embutido}" rendered="#{RequerimentoControle.requerimentoVO.novoObj}" render="form:curso, form:turno" action="#{RequerimentoControle.limparCurso}" tooltip="Limpar Dados Curso" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransferenciaInterna or RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo}">
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransferenciaInterna}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_turnoEnsinoTransferenciaInterna}" />
+							<h:outputText rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turno_tituloForm}" />
+							<h:inputText id="turnoReq" rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransfExternaPortDiplo}" size="50" readonly="true" maxlength="100" styleClass="form-control camposSomenteLeitura" value="#{RequerimentoControle.requerimentoVO.turno.nome}" />
+							<h:inputText id="turnoTransferencia" rendered="#{RequerimentoControle.requerimentoVO.existeTipoRequerimento and RequerimentoControle.requerimentoVO.tipoRequerimento.isTipoTransferenciaInterna}" size="50" readonly="true" maxlength="100" styleClass="form-control camposSomenteLeituraObrigatorio" value="#{RequerimentoControle.requerimentoVO.turnoTransferenciaInternaVO.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.edicao and RequerimentoControle.requerimentoVO.formatoCertificadoSelecionado ne '' and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo eq 'EC'}" escape="false" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_formatoCertificado}" />
+							<h:outputText rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.edicao and RequerimentoControle.requerimentoVO.formatoCertificadoSelecionado ne '' and RequerimentoControle.requerimentoVO.tipoRequerimento.tipo eq 'DE'}" escape="false" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_formatoDeclaracao}" />
+							<h:selectOneRadio disabled="true" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.requerimentoVO.edicao and RequerimentoControle.requerimentoVO.formatoCertificadoSelecionado ne ''}" styleClass="form-control" value="#{RequerimentoControle.requerimentoVO.formatoCertificadoSelecionado}">
+								<f:selectItem id="certificadoDigital" itemValue="DIGITAL" itemLabel="Digital" />
+								<f:selectItem id="certificadoImpresso" itemValue="IMPRESSO" itemLabel="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo eq 'EC' ? 'Impresso' : 'Impressa'}" />
+							</h:selectOneRadio>
+						</h:panelGroup>
+						<h:panelGroup id="requerimentoDisciplinaAproveitadasForm" layout="block" styleClass="row mt10 mb10">
+							<ui:include src="/visaoAdministrativo/academico/requerimentoDisciplinaAproveitadasForm.xhtml"></ui:include>
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+
+				<rich:tab id="richQuestionarioAluno" name="richQuestionarioAluno" render="listaPerguntaVis" action="#{RequerimentoControle.realizarResponderQuestionarioNavegandoAba}" rendered="#{RequerimentoControle.isPermiteVisualizarQuestionario}" header="#{msg_aplic.prt_Requerimento_questionarioRequerente}">
+					<h:panelGroup layout="block" styleClass="row">
+						<a4j:repeat id="listaPerguntaVis" rowKeyVar="row" var="perguntaItens" value="#{RequerimentoControle.requerimentoVO.questionarioVO.perguntaQuestionarioVOs}">
+							<h:panelGroup layout="block" styleClass="row mb5 p10 bg-gray-100 rounded">
+								<h:panelGroup layout="block" style="float: left;text-align:left;height:100%;width:calc(100% - 50px)">
+									<h:outputText style="color: black;" escape="false" value="#{row+1})  #{perguntaItens.pergunta.descricao}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<a4j:region>
+								<h:panelGroup layout="block" styleClass="row mn">
+									<h:panelGroup layout="block" styleClass="col-md-12 border-bottom" rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and perguntaItens.pergunta.layoutHorizontal}">
+										<a4j:repeat rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and perguntaItens.pergunta.layoutHorizontal}" id="listaRespostaVis" var="respostaItens" value="#{perguntaItens.pergunta.respostaPerguntaVOs}">
+											<h:panelGroup layout="block" styleClass="row pl10 mb5">
+												<div class="col-md-12">
+													<h:panelGroup layout="block" style="float:left;">
+														<a4j:commandLink id="multimaEscolha" rendered="#{perguntaItens.pergunta.tipoResposta eq 'ME'}" styleClass="mr5" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" render="form:listaPerguntaVis:listaRespostaVis" action="#{RequerimentoControle.validarDadosListaResposta}">
+															<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-square fs14 ': 'far fa-square fs14   '}"></h:panelGroup>
+														</a4j:commandLink>
+														<a4j:commandLink id="unicaEscolha" rendered="#{perguntaItens.pergunta.tipoResposta eq 'SE'}" styleClass="mr5" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" render="form:listaPerguntaVis:listaRespostaVis" action="#{RequerimentoControle.validarDadosListaResposta}">
+															<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-circle fs14  ': 'far fa-circle fs14  '}"></h:panelGroup>
+														</a4j:commandLink>
+													</h:panelGroup>
+													<h:panelGroup id="editorFinish" style="display:block;float:left;width:calc(100% - 60px);">
+														<h:outputText style="color: black;" escape="false" value="#{respostaItens.descricao}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText size="20" rendered="#{respostaItens.selecionado and respostaItens.apresentarRespostaAdicional}" maxlength="250" styleClass="form-control campos" value="#{respostaItens.respostaAdicional}" />
+													</h:panelGroup>
+												</div>
+											</h:panelGroup>
+										</a4j:repeat>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 border-bottom" rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and !perguntaItens.pergunta.layoutHorizontal}">
+										<a4j:repeat rendered="#{!perguntaItens.pergunta.tipoRespostaTextual and !perguntaItens.pergunta.layoutHorizontal}" id="listaRespostaVis2" var="respostaItens" value="#{perguntaItens.pergunta.respostaPerguntaVOs}">
+											<h:panelGroup layout="block" style="float:left;">
+												<a4j:commandLink id="multimaEscolha2" rendered="#{perguntaItens.pergunta.tipoResposta eq 'ME'}" styleClass="mr5" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" render="form:listaPerguntaVis:listaRespostaVis2" action="#{RequerimentoControle.validarDadosListaResposta}">
+													<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-square fs14 ': 'far fa-square fs14   '}"></h:panelGroup>
+												</a4j:commandLink>
+												<a4j:commandLink id="unicaEscolha2" rendered="#{perguntaItens.pergunta.tipoResposta eq 'SE'}" styleClass="mr5" disabled="#{!RequerimentoControle.requerimentoVO.novoObj}" render="form:listaPerguntaVis:listaRespostaVis2" action="#{RequerimentoControle.validarDadosListaResposta}">
+													<h:panelGroup style="color: black;" styleClass="#{respostaItens.selecionado ? 'fas fa-check-circle fs14  ': 'far fa-circle fs14  '}"></h:panelGroup>
+												</a4j:commandLink>
+											</h:panelGroup>
+											<h:panelGroup style="display:block;float:left;width:calc(100% - 60px);">
+												<h:outputText style="color: black;" escape="false" value="#{respostaItens.descricao}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12 pn">
+												<h:inputText size="20" rendered="#{respostaItens.selecionado and respostaItens.apresentarRespostaAdicional}" maxlength="250" styleClass="form-control campos" value="#{respostaItens.respostaAdicional}" />
+											</h:panelGroup>
+										</a4j:repeat>
+									</h:panelGroup>
+								</h:panelGroup>
+							</a4j:region>
+							<h:panelGroup layout="block" styleClass="col-md-12 border-bottom mb5 pb5">
+								<h:inputTextarea styleClass="form-control" value="#{perguntaItens.pergunta.texto}" readonly="#{!RequerimentoControle.requerimentoVO.novoObj}" />
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+				</rich:tab>
+
+				<rich:tab id="richTramite" name="richTramite" render="listaTramite" action="#{RequerimentoControle.navegarAba('richTramite', 'requerimentoProfessorForm.xhtml')}" rendered="#{!RequerimentoControle.requerimentoVO.novoObj and ((RequerimentoControle.permitirRequerenteVisualizarTramite and RequerimentoControle.isRequerimentoPessoaLogada) or (!RequerimentoControle.isRequerimentoPessoaLogada))}" header="#{msg_aplic.prt_Requerimento_tramiteEntreDepartamentos}">
+					<h:panelGroup id="listaTramite" layout="block" styleClass="row">
+						<a4j:repeat id="items" rowKeyVar="row" value="#{RequerimentoControle.requerimentoVO.requerimentoHistoricoVOs}" var="requerimentoHistoricoItem">
+							<otm2:panel name="panelInforma#{row}" stylePanel="margin-top: 5px" styleClassHeader="mn p5 rounded-top bg-gray" styleClassBody="mn p5" styleClassFooter="dn" renderedControl="false">
+								<ui:define name="header">
+									<h:panelGroup layout="block" styleClass="col-md-11 pn">
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="btn-block" value="#{msg_aplic.prt_Requerimento_departamento}: " />
+											<h:outputText value="#{requerimentoHistoricoItem.departamento.nome}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="btn-block" value="#{msg_aplic.prt_Requerimento_funcResponsavel}: " />
+											<h:outputText value="#{requerimentoHistoricoItem.responsavelRequerimentoDepartamento.nome}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="btn-block" value="Entrada Dpto: " />
+											<h:outputText value="#{requerimentoHistoricoItem.dataEntradaDepartamento_Apresentar}">
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+											</h:outputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="btn-block" value="Data Início: " />
+											<h:outputText value="#{requerimentoHistoricoItem.dataInicioExecucaoDepartamento_Apresentar}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="btn-block" value="Data Conclusão: " />
+											<h:outputText value="#{requerimentoHistoricoItem.dataConclusaoDepartamento_Apresentar}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{RequerimentoControle.requerimentoVO.tipoRequerimento.tipo eq 'TC'}">
+											<h:outputText styleClass="btn-block" value="#{msg_aplic.prt_Requerimento_notaTCC}: " />
+											<h:outputText value="#{requerimentoHistoricoItem.notaTCC}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!empty requerimentoHistoricoItem.logAlteracaoSituacao}">
+											<h:outputText styleClass="mr5" value="Situação Trâmite: " />
+											<h:outputText styleClass="tituloCampos" escape="false" value="#{requerimentoHistoricoItem.logAlteracaoSituacaoApresentar}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{requerimentoHistoricoItem.dptoResposanvelPeloIndeferimento or requerimentoHistoricoItem.enviouDepartamentoAnterior}">
+											<h:outputText styleClass="mensagemDetalhada" value="Dep. Responsável pelo Indeferimento" rendered="#{requerimentoHistoricoItem.dptoResposanvelPeloIndeferimento}" />
+											<h:outputText styleClass="mensagemDetalhada" rendered="#{requerimentoHistoricoItem.enviouDepartamentoAnterior}" value="Retornou para Departamento do Trâmite:  #{requerimentoHistoricoItem.ordemExecucaoTramiteAnterior} - #{requerimentoHistoricoItem.departamentoAnterior.nome}" />
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-1">
+										<a4j:commandLink rendered="#{requerimentoHistoricoItem.questionario.codigo gt 0}" execute="formQuestionarioRequerimentoHistorico:dadosQuestionarioTramite, formQuestionarioRequerimentoHistorico:tabMensagensQuestionario3" render="formQuestionarioRequerimentoHistorico:dadosQuestionarioTramite, formQuestionarioRequerimentoHistorico:tabMensagensQuestionario3" oncomplete="#{RequerimentoControle.acaoModalQuestionarioRequerimentoHistorico}" action="#{RequerimentoControle.visualizarQuestionarioTramite}">
+											<span class="#{msg_botoes.btn_icon_lupa_embutido} fs15 mr5" />
+											<rich:tooltip value="Resp. Questionário" />
+										</a4j:commandLink>
+									</h:panelGroup>
+								</ui:define>
+								<ui:define name="body">
+									<h:panelGroup id="detalheHistorico" layout="block" styleClass="row mn">
+										<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{requerimentoHistoricoItem.retorno}">
+											<h:outputText styleClass="tituloCampos" value="Motivo do Retorno" />
+											<h:inputTextarea styleClass="form-control" readonly="true" value="#{requerimentoHistoricoItem.motivoRetorno}" />
+											<hr style="width: 98%;" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RequerimentoControle.isApresentarCampoObservacaoTramiteDepartamento}">
+												<h:outputText styleClass="fs13" value="Observação" />
+												<h:panelGroup layout="block" styleClass="col-md-12 pn">
+													<h:inputTextarea styleClass="form-control" id="apresentarCampoObservacaoTramiteDepartamento" rows="3" value="#{requerimentoHistoricoItem.observacaoDepartamento}" rendered="#{RequerimentoControle.isApresentarCampoObservacaoTramiteDepartamento}" />
+													<span class="append-icon right"> <otm:commandIcon icon="#{msg_botoes.btn_icon_gravar_embutido}" action="#{RequerimentoControle.alterarObservacaoTramiteDepartamento}" render="mensagem" rendered="#{RequerimentoControle.isApresentarCampoObservacaoTramiteDepartamento}" />
+													</span>
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:outputText styleClass="tituloCamposResultado" value="#{requerimentoHistoricoItem.observacaoDepartamento}" rendered="#{!RequerimentoControle.isApresentarCampoObservacaoTramiteDepartamento}" style="word-wrap:break-word; text-align: justify; margin-left:15px;" />
+											<hr class="col-md-12 pn" style="width: 98%;" />
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-12" style="min-height: 142px; overflow: scroll;" rendered="#{!empty requerimentoHistoricoItem.materialRequerimentoVOs}">
+											<h:outputText styleClass="tituloCampos" value="Arquivo(s) Anexado(s)" />
+											<div class="col-md-12 pn mb10" style="max-height: 120px; overflow: scroll;">
+												<a4j:repeat id="items_arq" rowKeyVar="row" value="#{requerimentoHistoricoItem.materialRequerimentoVOs}" var="materialRequerimentoItem" type="definitions">
+													<h:panelGroup layout="block" styleClass="#{(!empty requerimentoHistoricoItem.materialRequerimentoVOs) ? 'col-md-12 border-bottom mb10 pb5' : 'col-md-12'}">
+														<h:outputText styleClass="tituloCampos col-md-12" value="Anexo: (#{materialRequerimentoItem.descricao}) - incluído pelo(a) usuário: #{materialRequerimentoItem.usuarioDisponibilizouArquivo.nome} - em: (#{materialRequerimentoItem.dataDisponibilizacaoArquivo_Apresentar})" />
+													</h:panelGroup>
+												</a4j:repeat>
+											</div>
+											<hr class="col-md-12 pn" style="width: 98%;" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row mn">
+											<h:panelGroup layout="block" styleClass="row mn mb5" id="textoInteracao" rendered="#{((RequerimentoControle.requerimentoVO.permitirRequerenteInteragirTramite and RequerimentoControle.isRequerimentoPessoaLogada) or(!RequerimentoControle.isRequerimentoPessoaLogada)) and RequerimentoControle.requerimentoHistoricoAtual.codigo eq requerimentoHistoricoItem.codigo and (RequerimentoControle.requerimentoVO.situacao ne 'FD' and RequerimentoControle.requerimentoVO.situacao ne 'FI')}">
+												<h:panelGroup layout="block" styleClass="col-md-12">
+													<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Requerimento_RequerimentoHistorico_InteracaoRequerimentoHistorico_interacao}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-10">
+													<h:inputText styleClass="form-control" value="#{RequerimentoControle.interacaoRequerimentoHistorico.interacao}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-2">
+													<otm:commandButton id="enviar" execute="@form" styleClass="btn btn-success pl20 pr20" render="form:listaTramite" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" value="Enviar Interação" alt="#{msg_botoes.btn_adicionar}" action="#{RequerimentoControle.adicionarInteracaoRequerimentoHistorico}" />
+												</h:panelGroup>
+											</h:panelGroup>
+											<a4j:repeat id="itemsInteracaoRequerimentoHistorico" rowKeyVar="row" type="definitions" value="#{requerimentoHistoricoItem.interacaoRequerimentoHistoricoVOs}" var="interacaoRequerimentoHistoricoItens">
+												<h:panelGroup layout="block" styleClass="row mn">
+													<h:panelGroup layout="block" styleClass="col-md-1 text-center border rounded-left bg-gray" style="position: relative !important; padding: 28px; left: 5px;">
+														<h:graphicImage rendered="#{interacaoRequerimentoHistoricoItens.usuarioInteracao.pessoa.existeImagem}" style="position:relative; left:0px; top:0px; width:35px; height:35px; display:inline-block; background-color: transparent; border: #fff 2px solid;vertical-align:middle;" value="#{RequerimentoControle.caminhoBaseFoto}/imagem/#{interacaoRequerimentoHistoricoItens.usuarioInteracao.pessoa.CPF}/#{interacaoRequerimentoHistoricoItens.usuarioInteracao.pessoa.arquivoImagem.nome}" />
+														<h:panelGroup styleClass="#{msg_botoes.btn_icon_usuario_embutido}" style="font-size: 25px !important" rendered="#{not interacaoRequerimentoHistoricoItens.usuarioInteracao.pessoa.existeImagem}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-11">
+														<h:panelGroup layout="block" styleClass="row mn border bg-gray p5" style="border-radius: 0px 4px 0px 0px;">
+															<h:outputText styleClass="font-weight-bold ml5" value="#{interacaoRequerimentoHistoricoItens.usuarioInteracao.tipoUsuario_Apresentar}: " />
+															<h:outputText styleClass="tituloCamposResultado" value="#{interacaoRequerimentoHistoricoItens.usuarioInteracao.nome}" />
+															<h:outputText styleClass="tituloCamposResultado" value="#{interacaoRequerimentoHistoricoItens.dataInteracao}" style="text-align:right;float:right">
+																<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" locale="pt_BR" />
+															</h:outputText>
+														</h:panelGroup>
+													</h:panelGroup>
+													<h:panelGroup styleClass="row mn bg-gray-100 p5">
+														<h:panelGroup layout="block" styleClass="col-md-10" style="min-height: 55px; max-height: 100px; overflow: auto;">
+															<h:outputText styleClass="tituloCamposResultado ml5" value="#{interacaoRequerimentoHistoricoItens.interacao}" />
+														</h:panelGroup>
+														<a4j:region rendered="#{not interacaoRequerimentoHistoricoItens.excluido}">
+															<h:panelGroup layout="block" styleClass="col-md-2" id="opcoes">
+																<otm:commandButton styleClass="btn btn-default pl20 pr20 float-right" icon="#{msg_botoes.btn_icon_envelope_fechado_embutido}" render="formInteracaoRequerimentoHistoricoResponder" rendered="#{((RequerimentoControle.requerimentoVO.permitirRequerenteInteragirTramite and RequerimentoControle.isRequerimentoPessoaLogada) or(!RequerimentoControle.isRequerimentoPessoaLogada)) and RequerimentoControle.requerimentoHistoricoAtual.codigo eq requerimentoHistoricoItem.codigo and (RequerimentoControle.requerimentoVO.situacao ne 'FD' and RequerimentoControle.requerimentoVO.situacao ne 'FI')}" value="Responder" title="Responder" alt="Responder" action="#{RequerimentoControle.responderComentarioInteracaoRequerimentoHistorico}" oncomplete="#{rich:component('panelInteracaoRequerimentoHistoricoResponder')}.show();" />
+															</h:panelGroup>
+														</a4j:region>
+													</h:panelGroup>
+												</h:panelGroup>
+											</a4j:repeat>
+										</h:panelGroup>
+									</h:panelGroup>
+								</ui:define>
+							</otm2:panel>
+							<hr class="col-md-12" />
+						</a4j:repeat>
+					</h:panelGroup>
+				</rich:tab>
+
+				<rich:tab id="richTabMaterial" action="#{RequerimentoControle.redirecionarAbaAnexo}" header="Arquivo(s) Anexado(s)">
+<!-- 					<h:panelGroup layout="block" styleClass="row"> -->
+<!-- 						<h:panelGroup layout="block" styleClass="col-md-9"> -->
+<!-- 							<h:outputText styleClass="tituloCampos" value="Descrição" /> -->
+<!-- 							<h:inputText id="descricaoMaterialRequerimento" size="80" maxlength="160" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.materialRequerimento.descricao}" /> -->
+<!-- 						</h:panelGroup> -->
+<!-- 						<h:panelGroup layout="block" styleClass="col-md-3"> -->
+<!-- 							<otm:outputHelp id="UploadArquivos_escolherArquivo" styleClass="tituloCampos" value="#{msg_aplic.prt_UploadArquivos_escolherArquivo}"> -->
+<!-- 								<h:outputText value="#{RequerimentoControle.tamanhoMaximoUpload}" /> -->
+<!-- 							</otm:outputHelp> -->
+<!-- 							<rich:fileUpload listHeight="60" listWidth="390" noDuplicate="true" allowFlash="false" fileUploadListener="#{RequerimentoControle.upLoadArquivoMaterialReq}" acceptedTypes="pdf, txt, doc, docx, xls, xlsx, png, jpg, jpeg, gif" maxFilesQuantity="1" addControlLabel="Selecionar Arquivo" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{RequerimentoControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" onupload="return validarTamanhoUploadArquivo(event, 'form:upload', #{RequerimentoControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload});" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" id="uploadRequerimento"> -->
+<!-- 								<a4j:ajax event="uploadcomplete" render="form, form:tabMensagens, richTabMaterial" /> -->
+<!-- 								<a4j:ajax event="typerejected" oncomplete="alert('Arquivo não Enviado. Formato inválido do arquivo');" render="upload, richTabMaterial" /> -->
+<!-- 								<a4j:ajax event="clear" render="upload, richTabMaterial" /> -->
+<!-- 							</rich:fileUpload> -->
+<!-- 						</h:panelGroup> -->
+<!-- 						<h:panelGroup layout="block" styleClass="col-md-12 text-center m5"> -->
+<!-- 							<otm:commandButton render="form, richTabMaterial, listamaterialRequerimento" rendered="#{RequerimentoControle.materialRequerimento.codigo eq 0}" id="adicionarMaterialRequerimento" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="Adicionar" styleClass="btn btn-primary" action="#{RequerimentoControle.adicionarMaterialRequerimento}" accesskey="8" image="#{resource['imagens/botaoAdicionarLista.png']}" /> -->
+<!-- 							<otm:spacer width="5px" /> -->
+<!-- 							<otm:commandButton accesskey="2" image="#{resource['imagens/botaoAlterar.png']}" id="editarMaterialRequerimento" rendered="#{RequerimentoControle.materialRequerimento.codigo > 0}" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Alterar" action="#{RequerimentoControle.alterarDescricaoMaterialRequerimento}" render="form, form:pgListaMaterialRequerimento" /> -->
+<!-- 							<otm:spacer width="5px" /> -->
+<!-- 							<otm:commandButton action="#{RequerimentoControle.cancelarEdicaoMaterialRequerimento}" accesskey="3" id="btnCancelarContaPagar" rendered="#{RequerimentoControle.materialRequerimento.codigo > 0}" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" render="form:pgMaterialRequerimento" /> -->
+<!-- 						</h:panelGroup> -->
+<!-- 						<rich:dataTable id="listamaterialRequerimento" style="width:100%" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" rows="10" columnClasses="colunaAlinhamento" value="#{RequerimentoControle.requerimentoVO.materialRequerimentoVOs}" var="materialRequerimentoVOItem"> -->
+<!-- 							<rich:column filterType="custom" filterExpression="#{(materialRequerimentoVOItem.disponibilizarParaRequerente and RequerimentoControle.isRequerimentoPessoaLogada) or (!RequerimentoControle.isRequerimentoPessoaLogada)}"> -->
+<!-- 								<f:facet name="header"> -->
+<!-- 									<h:outputText value="#{msg_aplic.prt_Curso_descricao}" /> -->
+<!-- 								</f:facet> -->
+<!-- 								<h:outputText value="#{materialRequerimentoVOItem.descricao}" /> -->
+<!-- 							</rich:column> -->
+<!-- 							<rich:column> -->
+<!-- 								<f:facet name="header"> -->
+<!-- 									<h:outputText value="#{msg_aplic.prt_Curso_arquivo}" /> -->
+<!-- 								</f:facet> -->
+<!-- 								<h:outputText value="#{materialRequerimentoVOItem.arquivoVO.nome}" /> -->
+<!-- 							</rich:column> -->
+<!-- 							<rich:column> -->
+<!-- 								<f:facet name="header"> -->
+<!-- 									<h:outputText value="#{msg_aplic.prt_Requerimento_materialRequerimento_usuarioDisponibilizouArquivo}" /> -->
+<!-- 								</f:facet> -->
+<!-- 								<h:outputText value="#{materialRequerimentoVOItem.usuarioDisponibilizouArquivo.nome}" /> -->
+<!-- 							</rich:column> -->
+<!-- 							<rich:column> -->
+<!-- 								<f:facet name="header"> -->
+<!-- 									<h:outputText value="#{msg_aplic.prt_Requerimento_materialRequerimento_dataDisponibilizacaoArquivo}" /> -->
+<!-- 								</f:facet> -->
+<!-- 								<h:outputText value="#{materialRequerimentoVOItem.dataDisponibilizacaoArquivo}"> -->
+<!-- 									<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" /> -->
+<!-- 								</h:outputText> -->
+<!-- 							</rich:column> -->
+<!-- 							<rich:column> -->
+<!-- 								<f:facet name="header"> -->
+<!-- 									<h:outputText value="Download" style="campos" /> -->
+<!-- 								</f:facet> -->
+<!-- 								<otm:commandIcon id="botaoDownloadMaterialRequerimentoVisaoProfessor" oncomplete="#{materialRequerimentoVOItem.arquivoVO.servidorArquivoOnline eq 'APACHE'} ? location.href='../DownloadSV' : abrirPopup('../DownloadSV', 'DownloadSV_#{materialRequerimentoVOItem.arquivoVO.codigo}',950,595)" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download} iconePequeno" action="#{RequerimentoControle.realizarDownloadArquivo(materialRequerimentoVOItem.arquivoVO)}" /> -->
+<!-- 							</rich:column> -->
+<!-- 							<rich:column> -->
+<!-- 								<f:facet name="header"> -->
+<!-- 									<h:outputText value="Opções" /> -->
+<!-- 								</f:facet> -->
+<!-- 								<h:panelGroup> -->
+<!-- 									<otm:commandIcon id="removermaterialRequerimento" tooltip="Remover" render="form" action="#{RequerimentoControle.removerMaterialRequerimento}" accesskey="8" icon="#{msg_botoes.btn_icon_remover} iconePequeno" /> -->
+<!-- 								</h:panelGroup> -->
+<!-- 							</rich:column> -->
+<!-- 							<f:facet name="footer"> -->
+<!-- 								<div style="text-align: center !important"> -->
+<!-- 									<rich:dataScroller align="center" for="listamaterialRequerimento" boundaryControls="auto" stepControls="auto" fastControls="hide" maxPages="10" id="scListamaterialRequerimentoVOs" /> -->
+<!-- 								</div> -->
+<!-- 							</f:facet> -->
+<!-- 						</rich:dataTable> -->
+<!-- 					</h:panelGroup> -->
+				</rich:tab>
+			</rich:tabPanel>
+			<h:panelGroup id="mensagem">
+				<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior" id="btns">
+				<h:panelGroup>
+					<otm:commandButton id="novo" rendered="#{RequerimentoControle.existeTipoRequerimentoCadastradoProfessorCoordenador and RequerimentoControle.permiteNovo}" immediate="true" action="#{RequerimentoControle.novo}" accesskey="1" styleClass="btn btn-info btn-novo" value="Novo" style="margin-right: 5px" />
+					<otm:commandButton id="salvar" action="#{RequerimentoControle.verificarApresentacaoQuestionarioAoGravar}" oncomplete="#{RequerimentoControle.acaoModalQuestionario};#{RequerimentoControle.oncompleteModal};" value="gravar" accesskey="2" styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" rendered="#{RequerimentoControle.requerimentoVO.podeSerGravado and (RequerimentoControle.requerimentoVO.novoObj or (!RequerimentoControle.requerimentoVO.novoObj and !RequerimentoControle.isRequerimentoPessoaLogada)) and RequerimentoControle.permiteGravar}" render="form, formQuestionario, formRequerimentoExistente" style="margin-right: 5px" />
+					<otm:commandButton id="excluir" action="#{RequerimentoControle.excluir}" rendered="#{RequerimentoControle.isPermiteExcluir and (RequerimentoControle.requerimentoVO.situacao eq 'PE' or RequerimentoControle.requerimentoVO.situacao eq 'AP')}" value="excluir" accesskey="3" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_remover_embutido}" style="margin-right: 5px" />
+					<otm:commandButton id="iniciarRequerimento" action="#{RequerimentoControle.iniciarRequerimento}" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_play_embutido}" value="Iniciar execução" tooltip="Iniciar execução do Requerimento." image="#{resource['/imagens/botaoIniciarExecucao.png']}" rendered="#{RequerimentoControle.requerimentoVO.podeSerIniciadoExecucaoRequerimento and !RequerimentoControle.isRequerimentoPessoaLogada and RequerimentoControle.permiteIniciarRequerimento}" render="form" style="margin-right: 5px" />
+					<otm:commandButton id="iniciarRequerimentoDepartamentoAtual" action="#{RequerimentoControle.iniciarRequerimentoDepartamentoAtual}" styleClass="btn btn-success" icon="#{msg_botoes.btn_icon_play_embutido}" value="Iniciar execução" tooltip="Iniciar execução do requerimento no Dpto" image="#{resource['/imagens/botaoIniciarExecucao.png']}" rendered="#{RequerimentoControle.podeSerIniciadoExecucaoDepartamentoAtual and !RequerimentoControle.isRequerimentoPessoaLogada and RequerimentoControle.permiteIniciarRequerimento}" render="form, formQuestionarioRequerimentoHistorico" oncomplete="#{RequerimentoControle.acaoModalQuestionarioRequerimentoHistorico}" style="margin-right: 5px" />
+					<otm:commandButton id="enviarRequerimentoProximoDepartamento" action="#{RequerimentoControle.prepararEnviarRequerimentoProximoDepartamento}" oncomplete="#{RequerimentoControle.acaoModalQuestionarioRequerimentoHistorico}" styleClass="btn btn-warning" value="Enviar Requerimento" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" tooltip="Enviar Requerimento Proximo Departamento #{RequerimentoControle.nomeProximoDepartamentoTramite} Trâmite Execução Tipo Requerimento" image="#{resource['/imagens/botaoEnviarProxDpto.png']}" rendered="#{RequerimentoControle.requerimentoVO.podeSerEncaminhadoProximoDepartamento}" render="form, formObsTramite, formQuestionarioRequerimentoHistorico" execute="@form" style="margin-right: 5px" />
+					<otm:commandButton id="deferirRequerimento" oncomplete="#{rich:component('panelMotivoDeferimento')}.show()" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Deferir" tooltip="Autorizar e Finalizar Requerimento com Sucesso." image="#{resource['/imagens/botaoAutorizar.png']}" rendered="#{RequerimentoControle.isPermiteDeferir}" render="formMotivoDeferimento" style="margin-right: 5px" />
+					<otm:commandButton id="indeferirRequerimento" oncomplete="#{rich:component('panelMotivoIndeferimento')}.show()" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Indefirir" tooltip="Indefirir e Finalizar Requerimento com Negativa à Socilitação." image="#{resource['/imagens/botaoIndeferir.png']}" rendered="#{RequerimentoControle.isPermiteInDeferir}" render="formMotivoIndeferimento" style="margin-right: 5px" />
+					<otm:commandButton id="btnSolicitacaoIsencao" execute="@this" action="#{RequerimentoControle.limparMensagem}" rendered="#{RequerimentoControle.requerimentoVO.permiteSolicitarIsencaoTaxa and RequerimentoControle.novoRegistro}" oncomplete="#{rich:component('panelSolicitacaoIsencao')}.show()" render="formSolicitacaoIsencao" value="Solicitar Isenção Taxa" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_confirmar_embutido}" image="#{resource['/imagens/botaoSolicitarIsencao.png']}" style="margin-right: 5px" />
+					<otm:commandButton rendered="#{RequerimentoControle.isPermiteImprimirComprovante}" action="#{RequerimentoControle.verificarLayoutPadraoImpressao}" render="form" value="Comprovante" styleClass="btn btn-success" icon="#{msg_botoes.btn_icon_imprimir_embutido}" image="#{resource['/imagens/botaoComprovante.png']}" onclick="#{rich:component('panelLayoutRequerimento')}.show()" style="margin-right: 5px" />
+					<otm:commandButton rendered="#{RequerimentoControle.permiteConsultar and RequerimentoControle.isPermiteRetornarDepartamentoAnterior}" value="Enviar Dpto Anterior" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" styleClass="btn btn-info" render="formDepartamentoAnterior" image="#{resource['/imagens/botaoEnviarDptoAnterior.png']}" oncomplete="#{rich:component('panelDepartamentoAnterior')}.show()" tooltip="Enviar para departamento anterior" style="margin-right: 5px" />
+					<otm:commandButton id="consultar" immediate="true" action="#{RequerimentoControle.consultarVisaoProfessorCoordenador}" value="consultar" accesskey="4" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" style="margin-right: 5px" />
+					<otm:commandButton render="form" oncomplete="#{RequerimentoControle.download}" action="#{RequerimentoControle.realizarImpressaoRequerimentoAnalitico}" value="Imprimir" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_imprimir_embutido}" rendered="#{RequerimentoControle.isApresentarRealizarImpressaoRequerimentoAnalitico}" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

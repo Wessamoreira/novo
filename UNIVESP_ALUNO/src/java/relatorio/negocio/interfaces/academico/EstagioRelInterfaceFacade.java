@@ -1,0 +1,23 @@
+package relatorio.negocio.interfaces.academico;
+
+import java.util.Date;
+import java.util.List;
+
+import negocio.comuns.academico.CursoVO;
+import negocio.comuns.academico.DisciplinaVO;
+import negocio.comuns.academico.MatriculaVO;
+import negocio.comuns.academico.TurmaVO;
+import negocio.comuns.academico.TurnoVO;
+import negocio.comuns.academico.enumeradores.TipoEstagioEnum;
+import negocio.comuns.administrativo.UnidadeEnsinoVO;
+import negocio.comuns.arquitetura.UsuarioVO;
+
+//import relatorio.negocio.comuns.academico.EstagioRelVO;
+
+
+public interface EstagioRelInterfaceFacade {
+
+//	List<EstagioRelVO> consultarListaEstagioSintetico(List<UnidadeEnsinoVO> unidadeEnsinoVOs, List<CursoVO> cursoVOs, List<TurnoVO> turnoVOs, TurmaVO turma, List<DisciplinaVO> disciplinaVOs,  MatriculaVO matricula, String situacao, TipoEstagioEnum tipoEstagio, String periodicidade, String ano, String semestre,  Boolean trazerTodosEstagiosAluno, String tipoLayout, Integer periodoLetivoDe, Integer periodoLetivoAte, UsuarioVO usuarioLogado,Date dataInicio,Date dataFim) throws Exception;
+//	List<EstagioRelVO> consultarListaEstagioAnalitico(List<UnidadeEnsinoVO> unidadeEnsinoVOs, List<CursoVO> cursoVOs, List<TurnoVO> turnoVOs, TurmaVO turma, List<DisciplinaVO> disciplinaVOs,  MatriculaVO matricula, String situacao, TipoEstagioEnum tipoEstagio, String periodicidade, String ano, String semestre,  Boolean apresentarNotaDisciplina, Boolean trazerTodosEstagiosAluno, String tipoLayout, Integer periodoLetivoDe, Integer periodoLetivoAte, String estagioRegistradoSeguradora, Boolean filtrarEstagioRegitradoSeguradora, Date dataInicioEnvioSeguradora, Date dataTerminoEnvioSeguradora, UsuarioVO usuarioLogado,Date dataInicio,Date dataFim) throws Exception;
+
+}

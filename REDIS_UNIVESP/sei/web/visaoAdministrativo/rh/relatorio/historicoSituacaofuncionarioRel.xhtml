@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_RelatorioHistoricoFuncinoario}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+		<h:form id="form">
+			<h:panelGroup id="gridRelatorio">
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataInicio}" />
+						<otm:calendar id="dataInicio" oninputblur="form" enableManualInput="true" value="#{HistoricoSituacaoFuncionarioRelControle.dataInicio}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataFinal}" />
+						<otm:calendar id="dataFinal" oninputblur="form" enableManualInput="true" value="#{HistoricoSituacaoFuncionarioRelControle.dataFinal}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_funcionario}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText size="23" styleClass="form-control campos" value="#{HistoricoSituacaoFuncionarioRelControle.funcionarioCargoVO.matriculaCargo}" maxlength="10">
+							<a4j:ajax event="change" listener="#{HistoricoSituacaoFuncionarioRelControle.consultarFuncionarioPorMatricula}" render="form:nomePessoa" execute="@this" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText size="46" styleClass="form-control campos" id="nomePessoa" readonly="true" value="#{HistoricoSituacaoFuncionarioRelControle.funcionarioCargoVO.funcionarioVO.pessoa.nome}" maxlength="10" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosFuncionario" tooltip="Localizar Funcionario" render="form, formFuncionario" oncomplete="#{rich:component('panelFuncionario')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosFuncionario" tooltip="Limpas Dados" action="#{HistoricoSituacaoFuncionarioRelControle.limparDadosFuncionario}" render="form:gridRelatorio" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_situacao}" />
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTipoDocumento" value="#{HistoricoSituacaoFuncionarioRelControle.situacao}">
+						<f:selectItems value="#{HistoricoSituacaoFuncionarioRelControle.situacaoFuncionarioCargo}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" columnClasses="colunaEsquerda">
+				<otm:mensagem bean="#{HistoricoSituacaoFuncionarioRelControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<h:panelGroup>
+					<otm:commandButton action="#{HistoricoSituacaoFuncionarioRelControle.imprimirPDF()}" icon="#{msg_botoes.btn_icon_pdf_embutido}" oncomplete="#{HistoricoSituacaoFuncionarioRelControle.download}" styleClass="btn btn-danger" value="Imprimir (PDF)" accesskey="1" type="submit" render="form" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<!-- Consulta Funcionario -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarFuncionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelFuncionario" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTipoDocumento" value="#{HistoricoSituacaoFuncionarioRelControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{HistoricoSituacaoFuncionarioRelControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionario" size="30" styleClass="form-control campos" value="#{HistoricoSituacaoFuncionarioRelControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarFuncionario" render="formFuncionario:mensagemConsultaFuncionario, formFuncionario:gridFuncionarioTab, formFuncionario:scResultadoFuncionarioRespPreInscricao" action="#{HistoricoSituacaoFuncionarioRelControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{HistoricoSituacaoFuncionarioRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{HistoricoSituacaoFuncionarioRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup id="gridFuncionarioTab" columns="1" width="100%">
+					<rich:dataTable id="funcionarioItem" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{HistoricoSituacaoFuncionarioRelControle.funcionarioCargoVOs}" rendered="#{HistoricoSituacaoFuncionarioRelControle.apresentarResultadoConsultaFuncionarioCargo}" rows="10" var="funcionarioCargoItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+							</f:facet>
+							<a4j:commandLink id="matricula" action="#{HistoricoSituacaoFuncionarioRelControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.matriculaCargo}" render="form:gridRelatorio" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+							</f:facet>
+							<a4j:commandLink id="nome" action="#{HistoricoSituacaoFuncionarioRelControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.funcionarioVO.pessoa.nome}" render="form:gridRelatorio" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_cargo}" />
+							</f:facet>
+							<a4j:commandLink id="cargoNome" action="#{HistoricoSituacaoFuncionarioRelControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.cargo.nome}" render="form:gridRelatorio" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_bt.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="botaoEditar" action="#{HistoricoSituacaoFuncionarioRelControle.selecionarFuncionarioCargo}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" render="form:gridRelatorio" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formFuncionario:funcionarioItem" maxPages="10" id="scResultadoFuncionarioRespPreInscricao" page="#{HistoricoSituacaoFuncionarioRelControle.controleConsultaOtimizado.page}" scrollListener="#{HistoricoSituacaoFuncionarioRelControle.scrollerListenerFuncionario}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{HistoricoSituacaoFuncionarioRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,1606 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_HistoricoAlunoRel_tituloRel}" />
+	</ui:define>
+	<ui:define name="ajuda">
+		<a4j:region>
+			<a4j:commandLink id="ajuda" type="submit" title="Ajuda" style="float:right;border:none" action="#{AjudaControle.executarConsulta}" oncomplete="abrirPopup('../../../ajudaCons.xhtml', 'Ajuda', 945, 490);">
+				<h:graphicImage value="#{resource['imagens/209.png']}" />
+				<f:setPropertyActionListener target="#{AjudaControle.moduloConsulta}" value="ACADEMICO/RELACADEMICO/HISTORICOALUNO" />
+			</a4j:commandLink>
+			<a4j:commandLink id="config" type="submit" rendered="#{LoginControle.permissaoAcessoMenuVO.permitirCadastrarConfiguracaoHistorico}" title="Configuração" style="float:right;border:none;margin-right:10px; margin-top:3px" action="#{HistoricoAlunoRelControle.consultarConfiguracaoHistorico}" oncomplete="#{rich:component('panelConfiguracao')}.show()" render="formConfiguracao">
+				<i class="fas fa-cogs" />
+			</a4j:commandLink>
+		</a4j:region>
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<style>
+.scroll {
+	
+}
+
+.rf-pp-cnt-scrlr::-webkit-scrollbar-thumb {
+	display: block !important;
+    background-color: #a59e9e !important;
+    height: 36px !important;
+}
+</style>
+
+		<script>
+			window.onload = function() {
+				document.getElementById("form:consultaTurma").focus();
+			}
+		</script>
+	
+		<otm2:progressBar id="modalProgressBar" bean="#{HistoricoAlunoRelControle}" oncomplete="reload(); #{HistoricoAlunoRelControle.oncomplete}" render="form:panelMsg, form:reload, formListaErroGeracaoDiploma, formListaErroGeracaoDiplomaLote" bar="progressBarVO" height="90px" width="500" left="38%" top="48%" />
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProgramacaoFormatura" shadowOpacity="true" width="700" height="500" onshow="document.getElementById('formProgramacaoFormatura:valorConsulta').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_RegistroPresencaColacaoGrau_consultarProgramacaoFormaturaColacaoGrau}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkProgramacaoFormatura"/>
+					<rich:componentControl target="panelProgramacaoFormatura" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProgramacaoFormatura">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{HistoricoAlunoRelControle.campoConsultaProgramacaoFormatura}">
+						<a4j:ajax event="change" listener="#{HistoricoAlunoRelControle.mostrarSegundoCampoProgramacaoFormatura}" render="formProgramacaoFormatura" />
+						<f:selectItems value="#{HistoricoAlunoRelControle.tipoConsultaComboProgramacaoFormatura}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!HistoricoAlunoRelControle.mostrarSegundoCampoProgramacaoFormatura and HistoricoAlunoRelControle.campoConsultaProgramacaoFormatura eq 'codigo'}">
+					<h:inputText onkeyup="aceitarSomenteValorNumerico(this)" rendered="#{!HistoricoAlunoRelControlele.mostrarSegundoCampoProgramacaoFormatura and HistoricoAlunoRelControle.campoConsultaProgramacaoFormatura eq 'codigo'}" id="valorConsultaProgramacaoFormaturaCodigo" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.valorConsultaProgramacaoFormatura}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!HistoricoAlunoRelControle.mostrarSegundoCampoProgramacaoFormatura and HistoricoAlunoRelControle.campoConsultaProgramacaoFormatura ne 'codigo'}">
+					<h:inputText rendered="#{!HistoricoAlunoRelControlele.mostrarSegundoCampoProgramacaoFormatura and HistoricoAlunoRelControle.campoConsultaProgramacaoFormatura ne 'codigo'}" id="valorConsultaProgramacaoFormatura" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.valorConsultaProgramacaoFormatura}" />
+				</h:panelGroup>
+				<h:panelGroup id="datas" rendered="#{HistoricoAlunoRelControle.mostrarSegundoCampoProgramacaoFormatura}">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<otm:calendar id="dataConsultaInicio" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" value="#{HistoricoAlunoRelControle.valorConsultaDataInicioProgramacaoFormatura}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<otm:calendar id="dataConsultaFinal" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" value="#{HistoricoAlunoRelControle.valorConsultaDataFinalProgramacaoFormatura}" />
+						<h:message for="datas" styleClass="field control-label mensagemDetalhada col-md-12" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="consultar" render="formProgramacaoFormatura" value="#{msg_botoes.btn_consultar}" action="#{HistoricoAlunoRelControle.consultarProgramacaoFormatura}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="2" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{HistoricoAlunoRelControle.listaConsultaProgramacaoFormatura}" rendered="#{HistoricoAlunoRelControle.apresentarResultadoConsultaProgramacaoFormatura}" rows="10" var="programacaoFormaturaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoFormatura_codigo}" />
+						</f:facet>
+						<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarProgramacaoFormatura}" id="codigo" value="#{programacaoFormaturaItens.codigo}" oncomplete="#{rich:component('panelProgramacaoFormatura')}.hide()" render="form, programacaoFormaturaAlunoVO" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Colação Grau" />
+						</f:facet>
+						<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarProgramacaoFormatura}" id="colacao" value="#{programacaoFormaturaItens.colacaoGrauVO.titulo}" oncomplete="#{rich:component('panelProgramacaoFormatura')}.hide()" render="form, programacaoFormaturaAlunoVO" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nível Educacional" />
+						</f:facet>
+						<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarProgramacaoFormatura}" id="nivel" value="#{programacaoFormaturaItens.nivelEducacional_Apresentar}" oncomplete="#{rich:component('panelProgramacaoFormatura')}.hide()" render="form, programacaoFormaturaAlunoVO" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoFormatura_unidadeEnsino}" />
+						</f:facet>
+						<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarProgramacaoFormatura}" id="unidadeEnsino" value="#{programacaoFormaturaItens.unidadeConsultaApresentar}" oncomplete="#{rich:component('panelProgramacaoFormatura')}.hide()" render="form, programacaoFormaturaAlunoVO" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoFormatura_dataCadastro}" />
+						</f:facet>
+						<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarProgramacaoFormatura}" id="dataCadastro" value="#{programacaoFormaturaItens.dataCadastro_Apresentar}" oncomplete="#{rich:component('panelProgramacaoFormatura')}.hide()" render="form, programacaoFormaturaAlunoVO" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoFormatura_responsavelCadastro}" />
+						</f:facet>
+						<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarProgramacaoFormatura}" id="responsavelCadastro" value="#{programacaoFormaturaItens.responsavelCadastro.nome}" oncomplete="#{rich:component('panelProgramacaoFormatura')}.hide()" render="form, programacaoFormaturaAlunoVO" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{HistoricoAlunoRelControle.selecionarProgramacaoFormatura}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" title="#{msg.msg_editar_dados}" oncomplete="#{rich:component('panelProgramacaoFormatura')}.hide()" render="form, programacaoFormaturaAlunoVO" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formProgramacaoFormatura:items" id="scResultadoConsulta"  boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaProgramacaoFormatura" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{HistoricoAlunoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionarioTerciario" shadowOpacity="true" width="580" onshow="document.getElementById('formFuncionarioTerciario:valorConsultaFuncionarioTerciario').focus()" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_funcionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkFuncionarioTerciario">
+						<rich:componentControl target="panelFuncionarioTerciario" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionarioTerciario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionarioTerciario" value="#{HistoricoAlunoRelControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{HistoricoAlunoRelControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaFuncionarioTerciario" size="10" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formFuncionarioTerciario:mensagemConsultaFuncionarioTerciario, formFuncionarioTerciario:resultadoConsultaFuncionarioTerciario, formFuncionarioTerciario:scResultadoFuncionarioTerciario" action="#{HistoricoAlunoRelControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" tooltip="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFuncionarioTerciario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{HistoricoAlunoRelControle.listaConsultaFuncionario}" rows="5" var="funcionarioTerciario">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarFuncionarioTerciario}" render="form" oncomplete="#{rich:component('panelFuncionarioTerciario')}.hide(), setFocus(form,'form:nomeFuncionarioTerciario');" value="#{funcionarioTerciario.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarFuncionarioTerciario}" render="form" oncomplete="#{rich:component('panelFuncionarioTerciario')}.hide(), setFocus(form,'form:nomeFuncionarioTerciario');" value="#{funcionarioTerciario.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarFuncionarioTerciario}" render="form" oncomplete="#{rich:component('panelFuncionarioTerciario')}.hide(), setFocus(form,'form:nomeFuncionarioTerciario');" value="#{funcionarioTerciario.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{HistoricoAlunoRelControle.selecionarFuncionarioTerciario}" render="form" oncomplete="#{rich:component('panelFuncionarioTerciario')}.hide(), setFocus(form,'form:nomeFuncionarioTerciario');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formFuncionarioTerciario:resultadoConsultaFuncionarioTerciario" maxPages="10" id="scResultadoFuncionarioTerciario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFuncionarioTerciario" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{HistoricoAlunoRelControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMinimizado1" id="panelMsgTitulacaoCurso" shadowOpacity="true" width="350" height="120">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg.msg_Atencao}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelMsgTitulacaoCurso">
+						<rich:componentControl target="panelMsgTitulacaoCurso" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMsgTitulacaoCurso">
+				<h:panelGroup columns="1" columnClasses="colunaCentralizada" width="100%">
+					<div style="text-align: justify; !important">
+						<h:outputText value="#{HistoricoAlunoRelControle.msgProfessorTitulacao}" />
+					</div>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-30">
+						<otm:commandButton id="fecharMsgTitulacaoCurso" value="Fechar" styleClass="btn btn-fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelMsgTitulacaoCurso')}.hide();" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formTurma:valorConsultaTurma').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_HistoricoAlunoRel_consultarTurma}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3">
+						<rich:componentControl target="panelTurma" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{HistoricoAlunoRelControle.campoConsultaTurma}">
+						<f:selectItems value="#{HistoricoAlunoRelControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaTurma" size="10" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{HistoricoAlunoRelControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" tooltip="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{HistoricoAlunoRelControle.listaConsultaTurma}" rows="5" var="turmaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_HistoricoAlunoRel_identificador}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarTurma}" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_HistoricoAlunoRel_curso}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarTurma}" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_HistoricoAlunoRel_turno}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarTurma}" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{HistoricoAlunoRelControle.selecionarTurma}" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{HistoricoAlunoRelControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" width="750" onshow="document.getElementById('formAluno:valorConsultaAluno').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_HistoricoAlunoRel_consultarAluno}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink1">
+						<rich:componentControl target="panelAluno" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAluno" value="#{HistoricoAlunoRelControle.campoConsultaAluno}">
+						<f:selectItems value="#{HistoricoAlunoRelControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaAluno" size="20" onkeypress="modalKeyHandler('panelAluno', 'formAluno:btnConsultar')" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.valorConsultaAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno, formAluno:scResultadoAluno" action="#{HistoricoAlunoRelControle.consultarAluno}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" tooltip="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{HistoricoAlunoRelControle.listaConsultaAluno}" rows="5" var="matriculaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_registroAcademico}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.aluno.registroAcademico}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_nomeAluno}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_curso}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{HistoricoAlunoRelControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{HistoricoAlunoRelControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionarioSecundario" shadowOpacity="true" width="580" onshow="document.getElementById('formFuncionarioSecundario:valorConsultaFuncionarioSecundario').focus()" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_funcionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink2">
+						<rich:componentControl target="panelFuncionarioSecundario" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionarioSecundario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionarioSecundario" value="#{HistoricoAlunoRelControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{HistoricoAlunoRelControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaFuncionarioSecundario" size="10" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formFuncionarioSecundario:mensagemConsultaFuncionarioSecundario, formFuncionarioSecundario:resultadoConsultaFuncionarioSecundario, formFuncionarioSecundario:scResultadoFuncionarioSecundario" action="#{HistoricoAlunoRelControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" tooltip="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFuncionarioSecundario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{HistoricoAlunoRelControle.listaConsultaFuncionario}" rows="5" var="funcionarioSecundario">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarFuncionarioSecundario}" render="form" oncomplete="#{rich:component('panelFuncionarioSecundario')}.hide(), setFocus(form,'form:nomeFuncionarioSecundario');" value="#{funcionarioSecundario.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarFuncionarioSecundario}" render="form" oncomplete="#{rich:component('panelFuncionarioSecundario')}.hide(), setFocus(form,'form:nomeFuncionarioSecundario');" value="#{funcionarioSecundario.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarFuncionarioSecundario}" render="form" oncomplete="#{rich:component('panelFuncionarioSecundario')}.hide(), setFocus(form,'form:nomeFuncionarioSecundario');" value="#{funcionarioSecundario.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{HistoricoAlunoRelControle.selecionarFuncionarioSecundario}" render="form" oncomplete="#{rich:component('panelFuncionarioSecundario')}.hide(), setFocus(form,'form:nomeFuncionarioSecundario');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formFuncionarioSecundario:resultadoConsultaFuncionarioSecundario" maxPages="10" id="scResultadoFuncionarioSecundario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFuncionarioSecundario" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{HistoricoAlunoRelControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionarioPrincipal" shadowOpacity="true" width="580" onshow="document.getElementById('formFuncionarioPrincipal:valorConsultaFuncionarioPrincipal').focus()" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_funcionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink">
+						<rich:componentControl target="panelFuncionarioPrincipal" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionarioPrincipal">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionarioPrincipal" value="#{HistoricoAlunoRelControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{HistoricoAlunoRelControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaFuncionarioPrincipal" size="10" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formFuncionarioPrincipal:mensagemConsultaFuncionarioPrincipal, formFuncionarioPrincipal:resultadoConsultaFuncionarioPrincipal, formFuncionarioPrincipal:scResultadoFuncionarioPrincipal" action="#{HistoricoAlunoRelControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" tooltip="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFuncionarioPrincipal" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{HistoricoAlunoRelControle.listaConsultaFuncionario}" rows="5" var="funcionarioPrincipal">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarFuncionarioPrincipal}" render="form" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.hide(), setFocus(form,'form:nomeFuncionarioPrincipal');" value="#{funcionarioPrincipal.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarFuncionarioPrincipal}" render="form" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.hide(), setFocus(form,'form:nomeFuncionarioPrincipal');" value="#{funcionarioPrincipal.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{HistoricoAlunoRelControle.selecionarFuncionarioPrincipal}" render="form" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.hide(), setFocus(form,'form:nomeFuncionarioPrincipal');" value="#{funcionarioPrincipal.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{HistoricoAlunoRelControle.selecionarFuncionarioPrincipal}" render="form" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.hide(), setFocus(form,'form:nomeFuncionarioPrincipal');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formFuncionarioPrincipal:resultadoConsultaFuncionarioPrincipal" maxPages="10" id="scResultadoFuncionarioPrincipal" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFuncionarioPrincipal" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{HistoricoAlunoRelControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDocumentoAssinado" shadowOpacity="true" width="800" height="400">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Lista de Documentos Assinados"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelDocumentoAssinado">
+						<rich:componentControl target="panelDocumentoAssinado" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDocumentoAssinado">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="itemsDocumentosAssinados" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento, colunaAlinhamento, colunaAlinhamento, colunaAlinhamento" value="#{HistoricoAlunoRelControle.listaDocumentoAsssinados}" rows="10" var="documentoAssinadoItem">
+						<rich:column width="10%" sortBy="#{documentoAssinadoItem.numeroDocumentoAssinado}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ArquivoAssinado_numeroDocumentoAssinado}" />
+							</f:facet>
+							<h:outputText id="codigo" value="#{documentoAssinadoItem.numeroDocumentoAssinado}" />
+						</rich:column>
+						<rich:column width="30%" sortBy="#{documentoAssinadoItem.arquivo.descricao}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ArquivoAssinado_descricao}" />
+							</f:facet>
+							<h:outputText id="descricao" value="#{documentoAssinadoItem.arquivo.descricao}" />
+						</rich:column>
+						<rich:column width="40%" sortBy="#{documentoAssinadoItem.matricula.aluno.nome}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ArquivoAssinado_requerente}" />
+							</f:facet>
+							<h:outputText id="pessoaNome" value="#{documentoAssinadoItem.matricula.aluno.nome}" />
+						</rich:column>
+						<rich:column width="10%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_bt.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="emitirdocumentoAssinadoItem" render="formDocumentoAssinado, form" action="#{HistoricoAlunoRelControle.imprimirDocumentoAssinadoJaGerada}" tooltip="#{documentoAssinadoItem.tipoOrigemDocumentoAssinadoEnum.xmlMec ? 'Download Xml' : 'Realizar Download'}" oncomplete="#{HistoricoAlunoRelControle.download}" icon="#{documentoAssinadoItem.tipoOrigemDocumentoAssinadoEnum.xmlMec ? msg_botoes.btn_icon_xml : msg_botoes.btn_icon_download} iconePequeno" />
+							<otm:commandIcon id="downloadRepresentacaoVisualHistorico" render="formDocumentoAssinado, form" action="#{HistoricoAlunoRelControle.imprimirArquivoVisualDocumentoAssinadoJaGerada}" tooltip="Download Representação Visual" oncomplete="#{HistoricoAlunoRelControle.download}" icon="#{msg_botoes.btn_icon_pdf} iconePequeno" rendered="#{documentoAssinadoItem.tipoOrigemDocumentoAssinadoEnum.xmlMec}" />
+						</rich:column>
+					</rich:dataTable>
+					<rich:dataScroller align="center" for="itemsDocumentosAssinados" id="paginador" render="formDocumentoAssinado" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		<rich:popupPanel styleClass="modalMaximizado" id="panelListaErroGeracaoDiploma" shadowOpacity="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="AVISO" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formListaErroGeracaoDiploma">
+				<rich:dataTable rowKeyVar="row" id="listaErroGeracaoDiploma" value="#{HistoricoAlunoRelControle.listaErroHistoricoEscolarDigital}" var="erroItem" headerClass="consulta" style="width:100%" rows="10">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Erros Localizados ao Gerar Arquivo XML" />
+						</f:facet>
+						<h:panelGroup styleClass="float-left">
+							<h:outputText value="#{row + 1}. #{erroItem}" />
+						</h:panelGroup>
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller for="listaErroGeracaoDiploma" id="scrollListaErroGeracaoDiploma" align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton oncomplete="#{rich:component('panelListaErroGeracaoDiploma')}.hide();" value="Fechar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger2" accesskey="2" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		<rich:popupPanel styleClass="modalMaximizado" id="panelListaErroGeracaoDiplomaLote" shadowOpacity="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="AVISO - Erros Localizados ao Gerar Arquivo XML" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formListaErroGeracaoDiplomaLote">
+				<rich:dataTable id="listaErroGeracaoDiplomaLote" value="#{HistoricoAlunoRelControle.listaErroHistoricoAlunoRel}" var="erroLoteItem" headerClass="consulta" style="width:100%; margin-bottom: 25px !important;" rows="10">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Matrícula" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{erroLoteItem.matriculaVO.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Aluno" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{erroLoteItem.matriculaVO.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Erro(s)" />
+						</f:facet>
+						<rich:dataTable id="dataTable_erroLote" value="#{erroLoteItem.consistirException.listaMensagemErro}" var="consistirExceItens" rowKeyVar="row" rows="10">
+							<rich:column>
+								<h:outputText value="#{row+1} - #{consistirExceItens}" />
+							</rich:column>
+							<f:facet name="footer">
+								<rich:dataScroller for="dataTable_erroLote" id="dataScroller_erroLote" maxPages="10" />
+							</f:facet>
+						</rich:dataTable>
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller for="listaErroGeracaoDiplomaLote" id="scrollListaErroGeracaoDiplomaLote" align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton oncomplete="#{rich:component('panelListaErroGeracaoDiplomaLote')}.hide();" value="Fechar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger2" accesskey="2" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		<h:form id="form">
+			<a4j:jsFunction id="reload" name="reload" render="form, modalProgressBar" action="#{HistoricoAlunoRelControle.downloadProgressBar}" oncomplete="#{HistoricoAlunoRelControle.progressBarVO.oncomplete}" execute="@this"></a4j:jsFunction>
+			<h:commandLink action="#{HistoricoAlunoRelControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup id="panelGridPrincipal">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" id="consultaTurma" value="#{HistoricoAlunoRelControle.campoFiltroPor}">
+							<a4j:ajax event="change" render="form" listener="#{HistoricoAlunoRelControle.montarListaSelectItemUnidadeEnsino}" />
+							<f:selectItems value="#{HistoricoAlunoRelControle.tipoConsultaComboFiltroPor}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_unidadeEnsino}" />
+						<h:selectOneMenu id="unidadeensinoAluno" readonly="#{HistoricoAlunoRelControle.isExisteUnidadeEnsino}" styleClass="form-control #{HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura ? 'campos' : 'camposObrigatorios'}" value="#{HistoricoAlunoRelControle.unidadeEnsinoVO.codigo}">
+							<a4j:ajax event="change" render="form" listener="#{HistoricoAlunoRelControle.limparIdentificador}" execute="@this" />
+							<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemUnidadeEnsino}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.isApresentarComboTipoDesconto}">
+						<h:outputText styleClass="tituloCampos" rendered="#{HistoricoAlunoRelControle.isApresentarComboTipoDesconto}" value="#{msg_aplic.prt_HistoricoAlunoRel_tipoDesconto}" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoAlunoRelControle.campoConsultaTipoDesconto}" rendered="#{HistoricoAlunoRelControle.isApresentarComboTipoDesconto}">
+							<a4j:ajax event="change" render="form" listener="#{HistoricoAlunoRelControle.montarListaSelectItemDesconto}" />
+							<f:selectItems value="#{HistoricoAlunoRelControle.tipoConsultaComboTipoDesconto}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{HistoricoAlunoRelControle.isFiltrarPorturma}">
+						<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{HistoricoAlunoRelControle.isFiltrarPorturma}">
+							<h:outputText rendered="#{HistoricoAlunoRelControle.isFiltrarPorturma}" styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_identificador}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{HistoricoAlunoRelControle.isFiltrarPorturma}">
+								<h:inputText id="turma" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{HistoricoAlunoRelControle.turmaVO.identificadorTurma}" />
+								<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" tooltip="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" tooltip="Limpas Dados" action="#{HistoricoAlunoRelControle.limparIdentificador}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{HistoricoAlunoRelControle.isFiltrarPorSemestre}">
+							<h:outputText rendered="#{HistoricoAlunoRelControle.isFiltrarPorSemestre}" styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_semestre}" />
+							<h:selectOneMenu styleClass="form-control campos" id="semestre" value="#{HistoricoAlunoRelControle.semestre}">
+								<f:selectItems value="#{HistoricoAlunoRelControle.tipoConsultaComboSemestre}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{HistoricoAlunoRelControle.isFiltrarPorAno}">
+							<h:outputText rendered="#{HistoricoAlunoRelControle.isFiltrarPorAno}" styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_ano}" />
+							<h:inputText rendered="#{HistoricoAlunoRelControle.isFiltrarPorAno}" id="ano" size="4" maxlength="4" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.ano}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{HistoricoAlunoRelControle.isFiltrarPorAluno}">
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{HistoricoAlunoRelControle.isFiltrarPorAluno}">
+							<h:outputText rendered="#{HistoricoAlunoRelControle.isFiltrarPorAluno}" styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_matriculaAluno}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{HistoricoAlunoRelControle.isFiltrarPorAluno}">
+							<otm:sugestionBox id="sugestionRAMAtricula" render="form"  bean="#{HistoricoAlunoRelControle}" autoCompleteMatricula="true"  value="#{HistoricoAlunoRelControle.matriculaVO.matricula}"  action="#{HistoricoAlunoRelControle.consultarAlunoPorMatricula}"   ></otm:sugestionBox>
+						
+							<!-- <h:inputText id="alunoMatricula" size="20" styleClass="form-control camposObrigatorios" value="#{HistoricoAlunoRelControle.matriculaVO.matricula}">
+								<a4j:ajax event="change" listener="#{HistoricoAlunoRelControle.consultarAlunoPorMatricula}" render="form" execute="@this" />
+							</h:inputText> -->
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-8" rendered="#{HistoricoAlunoRelControle.isFiltrarPorAluno}">
+							<h:inputText id="alunoNome" size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HistoricoAlunoRelControle.matriculaVO.aluno.nome}" />
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosAluno" tooltip="Localizar Aluno" render="formAluno" oncomplete="#{rich:component('panelAluno')}.show();" action="#{HistoricoAlunoRelControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAluno" tooltip="Limpas Dados" action="#{HistoricoAlunoRelControle.limparDadosAluno}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura}">
+						<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura}">
+							<h:outputText rendered="#{HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura}" styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_ProgramacaoFormatura}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura}">
+								<h:inputText id="programacaoFormatura" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{HistoricoAlunoRelControle.programacaoFormaturaVO.codigo} - #{HistoricoAlunoRelControle.programacaoFormaturaVO.colacaoGrauVO.titulo}" />
+								<span class="append-icon right"> <otm:commandIcon id="consultaDadosProgramacaoFormatura" tooltip="Localizar Programação de Formatura" render="formProgramacaoFormatura" oncomplete="#{rich:component('panelProgramacaoFormatura')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosProgramacaoFormatura" tooltip="Limpas Dados" action="#{HistoricoAlunoRelControle.limparProgramacaoFormatura}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn mt5">
+						<otm2:panel name="panel_aluno" styleClassFooter="dn" opened="true" styleClassHeader="bg-gray p10 rounded-top" rendered="#{!empty HistoricoAlunoRelControle.matriculaVO.aluno.nome and HistoricoAlunoRelControle.isFiltrarPorAluno or !empty HistoricoAlunoRelControle.turmaVO.identificadorTurma and HistoricoAlunoRelControle.isFiltrarPorturma or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto  or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}" stylePanel="min-height: 90px">
+							<ui:define name="header">
+								<h:panelGroup rendered="#{!empty HistoricoAlunoRelControle.matriculaVO.aluno.nome and HistoricoAlunoRelControle.isFiltrarPorAluno}">
+									<i class="fas fa-user-graduate mr5"></i>
+								</h:panelGroup>
+								<h:panelGroup rendered="#{HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura}">
+									<i class="fas fa-user-graduate mr5"></i>
+								</h:panelGroup>
+								<h:panelGroup rendered="#{!empty HistoricoAlunoRelControle.turmaVO.identificadorTurma and HistoricoAlunoRelControle.isFiltrarPorturma}">
+									<img src="https://img.icons8.com/dotty/20/000000/class.png" />
+								</h:panelGroup>
+								<h:panelGroup rendered="#{!empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto}">
+									<i class="#{msg_botoes.btn_icon_dollar_embutido} mr5"></i>
+								</h:panelGroup>
+								<h:outputText value="Dados Turma" rendered="#{!empty HistoricoAlunoRelControle.turmaVO.identificadorTurma and HistoricoAlunoRelControle.isFiltrarPorturma}" styleClass="ml5 tituloCampos font-weight-bold" />
+								<h:outputText value="Dados Para Emissão" rendered="#{HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura}" styleClass="ml5 tituloCampos font-weight-bold" />
+								<h:outputText value="Dados Aluno" rendered="#{!empty HistoricoAlunoRelControle.matriculaVO.aluno.nome and HistoricoAlunoRelControle.isFiltrarPorAluno}" styleClass="tituloCampos font-weight-bold" />
+								<h:outputText value="Dados Desconto" rendered="#{!empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto}" styleClass="tituloCampos font-weight-bold" />
+							</ui:define>
+							<ui:define name="body">
+								
+				<h:panelGroup layout="block" rendered="#{HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura}" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_FiltroTrazerAlunosProgramacaoFormatura}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" id="trazerAlunosProgramacaoAula" value="#{HistoricoAlunoRelControle.filtroAlunosPresentesColacaoGrau}">
+						<f:selectItems value="#{HistoricoAlunoRelControle.comboFiltroAlunosPresentesColacaoGrau}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}" styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_aluno}" />
+									<h:inputText readonly="true" id="alunoCPF" onkeypress="return mascara(this.form, 'form:alunoCPF', '999.999.999-99', event);" size="14" maxlength="14" styleClass="form-control camposSomenteLeitura" value="#{HistoricoAlunoRelControle.matriculaVO.aluno.CPF}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_situacao}" />
+									<h:inputText id="situacao" size="28" maxlength="40" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{HistoricoAlunoRelControle.matriculaVO.situacao_Apresentar}" />
+								</h:panelGroup>
+								<!-- 					<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}" styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_unidadeEnsino}" /> -->
+								<!-- 					<h:inputText rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}"  id="unidadeEnsino" size="60" styleClass="form-control camposSomenteLeitura" value="#{HistoricoAlunoRelControle.matriculaVO.unidadeEnsino.nome}" /> -->
+								<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}" styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_curso}" />
+									<h:inputText rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}" readonly="true" id="nomeCurso" size="50" maxlength="50" styleClass="form-control camposSomenteLeitura" value="#{HistoricoAlunoRelControle.matriculaVO.curso.nome}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}" styleClass="tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_turma}" />
+									<h:inputText rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}" readonly="true" id="identificadorTurmaAluno" size="30" maxlength="50" styleClass="form-control camposSomenteLeitura" value="#{HistoricoAlunoRelControle.turmaAluno.identificadorTurma}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_observacaoComplementar}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputTextarea cols="60" id="conteudoRa" rows="3" styleClass="form-control" value="#{HistoricoAlunoRelControle.observacaoComplementar}" />
+										<h:panelGroup styleClass="append-icon right" rendered="#{!empty HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoComplementarVOs}">
+											<a4j:commandLink id="btn-alterarObs" styleClass="botoes">
+												<i class="fas fa-exchange-alt"></i>
+											</a4j:commandLink>
+											<rich:tooltip target="btn-alterarObs" followMouse="false" direction="auto" horizontalOffset="-2" verticalOffset="-2" style="width: 80% !important">
+												<rich:list type="definitions" value="#{HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoComplementarVOs}" var="configuracaoObservacaoHistoricoItem">
+
+													<h:panelGroup layout="block" styleClass="row" style="width:100%;border-bottom:1px solid #fff;margin-bottom:5px">
+														<h:panelGroup styleClass="col-md-11" style="width:100%; text-align:left;display:inline-block">
+															<a4j:commandLink id="ativarObservacao11" execute="@form" title="Selecionar Observação" styleClass="tituloCampos" action="#{HistoricoAlunoRelControle.setObservacaoComplementar(configuracaoObservacaoHistoricoItem.observacao)}" render="form:conteudoRa">
+																<h:outputText styleClass="tituloCampos" style="width:100%;" value="#{configuracaoObservacaoHistoricoItem.observacao}"></h:outputText>
+															</a4j:commandLink>
+								</h:panelGroup>
+														<h:panelGroup styleClass="col-md-1" style="width:100%; text-align:right;display:inline-block; position:relative; top:4px">
+															<otm:commandIcon id="ativarObservacao1" icon="#{msg_botoes.btn_icon_selecionar_embutido} text-success" execute="@form" tooltip="Selecionar Observação" action="#{HistoricoAlunoRelControle.setObservacaoComplementar(configuracaoObservacaoHistoricoItem.observacao)}" render="form:conteudoRa">
+
+
+															</otm:commandIcon>
+														</h:panelGroup>
+													</h:panelGroup>
+												</rich:list>
+											</rich:tooltip>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarGradeCurricular}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarGradeCurricular}" styleClass="tituloCampos" value="#{msg_aplic.prt_GradeCurricular_tituloForm}" />
+									<h:selectOneMenu rendered="#{HistoricoAlunoRelControle.apresentarGradeCurricular}" id="filtroGradeCurricular" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.gradeCurricularVO.codigo}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemGradeCurricular}" />
+										<a4j:ajax event="change" listener="#{HistoricoAlunoRelControle.consultarObservacaoComplementar}" render="form:conteudoRa" execute="@this" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.isApresentarComboDescontoPlanofinanceiro}">
+									<h:outputText id="descontoPlanoFinanceiroText" rendered="#{HistoricoAlunoRelControle.isApresentarComboDescontoPlanofinanceiro}" styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_descontoPlanoFinanceiro}" />
+									<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoAlunoRelControle.itemPlanoFinanceiroAlunoVO.planoDesconto.codigo}" rendered="#{HistoricoAlunoRelControle.isApresentarComboDescontoPlanofinanceiro}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemDescontoPlanoFinanceiro}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.isApresentarComboDescontoConvenio}">
+									<h:outputText id="descontoConvenioText" rendered="#{HistoricoAlunoRelControle.isApresentarComboDescontoConvenio}" styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_descontoConvenio}" />
+									<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoAlunoRelControle.itemPlanoFinanceiroAlunoVO.convenio.codigo}" rendered="#{HistoricoAlunoRelControle.isApresentarComboDescontoConvenio}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemDescontoConvenio}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarCampos and (HistoricoAlunoRelControle.isFiltrarPorturma or HistoricoAlunoRelControle.isFiltrarPorDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura))}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampos and (HistoricoAlunoRelControle.isFiltrarPorturma or HistoricoAlunoRelControle.isFiltrarPorDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura))}" styleClass="tituloCampos" value="Nível Educacional" />
+									<h:selectOneMenu id="tipoNivelEducacional" readonly="#{HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura}" styleClass="form-control campos" rendered="#{HistoricoAlunoRelControle.apresentarCampos and (HistoricoAlunoRelControle.isFiltrarPorturma or HistoricoAlunoRelControle.isFiltrarPorDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura))}" value="#{HistoricoAlunoRelControle.tipoNivelEducacional}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemNivelEducacional}" />
+										<a4j:ajax event="change" render="botoesImprimir, tipoLayout" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HistoricoAlunoRelControle.permiteVisualizarAlterarDataExpedicaoDiploma and HistoricoAlunoRelControle.matriculaVO.matricula != '' and HistoricoAlunoRelControle.expedicaoDiplomaVO.codigo != 0}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_dataExpedicaoDiploma}" rendered="#{HistoricoAlunoRelControle.permiteVisualizarAlterarDataExpedicaoDiploma and HistoricoAlunoRelControle.matriculaVO.matricula ne '' and HistoricoAlunoRelControle.expedicaoDiplomaVO.codigo != 0}" />
+									<otm:commandIcon tooltip="Salvar Alterações" icon="#{msg_botoes.btn_icon_gravar_embutido}" action="#{HistoricoAlunoRelControle.gravarAlteracoesExpedicaoDiploma}" execute="form" render="form" />
+									<otm:calendar value="#{HistoricoAlunoRelControle.expedicaoDiplomaVO.dataExpedicao}" id="dataExpedicaoDiplima" datePattern="dd/MM/yyyy" inputClass="form-control campos"  />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HistoricoAlunoRelControle.permiteVisualizarAlterarDataEmissaoHistorico and HistoricoAlunoRelControle.matriculaVO.matricula != '' or (HistoricoAlunoRelControle.permiteVisualizarAlterarDataEmissaoHistorico and  !empty HistoricoAlunoRelControle.turmaVO.identificadorTurma and HistoricoAlunoRelControle.isFiltrarPorturma) or (HistoricoAlunoRelControle.permiteVisualizarAlterarDataEmissaoHistorico and  HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_dataEmissaoHistorico}" rendered="#{HistoricoAlunoRelControle.permiteVisualizarAlterarDataEmissaoHistorico and HistoricoAlunoRelControle.matriculaVO.matricula ne '' or (!empty HistoricoAlunoRelControle.turmaVO.identificadorTurma and HistoricoAlunoRelControle.isFiltrarPorturma) or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}" />
+									<otm:commandIcon tooltip="Salvar Alterações" icon="#{msg_botoes.btn_icon_gravar_embutido} text-dark" action="#{HistoricoAlunoRelControle.gravarAlteracoesEmissaoHistorico}" execute="form" render="form" />
+									<otm:calendar value="#{HistoricoAlunoRelControle.matriculaVO.dataEmissaoHistorico}" id="dataEmissaoHistorico" datePattern="dd/MM/yyyy" inputClass="form-control campos" />
+								</h:panelGroup>
+							</ui:define>
+						</otm2:panel>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn mt5" rendered="#{(!empty HistoricoAlunoRelControle.matriculaVO.aluno.nome and HistoricoAlunoRelControle.isFiltrarPorAluno) or (!empty HistoricoAlunoRelControle.turmaVO.identificadorTurma and HistoricoAlunoRelControle.isFiltrarPorturma) or (!empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto) or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}">
+						<otm2:panel name="panel_impressão" styleClassFooter="dn" opened="true" styleClassHeader="bg-gray p10 rounded-top" stylePanel="min-height: 90px;">
+							<ui:define name="header">
+								<i class="fas fa-cogs mr5"></i>
+								<h:outputText value="Configurações" styleClass="tituloCampos font-weight-bold" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{HistoricoAlunoRelControle.tipoLayout6 or HistoricoAlunoRelControle.tipoLayoutPos14 or HistoricoAlunoRelControle.tipoLayout12Medicina or HistoricoAlunoRelControle.tipoLayoutPersonalizado}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_observacaoComplementarIntegralizado}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputTextarea cols="60" id="conteudoRa2" rows="3" styleClass="form-control" value="#{HistoricoAlunoRelControle.observacaoComplementarIntegralizado}" />
+										<h:panelGroup styleClass="append-icon right" rendered="#{!empty HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoIntegralizacaoVOs}">
+											<a4j:commandLink id="btn-alterarObsInte" styleClass="botoes" rendered="#{!empty HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoIntegralizacaoVOs}">
+												<i class="fas fa-exchange-alt"></i>
+											</a4j:commandLink>
+											<rich:tooltip target="btn-alterarObsInte" followMouse="false" style="width:80% !important" direction="topLeft" horizontalOffset="-2" verticalOffset="-2">
+												<a4j:repeat rendered="#{!empty HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoIntegralizacaoVOs}" value="#{HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoComplementarVOs}" var="configuracaoObservacaoHistoricoItem">
+													<h:panelGroup layout="block" styleClass="row" style="width:100%;border-bottom:1px solid #fff;margin-bottom:5px">
+														<h:panelGroup styleClass="col-md-11" style="width:100%; text-align:left;line-height: 26px;display:inline-block">
+															<a4j:commandLink id="ativarObservacao21" execute="@form" title="Selecionar Observação" action="#{HistoricoAlunoRelControle.setObservacaoComplementarIntegralizado(configuracaoObservacaoHistoricoItem.observacao)}" render="form:conteudoRa2">
+																<h:outputText styleClass="tituloCampos" value="#{configuracaoObservacaoHistoricoItem.observacao}"></h:outputText>
+															</a4j:commandLink>
+								</h:panelGroup>
+														<h:panelGroup styleClass="col-md-1" style="width:100%;line-height: 26px; text-align:right;display:inline-block; position:relative; top:5px">
+															<otm:commandIcon id="ativarObservacao2" icon="#{msg_botoes.btn_icon_selecionar_embutido} text-success" execute="@form" tooltip="Selecionar Observação" action="#{HistoricoAlunoRelControle.setObservacaoComplementarIntegralizado(configuracaoObservacaoHistoricoItem.observacao)}" render="form:conteudoRa2">
+
+															</otm:commandIcon>
+								</h:panelGroup>
+													</h:panelGroup>
+												</a4j:repeat>
+											</rich:tooltip>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{HistoricoAlunoRelControle.tipoLayout8  or HistoricoAlunoRelControle.tipoLayoutPersonalizado}">
+									<h:outputText styleClass="tituloCampos" value="Texto Certificado Estudo" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputTextarea cols="60" id="textoCerticadoEstudo" rows="2" styleClass="form-control" value="#{HistoricoAlunoRelControle.textoCertificadoEstudo}" />
+										<h:panelGroup styleClass="append-icon right" rendered="#{!empty HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoCertificadoEstudosVOs}">
+											<a4j:commandLink id="btn-alterarObsCertEstudo" styleClass="botoes" rendered="#{!empty HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoCertificadoEstudosVOs}">
+												<i class="fas fa-exchange-alt"></i>
+											</a4j:commandLink>
+											<rich:tooltip target="btn-alterarObsCertEstudo" style="width:80% !important" followMouse="false" direction="topLeft" horizontalOffset="-2" verticalOffset="-2">
+												<a4j:repeat rendered="#{!empty HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoCertificadoEstudosVOs}" value="#{HistoricoAlunoRelControle.configuracaoHistoricoVO.configuracaoObservacaoHistoricoCertificadoEstudosVOs}" var="configuracaoObservacaoHistoricoItem">
+
+													<h:panelGroup layout="block" styleClass="row" style="width:100%;border-bottom:1px solid #fff;margin-bottom:5px">
+														<h:panelGroup styleClass="col-md-11" style="width:100%; text-align:left;line-height: 26px;display:inline-block">
+															<a4j:commandLink id="ativarObservacao31" execute="@form" title="Selecionar Observação" action="#{HistoricoAlunoRelControle.setTextoCertificadoEstudo(configuracaoObservacaoHistoricoItem.observacao)}" render="form:textoCerticadoEstudo">
+																<h:outputText styleClass="tituloCampos" value="#{configuracaoObservacaoHistoricoItem.observacao}"></h:outputText>
+															</a4j:commandLink>
+														</h:panelGroup>
+														<h:panelGroup styleClass="col-md-1" style="width:100%;line-height: 26px; text-align:right;display:inline-block; position:relative; top:5px">
+															<otm:commandIcon id="ativarObservacao6" icon="#{msg_botoes.btn_icon_selecionar_embutido} text-success" execute="@form" tooltip="Selecionar Observação" action="#{HistoricoAlunoRelControle.setTextoCertificadoEstudo(configuracaoObservacaoHistoricoItem.observacao)}" render="form:textoCerticadoEstudo">
+
+															</otm:commandIcon>
+														</h:panelGroup>
+													</h:panelGroup>
+												</a4j:repeat>
+											</rich:tooltip>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno or HistoricoAlunoRelControle.isFiltrarPorturma or HistoricoAlunoRelControle.isNivelEducacionalSelecionado or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno or HistoricoAlunoRelControle.isFiltrarPorturma or HistoricoAlunoRelControle.isNivelEducacionalSelecionado or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}" styleClass="tituloCampos" value="Tipo de Layout" />
+									<h:selectOneMenu id="tipoLayout" styleClass="form-control campos" rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno or HistoricoAlunoRelControle.isFiltrarPorturma or HistoricoAlunoRelControle.isNivelEducacionalSelecionado or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}" value="#{HistoricoAlunoRelControle.tipoLayout}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.listaTipoLayout}" />
+										<a4j:ajax event="change" render="form" execute="@form" listener="#{HistoricoAlunoRelControle.carregarDadosLayout}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno or HistoricoAlunoRelControle.isFiltrarPorturma or HistoricoAlunoRelControle.isNivelEducacionalSelecionado or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}">
+									<h:outputText styleClass="tituloCampos" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoLayout7Rel'}" value="#{msg_aplic.prt_HistoricoAlunoRel_ordemDisciplina}" />
+									<h:selectOneMenu id="ordemDisciplinas" rendered="#{HistoricoAlunoRelControle.apresentarCampos  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoLayout7Rel'}" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.ordem}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemOrdemDisciplina}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HistoricoAlunoRelControle.apresentarCamposAluno or HistoricoAlunoRelControle.isFiltrarPorturma or HistoricoAlunoRelControle.isNivelEducacionalSelecionado or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_HistoricoAlunoRel_filtroDisciplinasACursar}" />
+									<otm:selectBooleanCheckbox id="filtroDisciplinasACursar" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.filtroDisciplinasACursar}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{HistoricoAlunoRelControle.apresentarCampos}" />
+								<!-- 								<h:panelGroup layout="block" styleClass="col-md-12"></h:panelGroup> -->
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.apresentarDataInicioTerminoAlteracoesCadastrais}">
+									<h:outputText styleClass="tituloCampos btn-block" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.apresentarDataInicioTerminoAlteracoesCadastrais}" value="#{msg_aplic.prt_HistoricoAlunoRel_dataInicioTermino}" />
+									<otm:selectBooleanCheckbox rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.apresentarDataInicioTerminoAlteracoesCadastrais}" value="#{HistoricoAlunoRelControle.dataInicioTerminoAlteracoesCadastrais}" styleClass="form-control campos">
+										<a4j:ajax event="change" render="form" />
+										<a4j:ajax event="click" execute="@this" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampos}" styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_HistoricoAlunoRel_considerarCargaHorariaCursadaIgualCargaHorariaPrevista}" />
+									<otm:selectBooleanCheckbox id="considerarCargaHorariaCursadaIgualCargaHorariaPrevista" rendered="#{HistoricoAlunoRelControle.apresentarCampos}" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.considerarCargaHorariaCursadaIgualCargaHorariaPrevista}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarCampos  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel'}">
+									<h:outputText styleClass="tituloCampos btn-block" rendered="#{HistoricoAlunoRelControle.apresentarCampos  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel'}" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarCoordenadorComoTitularDisciplina}" />
+									<otm:selectBooleanCheckbox rendered="#{HistoricoAlunoRelControle.apresentarCampos  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel'}" value="#{HistoricoAlunoRelControle.apresentarCoordenadorTitularCurso}" styleClass="form-control campos" id="boolean5" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarCheckBoxApresentarDisciplinaAnoSemestreTransferenciaGrade}">
+									<h:outputText styleClass="tituloCampos btn-block" rendered="#{HistoricoAlunoRelControle.apresentarCheckBoxApresentarDisciplinaAnoSemestreTransferenciaGrade}" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarDisciplinaAnoSemestreTransferenciaGrade}" />
+									<otm:selectBooleanCheckbox rendered="#{HistoricoAlunoRelControle.apresentarCheckBoxApresentarDisciplinaAnoSemestreTransferenciaGrade}" value="#{HistoricoAlunoRelControle.apresentarDisciplinaAnoSemestreTransferenciaGrade}" styleClass="form-control campos" id="boolean6" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarFiltroApresentarDisciplinaPeriodoTrancadoCanceladoTransferido}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarFiltroApresentarDisciplinaPeriodoTrancadoCanceladoTransferido}" styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarDisciplinaPeriodoTrancadoCanceladoTransferido}" />
+									<otm:selectBooleanCheckbox id="boolean7" rendered="#{HistoricoAlunoRelControle.apresentarFiltroApresentarDisciplinaPeriodoTrancadoCanceladoTransferido}" value="#{HistoricoAlunoRelControle.apresentarDisciplinaPeriodoTrancadoCanceladoTransferido}" styleClass="form-control campos" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.mostrarCamposApenasProfessorTitularTurmaOrigem}">
+									<h:outputText styleClass="tituloCampos btn-block" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.mostrarCamposApenasProfessorTitularTurmaOrigem}" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarApenasProfessorTitulacaoTurmaOrigem}" />
+									<otm:selectBooleanCheckbox id="boolean8" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.mostrarCamposApenasProfessorTitularTurmaOrigem}" value="#{HistoricoAlunoRelControle.apresentarApenasProfessorTitulacaoTurmaOrigem}" styleClass="form-control campos" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.possuiPermissaoVisualizarObservacaoTransferenciaMatrizCurricular and HistoricoAlunoRelControle.apresentarCampos}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.possuiPermissaoVisualizarObservacaoTransferenciaMatrizCurricular and HistoricoAlunoRelControle.apresentarCampos}" styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarObservacaoTransferenciaMatrizCurricular}" />
+									<otm:selectBooleanCheckbox rendered="#{HistoricoAlunoRelControle.possuiPermissaoVisualizarObservacaoTransferenciaMatrizCurricular and HistoricoAlunoRelControle.apresentarCampos}" value="#{HistoricoAlunoRelControle.apresentarObservacaoTransferenciaMatrizCurricular}" styleClass="form-control campos">
+										<a4j:ajax event="click" render="panelGridPrincipal, form"></a4j:ajax>
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.isTipoLayout10}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.isTipoLayout10}" styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarMediaNotasSemestreAnteriorAluno}" />
+									<otm:selectBooleanCheckbox id="mediaUltimoSemestreAluno" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.isTipoLayout10}" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.apresentarMediaNotasSemestreAnteriorAluno}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+									<h:outputText styleClass="tituloCampos btn-block" rendered="#{HistoricoAlunoRelControle.apresentarCampos}" value="#{msg_aplic.prt_HistoricoAlunoRel_utilizarUnidadeEnsinoMatriz}" />
+									<otm:selectBooleanCheckbox id="boolean" rendered="#{HistoricoAlunoRelControle.apresentarCampos}" value="#{HistoricoAlunoRelControle.utilizarUnidadeEnsinoMatriz}" styleClass="form-control campos" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_trazerTodosProfessoresDisciplinas}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="trazerTodosProfessoresDisciplinas" value="#{HistoricoAlunoRelControle.trazerTodosProfessoresDisciplinas}" styleClass="form-control campos" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampos}" styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_TextoPadrao_assinarDigitalmente}" />
+									<otm:selectBooleanCheckbox id="boolean2" rendered="#{HistoricoAlunoRelControle.apresentarCampos}" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.assinarDigitalmente}">
+										<a4j:ajax event="change" execute="form" render="form"></a4j:ajax>
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{not empty HistoricoAlunoRelControle.comboboxProvedorAssinaturaPadrao and HistoricoAlunoRelControle.assinarDigitalmente == true}">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProvedorAssinatura}" />
+									<h:selectOneMenu id="provedorPadrao" styleClass="form-control camposObrigatorios" value="#{HistoricoAlunoRelControle.provedorDeAssinaturaEnum}" disabled="#{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.comboboxProvedorAssinaturaPadrao}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+									<h:outputText styleClass="tituloCampos btn-block" rendered="#{HistoricoAlunoRelControle.apresentarCampos}" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarApenasUtlimoHistoricoDisciplina}" />
+									<otm:selectBooleanCheckbox rendered="#{HistoricoAlunoRelControle.apresentarCampos}" value="#{HistoricoAlunoRelControle.apresentarApenasUltimoHistoricoDisciplina}" styleClass="form-control campos" id="boolean3" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampos  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel'}">
+									<h:outputText styleClass="tituloCampos btn-block" rendered="#{HistoricoAlunoRelControle.apresentarCampos  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel'}" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarInstituicaoDisciplinaAproveitada}" />
+									<otm:selectBooleanCheckbox rendered="#{HistoricoAlunoRelControle.apresentarCampos  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel'}" value="#{HistoricoAlunoRelControle.apresentarInstituicaoDisciplinaAproveitada}" styleClass="form-control campos" id="boolean4" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.apresentarBooleanoApresentarFrequencia  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel'}">
+									<h:outputText styleClass="tituloCampos btn-block" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.apresentarBooleanoApresentarFrequencia  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel'}" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarFrequencia}" />
+									<otm:selectBooleanCheckbox rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.apresentarBooleanoApresentarFrequencia  and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedio' and HistoricoAlunoRelControle.tipoLayout ne 'HistoricoAlunoEnsinoMedioLayout3Rel'}" value="#{HistoricoAlunoRelControle.apresentarFrequencia}" styleClass="form-control campos" id="boolean9" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarDisciplinaForaGrade}" />
+									<otm:selectBooleanCheckbox id="boolean10"  styleClass="form-control campos" value="#{HistoricoAlunoRelControle.apresentarDisciplinaForaGrade}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos btn-block"  value="#{msg_aplic.prt_HistoricoAlunoRel_desconsiderarSituacaoMatriculaPeriodo}" />
+									<otm:selectBooleanCheckbox  value="#{HistoricoAlunoRelControle.desconsiderarSituacaoMatriculaPeriodo}" styleClass="form-control campos" id="boolean11" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" >
+									<h:outputText  styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarTopoRelatorio}" />
+									<otm:selectBooleanCheckbox id="boolean12"  value="#{HistoricoAlunoRelControle.apresentarTopoRelatorio}" styleClass="form-control campos" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.tipoLayoutEnsinoMedio1}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.tipoLayoutEnsinoMedio1}" styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarCargaHorariaDisciplina}" />
+									<otm:selectBooleanCheckbox rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.tipoLayoutEnsinoMedio1}" value="#{HistoricoAlunoRelControle.apresentarCargaHorariaDisciplina}" styleClass="form-control campos" id="boolean14" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{HistoricoAlunoRelControle.apresentarObservacaoTransferenciaMatrizCurricular and HistoricoAlunoRelControle.apresentarCampos}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarObservacaoTransferenciaMatrizCurricular and HistoricoAlunoRelControle.apresentarCampos}" styleClass="tituloCampos" value="Observação Transferência Matriz Curricula" />
+									<h:inputTextarea cols="60" id="observacaoTransferenciaMatrizCurricular" rows="3" styleClass="form-control" value="#{HistoricoAlunoRelControle.observacaoTransferenciaMatrizCurricular}" rendered="#{HistoricoAlunoRelControle.apresentarObservacaoTransferenciaMatrizCurricular and HistoricoAlunoRelControle.apresentarCampos}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="tituloCampos" rendered="#{HistoricoAlunoRelControle.layoutPortariaMEC}" value="#{msg_aplic.prt_HistoricoAlunoRel_regraApresentacaoProfessorDisciplinaAproveitamento}" />
+									<h:selectOneMenu value="#{HistoricoAlunoRelControle.regraApresentacaoProfessorDisciplinaAproveitamento}" rendered="#{HistoricoAlunoRelControle.layoutPortariaMEC}" styleClass="form-control camposObrigatorios">
+										<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemRegraApresentacaoProfessorDisciplinaAproveitamento}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:panel>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn mt5" rendered="#{HistoricoAlunoRelControle.apresentarCampos and HistoricoAlunoRelControle.assinarDigitalmente and ((HistoricoAlunoRelControle.isFiltrarPorAluno and HistoricoAlunoRelControle.matriculaVO.curso.nivelEducacionalGraduacaoGraduacaoTecnologica) or (HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura and HistoricoAlunoRelControle.programacaoFormaturaVO.nivelEducacionalGraduacaoGraduacaoTecnologica))}">
+						<otm2:panel name="panel_historicoDigital" styleClassFooter="dn" opened="#{HistoricoAlunoRelControle.gerarXmlHistorico}" styleClassHeader="bg-gray mn p10 rounded-top" stylePanel="min-height: 90px; ">
+							<ui:define name="header">
+								<i class="#{msg_botoes.btn_icon_xml_embutido} mr5"></i>
+								<h:outputText value="Gerar XML Histórico" styleClass="tituloCampos font-weight-bold mr10" />
+								<otm:selectBooleanCheckbox id="gerarXmlHistorico" rendered="#{HistoricoAlunoRelControle.apresentarCampos}" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.gerarXmlHistorico}">
+									<a4j:ajax event="click" execute="form" render="form" listener="#{HistoricoAlunoRelControle.realizarMontagemFuncionarioAssinanteHistorico}" />
+								</otm:selectBooleanCheckbox>
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block" styleClass="col-md-9">
+									<h:outputText styleClass="tituloCampos" value="Unidade de Expedição do XML" />
+									<h:selectOneMenu id="unidadeensinoCertificadora" styleClass="form-control camposObrigatorios" value="#{HistoricoAlunoRelControle.unidadeEnsinoCertificadora.codigo}">
+										<a4j:ajax event="change" execute="this" />
+										<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemUnidadeEnsinoCertificadora}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="Versão Histórico Digital" />
+									<h:selectOneMenu id="versaoDiploma" styleClass="form-control campos camposObrigatorios" value="#{HistoricoAlunoRelControle.versaoDiploma}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemVersaoDiploma}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:panel>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn mt5" rendered="#{HistoricoAlunoRelControle.apresentarCampos and !empty HistoricoAlunoRelControle.matriculaVO.aluno.nome and HistoricoAlunoRelControle.isFiltrarPorAluno or !empty HistoricoAlunoRelControle.turmaVO.identificadorTurma and HistoricoAlunoRelControle.isFiltrarPorturma or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}">
+						<otm2:panel name="panel_filtros" styleClassFooter="dn" opened="true" styleClassHeader="bg-gray p10 rounded-top" stylePanel="min-height: 90px;">
+							<ui:define name="header">
+								<!-- 								<i class="fas fa-filter mr5"></i> -->
+								<!-- 								<h:outputText value="#{msg_aplic.prt_FiltroRelatorioAcademico_historico}" /> -->
+								<h:panelGroup id="panelMarcarDesmarcarSituacaoAcademica" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<i class="fas fa-filter mr5"></i>
+										<h:outputText styleClass="tituloCampos font-weight-bold mr10" value="#{msg_aplic.prt_FiltroRelatorioAcademico_historico} - #{HistoricoAlunoRelControle.isApresentarTextoCheckBoxMarcarDesmarcarTodosFormacaoHistorico}" />
+										<otm:selectBooleanCheckbox value="#{HistoricoAlunoRelControle.marcarTodasSituacoesHistorico}">
+											<a4j:ajax event="click" execute="@this" listener="#{HistoricoAlunoRelControle.realizarSelecaoCheckboxMarcarDesmarcarTodosSituacaoHistorico}" render="panelMarcarDesmarcarSituacaoAcademica, panelSituacaoAcademica" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block" id="panelSituacaoAcademica" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_FiltroRelatorioAcademico_aprovado}" />
+										<otm:selectBooleanCheckbox value="#{HistoricoAlunoRelControle.filtroRelatorioAcademicoVO.aprovado}">
+											<a4j:ajax event="click" execute="@this" listener="#{HistoricoAlunoRelControle.validarfiltroRelatorioAcademicoVOMarcarDesmarcarTodos}" render="panelMarcarDesmarcarSituacaoAcademica , panelSituacaoAcademica" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_FiltroRelatorioAcademico_reprovado}" />
+										<otm:selectBooleanCheckbox value="#{HistoricoAlunoRelControle.filtroRelatorioAcademicoVO.reprovado}">
+											<a4j:ajax event="click" execute="@this" listener="#{HistoricoAlunoRelControle.validarfiltroRelatorioAcademicoVOMarcarDesmarcarTodos}" render="panelMarcarDesmarcarSituacaoAcademica , panelSituacaoAcademica" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_FiltroRelatorioAcademico_trancado}" />
+										<otm:selectBooleanCheckbox value="#{HistoricoAlunoRelControle.filtroRelatorioAcademicoVO.trancamentoHistorico}">
+											<a4j:ajax event="click" execute="@this" listener="#{HistoricoAlunoRelControle.validarfiltroRelatorioAcademicoVOMarcarDesmarcarTodos}" render="panelMarcarDesmarcarSituacaoAcademica , panelSituacaoAcademica" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_FiltroRelatorioAcademico_abandonoCurso}" />
+										<otm:selectBooleanCheckbox value="#{HistoricoAlunoRelControle.filtroRelatorioAcademicoVO.abandonoHistorico}">
+											<a4j:ajax event="click" execute="@this" listener="#{HistoricoAlunoRelControle.validarfiltroRelatorioAcademicoVOMarcarDesmarcarTodos}" render="panelMarcarDesmarcarSituacaoAcademica , panelSituacaoAcademica" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_FiltroRelatorioAcademico_cursando}" />
+										<otm:selectBooleanCheckbox value="#{HistoricoAlunoRelControle.filtroRelatorioAcademicoVO.cursando}">
+											<a4j:ajax event="click" execute="@this" listener="#{HistoricoAlunoRelControle.validarfiltroRelatorioAcademicoVOMarcarDesmarcarTodos}" render="panelMarcarDesmarcarSituacaoAcademica , panelSituacaoAcademica" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_FiltroRelatorioAcademico_cancelado}" />
+										<otm:selectBooleanCheckbox value="#{HistoricoAlunoRelControle.filtroRelatorioAcademicoVO.canceladoHistorico}">
+											<a4j:ajax event="click" execute="@this" listener="#{HistoricoAlunoRelControle.validarfiltroRelatorioAcademicoVOMarcarDesmarcarTodos}" render="panelMarcarDesmarcarSituacaoAcademica , panelSituacaoAcademica" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_FiltroRelatorioAcademico_transferidoHistorico}" />
+										<otm:selectBooleanCheckbox value="#{HistoricoAlunoRelControle.filtroRelatorioAcademicoVO.transferidoHistorico}">
+											<a4j:ajax event="click" execute="@this" listener="#{HistoricoAlunoRelControle.validarfiltroRelatorioAcademicoVOMarcarDesmarcarTodos}" render="panelMarcarDesmarcarSituacaoAcademica , panelSituacaoAcademica" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_FiltroRelatorioAcademico_jubilado}" />
+										<otm:selectBooleanCheckbox value="#{HistoricoAlunoRelControle.filtroRelatorioAcademicoVO.jubilado}">
+											<a4j:ajax event="click" execute="@this" listener="#{HistoricoAlunoRelControle.validarfiltroRelatorioAcademicoVOMarcarDesmarcarTodos}" render="panelMarcarDesmarcarSituacaoAcademica , panelSituacaoAcademica" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:panel>
+					</h:panelGroup>
+
+					<!-- 						FUNCIONÁRIO PRINCIPAL -->
+					<h:panelGroup layout="block" styleClass="col-md-12 pn mt5" rendered="#{!empty HistoricoAlunoRelControle.matriculaVO.aluno.nome and HistoricoAlunoRelControle.isFiltrarPorAluno or !empty HistoricoAlunoRelControle.turmaVO.identificadorTurma and HistoricoAlunoRelControle.isFiltrarPorturma or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or !empty HistoricoAlunoRelControle.campoConsultaTipoDesconto and HistoricoAlunoRelControle.isApresentarComboTipoDesconto or (HistoricoAlunoRelControle.programacaoFormaturaVO.codigo != 0 and HistoricoAlunoRelControle.isFiltrarPorProgramacaoFormatura)}">
+						<otm2:panel name="panel_assinatura" styleClassFooter="dn" opened="true" styleClassHeader="bg-gray mn p10 rounded-top" stylePanel="min-height: 90px; ">
+							<ui:define name="header">
+								<i class="fas fa-signature mr5"></i>
+								<h:outputText value="Assinaturas" styleClass="tituloCampos font-weight-bold" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+									<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+										<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampos}" styleClass="tituloCampos" value="#{HistoricoAlunoRelControle.gerarXmlHistorico ? 'Assinatura Funcionário E-CPF' : 'Assinatura Funcionário 1ª'}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+										<h:inputText id="funcionarioMatriculaPrincipal" size="18" styleClass="form-control #{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? 'camposObrigatorios' : 'campos'}" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.funcionarioPrincipalVO.matricula}">
+											<a4j:ajax event="change" focus="imprimirPDF" listener="#{HistoricoAlunoRelControle.consultarFuncionarioPrincipal}" render="form" />
+										</h:inputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-8" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+										<h:inputText id="funcionarioNomePrincipal" size="42" styleClass="form-control #{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? 'camposObrigatorios' : 'campos'}" readonly="true" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.funcionarioPrincipalVO.pessoa.nome}" />
+										<span class="append-icon right"> <otm:commandIcon id="consultaDadosFuncionarioPrincipal" tooltip="Localizar Funcionario" render="formFuncionarioPrincipal" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.show();" action="#{HistoricoAlunoRelControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosFuncionarioPrincipal" tooltip="Limpar Dados" action="#{HistoricoAlunoRelControle.limparDadosFuncionarioPrincipal}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioPrincipal}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioPrincipal}" styleClass="tituloCampos" value="#{msg_aplic.prt_DiplomaAlunoRel_funcionarioCargo} #{HistoricoAlunoRelControle.gerarXmlHistorico ? 'Funcionário - E-CPF' : 'Funcionário - 1ª'}" />
+									<h:selectOneMenu rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioPrincipal}" styleClass="form-control #{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? 'camposObrigatorios' : 'campos'}" id="cargoFuncionarioPrincipal" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.cargoFuncionarioPrincipal.codigo}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.selectItemsCargoFuncionarioPrincipal}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioPrincipal}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioPrincipal}" styleClass="tituloCampos" value="#{msg_aplic.prt_DiplomaAlunoRel_funcionarioTitulo} #{HistoricoAlunoRelControle.gerarXmlHistorico ? 'Funcionário - E-CPF' : 'Funcionário - 1ª'}" />
+									<h:inputText rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioPrincipal}" id="funcionarioTitulo1" size="20" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.tituloFuncionarioPrincipal}" />
+								</h:panelGroup>
+								<hr class="col-md-12 pn" />
+								<!-- 						FUNCIONÁRIO SECUNDÁRIO -->
+								<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+									<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+										<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampos}" styleClass="tituloCampos" value="#{HistoricoAlunoRelControle.gerarXmlHistorico ? 'Assinatura Funcionário E-CNPJ' : 'Assinatura Funcionário 2ª'}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+										<h:inputText id="funcionarioMatriculaSecundario" size="18" styleClass="form-control #{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? 'camposObrigatorios' : 'campos'}" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.funcionarioSecundarioVO.matricula}">
+											<a4j:ajax event="change" focus="imprimirPDF" listener="#{HistoricoAlunoRelControle.consultarFuncionarioSecundario}" render="form" />
+										</h:inputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-8" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+										<h:inputText id="funcionarioNomeSecundario" size="42" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.funcionarioSecundarioVO.pessoa.nome}" />
+										<span class="append-icon right"> <otm:commandIcon id="consultaDadosFuncionarioSecundario" tooltip="Localizar Funcionario" render="formFuncionarioSecundario" oncomplete="#{rich:component('panelFuncionarioSecundario')}.show();" action="#{HistoricoAlunoRelControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosFuncionarioSecundario" tooltip="Limpar Dados" action="#{HistoricoAlunoRelControle.limparDadosFuncionarioSecundario}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioSecundario}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioSecundario}" styleClass="tituloCampos" value="#{msg_aplic.prt_DiplomaAlunoRel_funcionarioCargo} #{HistoricoAlunoRelControle.gerarXmlHistorico ? 'Funcionário - E-CNPJ' : 'Funcionário - 2ª'}" />
+									<h:selectOneMenu rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioSecundario}" styleClass="form-control #{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? 'camposObrigatorios' : 'campos'}" id="cargoFuncionarioSecundario" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.cargoFuncionarioSecundario.codigo}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.selectItemsCargoFuncionarioSecundario}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioSecundario}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioSecundario}" styleClass="tituloCampos" value="#{msg_aplic.prt_DiplomaAlunoRel_funcionarioTitulo} #{HistoricoAlunoRelControle.gerarXmlHistorico ? 'Funcionário - E-CNPJ' : 'Funcionário - 2ª'}" />
+									<h:inputText rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioSecundario}" id="funcionarioTitulo2" size="20" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.tituloFuncionarioSecundario}" />
+								</h:panelGroup>
+								<hr class="col-md-12" />
+								<!-- 						FUNCIONÁRIO TERCIÁRIO -->
+								<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{HistoricoAlunoRelControle.apresentarCampos and !HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital}">
+									<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+										<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampos}" styleClass="tituloCampos" value="Assinatura Funcionário 3ª" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+										<h:inputText id="funcionarioMatriculaTerciario" size="18" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.funcionarioTerciarioVO.matricula}">
+											<a4j:ajax event="change" focus="imprimirPDF" listener="#{HistoricoAlunoRelControle.consultarFuncionarioTerciario}" render="form" />
+										</h:inputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-8" rendered="#{HistoricoAlunoRelControle.apresentarCampos}">
+										<h:inputText id="funcionarioNomeTerciario" size="42" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.funcionarioTerciarioVO.pessoa.nome}" />
+										<span class="append-icon right"> <otm:commandIcon id="consultaDadosFuncionarioTerciario" tooltip="Localizar Funcionario" render="formFuncionarioTerciario" oncomplete="#{rich:component('panelFuncionarioTerciario')}.show();" action="#{HistoricoAlunoRelControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosFuncionarioTerciario" tooltip="Limpar Dados" action="#{HistoricoAlunoRelControle.limparDadosFuncionarioTerciario}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioTerciario and !HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioTerciario}" styleClass="tituloCampos" value="#{msg_aplic.prt_DiplomaAlunoRel_funcionarioCargo} Funcionário - 3ª" />
+									<h:selectOneMenu rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioTerciario}" styleClass="form-control campos" id="cargoFuncionarioTerciario" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.cargoFuncionarioTerciario.codigo}">
+										<f:selectItems value="#{HistoricoAlunoRelControle.selectItemsCargoFuncionarioTerciario}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioTerciario and !HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital}">
+									<h:outputText rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioTerciario}" styleClass="tituloCampos" value="#{msg_aplic.prt_DiplomaAlunoRel_funcionarioTitulo} Funcionário - 3ª" />
+									<h:inputText rendered="#{HistoricoAlunoRelControle.apresentarCampoCargoFuncionarioTerciario}" id="funcionarioTitulo3" size="20" styleClass="form-control campos" value="#{HistoricoAlunoRelControle.historicoAlunoRelVO.tituloFuncionarioTerciario}" />
+								</h:panelGroup>
+							</ui:define>
+						</otm2:panel>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup columns="1" id="panelMsg" width="100%" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{HistoricoAlunoRelControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="botoesImprimir" layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton rendered="#{HistoricoAlunoRelControle.campoFiltroPor eq 'turma' or HistoricoAlunoRelControle.campoFiltroPor eq 'programacaoFormatura'}" render="form, formMsgTitulacaoCurso, modalProgressBar, formListaErroGeracaoDiploma, formListaErroGeracaoDiplomaLote" id="imprimirPDF" action="#{HistoricoAlunoRelControle.executarInicioProgressBar}" value="#{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? 'gerar histórico digital' : 'Gerar Relatório (PDF)'}" icon="#{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? msg_botoes.btn_icon_gerar_relatorio_embutido : msg_botoes.btn_icon_pdf_embutido}" styleClass="btn #{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? 'btn-info' : 'btn-danger'} mr5" accesskey="2" image="#{resource['imagens/botaoGerarRelatorioPdf.png']}" />
+					<otm:commandButton rendered="#{HistoricoAlunoRelControle.campoFiltroPor eq 'aluno'}" render="form, formMsgTitulacaoCurso, formListaErroGeracaoDiploma" id="imprimirPDFAluno" action="#{HistoricoAlunoRelControle.executarInicioProgressBar()}" oncomplete="#{HistoricoAlunoRelControle.download};#{HistoricoAlunoRelControle.mostraMsgProfessorTitulacao};#{HistoricoAlunoRelControle.oncomplete};" value="#{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? 'gerar histórico digital' : 'Gerar Relatório (PDF)'}" icon="#{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? msg_botoes.btn_icon_gerar_relatorio_embutido : msg_botoes.btn_icon_pdf_embutido}" styleClass="btn #{HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital ? 'btn-info' : 'btn-danger'} mr5" accesskey="2" image="#{resource['imagens/botaoGerarRelatorioPdf.png']}" />
+					<otm:commandButton rendered="#{!HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital and (HistoricoAlunoRelControle.isLayoutPos2 and HistoricoAlunoRelControle.campoFiltroPor eq 'turma' or HistoricoAlunoRelControle.campoFiltroPor eq 'programacaoFormatura')}" render="form, formMsgTitulacaoCurso, modalProgressBar" id="imprimirExcel" action="#{HistoricoAlunoRelControle.executarInicioProgressBarExcell}" value="Gerar Relatório (EXCEL)" icon="#{msg_botoes.btn_icon_excel_embutido}" styleClass="btn btn-info mr5" accesskey="2" image="#{resource['imagens/botaoGerarRelatorioPlanilha.png']}" />
+					<otm:commandButton rendered="#{!HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital and (HistoricoAlunoRelControle.isLayoutPos2 and HistoricoAlunoRelControle.campoFiltroPor eq 'aluno')}" render="form, formMsgTitulacaoCurso" id="imprimirExcelAluno" oncomplete="#{HistoricoAlunoRelControle.download};#{HistoricoAlunoRelControle.mostraMsgProfessorTitulacao}" action="#{HistoricoAlunoRelControle.executarInicioProgressBarExcell}" value="Gerar Relatório (Excel)" icon="#{msg_botoes.btn_icon_excel_embutido}" styleClass="btn btn-info mr5" accesskey="2" image="#{resource['imagens/botaoGerarRelatorioPlanilha.png']}" />
+					<otm:commandButton render="formDocumentoAssinado" id="documentosAssinados" value="Visualizar Históricos Assinados" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" image="#{resource['imagens/botaoDocumentosAssinados.png']}" oncomplete="#{rich:component('panelDocumentoAssinado')}.show()" rendered="#{HistoricoAlunoRelControle.isFiltrarPorAluno and HistoricoAlunoRelControle.matriculaVO.matricula != '' and HistoricoAlunoRelControle.exibirListaDocumentoAssinados}" />
+					<otm:commandButton id="abrirModalErro" value="Log lista erro" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelListaErroGeracaoDiploma')}.show();" render="formListaErroGeracaoDiploma" rendered="#{!empty HistoricoAlunoRelControle.listaErroHistoricoEscolarDigital and HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital}" />
+					<otm:commandButton id="abrirModalErroLote" value="Log lista erro" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelListaErroGeracaoDiplomaLote')}.show();" render="formListaErroGeracaoDiplomaLote" rendered="#{!empty HistoricoAlunoRelControle.listaErroHistoricoAlunoRel and HistoricoAlunoRelControle.gerarXmlHistoricoEscolarDigital}" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+
+		<rich:popupPanel id="panelConfiguracaoObservacao" styleClass="modalMaximizado50" style="z-index: 4000 !important" shadowOpacity="true" width="500" height="300" zindex="3500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Observação" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelConfiguracaoObservacao">
+						<rich:componentControl target="panelConfiguracaoObservacao" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConfiguracaoObservacao">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:outputText styleClass="tituloCampos" value="Tipo Observação" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoAlunoRelControle.configuracaoObservacaoHistoricoVO.tipoObservacaoHistorico}">
+						<f:selectItems value="#{HistoricoAlunoRelControle.listaSelectItemTipoObservacaoHistorico}"></f:selectItems>
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row">
+					<h:outputText styleClass="tituloCampos" value="Observação" />
+					<h:inputTextarea styleClass="form-control camposObrigatorios" style="height:150px" rows="6" value="#{HistoricoAlunoRelControle.configuracaoObservacaoHistoricoVO.observacao}"></h:inputTextarea>
+				</h:panelGroup>
+				<h:panelGroup styleClass="row" layout="block">
+					<otm:mensagem bean="#{HistoricoAlunoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton styleClass="btn btn-dark btn-gravar" value="#{msg_botoes.btn_gravar}" oncomplete="#{HistoricoAlunoRelControle.oncompleteModal}" action="#{HistoricoAlunoRelControle.adicionarObservacaoLayout}" render="formConfiguracao, formConfiguracaoObservacao"></otm:commandButton>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelConfiguracaoLayout" styleClass="modalMaximizado" shadowOpacity="true" style="z-index: 5000 !important" width="800" height="600" domElementAttachment="parent" zindex="4000">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Incluir/Editar Layout" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelConfigurarLay">
+						<rich:componentControl target="panelConfiguracaoLayout" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConfiguracaoLayout">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="#{!HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.layoutFixoSistema ? 'col-md-8' : 'col-md-12'}">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ConfiguracaoLayoutHistorico_descricao}"></h:outputText>
+						<h:inputText id="descricaoCLHIn" styleClass="form-control camposObrigatorios" value="#{HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.descricao}"></h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{!HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.layoutFixoSistema}" styleClass="col-md-4">
+						<h:outputText styleClass="tituloCampos" value="Seguir Regras Layout">
+						</h:outputText>
+						<h:selectOneMenu styleClass="form-control campos" value="#{HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.chave}">
+							<f:selectItems value="#{HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.configuracaoHistoricoVO.listaSelectItemLayoutPadrao}"></f:selectItems>
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt10">
+						<h:outputText value="#{msg_aplic.prt_ConfiguracaoLayoutHistorico_layouts} PDF"></h:outputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<a4j:jsFunction name="uploadPdf" action="#{HistoricoAlunoRelControle.setTipoRelatorioEnum('PDF')}"></a4j:jsFunction>
+						<rich:fileUpload listHeight="60" styleClass="col-md-12 pn" listWidth="450" execute="@form" noDuplicate="true" onclick="uploadPdf()" fileUploadListener="#{HistoricoAlunoRelControle.uploadLayout}" acceptedTypes="jasper" maxFilesQuantity="1" addLabel="ADICIONAR ARQUIVO COM A EXTENSÃO .jasper" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{HistoricoAlunoRelControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." uploadLabel="Enviar" clearAllLabel="Limpar lista" onupload="return validarTamanhoUploadArquivo(event, 'formConfiguracaoLayout', #{HistoricoAlunoRelControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload});" serverErrorLabel="Falha de Transmissão" immediateUpload="true" id="upload">
+							<a4j:ajax event="uploadcomplete" render="formConfiguracaoLayout" execute="@this" />
+							<a4j:ajax event="typerejected" oncomplete="alert('Formato inválido do arquivo. Aceita somente extensões jasper');" render="upload" execute="@this" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row ml5 p5 mt10" rendered="#{!empty HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.arquivoPdfVOs}" style="border:1px solid #ced4da; border-radius: .2rem; width: 99.3%;">
+						<a4j:repeat value="#{HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.arquivoPdfVOs}" var="arquivoItem">
+							<h:panelGroup layout="block" styleClass="row ml10 lh30">
+								<h:panelGroup layout="block" styleClass="col-md-8">
+									<h:outputText styleClass="tituloCampos" value="#{arquivoItem.descricao}"></h:outputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="Arquivo Principal"></h:outputText>
+									<otm:selectBooleanCheckbox id="arquivoIreportPrincipalAddPDF" value="#{arquivoItem.arquivoIreportPrincipal}" disabled="#{HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.layoutFixoSistema or arquivoItem.arquivoIreportPrincipal}">
+										<a4j:ajax event="change" execute="@form" listener="#{HistoricoAlunoRelControle.realizarDefinicaoArquivoPrincipalConfiguracaoLayoutHistorico(HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO, arquivoItem)}" render="formConfiguracaoLayout"></a4j:ajax>
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-1">
+									<otm:commandIcon id="removerPdf" tooltip="Remover Layout" icon="#{msg_botoes.btn_icon_excluir_embutido} text-danger" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" rendered="#{!HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.layoutFixoSistema}" action="#{HistoricoAlunoRelControle.removerLayout(arquivoItem, HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO)}" render="formConfiguracaoLayout"></otm:commandIcon>
+									<otm:spacer width="5px"></otm:spacer>
+									<otm:commandIcon id="dwlPdf2" oncomplete="location.href='../../../DownloadSV'" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido}" action="#{HistoricoAlunoRelControle.realizarDownloadArquivo(HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO, arquivoItem)}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+
+
+					<h:panelGroup layout="block" styleClass="col-md-12 mt10">
+						<h:outputText value="#{msg_aplic.prt_ConfiguracaoLayoutHistorico_layouts} Excel"></h:outputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<a4j:jsFunction name="uploadExcel" action="#{HistoricoAlunoRelControle.setTipoRelatorioEnum('EXCEL')}"></a4j:jsFunction>
+						<rich:fileUpload listHeight="60" listWidth="450" noDuplicate="true" execute="@form" onclick="uploadExcel()" fileUploadListener="#{HistoricoAlunoRelControle.uploadLayout}" acceptedTypes="jasper" maxFilesQuantity="1" addLabel="ADICIONAR ARQUIVO COM A EXTENSÃO .jasper" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{HistoricoAlunoRelControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." uploadLabel="Enviar" clearAllLabel="Limpar lista" onupload="return validarTamanhoUploadArquivo(event, 'formConfiguracaoLayout', #{HistoricoAlunoRelControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload});" serverErrorLabel="Falha de Transmissão" immediateUpload="true" id="uploadEXCEL">
+							<a4j:ajax event="uploadcomplete" render="formConfiguracaoLayout" execute="@this" />
+							<a4j:ajax event="typerejected" oncomplete="alert('Formato inválido do arquivo. Aceita somente extensões jasper');" render="uploadEXCEL" execute="@this" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row ml5 p5 mt10" rendered="#{!empty HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.arquivoExcelVOs}" style="border:1px solid #ced4da; border-radius: .2rem; width: 99.3%;">
+						<a4j:repeat value="#{HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.arquivoExcelVOs}" var="arquivoItem">
+							<h:panelGroup layout="block" styleClass="row ml10 lh30">
+								<h:panelGroup layout="block" styleClass="col-md-8">
+									<h:outputText styleClass="tituloCampos" value="#{arquivoItem.descricao}"></h:outputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="Arquivo Principal"></h:outputText>
+									<otm:selectBooleanCheckbox id="arquivoIreportPrincipalAddExcel" value="#{arquivoItem.arquivoIreportPrincipal}" disabled="#{HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.layoutFixoSistema or arquivoItem.arquivoIreportPrincipal}">
+										<a4j:ajax event="change" execute="@form" listener="#{HistoricoAlunoRelControle.realizarDefinicaoArquivoPrincipalConfiguracaoLayoutHistorico(HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO, arquivoItem)}" render="formConfiguracaoLayout"></a4j:ajax>
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-1">
+									<otm:commandIcon id="removerExcel" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" tooltip="Remover Layout" rendered="#{!HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.layoutFixoSistema}" icon="#{msg_botoes.btn_icon_excluir_embutido} text-danger" action="#{HistoricoAlunoRelControle.removerLayout(arquivoItem, HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO)}" render="formConfiguracaoLayout"></otm:commandIcon>
+									<otm:spacer width="5px"></otm:spacer>
+									<otm:commandIcon id="dwlExcel2" oncomplete="location.href='../../../DownloadSV'" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido}" action="#{HistoricoAlunoRelControle.realizarDownloadArquivo(HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO, arquivoItem)}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+
+
+					<h:outputText styleClass="col-md-12 mensagemDetalhada btn-block" rendered="#{HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO.layoutFixoSistema}" value="*Este layout é fixo do sistema é só pode ser alterado a descrição, para realizar alguma alteração, baixe os arquivos .jasper realize as alterações e crie um novo layout." />
+				</h:panelGroup>
+
+				<h:panelGroup styleClass="row" layout="block">
+					<otm:mensagem bean="#{HistoricoAlunoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton styleClass="btn btn-dark btn-gravar" value="#{msg_botoes.btn_gravar}" oncomplete="#{HistoricoAlunoRelControle.oncompleteModal}" action="#{HistoricoAlunoRelControle.persistirConfiguracaoLayoutHistorico(HistoricoAlunoRelControle.configuracaoLayoutHistoricoVO)}" render="formConfiguracao, formConfiguracaoLayout"></otm:commandButton>
+					<otm:spacer width="10px"></otm:spacer>
+					<otm:commandButton styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" oncomplete="#{rich:component('panelConfiguracaoLayout')}.hide()" action="#{HistoricoAlunoRelControle.cancelarConfiguracaoLayoutHistorico}" render="formConfiguracao"></otm:commandButton>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelConfiguracao" styleClass="modalMaximizado100" shadowOpacity="true" width="1000" height="700">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Configurações/Parametrizações" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelConfiguracao">
+						<rich:componentControl target="panelConfiguracao" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+		 	<h:form id="formConfiguracao" styleClass="scroll">
+				<h:panelGroup layout="block" styleClass="row">
+					<rich:tabPanel switchType="client">
+						<a4j:repeat id="panelNivel" value="#{HistoricoAlunoRelControle.configuracaoHistoricoVOs}" rowKeyVar="row" var="configuracaoHistoricoItem">
+							<rich:tab switchType="client" id="idTab" name="#{configuracaoHistoricoItem.nivelEducacional.valor}" header="#{configuracaoHistoricoItem.nivelEducacional.descricao}">
+								<h:panelGroup layout="block" styleClass="row ">
+									<h:panelGroup layout="block" styleClass="col-md-12 border-bottom">
+										<h:outputText style="float:left" value="#{msg_aplic.prt_ConfiguracaoLayoutHistorico_observacoes}"></h:outputText>
+										<otm:commandIcon icon="#{msg_botoes.btn_icon_adicionar_embutido} iconePequeno" style="float:right" action="#{HistoricoAlunoRelControle.novoConfiguracaoObservacaoHistoricoVO(configuracaoHistoricoItem)}" render="formConfiguracaoObservacao" oncomplete="#{rich:component('panelConfiguracaoObservacao')}.show()"></otm:commandIcon>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="row  mt5 ml5">
+										<h:outputText styleClass="tituloCampos" rendered="#{empty configuracaoHistoricoItem.configuracaoObservacaoHistoricoVOs}" value="Não existe nenhuma observação cadastrada, clique no ícone adicionar no canto direito superior."></h:outputText>
+										<h:panelGroup layout="block" styleClass="row" rendered="#{!empty configuracaoHistoricoItem.configuracaoObservacaoHistoricoComplementarVOs}">
+											<otm2:panel name="id#{configuracaoHistoricoItem.nivelEducacional}ObsComp" opened="false" styleClassFooter="dn">
+												<ui:define name="header">
+													<h:outputText styleClass="tituloCampos" value="Observações Complementares"></h:outputText>
+	</ui:define>
+												<ui:define name="body">
+													<h:panelGroup id="panelObsComp" layout="block" styleClass="col-md-12 ">
+														<a4j:repeat id="listaObsComp" rowKeyVar="rowObs" value="#{configuracaoHistoricoItem.configuracaoObservacaoHistoricoComplementarVOs}" var="configuracaoObservacaoHistoricoItem">
+															<h:panelGroup layout="block" styleClass="row border-bottom" style="width:99%;">
+																<h:panelGroup styleClass="col-md-12" layout="block">
+																	<h:inputTextarea styleClass="form-control camposSomenteLeitura" readonly="true" style="height:60px" rows="4" value="#{configuracaoObservacaoHistoricoItem.observacao}"></h:inputTextarea>
+																</h:panelGroup>
+																<h:panelGroup styleClass="col-md-11" layout="block">
+																	<h:outputText styleClass="tituloCampos" value="Observação Padrão"></h:outputText>
+																	<otm:selectBooleanCheckbox id="obspadrao" value="#{configuracaoObservacaoHistoricoItem.padrao}">
+																		<a4j:ajax event="change" execute="@form" listener="#{HistoricoAlunoRelControle.realizarDefinicaoObservacaoPadraoConfiguracaoObservacaoHistorico(configuracaoHistoricoItem, configuracaoObservacaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:panelObsComp, formConfiguracao:mensagemConsultaConfiguracao"></a4j:ajax>
+																	</otm:selectBooleanCheckbox>
+																</h:panelGroup>
+																<h:panelGroup styleClass="col-md-1 text-right" id="panelBtnAtivarObsComp" layout="block">
+																	<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoFechado_embutido}" id="removerObservacao1" rendered="#{!configuracaoObservacaoHistoricoItem.ocultar}" tooltip="Inativar Observação" onclick="return confirm('#{msg.msg_confirmacao_inativacao}');" action="#{HistoricoAlunoRelControle.removerObservacaoLayout(configuracaoObservacaoHistoricoItem, configuracaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:listaObsComp:#{rowObs}:panelBtnAtivarObsComp, formConfiguracao:mensagemConsultaConfiguracao">
+																	</otm:commandIcon>
+																	<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoAberto_embutido}" id="ativarObservacao1" rendered="#{configuracaoObservacaoHistoricoItem.ocultar}" tooltip="Ativar Observação" action="#{HistoricoAlunoRelControle.realizarAtivacaoObservacaoLayout(configuracaoObservacaoHistoricoItem, configuracaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:listaObsComp:#{rowObs}:panelBtnAtivarObsComp, formConfiguracao:mensagemConsultaConfiguracao">
+																	</otm:commandIcon>
+																</h:panelGroup>
+															</h:panelGroup>
+														</a4j:repeat>
+													</h:panelGroup>
+												</ui:define>
+											</otm2:panel>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row" rendered="#{!empty configuracaoHistoricoItem.configuracaoObservacaoHistoricoIntegralizacaoVOs}">
+											<otm2:panel name="id#{configuracaoHistoricoItem.nivelEducacional}Inte" opened="false" styleClassFooter="dn">
+												<ui:define name="header">
+													<h:outputText styleClass="tituloCampos" value="Observações Integralização Curricular"></h:outputText>
+												</ui:define>
+												<ui:define name="body">
+													<h:panelGroup layout="block" id="panelObsImp" styleClass="col-md-12">
+														<a4j:repeat id="listaObsInt" rowKeyVar="rowObs" value="#{configuracaoHistoricoItem.configuracaoObservacaoHistoricoIntegralizacaoVOs}" var="configuracaoObservacaoHistoricoItem">
+															<h:panelGroup layout="block" styleClass="row border-bottom" style="width:99%;">
+																<h:panelGroup styleClass="col-md-12" layout="block">
+																	<h:inputTextarea styleClass="form-control camposSomenteLeitura" readonly="true" style="height:60px" rows="4" value="#{configuracaoObservacaoHistoricoItem.observacao}"></h:inputTextarea>
+																</h:panelGroup>
+																<h:panelGroup styleClass="col-md-11" layout="block">
+																	<h:outputText styleClass="tituloCampos" value="Observação Padrão"></h:outputText>
+																	<otm:selectBooleanCheckbox id="obspadrao2" value="#{configuracaoObservacaoHistoricoItem.padrao}">
+																		<a4j:ajax event="change" execute="@form" listener="#{HistoricoAlunoRelControle.realizarDefinicaoObservacaoPadraoConfiguracaoObservacaoHistorico(configuracaoHistoricoItem, configuracaoObservacaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:panelObsImp, formConfiguracao:mensagemConsultaConfiguracao"></a4j:ajax>
+																	</otm:selectBooleanCheckbox>
+																</h:panelGroup>
+																<h:panelGroup styleClass="col-md-1 text-right" id="panelBtnAtivarInt" layout="block">
+																	<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoFechado_embutido}" id="removerObservacao2" rendered="#{!configuracaoObservacaoHistoricoItem.ocultar}" tooltip="Inativar Observação" onclick="return confirm('#{msg.msg_confirmacao_inativacao}');" action="#{HistoricoAlunoRelControle.removerObservacaoLayout(configuracaoObservacaoHistoricoItem, configuracaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:listaObsInt:#{rowObs}:panelBtnAtivarInt, formConfiguracao:mensagemConsultaConfiguracao">
+																	</otm:commandIcon>
+																	<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoAberto_embutido}" id="ativarObservacao2" rendered="#{configuracaoObservacaoHistoricoItem.ocultar}" tooltip="Ativar Observação" action="#{HistoricoAlunoRelControle.realizarAtivacaoObservacaoLayout(configuracaoObservacaoHistoricoItem, configuracaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:listaObsInt:#{rowObs}:panelBtnAtivarInt, formConfiguracao:mensagemConsultaConfiguracao">
+																	</otm:commandIcon>
+																</h:panelGroup>
+															</h:panelGroup>
+														</a4j:repeat>
+													</h:panelGroup>
+												</ui:define>
+											</otm2:panel>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row" rendered="#{!empty configuracaoHistoricoItem.configuracaoObservacaoHistoricoCertificadoEstudosVOs}">
+											<otm2:panel name="id#{configuracaoHistoricoItem.nivelEducacional}CertEst" opened="false" styleClassFooter="dn">
+												<ui:define name="header">
+													<h:outputText styleClass="tituloCampos" value="Observações Certificados de Estudos"></h:outputText>
+												</ui:define>
+												<ui:define name="body">
+													<h:panelGroup layout="block" id="panelObsCert" styleClass="col-md-12">
+														<a4j:repeat id="listaObsCert" rowKeyVar="rowObs" value="#{configuracaoHistoricoItem.configuracaoObservacaoHistoricoCertificadoEstudosVOs}" var="configuracaoObservacaoHistoricoItem">
+															<h:panelGroup layout="block" styleClass="row border-bottom" style="width:99%;">
+																<h:panelGroup styleClass="col-md-12" layout="block">
+																	<h:inputTextarea styleClass="form-control camposSomenteLeitura" readonly="true" style="height:60px" rows="4" value="#{configuracaoObservacaoHistoricoItem.observacao}"></h:inputTextarea>
+																</h:panelGroup>
+																<h:panelGroup styleClass="col-md-11" layout="block">
+																	<h:outputText styleClass="tituloCampos" value="Observação Padrão"></h:outputText>
+																	<otm:selectBooleanCheckbox id="obspadrao3" value="#{configuracaoObservacaoHistoricoItem.padrao}">
+																		<a4j:ajax event="change" execute="@form" listener="#{HistoricoAlunoRelControle.realizarDefinicaoObservacaoPadraoConfiguracaoObservacaoHistorico(configuracaoHistoricoItem, configuracaoObservacaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:panelObsCert, formConfiguracao:mensagemConsultaConfiguracao"></a4j:ajax>
+																	</otm:selectBooleanCheckbox>
+																</h:panelGroup>
+																<h:panelGroup styleClass="col-md-1 text-right" id="panelBtnAtivarCert" layout="block">
+																	<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoFechado_embutido}" id="removerObservacao3" rendered="#{!configuracaoObservacaoHistoricoItem.ocultar}" tooltip="Inativar Observação" onclick="return confirm('#{msg.msg_confirmacao_inativacao}');" action="#{HistoricoAlunoRelControle.removerObservacaoLayout(configuracaoObservacaoHistoricoItem, configuracaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:listaObsCert:#{rowObs}:panelBtnAtivarCert, formConfiguracao:mensagemConsultaConfiguracao">
+																	</otm:commandIcon>
+																	<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoAberto_embutido}" id="ativarObservacao3" rendered="#{configuracaoObservacaoHistoricoItem.ocultar}" tooltip="Ativar Observação" action="#{HistoricoAlunoRelControle.realizarAtivacaoObservacaoLayout(configuracaoObservacaoHistoricoItem, configuracaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:listaObsCert:#{rowObs}:panelBtnAtivarCert, formConfiguracao:mensagemConsultaConfiguracao">
+																	</otm:commandIcon>
+																</h:panelGroup>
+															</h:panelGroup>
+														</a4j:repeat>
+													</h:panelGroup>
+												</ui:define>
+											</otm2:panel>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" id="panelLayout" styleClass="row" style="width:100%;margin-top:10px">
+									<h:panelGroup layout="block" style="height:30px; border-bottom:1px solid #ccc; margin-bottom:10px">
+										<h:outputText style="float:left" value="#{msg_aplic.prt_ConfiguracaoLayoutHistorico_layouts} - Ocultar Inativos"></h:outputText>
+										<otm:selectBooleanCheckbox id="edicaoManual" style="float:left;margin-left:5px;margin-top: -1px;" value="#{configuracaoHistoricoItem.edicaoManual}">
+											<a4j:ajax event="click" execute="@form" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao"></a4j:ajax>
+										</otm:selectBooleanCheckbox>
+										<h:panelGroup styleClass="float-right">
+											<otm:commandIcon icon="#{msg_botoes.btn_icon_adicionar_embutido} iconePequeno" action="#{HistoricoAlunoRelControle.novoConfiguracaoLayoutHistoricoVO(configuracaoHistoricoItem)}" render="formConfiguracaoLayout" oncomplete="#{rich:component('panelConfiguracaoLayout')}.show();"></otm:commandIcon>
+											<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoFechado_embutido} iconePequeno" action="#{HistoricoAlunoRelControle.inativarTodasConfiguracaoLayoutHistorico(configuracaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandIcon>
+											<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoAberto_embutido} iconePequeno" action="#{HistoricoAlunoRelControle.ativarTodasConfiguracaoLayoutHistorico(configuracaoHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandIcon>
+										</h:panelGroup>
+									</h:panelGroup>
+									<a4j:repeat id="listaLayout" var="configuracaoLayoutHistoricoItem" rowKeyVar="rowLayout" value="#{configuracaoHistoricoItem.configuracaoLayoutHistoricoVOs}">
+										<h:panelGroup styleClass="row ml2" layout="block" rendered="#{!configuracaoHistoricoItem.edicaoManual or (configuracaoHistoricoItem.edicaoManual and !configuracaoLayoutHistoricoItem.ocultarLayout)}">
+											<otm2:panel name="id#{configuracaoHistoricoItem.nivelEducacional}#{row}" styleClassFooter="dn" renderedControl="false">
+												<ui:define name="header">
+													<h:outputText style="float:left" styleClass="tituloCampos" value="#{configuracaoLayoutHistoricoItem.descricao} - #{configuracaoLayoutHistoricoItem.ocultarLayout ? 'Inativo' : 'Ativo'} ( "></h:outputText>
+													<h:outputText style="float:left; margin-left:5px" styleClass="tituloCampos" value="Layout Padrão"></h:outputText>
+													<otm:selectBooleanCheckbox style="float:left; margin-left:5px; position:relative;top:-1px" id="idLayPadrao" value="#{configuracaoLayoutHistoricoItem.layoutPadrao}">
+														<a4j:ajax event="click" render="formConfiguracao:panelNivel:#{row}:panelLayout, formConfiguracao:mensagemConsultaConfiguracao" listener="#{HistoricoAlunoRelControle.realizarDefinicaoLayoutPadraoConfiguracaoLayoutHistorico(configuracaoHistoricoItem, configuracaoLayoutHistoricoItem)}" execute="@this"></a4j:ajax>
+													</otm:selectBooleanCheckbox>
+													<h:outputText style="float:left; margin-left:5px" value=") " styleClass="tituloCampos"></h:outputText>
+													<h:panelGroup styleClass="float-right">
+														<a4j:commandLink style="float:left;margin-right:10px" onclick="return confirm('#{msg.msg_confirmacao_inativacao}');" rendered="#{!configuracaoLayoutHistoricoItem.ocultarLayout}" action="#{HistoricoAlunoRelControle.inativarConfiguracaoLayoutHistorico(configuracaoHistoricoItem,configuracaoLayoutHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao" title="Inativar Layout">
+															<i class="fas fa-unlock" />
+														</a4j:commandLink>
+														<a4j:commandLink style="float:left;margin-right:10px" rendered="#{configuracaoLayoutHistoricoItem.ocultarLayout}" action="#{HistoricoAlunoRelControle.ativarConfiguracaoLayoutHistorico(configuracaoHistoricoItem,configuracaoLayoutHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao" title="Ativar Layout">
+															<i class="fas fa-lock" />
+														</a4j:commandLink>
+														<a4j:commandLink style="float:left;margin-right:10px" rendered="#{!configuracaoLayoutHistoricoItem.maximixado}" action="#{configuracaoLayoutHistoricoItem.setMaximixado(true)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao" title="Expandir Layout">
+															<i class="fas fa-chevron-up" />
+														</a4j:commandLink>
+														<a4j:commandLink style="float:left;margin-right:10px" rendered="#{configuracaoLayoutHistoricoItem.maximixado}" action="#{configuracaoLayoutHistoricoItem.setMaximixado(false)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao" title="Minimizar Layout">
+															<i class="fas fa-chevron-down" />
+														</a4j:commandLink>
+													</h:panelGroup>
+												</ui:define>
+												<ui:define name="body">
+													<h:panelGroup layout="block" styleClass="row border rounded" rendered="#{configuracaoLayoutHistoricoItem.maximixado}">
+														<h:panelGroup layout="block" styleClass="#{!configuracaoLayoutHistoricoItem.layoutFixoSistema ? 'col-md-8': 'col-md-12'}">
+															<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ConfiguracaoLayoutHistorico_descricao}"></h:outputText>
+															<h:inputText id="descricaoCLH" styleClass="form-control camposObrigatorios" style="width:100%" value="#{configuracaoLayoutHistoricoItem.descricao}"></h:inputText>
+														</h:panelGroup>
+														<h:panelGroup rendered="#{!configuracaoLayoutHistoricoItem.layoutFixoSistema}" layout="block" styleClass="col-md-4">
+															<h:outputText styleClass="tituloCampos" value="Seguir Regras Layout">
+															</h:outputText>
+															<h:selectOneMenu styleClass="form-control campos" value="#{configuracaoLayoutHistoricoItem.chave}">
+																<f:selectItems value="#{configuracaoHistoricoItem.listaSelectItemLayoutPadrao}"></f:selectItems>
+															</h:selectOneMenu>
+														</h:panelGroup>
+														<h:panelGroup id="panelLayoutPdf" layout="block" styleClass="col-md-12 mt5">
+															<h:panelGroup layout="block" styleClass="col-md-12">
+																<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ConfiguracaoLayoutHistorico_layouts} PDF"></h:outputText>
+															</h:panelGroup>
+															<h:panelGroup layout="block" styleClass="row p5 " style="border:1px solid #ced4da; border-radius: .2rem">
+																<a4j:repeat value="#{configuracaoLayoutHistoricoItem.arquivoPdfVOs}" var="arquivoItem">
+																	<h:panelGroup layout="block" styleClass="row ml10 lh30">
+																		<h:panelGroup layout="block" styleClass="col-md-8">
+																			<h:outputText styleClass="tituloCampos" style="position: relative;   top: 4px;" value="#{arquivoItem.descricao}"></h:outputText>
+																		</h:panelGroup>
+																		<h:panelGroup layout="block" styleClass="col-md-3">
+																			<h:outputText styleClass="tituloCampos" value="Arquivo Principal #{rowLayout}"></h:outputText>
+																			<otm:selectBooleanCheckbox styleClass="ml5" id="arquivoIreportPrincipal" value="#{arquivoItem.arquivoIreportPrincipal}" disabled="#{configuracaoLayoutHistoricoItem.layoutFixoSistema or arquivoItem.arquivoIreportPrincipal}">
+																				<a4j:ajax event="click" execute="@form" listener="#{HistoricoAlunoRelControle.realizarDefinicaoArquivoPrincipalConfiguracaoLayoutHistorico(configuracaoLayoutHistoricoItem, arquivoItem)}" render="formConfiguracao:panelNivel:#{row}:listaLayout:#{rowLayout}:panelLayoutPdf, formConfiguracao:mensagemConsultaConfiguracao"></a4j:ajax>
+																			</otm:selectBooleanCheckbox>
+																		</h:panelGroup>
+																		<h:panelGroup layout="block" styleClass="col-md-1 text-center">
+																			<otm:commandIcon style="position: relative;   top: 6px;" id="dwlPdf" execute="@form" oncomplete="location.href='../../../DownloadSV'" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido} iconePequeno" action="#{HistoricoAlunoRelControle.realizarDownloadArquivo(configuracaoLayoutHistoricoItem, arquivoItem)}" />
+																		</h:panelGroup>
+																	</h:panelGroup>
+																</a4j:repeat>
+															</h:panelGroup>
+														</h:panelGroup>
+														<h:panelGroup id="panelLayoutExcel"  layout="block" rendered="#{!empty configuracaoLayoutHistoricoItem.arquivoExcelVOs}" styleClass="col-md-12 mt5">
+															<h:panelGroup layout="block" styleClass="col-md-12">
+																<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ConfiguracaoLayoutHistorico_layouts} Excel"></h:outputText>
+															</h:panelGroup>
+															<h:panelGroup layout="block" styleClass="row p5 " style="border:1px solid #ced4da; border-radius: .2rem">
+																<a4j:repeat value="#{configuracaoLayoutHistoricoItem.arquivoExcelVOs}" var="arquivoItem">
+																	<h:panelGroup layout="block" styleClass="row ml10 lh30">
+																		<h:panelGroup layout="block" styleClass="col-md-8">
+																			<h:outputText styleClass="tituloCampos" style="position: relative;   top: 4px;" value="#{arquivoItem.descricao}"></h:outputText>
+																		</h:panelGroup>
+																		<h:panelGroup layout="block" styleClass="col-md-3">
+																			<h:outputText styleClass="tituloCampos" value="Arquivo Principal"></h:outputText>
+																			<otm:selectBooleanCheckbox id="arquivoIreportPrincipalExcel" value="#{arquivoItem.arquivoIreportPrincipal}" disabled="#{configuracaoLayoutHistoricoItem.layoutFixoSistema or arquivoItem.arquivoIreportPrincipal}">
+																				<a4j:ajax event="change" execute="@form" listener="#{HistoricoAlunoRelControle.realizarDefinicaoArquivoPrincipalConfiguracaoLayoutHistorico(configuracaoLayoutHistoricoItem, arquivoItem)}" render="formConfiguracao:panelNivel:#{row}:listaLayout:#{rowLayout}:panelLayoutExcel, formConfiguracao:mensagemConsultaConfiguracao"></a4j:ajax>
+																			</otm:selectBooleanCheckbox>
+																		</h:panelGroup>
+																		<h:panelGroup layout="block" styleClass="col-md-1 text-center">
+																			<otm:commandIcon style="position: relative;   top: 6px;" id="dwlExcel" execute="@form" oncomplete="location.href='../../../DownloadSV'" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido} iconePequeno" action="#{HistoricoAlunoRelControle.realizarDownloadArquivo(configuracaoLayoutHistoricoItem, arquivoItem)}" />
+																		</h:panelGroup>
+																	</h:panelGroup>
+																</a4j:repeat>
+															</h:panelGroup>
+														</h:panelGroup>
+														<h:panelGroup layout="block" styleClass="row text-center p5 mt10 border-top">
+															<otm:commandButton styleClass="btn btn-dark btn-gravar" value="#{msg_botoes.btn_gravar}" action="#{HistoricoAlunoRelControle.persistirConfiguracaoLayoutHistorico(configuracaoLayoutHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandButton>
+															<otm:spacer width="10px"></otm:spacer>
+															<otm:commandButton styleClass="btn btn-primary dark btn-editar" value="#{msg_botoes.btn_editar}" action="#{HistoricoAlunoRelControle.editarConfiguracaoLayoutHistoricoVO(configuracaoHistoricoItem, configuracaoLayoutHistoricoItem)}" render="formConfiguracaoLayout" oncomplete="#{rich:component('panelConfiguracaoLayout')}.show()"></otm:commandButton>
+															<otm:spacer width="10px"></otm:spacer>
+															<otm:commandButton styleClass="btn btn-danger btn-excluir" value="#{msg_botoes.btn_excluir}" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" rendered="#{!configuracaoLayoutHistoricoItem.layoutFixoSistema}" action="#{HistoricoAlunoRelControle.excluirConfiguracaoLayoutHistorico(configuracaoHistoricoItem, configuracaoLayoutHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandButton>
+															<otm:spacer width="10px" rendered="#{!configuracaoLayoutHistoricoItem.layoutFixoSistema}"></otm:spacer>
+															<otm:commandButton styleClass="btn btn-danger btn-excluir" value="#{msg_botoes.btn_inativar}" onclick="return confirm('#{msg.msg_confirmacao_inativacao}');" rendered="#{!configuracaoLayoutHistoricoItem.ocultarLayout}" action="#{HistoricoAlunoRelControle.inativarConfiguracaoLayoutHistorico(configuracaoHistoricoItem,configuracaoLayoutHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandButton>
+															<otm:commandButton styleClass="btn btn-success btn-ativar" icon="#{msg_botoes.btn_icon_cadeadoAberto_embutido}" value="#{msg_botoes.btn_ativar}" rendered="#{configuracaoLayoutHistoricoItem.ocultarLayout}" action="#{HistoricoAlunoRelControle.ativarConfiguracaoLayoutHistorico(configuracaoHistoricoItem,configuracaoLayoutHistoricoItem)}" render="formConfiguracao:panelNivel:#{row}:idTab, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandButton>
+														</h:panelGroup>
+													</h:panelGroup>
+												</ui:define>
+											</otm2:panel>
+										</h:panelGroup>
+									</a4j:repeat>
+								</h:panelGroup>
+							</rich:tab>
+						</a4j:repeat>
+					</rich:tabPanel>
+					<h:panelGroup id="mensagemConsultaConfiguracao" styleClass="row" layout="block">
+						<otm:mensagem bean="#{HistoricoAlunoRelControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+
+
+	</ui:define>
+</ui:composition>
+</html>

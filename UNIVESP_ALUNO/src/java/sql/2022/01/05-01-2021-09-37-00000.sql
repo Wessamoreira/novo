@@ -1,0 +1,1 @@
+alter table if exists MotivoCancelamentoTrancamento add column if not exists apresentarRequerimentoVisaoAluno boolean default true;

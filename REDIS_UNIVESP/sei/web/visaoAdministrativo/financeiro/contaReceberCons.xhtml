@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ContaReceber_tituloForm}" />
+	</ui:define>
+
+	<ui:define name="ajuda">
+		<!-- 	<h:panelGroup> -->
+		<a4j:region>
+			<a4j:commandLink id="ajuda" type="submit" title="Ajuda" style="float:right;border:none" action="#{AjudaControle.executarConsulta}" oncomplete="abrirPopup('../../ajudaCons.xhtml', 'Ajuda', 945, 490);">
+				<h:graphicImage value="#{resource['/imagens/209.png']}" />
+				<f:setPropertyActionListener target="#{AjudaControle.moduloConsulta}" value="FINANCEIRO/CONTARECEBER/CONTARECEBER" />
+			</a4j:commandLink>
+		</a4j:region>
+		<!-- 	</h:panelGroup> -->
+	</ui:define>
+	<ui:define name="modal">
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelErroBoleto" show="#{ContaReceberControle.apresentarModalErroBoleto}" shadowOpacity="true" width="750" height="500">
+			<h:form id="formErroBoleto">
+				<h:panelGroup layout="block" styleClass="row">
+					<otm:mensagem bean="#{ContaReceberControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelCobrarReimpressao" shadowOpacity="true" width="400" height="100">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ConfiguracaoFinanceiro_cobrarReimpressaoBoletos}" />
+				</h:panelGroup>
+			</f:facet>
+
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkCobrarReimpressao" />
+					<rich:componentControl target="panelCobrarReimpressao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCobrarReimpressao">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:outputText id="textoCobrarReimpressao" styleClass="field control-label tituloCampos" value="Deseja Cobrar para a Reimpressão do Boleto?" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row text-center">
+						<otm:commandButton id="btnSim" render="form" action="#{ContaReceberControle.imprimirBoletoCriandoContaReimpressao}" oncomplete="#{ContaReceberControle.boletoConsultaContaReceber}" styleClass="btn btn-info " icon="#{msg_botoes.btn_icon_confirmar_embutido} " value="Sim" />
+						<otm:spacer width="5px" />
+						<otm:commandButton id="btnNao" render="form" action="#{ContaReceberControle.definirBoletoParaImpressao}" oncomplete="#{ContaReceberControle.boletoConsultaContaReceber}" alt="#{msg.msg_nao}" value="Não" styleClass="btn btn-danger " icon="#{msg_botoes.btn_icon_remver_embutido} " />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelEmissaoBoleto" shadowOpacity="true" width="750" autosized="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Emissão de Boleto(s)" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkEmissaoBoleto" />
+					<rich:componentControl target="panelEmissaoBoleto" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formEmissaoBoleto">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="Layout Boleto" />
+						<h:selectOneMenu styleClass="form-control campos" value="#{ContaReceberControle.tipoBoleto}">
+							<f:selectItems value="#{ContaReceberControle.tipoConsultaComboTipoBoleto}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row text-center">
+					<otm:commandButton id="imprimirBoleto" oncomplete="fireElement('form:imprimirBoletoClick'); #{rich:component('panelEmissaoBoleto')}.hide()" title="Imprimir Boleto" render="form" value="#{msg_botoes.btn_Imprimir}" image="#{resource['/imagens/imprimirBoleto.png']}" icon="#{msg_botoes.btn_icon_imprimir_embutido}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" id="mensagemEmissaoTermoReconhecimentoDivida" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{ContaReceberControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{ContaReceberControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" id="consulta_campo2">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+						<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{ContaReceberControle.controleConsulta.campoConsulta}">
+							<a4j:ajax event="change" render="form, form:consulta_campo2" listener="#{ContaReceberControle.limparSituacao}" />
+							<f:selectItems value="#{ContaReceberControle.tipoConsultaCombo}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5" rendered="#{!ContaReceberControle.campoData}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Sacado" rendered="#{empty ContaReceberControle.controleConsulta.campoConsulta}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Sacado" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'nomeSacado'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Matrícula Aluno" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'aluno'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Aluno" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'alunoNome'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Sacado" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'anoSemestre'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Responsável Financeiro" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'responsavelFinanceiro'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="CPF" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'cpf'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Matrícula Funcionário" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'funcionario'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Nr. Documento" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'nrDocumento'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Nosso Número" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'nossoNumero'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Código de Barra" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'codigobarra'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Centro de Receita" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'identificadorCentroReceitaCentroReceita'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Descrição Convênio" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'convenio'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Nome Fornecedor" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'fornecedor'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Código Financeiro Aluno" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'codigoFinanceiroMatricula'}" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Código" rendered="#{ContaReceberControle.controleConsulta.campoConsulta eq 'codigo'}" />
+						<h:inputText id="valorConsulta" onkeypress="#{ContaReceberControle.mascaraConsulta}" rendered="#{!ContaReceberControle.campoData}" styleClass="form-control campos" value="#{ContaReceberControle.controleConsulta.valorConsulta}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{ContaReceberControle.isApresentarCamposDatasBuscarTodoPeriodo and !ContaReceberControle.isCampoAnoSemestre}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Todo Período" rendered="#{ContaReceberControle.isApresentarCamposDatasBuscarTodoPeriodo and !ContaReceberControle.isCampoAnoSemestre}" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox styleClass="form-control campos" rendered="#{ContaReceberControle.isApresentarCamposDatasBuscarTodoPeriodo and !ContaReceberControle.isCampoAnoSemestre}" value="#{ContaReceberControle.controleConsulta.buscarPeriodoCompleto}">
+								<a4j:ajax event="change" execute="@form" render="@form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ContaReceberControle.isApresentarCamposDatasBuscarTodoPeriodo  and !ContaReceberControle.isCampoAnoSemestre}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaReceber_dataCompetencia}" rendered="#{ContaReceberControle.isApresentarCamposDatasBuscarTodoPeriodo and !ContaReceberControle.isCampoAnoSemestre}" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<otm:selectBooleanCheckbox styleClass="form-control campos" rendered="#{ContaReceberControle.isApresentarCamposDatasBuscarTodoPeriodo  and !ContaReceberControle.isCampoAnoSemestre}" value="#{ContaReceberControle.consDataCompetencia}">
+								<a4j:ajax event="change" execute="@form" render="@form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+						<h:outputText rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}" styleClass="field control-label tituloCampos" value="Unidade" />
+						<h:panelGroup rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+							<h:selectOneMenu styleClass="form-control campos" id="unidadeEnsinoCombo" value="#{ContaReceberControle.valorConsultaUnidadeEnsino}">
+								<f:selectItems value="#{ContaReceberControle.listaSelectItemUnidadeEnsino}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ContaReceberControle.isApresentarCamposDatas and !ContaReceberControle.isCampoAnoSemestre and !ContaReceberControle.consDataCompetencia}">
+						<h:outputText styleClass="field control-label tituloCampos" rendered="#{ContaReceberControle.isApresentarCamposDatas and !ContaReceberControle.isCampoAnoSemestre and !ContaReceberControle.consDataCompetencia}" value="#{msg_aplic.prt_ContaReceber_dataVencimento}" />
+						<otm:calendar id="valorConsultaDataInicio" value="#{ContaReceberControle.controleConsulta.dataIni}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ContaReceberControle.isApresentarCamposDatas and !ContaReceberControle.isCampoAnoSemestre and !ContaReceberControle.consDataCompetencia}">
+						<h:outputText styleClass="field control-label tituloCampos" value=" Data Fim " />
+						<otm:calendar id="valorConsultaDataFim" value="#{ContaReceberControle.controleConsulta.dataFim}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ContaReceberControle.isApresentarCamposDatas and !ContaReceberControle.isCampoAnoSemestre and ContaReceberControle.consDataCompetencia}">
+						<h:outputText styleClass="field control-label tituloCampos" rendered="#{ContaReceberControle.isApresentarCamposDatas and !ContaReceberControle.isCampoAnoSemestre and ContaReceberControle.consDataCompetencia}" value="#{msg_aplic.prt_ContaReceber_dataCompetencia}" />
+						<otm:calendar id="valorConsultaDataInicioComp" value="#{ContaReceberControle.controleConsulta.dataIni}" datePattern="MM/yyyy" />
+						<!-- 							<rich:calendar id="valorConsultaDataInicioComp" oninputkeypress="return mascara(this.form, this.id, '99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarDataMesAno(this.value,this.id)" enableManualInput="true" datePattern="MM/yyyy" inputClass="campos" styleClass="form-control campos" inputSize="10" value="#{ContaReceberControle.controleConsulta.dataIni}" /> -->
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ContaReceberControle.isApresentarCamposDatas and !ContaReceberControle.isCampoAnoSemestre and ContaReceberControle.consDataCompetencia}">
+						<h:outputText styleClass="field control-label tituloCampos" value=" Data Fim " />
+						<otm:calendar id="valorConsultaDataFimComp" value="#{ContaReceberControle.controleConsulta.dataFim}" datePattern="MM/yyyy" />
+						<!-- 							<rich:calendar id="valorConsultaDataFimComp" oninputkeypress="return mascara(this.form, this.id, '99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarDataMesAno(this.value,this.id)" enableManualInput="true" datePattern="MM/yyyy" inputClass="campos" styleClass="form-control campos" inputSize="10" value="#{ContaReceberControle.controleConsulta.dataFim}" /> -->
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ContaReceberControle.isCampoAnoSemestre}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_ano}" rendered="#{ContaReceberControle.isCampoAnoSemestre}" />
+						<h:inputText id="ano" styleClass="form-control campos" size="4" maxlength="4" value="#{ContaReceberControle.ano}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ContaReceberControle.isCampoAnoSemestre}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_semestre}" />
+						<h:selectOneMenu id="semestreNotaAluno" styleClass="form-control campos" value="#{ContaReceberControle.semestre}">
+							<f:selectItems value="#{ContaReceberControle.comboSemestre}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{ContaReceberControle.isCampoNomeSacado}">
+						<otm:spacer width="100%" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}" layout="block" styleClass="row mt5 ml5 ">
+					<otm2:panel name="panelSituacao" styleClassFooter="dn" opened="#{ContaReceberControle.filtroRelatorioFinanceiroVO.maximixado}">
+						<ui:define name="header">
+							<i class="fas fa-filter mr5"></i>
+							<h:outputText value="Situação / Tipo Origem / Ordenação" />
+						</ui:define>
+						<ui:define name="body">
+							<h:panelGroup id="panelMarcarDesmarcarSituacoes" layout="block" styleClass="col-md-4 ">
+								<h:panelGroup layout="block" styleClass="row border rounded " style="height:200px">
+									<h:panelGroup layout="block" styleClass="col-md-12 border-bottom bg-gray">
+										<h:outputText styleClass="tituloCampos font-weight-bold mr10" value="Situações - #{ContaReceberControle.isApresentarTextoCheckBoxMarcarDesmarcarTodasSituacoesRequerimento}" />
+										<otm:selectBooleanCheckbox value="#{ContaReceberControle.marcarTodos}">
+											<a4j:ajax event="click" execute="@this" listener="#{ContaReceberControle.marcarDesmarcarTodosSituacao()}" render="panelMarcarDesmarcarSituacoes, situacoes" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="tituloCampos col-md-12 pn" value="A Receber">
+										</h:outputText>
+										<otm:selectBooleanCheckbox id="situacaoAReceber" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.situacaoReceber}">
+											<a4j:ajax event="change" listener="#{ContaReceberControle.verificarSituacaoMarcadoTodos('AR')}" execute="@form" render="panelMarcarDesmarcarSituacoes" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="tituloCampos col-md-12 pn" value="Cancelado">
+										</h:outputText>
+										<otm:selectBooleanCheckbox id="situacaoCancelado" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.situacaoCancelado}">
+											<a4j:ajax event="change" listener="#{ContaReceberControle.verificarSituacaoMarcadoTodos('CA')}" execute="@form" render="panelMarcarDesmarcarSituacoes" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="tituloCampos col-md-12 pn" value="Negociado">
+										</h:outputText>
+										<otm:selectBooleanCheckbox id="situacaoNeg" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.situacaoRenegociado}">
+											<a4j:ajax event="change" listener="#{ContaReceberControle.verificarSituacaoMarcadoTodos('NE')}" execute="@form" render="panelMarcarDesmarcarSituacoes" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="tituloCampos col-md-12 pn" value="Recebido">
+										</h:outputText>
+										<otm:selectBooleanCheckbox id="situacaoRec" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.situacaoRecebido}">
+											<a4j:ajax event="change" listener="#{ContaReceberControle.verificarSituacaoMarcadoTodos('RE')}" execute="@form" render="panelMarcarDesmarcarSituacoes" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup id="panelOrdenacao" layout="block" rendered="#{ContaReceberControle.isCampoNomeSacado}" styleClass="col-md-8 ">
+								<h:panelGroup layout="block" styleClass="row border rounded ">
+									<h:panelGroup layout="block" styleClass="col-md-12 border-bottom bg-gray pt10" style="height: 46px;">
+										<otm:outputHelp id="helpOrdenacao" iconLeft="fas fa-sort mr5" styleClass="field control-label tituloCampos " value="#{msg.msg_ordenacao_consulta}">
+											<rich:panel style="width:450px;" id="oList">
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup>
+														<otm:spacer width="30px" />
+														<h:outputText value="#{msg.help_definicaoBotoesPickList01}" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup>
+														<otm:spacer width="30px" />
+														<h:outputText value="#{msg.help_definicaoBotoesPickList02}" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup>
+														<otm:spacer width="30px" />
+														<h:outputText value="#{msg.help_definicaoBotoesPickList03}" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup>
+														<otm:spacer width="30px" />
+														<h:outputText value="#{msg.help_definicaoBotoesPickList04}" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup>
+														<otm:spacer width="30px" />
+														<h:outputText value="#{msg.help_definicaoBotoesPickList05}" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup>
+														<otm:spacer width="30px" />
+														<h:outputText value="#{msg.help_definicaoBotoesPickList06}" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup>
+														<otm:spacer width="30px" />
+														<h:outputText value="#{msg.help_definicaoBotoesPickList07}" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup>
+														<otm:spacer width="30px" />
+														<h:outputText value="#{msg.help_definicaoBotoesPickList08}" />
+													</h:panelGroup>
+												</h:panelGroup>
+											</rich:panel>
+										</otm:outputHelp>
+									</h:panelGroup>
+									<!-- 									<h:panelGroup styleClass="col-md-12" layout="block">  -->
+									<!-- 										<h:panelGroup styleClass="float-left border rounded" style="width:40%; height:120px" layout="block"> -->
+									<!-- 											<h:outputText styleClass="title" value="Filtros Dispiníveis"></h:outputText> -->
+									<!-- 											<a4j:repeat value="#{ContaReceberControle.opFiltrosContaReceber}" var="opcoes"> -->
+
+									<!-- 											</a4j:repeat>   -->
+									<!-- 										</h:panelGroup> -->
+									<!-- 										<h:panelGroup styleClass="float-left" style="width:20%; height:120px" layout="block">   -->
+									<!-- 										</h:panelGroup> -->
+									<!-- 										<h:panelGroup styleClass="float-left border rounded" style="width:40%; height:120px" layout="block">   -->
+									<!-- 											<h:outputText styleClass="title" value="Filtros Selecionado"></h:outputText> -->
+									<!-- 											<a4j:repeat value="#{ContaReceberControle.opFiltrosSelecionado}" var="opcoes"> -->
+
+									<!-- 											</a4j:repeat>   -->
+									<!-- 										</h:panelGroup> -->
+									<!-- 									</h:panelGroup> -->
+									<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+										<rich:pickList headerClass="title" removeText="" removeAllText="" maxListHeight="130px" addText="" addAllText="" upText="" upTopText="" downText="" downBottomText="" value="#{ContaReceberControle.opFiltrosSelecionado}" sourceCaption="Filtros Disponiveis" targetCaption="Filtros Escolhidos" listWidth="300px" listHeight="130px" orderable="true">
+											<f:selectItems value="#{ContaReceberControle.opFiltrosContaReceber}" var="filtros" itemValue="#{filtros}" itemLabel="#{filtros}">
+											</f:selectItems>
+										</rich:pickList>
+<!-- 										<rich:pickList itemClass="tituloCampos" removeText=" " headerClass="title" maxListHeight="130px" removeAllText=" " addText=" " addAllText=" " upText=" " upTopText=" " downText=" " downBottomText=" " value="#{ContaReceberControle.opFiltrosSelecionado}" sourceCaption="Filtros Disponíveis" targetCaption="Filtros Escolhidos" listWidth="300px" listHeight="130px" orderable="true"> -->
+<!-- 											<f:selectItems value="#{ContaReceberControle.opFiltrosContaReceber}" var="filtros" itemValue="#{filtros}" itemLabel="#{filtros}"> -->
+<!-- 											</f:selectItems> -->
+<!-- 										</rich:pickList> -->
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="#{ContaReceberControle.isCampoNomeSacado ? 'col-md-12 mt15' : 'col-md-8'} ">
+								<h:panelGroup layout="block" styleClass="row border rounded ">
+									<h:panelGroup layout="block" styleClass="col-md-12 border-bottom bg-gray">
+										<h:outputText styleClass="tituloCampos font-weight-bold mr10" value="#{msg_aplic.prt_ContaReceber_tipoOrigem} - #{ContaReceberControle.isApresentarTextoCheckBoxMarcarDesmarcarTodosTipoOrigem}" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}" />
+										<otm:selectBooleanCheckbox value="#{ContaReceberControle.marcarTodosTipoOrigem}">
+											<a4j:ajax event="change" execute="@this" listener="#{ContaReceberControle.realizarSelecaoCheckboxMarcarDesmarcarTodosTipoOrigem}" render="panelGridCabecalhoTipoOrigem, form:panelGridTipoOrigem" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn rounded bg-white" id="panelGridTipoOrigem">
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemInscricaoProcessoSeletivo}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemInscricaoProcessoSeletivoId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemInscricaoProcessoSeletivo}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="form, panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemMatricula}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemMatriculaId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemMatricula}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemRequerimento}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemRequerimentoId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemRequerimento}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemBiblioteca}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemBibliotecaId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemParcelaMensalidade}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemMensalidadeId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemMensalidade}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemDevolucaoCheque}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemDevolucaoChequeId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemDevolucaoCheque}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemNegociacao}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemNegociacaoId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemNegociacao}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemBolsaCusteadaConvenio}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemBolsaCusteadaConvenioId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemBolsaCusteadaConvenio}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemContratoReceita}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemContratoReceita}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemInclusaoReposicao}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemInclusaoReposicaoId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemInclusaoReposicao}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemOutros}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemOutrosId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemOutros}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DeclaracaoImpostoRendaRel_tipoOrigemMaterialDidatico}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12" rendered="#{ContaReceberControle.isApresentarCamposSituacaoETipoOrigem}">
+												<otm:selectBooleanCheckbox id="tipoOrigemMaterialDidaticoId" value="#{ContaReceberControle.filtroRelatorioFinanceiroVO.tipoOrigemMaterialDidatico}" disabled="#{ContaReceberControle.filtroRelatorioFinanceiroVO.apenasContasDaBiblioteca}">
+													<a4j:ajax event="click" execute="@this" render="panelGridTipoOrigem" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+						</ui:define>
+					</otm2:panel>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+					<a4j:commandLink id="consultar" render="form" type="submit" value="#{msg_botoes.btn_consultar}" action="#{ContaReceberControle.irPaginaInicial}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2" style="margin-right:5px">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"> </span>
+						<f:setPropertyActionListener for="consultar" target="#{ContaReceberControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener for="consultar" target="#{ContaReceberControle.controleConsultaOtimizado.page}" value="1" />
+						<f:setPropertyActionListener for="consultar" target="#{ContaReceberControle.consultaPainelGestorFinanceiro}" value="false" />
+						<f:setPropertyActionListener for="consultar" target="#{ContaReceberControle.consultaDataScroller}" value="false" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton id="novo" action="#{ContaReceberControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" title="#{msg.msg_novo_dados}" accesskey="1" />
+				</h:panelGroup>
+				<h:outputLink id="imprimirBoletoClick" style="display:none" value="../../BoletoBancarioSV?codigoContaReceber=#{ContaReceberControle.contaReceberVO.codigo}&amp;tipoBoleto=#{ContaReceberControle.tipoBoleto}&amp;contaAgrupada=#{ContaReceberControle.contaReceberVO.contaReceberAgrupada}&amp;permiteImprimirBoletoRecebido=#{ContaReceberControle.permiteImprimirBoletoRecebido and ContaReceberControle.contaReceberVO.situacao ne 'AR'}&amp;telaOrigem=visaoAdministrativo/financeiro/contaReceberCons.xhtml">
+				</h:outputLink>
+				<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ContaReceberControle.controleConsultaOtimizado}" rendered="#{ContaReceberControle.controleConsultaOtimizado.apresentarPaginador}" rows="10" var="contaReceberItens" rowKeyVar="row">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="#{msg_aplic.prt_ContaReceber_codigo}" />
+						</f:facet>
+						<h:commandLink style="font-size:11px" action="#{ContaReceberControle.editar}" id="codigo" value="#{contaReceberItens.codigo}" />
+						<rich:tooltip value="#{contaReceberItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="#{msg_aplic.prt_ContaReceber_nossoNumero}" />
+						</f:facet>
+						<h:commandLink style="font-size:11px" action="#{ContaReceberControle.editar}" id="nrDocumento" value="#{contaReceberItens.nossoNumero}" />
+						<rich:tooltip value="#{contaReceberItens.nossoNumero}" />
+					</rich:column>
+					<rich:column width="180">
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="Pessoa" />
+						</f:facet>
+						<h:commandLink style="font-size:11px" action="#{ContaReceberControle.editar}" value="#{contaReceberItens.dadosPessoaAtiva}" />
+						<rich:tooltip value="#{contaReceberItens.dadosPessoaAtiva}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="#{msg_aplic.prt_ContaReceber_parcela}" />
+						</f:facet>
+						<rich:tooltip value="Tipo Origem: #{contaReceberItens.tipoOrigem_apresentar}" direction="topLeft" followMouse="true" target="parcela" style="background-color:#cccccc;border-color:#666666" />
+						<h:commandLink style="font-size:11px" id="parcela" action="#{ContaReceberControle.editar}" value="#{contaReceberItens.parcela}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="#{msg_aplic.prt_ContaReceber_valor}" />
+						</f:facet>
+						<h:commandLink action="#{ContaReceberControle.editar}">
+							<h:outputText style="font-size:11px" value="#{contaReceberItens.valor}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+						</h:commandLink>
+						<rich:tooltip>
+							<h:outputText value="#{contaReceberItens.valor}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+						</rich:tooltip>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="#{msg_aplic.prt_ContaReceber_dataVencimento}" />
+						</f:facet>
+						<h:commandLink style="font-size:11px" action="#{ContaReceberControle.editar}" value="#{contaReceberItens.dataVencimento_Apresentar}" />
+						<rich:tooltip value="#{contaReceberItens.dataVencimento_Apresentar}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="#{msg_aplic.prt_ContaReceber_desconto}" />
+						</f:facet>
+						<h:commandLink action="#{ContaReceberControle.editar}">
+							<h:outputText style="font-size:11px" value="#{contaReceberItens.valorDescontoCalculado - contaReceberItens.valorIndiceReajustePorAtraso}" rendered="#{!contaReceberItens.aplicadoIndireReajustePorAtrasoComoAcrescimo}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+							<rich:tooltip>
+								<h:outputText value="#{contaReceberItens.valorDescontoCalculado - contaReceberItens.valorIndiceReajustePorAtraso}" rendered="#{!contaReceberItens.aplicadoIndireReajustePorAtrasoComoAcrescimo}">
+									<f:converter converterId="FormatadorNumerico" />
+								</h:outputText>
+							</rich:tooltip>
+							<h:outputText style="font-size:11px" value="#{contaReceberItens.valorDescontoCalculado}" rendered="#{contaReceberItens.aplicadoIndireReajustePorAtrasoComoAcrescimo}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+							<rich:tooltip>
+								<h:outputText value="#{contaReceberItens.valorDescontoCalculado}" rendered="#{contaReceberItens.aplicadoIndireReajustePorAtrasoComoAcrescimo}">
+									<f:converter converterId="FormatadorNumerico" />
+								</h:outputText>
+							</rich:tooltip>
+						</h:commandLink>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="#{msg_aplic.prt_ContaReceber_acrescimo}" />
+						</f:facet>
+						<h:commandLink action="#{ContaReceberControle.editar}">
+							<h:outputText style="font-size:11px" value="#{contaReceberItens.acrescimo + contaReceberItens.juro + contaReceberItens.multa + contaReceberItens.valorReajusteDiferencaParcelaRecebidaOuEnviadaRemessa}" rendered="#{!contaReceberItens.aplicadoIndireReajustePorAtrasoComoAcrescimo}">
+								<f:converter converterId="FormatadorNumerico"></f:converter>
+							</h:outputText>
+							<rich:tooltip>
+								<h:outputText value="#{contaReceberItens.acrescimo + contaReceberItens.juro + contaReceberItens.multa + contaReceberItens.valorReajusteDiferencaParcelaRecebidaOuEnviadaRemessa}" rendered="#{!contaReceberItens.aplicadoIndireReajustePorAtrasoComoAcrescimo}">
+									<f:converter converterId="FormatadorNumerico"></f:converter>
+								</h:outputText>
+							</rich:tooltip>
+							<h:outputText style="font-size:11px" value="#{contaReceberItens.acrescimo + contaReceberItens.juro + contaReceberItens.multa + contaReceberItens.valorIndiceReajustePorAtraso + contaReceberItens.valorReajusteDiferencaParcelaRecebidaOuEnviadaRemessa}" rendered="#{contaReceberItens.aplicadoIndireReajustePorAtrasoComoAcrescimo}">
+								<f:converter converterId="FormatadorNumerico"></f:converter>
+							</h:outputText>
+							<rich:tooltip>
+								<h:outputText value="#{contaReceberItens.acrescimo + contaReceberItens.juro + contaReceberItens.multa + contaReceberItens.valorIndiceReajustePorAtraso + contaReceberItens.valorReajusteDiferencaParcelaRecebidaOuEnviadaRemessa}" rendered="#{contaReceberItens.aplicadoIndireReajustePorAtrasoComoAcrescimo}">
+									<f:converter converterId="FormatadorNumerico"></f:converter>
+								</h:outputText>
+							</rich:tooltip>
+						</h:commandLink>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" id="textoValorRecebido" value="#{msg_aplic.prt_ContaReceber_valorFinal}" />
+						</f:facet>
+						<h:commandLink id="commandLinkValorRecebido" action="#{ContaReceberControle.editar}">
+							<h:outputText style="font-size:11px" value="#{contaReceberItens.valorRecebido}" rendered="#{contaReceberItens.situacao eq 'RE'}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+						</h:commandLink>
+						<h:commandLink id="commandLinkValorTotalReceber" action="#{ContaReceberControle.editar}">
+							<h:outputText style="font-size:11px" value="#{contaReceberItens.valor - contaReceberItens.valorDescontoCalculado + (contaReceberItens.acrescimo + contaReceberItens.juro + contaReceberItens.multa + contaReceberItens.valorIndiceReajustePorAtraso + contaReceberItens.valorReajusteDiferencaParcelaRecebidaOuEnviadaRemessa)}" rendered="#{contaReceberItens.situacao != 'RE'}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+							<rich:tooltip>
+								<h:outputText value="#{contaReceberItens.valor - contaReceberItens.valorDescontoCalculado + (contaReceberItens.acrescimo + contaReceberItens.juro + contaReceberItens.multa + contaReceberItens.valorIndiceReajustePorAtraso + contaReceberItens.valorReajusteDiferencaParcelaRecebidaOuEnviadaRemessa)}" rendered="#{contaReceberItens.situacao != 'RE'}">
+									<f:converter converterId="FormatadorNumerico" />
+								</h:outputText>
+							</rich:tooltip>
+						</h:commandLink>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="#{msg_aplic.prt_ContaReceber_situacao}" />
+						</f:facet>
+						<rich:tooltip rendered="#{contaReceberItens.situacao eq 'RE'}" value="Valor Recebido: #{contaReceberItens.valorRecebido}" direction="topLeft" followMouse="true" target="situacao" style="background-color:#cccccc;border-color:#666666" />
+						<h:commandLink style="font-size:11px" id="situacao" action="#{ContaReceberControle.editar}" value="#{contaReceberItens.situacao_Apresentar}" rendered="#{!contaReceberItens.pagoComDCC}" />
+						<h:commandLink style="font-size:11px" id="situacaoPagoComDCC" action="#{ContaReceberControle.editar}" rendered="#{contaReceberItens.pagoComDCC}" value="#{msg_aplic.prt_ContaReceber_recebimentoPrevisto}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText style="font-size:11px" value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon id="editarConta" action="#{ContaReceberControle.editar}" tooltip="Editar Conta Receber" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+						<otm:commandIcon id="receberConta" rendered="#{contaReceberItens.habilitarBotaoRecebimento and ContaReceberControle.permiteReceber}" action="#{ContaReceberControle.receberConta}" image="#{resource['/imagens/botaoFinanceiro2.png']}" tooltip="Realizar Recebimento" icon="#{msg_botoes.btn_icon_pagamento} iconePequeno" />
+						<h:panelGroup rendered="#{contaReceberItens.apresentarBotaoPix}">
+							<otm:pix id="botaoPix" idQrCode="'form:items:#{row}:botaoPix'" bean="#{ContaReceberControle}" contaReceberVO="#{contaReceberItens}" image="#{resource['/imagens/iconePix.png']}" style="margin-top:-20px; margin-left:5px; font-size: 13px !important;width: 26px !important;height: 26px !important;padding: 6px 4px 6px 4px !important;" />
+						</h:panelGroup>
+						<otm:commandIcon id="contaAgrupada" rendered="#{!contaReceberItens.emissaoBloqueada and !contaReceberItens.habilitarBotaoLinkBanco and contaReceberItens.habilitarBotaoRecebimentoAgrupado and ContaReceberControle.permiteReceber}" action="#{ContaReceberControle.receberConta}" tooltip="Realizar Recebimento Conta Agrupada" icon="#{msg_botoes.btn_icon_pagamento} iconePequeno" />
+						<otm:commandIcon id="imprimirBoleto" rendered="#{!contaReceberItens.emissaoBloqueada and !contaReceberItens.habilitarBotaoLinkBanco and contaReceberItens.habilitarBotaoImprimir and !contaReceberItens.pagoComDCC}" action="#{ContaReceberControle.imprimirBoleto}" oncomplete="#{ContaReceberControle.abrirModalCobrarReimpressao}" tootip="Imprimir Boleto" icon="#{msg_botoes.btn_icon_imprimir} iconePequeno" render="form, panelCobrarReimpressao" />
+						<otm:commandIcon id="imprimirBoletoTodos" rendered="#{ContaReceberControle.permiteImprimirBoletoRecebido and contaReceberItens.situacao ne 'AR'}" action="#{ContaReceberControle.imprimirBoleto}" oncomplete="#{ContaReceberControle.abrirModalCobrarReimpressao}" tooltip="Imprimir Boleto" render="form, panelCobrarReimpressao" icon="#{msg_botoes.btn_icon_imprimir} iconePequeno" />
+						<otm:commandIcon id="enviarCobranca" rendered="#{LoginControle.permissaoAcessoMenuVO.contaReceber_PermitirEnvioEmailCobranca and contaReceberItens.isPermiteEnviarEmailCobranca}" action="#{ContaReceberControle.realizarEdicaoEEnvioEmailCobranca}" tooltip="Enviar E-mail de cobrança" render="form:tabMensagens" icon="#{msg_botoes.btn_icon_envelope_fechado} iconePequeno" />
+						<otm:commandIcon tooltip="Follow-Up Prospect" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" oncomplete="window.open('../../ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigoPessoa&amp;valor=#{contaReceberItens.pessoa.codigo}','FollowUP','resizable=yes,maximize=yes,fullscreen=yes,scrollbars=yes');" rendered="#{LoginControle.permissaoAcessoMenuVO.followUpProspect and contaReceberItens.tipoAluno}" icon="#{msg_botoes.btn_icon_followup} iconePequeno" />
+						<otm:commandIcon execute="@this" oncomplete="abrirPopup('../academico/fichaAlunoForm.xhtml?aluno=#{contaReceberItens.pessoa.codigo}&amp;idControlador=FichaAlunoControle_#{contaReceberItens.pessoa.codigo}', 'fichaAlunoForm_FichaAlunoControle_#{contaReceberItens.pessoa.codigo}', 780, 590);" rendered="#{contaReceberItens.tipoAluno}" tooltip="#{msg_aplic.prt_FichaAluno_fichaAluno}" icon="#{msg_botoes.btn_icon_ficha_aluno} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<otm2:panel name="panel1" renderedControl="false" styleClassHeader="#{(ContaReceberControle.totalReceber > 0) ? 'bg-primary p5 rounded-top' : 'bg-info p5 rounded-top'}" stylePanelHeader=" " styleClassFooter="dn" stylePanel="#{(ContaReceberControle.totalReceber > 0) ? 'min-height: 90px; border: 1px solid #4e73df !important' : 'min-height: 90px; border: 1px solid #36b9cc !important'}">
+									<ui:define name="header">
+										<h:outputText styleClass="tituloCamposResultado text-white" value="#{msg_aplic.prt_ContaReceber_totalReceber}" />
+									</ui:define>
+									<ui:define name="body">
+										<h:outputText styleClass="#{(ContaReceberControle.totalReceber > 0) ? 'tituloCamposResultado text-primary' : 'tituloCamposResultado text-info'}" value="#{ContaReceberControle.totalReceber}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<otm2:panel name="panel2" renderedControl="false" styleClassHeader="#{(ContaReceberControle.totalRecebido > 0) ? 'bg-success p5 rounded-top' : 'bg-info p5 rounded-top'}" stylePanelHeader=" " styleClassFooter="dn" stylePanel="#{(ContaReceberControle.totalRecebido > 0) ? 'min-height: 90px; border: 1px solid #1cc88a !important' : 'min-height: 90px; border: 1px solid #36b9cc !important'}">
+									<ui:define name="header">
+										<h:outputText styleClass="tituloCamposResultado text-white" value="#{msg_aplic.prt_ContaReceber_totalRecebido}" />
+									</ui:define>
+									<ui:define name="body">
+										<h:outputText styleClass="#{(ContaReceberControle.totalRecebido > 0) ? 'tituloCamposResultado text-success' : 'tituloCamposResultado text-info'}" value="#{ContaReceberControle.totalRecebido}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<otm2:panel name="panel3" renderedControl="false" styleClassHeader="#{(ContaReceberControle.totalCancelado > 0) ? 'bg-danger p5 rounded-top' : 'bg-info p5 rounded-top'}" stylePanelHeader=" " styleClassFooter="dn" stylePanel="#{(ContaReceberControle.totalCancelado > 0) ? 'min-height: 90px; border: 1px solid #e74a3b !important' : 'min-height: 90px; border: 1px solid #36b9cc !important'}">
+									<ui:define name="header">
+										<h:outputText styleClass="tituloCamposResultado text-white" value="#{msg_aplic.prt_ContaReceber_totalCancelado}" />
+									</ui:define>
+									<ui:define name="body">
+										<h:outputText styleClass="#{(ContaReceberControle.totalCancelado > 0) ? 'tituloCamposResultado text-danger' : 'tituloCamposResultado text-info'}" value="#{ContaReceberControle.totalCancelado}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<otm2:panel name="panel4" renderedControl="false" styleClassHeader="#{(ContaReceberControle.totalNegociado > 0) ? 'bg-warning p5 rounded-top' : 'bg-info p5 rounded-top'}" stylePanelHeader=" " styleClassFooter="dn" stylePanel="#{(ContaReceberControle.totalNegociado > 0) ? 'min-height: 90px; border: 1px solid #f6c23e !important' : 'min-height: 90px; border: 1px solid #36b9cc !important'}">
+									<ui:define name="header">
+										<h:outputText styleClass="tituloCamposResultado text-white" value="#{msg_aplic.prt_ContaReceber_totalNegociado}" />
+									</ui:define>
+									<ui:define name="body">
+										<h:outputText styleClass="#{(ContaReceberControle.totalNegociado > 0) ? 'tituloCamposResultado text-warning' : 'tituloCamposResultado text-info'}" value="#{ContaReceberControle.totalNegociado}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+						</h:panelGroup>
+					</f:facet>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="items" id="paginador" page="#{ContaReceberControle.controleConsultaOtimizado.page}" scrollListener="#{ContaReceberControle.scrollerListener}" rendered="#{ContaReceberControle.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" id="panelGridMensagens" styleClass="row">
+					<otm:mensagem bean="#{ContaReceberControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<script>
+    document.getElementById("form:valorConsulta").focus();
+</script>
+	</ui:define>
+</ui:composition>
+</html>

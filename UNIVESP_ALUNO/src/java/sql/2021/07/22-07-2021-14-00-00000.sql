@@ -1,0 +1,2 @@
+ALTER TABLE public.salaaulablackboardpessoa DROP CONSTRAINT if exists unq_salaaulablackboardpessoa;
+ALTER TABLE public.salaaulablackboardpessoa ADD constraint unq_salaaulablackboardpessoa UNIQUE (salaaulablackboard, tiposalaaulablackboardpessoaenum, pessoaemailinstitucional, matriculaperiodoturmadisciplina);

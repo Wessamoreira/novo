@@ -1,0 +1,3 @@
+alter table if exists agentenegativacaocobrancacontareceber  add column if not exists tipoOrigemInscricaoProcessoSeletivo boolean default false;
+alter table if exists agentenegativacaocobrancacontareceber  add column if not exists tipoOrigemRequerimento boolean default false; 
+alter table if exists agentenegativacaocobrancacontareceber  add column if not exists tipoOrigemMaterialDidatico boolean default false; 

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_NegociacaoPagamento_tituloForm}" />
+	</ui:define>
+	
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{NegociacaoPagamentoControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{NegociacaoPagamentoControle.controleConsulta.campoConsulta}">
+					<a4j:ajax event="change" render="form" execute="@this" listener="#{NegociacaoPagamentoControle.anularDataModelo}" />
+					<f:selectItems value="#{NegociacaoPagamentoControle.tipoConsultaCombo}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3 mt3">
+				<otm:spacer width="100%" />
+				<h:inputText id="valorConsulta" styleClass="form-control campos" size="20" value="#{NegociacaoPagamentoControle.controleConsulta.valorConsulta}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!NegociacaoPagamentoControle.consultaPorCodigo}">
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!NegociacaoPagamentoControle.consultaPorCodigo}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NegociacaoPagamento_periodoVencimento}" rendered="#{!NegociacaoPagamentoControle.consultaPorCodigo}" />
+					<otm:calendar id="valorConsultaDataInicio" value="#{NegociacaoPagamentoControle.controleConsulta.dataIni}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!NegociacaoPagamentoControle.consultaPorCodigo}">
+					<h:outputText styleClass="field control-label tituloCampos" value=" até " />
+					<otm:calendar id="valorConsultaDataFim" value="#{NegociacaoPagamentoControle.controleConsulta.dataFim}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{NegociacaoPagamentoControle.unidadeEnsinoLogado.codigo eq 0 and !NegociacaoPagamentoControle.consultaPorCodigo}">
+				<h:outputText rendered="#{NegociacaoPagamentoControle.unidadeEnsinoLogado.codigo eq 0 and !NegociacaoPagamentoControle.consultaPorCodigo}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NegociacaoPagamento_unidadeEnsino}" />
+				<h:selectOneMenu rendered="#{NegociacaoPagamentoControle.unidadeEnsinoLogado.codigo eq 0 and !NegociacaoPagamentoControle.consultaPorCodigo}" styleClass="form-control campos" value="#{NegociacaoPagamentoControle.valorConsultaUnidadeEnsino}">
+					<f:selectItems value="#{NegociacaoPagamentoControle.listaSelectItemUnidadeEnsino}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row text-center">
+				<a4j:commandLink render="form" id="consultar" type="submit" value="#{msg_botoes.btn_consultar}" action="#{NegociacaoPagamentoControle.consultar}" accesskey="2" styleClass="btn btn-default btn-consultar">
+					<i class="fas fa-search pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"> </i>
+					<f:setPropertyActionListener target="#{NegociacaoPagamentoControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+					<f:setPropertyActionListener target="#{NegociacaoPagamentoControle.controleConsultaOtimizado.page}" value="1" />
+				</a4j:commandLink>
+			</h:panelGroup>
+			<!--                 <rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="items" limitRender="10" align="center"/> -->
+			<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{NegociacaoPagamentoControle.controleConsultaOtimizado}" rendered="#{NegociacaoPagamentoControle.controleConsultaOtimizado.apresentarPaginador}" rows="10" var="negociacaoPagamentoItens">
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_NegociacaoPagamento_codigo}" />
+					</f:facet>
+					<h:commandLink action="#{NegociacaoPagamentoControle.editar}" id="codigo" value="#{negociacaoPagamentoItens.codigo}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_NegociacaoPagamento_unidadeEnsino}" />
+					</f:facet>
+					<h:commandLink action="#{NegociacaoPagamentoControle.editar}" id="unidadeEnsino" value="#{negociacaoPagamentoItens.unidadeEnsino.nome}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_NegociacaoPagamento_fornecedor_funcionario}" />
+					</f:facet>
+					<h:commandLink action="#{NegociacaoPagamentoControle.editar}" id="favorecido" value="#{negociacaoPagamentoItens.nomeFavorecido}" />
+				</rich:column>
+				<!--                     <rich:column> -->
+				<!--                         <f:facet name="header"> -->
+				<!--                             <h:outputText value="#{msg_aplic.prt_NegociacaoPagamento_caixa}"/> -->
+				<!--                         </f:facet> -->
+				<!--                         <h:commandLink action="#{NegociacaoPagamentoControle.editar}" id="caixa" value="#{negociacaoPagamentoItens.caixa.numero}"/> -->
+				<!--                     </rich:column> -->
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_NegociacaoPagamento_data}" />
+					</f:facet>
+					<h:commandLink action="#{NegociacaoPagamentoControle.editar}" id="data" value="#{negociacaoPagamentoItens.data_Apresentar}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_NegociacaoPagamento_valorTotal}" />
+					</f:facet>
+					<h:commandLink action="#{NegociacaoPagamentoControle.editar}">
+						<h:outputText value="#{negociacaoPagamentoItens.valorTotal}">
+							<f:converter converterId="FormatadorNumerico" />
+						</h:outputText>
+					</h:commandLink>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<otm:commandIcon render="form" action="#{NegociacaoPagamentoControle.editar}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller align="center" for="items" id="paginador" page="#{NegociacaoPagamentoControle.controleConsultaOtimizado.page}" scrollListener="#{NegociacaoPagamentoControle.scrollerListener}" rendered="#{NegociacaoPagamentoControle.controleConsultaOtimizado.apresentarPaginador}" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup layout="block" id="panelGridMensagens" styleClass="row">
+				<otm:mensagem bean="#{NegociacaoPagamentoControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton id="novo" action="#{NegociacaoPagamentoControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" title="#{msg.msg_novo_dados}" accesskey="1" />
+			</h:panelGroup>
+		</h:form>
+		<script>
+			document.getElementById("form:valorConsulta").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

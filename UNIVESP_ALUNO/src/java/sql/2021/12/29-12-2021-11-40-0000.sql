@@ -1,0 +1,1 @@
+delete from dashboard where tipodashboard in ('VAGAS_EMPREGO', 'BANCO_CURRICULUM');

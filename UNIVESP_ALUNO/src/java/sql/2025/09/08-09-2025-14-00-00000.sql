@@ -1,0 +1,1 @@
+alter table ConfiguracaoGeralSistema add column if not exists habilitarEnvioEmailAssincrono boolean default false;

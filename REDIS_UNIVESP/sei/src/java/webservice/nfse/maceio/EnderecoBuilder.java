@@ -1,0 +1,50 @@
+package webservice.nfse.maceio;
+
+public class EnderecoBuilder {
+
+	private final Endereco endereco;
+
+	public EnderecoBuilder() {
+		endereco = new Endereco();
+	}
+	
+	public Endereco build() {
+		return endereco;
+	}
+
+	public EnderecoBuilder withEndereco(String string) {
+		endereco.setEndereco(string);
+		return this;
+	}
+
+	public EnderecoBuilder withNumero(int i) {
+		endereco.setNumero(i);
+		return this;
+	}
+
+	public EnderecoBuilder withComplemento(String string) {
+		endereco.setComplemento(string);
+		return this;
+	}
+
+	public EnderecoBuilder withBairro(String string) {
+		endereco.setBairro(string);
+		return this;
+	}
+
+	public EnderecoBuilder withCodigoMunicipio(String i) {
+		endereco.setCodigoMunicipio(i);
+		return this;
+	}
+
+	public EnderecoBuilder withUf(String string) {
+		endereco.setUf(string);
+		return this;
+	}
+
+	public EnderecoBuilder withCep(String string) {
+		endereco.setCep(string);
+		return this;
+	}
+
+}

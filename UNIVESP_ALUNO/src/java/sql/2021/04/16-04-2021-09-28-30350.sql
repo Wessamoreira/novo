@@ -1,0 +1,2 @@
+delete from tiporequerimentocurso where not exists (select codigo from curso where curso.codigo = tiporequerimentocurso.curso);
+alter table tiporequerimentocurso add constraint fk_tiporequerimentocurso_curso foreign key (curso) references curso(codigo) on delete cascade on update cascade;

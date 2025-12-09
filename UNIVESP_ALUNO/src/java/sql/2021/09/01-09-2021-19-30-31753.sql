@@ -1,0 +1,1 @@
+alter table pessoa add column if not exists registroAcademico varchar(255);

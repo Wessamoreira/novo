@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Biometria_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<h:outputScript name="biometria.js" library="script" />
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCadastroBiometrico" onshow="#{BiometriaControle.exibirPanelCadastroBiometrico}" autosized="false" shadowOpacity="true" width="450" height="350" domElementAttachment="parent">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Biometria_cadastramentoBiometrico}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelCadastroBiometrico">
+						<rich:componentControl target="panelCadastroBiometrico" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCadastroBiometrico">
+				<h:panelGrid columns="1" width="100%">
+					<a4j:region>
+						<h:panelGrid columns="1" width="100%" columnClasses="colunaCentralizada">
+							<h:panelGroup id="panelApplet" />
+						</h:panelGrid>
+					</a4j:region>
+					<h:panelGroup id="mensagemCadastroBiometrico" columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{BiometriaControle}"></otm:mensagem>
+					</h:panelGroup>
+					<otm:spacer height="5" />
+					<h:panelGrid columns="1" width="100%" columnClasses="colunaCentralizada">
+						<h:panelGroup>
+							<a4j:commandButton id="realizarCadastro" action="#{BiometriaControle.persistir}" render="form" onclick="realizarCadastro()" oncomplete="#{rich:component('panelCadastroBiometrico')}.hide() ;realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '#{BiometriaControle.idProximoDedo}');#{BiometriaControle.fecharModalPanelCadastroBiometrico}" value="#{msg_botoes.btn_novo}" alt="#{msg.msg_novo_dados}" accesskey="1" image="#{resource['imagens/botaoConfirmar2.png']}">
+								<a4j:param name="argIdDigital" noEscape="true" value="document.getElementById('form:idDigital').value" assignTo="#{BiometriaControle.biometriaVO.idDigital}" />
+								<a4j:param name="argIdDedo" noEscape="true" value="document.getElementById('form:idDedo').value" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+								<a4j:param name="argEstadoBio" noEscape="true" value="document.getElementById('form:estadoBio').value" assignTo="#{BiometriaControle.biometriaVO.estadoBio}" />
+							</a4j:commandButton>
+							<otm:commandButton id="cancelarCadastro" onclick="realizarCancelamento()" oncomplete="#{rich:component('panelCadastroBiometrico')}.hide()" value="Cancelar Cadastro" alt="#{msg.msg_novo_dados}" accesskey="1" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" />
+						</h:panelGroup>
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelPessoa" autosized="false" shadowOpacity="true" minWidth="600" minHeight="340">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Biometria_pessoa}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelPessoa">
+						<rich:componentControl target="panelPessoa" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPessoa">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="campoConsultaPessoa" value="#{BiometriaControle.campoConsultaPessoa}">
+						<f:selectItems value="#{BiometriaControle.tipoConsultaComboPessoa}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaPessoa" size="20" styleClass="form-control campos" value="#{BiometriaControle.valorConsultaPessoa}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="consultarPessoa" render="formPessoa" action="#{BiometriaControle.consultarPessoa}" value="#{msg_botoes.btn_consultar}" alt="#{msg.msg_consultar_dados}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaPessoa" rendered="#{!empty BiometriaControle.listaConsultaPessoa}" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{BiometriaControle.listaConsultaPessoa}" rows="5" var="pessoaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:commandLink action="#{BiometriaControle.selecionarPessoa}" render="form:nomePessoa, form:pessoaCPF" oncomplete="#{rich:component('panelPessoa')}.hide()" value="#{pessoaItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<h:commandLink action="#{BiometriaControle.selecionarPessoa}" render="form:panelGridCadastro" oncomplete="#{rich:component('panelPessoa')}.hide()" value="#{pessoaItem.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{BiometriaControle.selecionarPessoa}" render="form:panelGridCadastro" oncomplete="#{rich:component('panelPessoa')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller for="formPessoa:resultadoConsultaPessoa" maxPages="10" id="paginadorPessoa" stepControls="auto" fastControls="hide" boundaryControls="auto" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaPessoa" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{BiometriaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<h:form id="form">
+			<h:inputHidden id="servidor" value="#{BiometriaControle.ipServidorBiometria}" />
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:panelGroup layout="block" styleClass="col-md-9 pn">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_pessoa}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-9">
+							<h:inputText size="40" id="nomePessoa" styleClass="form-control camposSomenteLeitura" readonly="true" maxlength="50" value="#{BiometriaControle.biometriaVO.pessoaVO.nome}" />
+							<span class="append-icon right"> <otm:commandIcon id="consultarPessoa" render="formPessoa" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelPessoa')}.show()" /> <otm:commandIcon id="limparPessoa" action="#{BiometriaControle.limparCampoPessoa}" icon="#{msg_botoes.btn_icon_limpar_embutido}" alt="#{msg_aplic.prt_limparCampo}" />
+							</span>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:inputText id="pessoaCPF" value="#{BiometriaControle.biometriaVO.pessoaVO.CPF}" styleClass="form-control camposObrigatorios">
+								<a4j:ajax event="change" listener="#{BiometriaControle.consultarPessoaPorCPF}" render="form:panelGridForm" />
+							</h:inputText>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_codigoAcesso}" />
+						<h:inputText id="matricula" styleClass="form-control campos" value="#{BiometriaControle.biometriaVO.matricula}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGrid id="panelGridCadastro" columns="2" columnClasses="w50, w50" width="100%" rendered="#{BiometriaControle.biometriaVO.pessoaVO.codigo > 0}">
+					<rich:panel style="margin:4px;" header="#{msg_aplic.prt_Biometria_maoEsquerda}">
+						<h:inputHidden id="idDigital" value="#{BiometriaControle.biometriaVO.idDigital}" />
+						<h:inputHidden id="idDedo" value="#{BiometriaControle.biometriaVO.idDedo}" />
+						<h:inputHidden id="estadoBio" value="#{BiometriaControle.biometriaVO.estadoBio}" />
+						<h:panelGrid id="panelGridCadastrarMaoEsquerda" columns="5" width="100%">
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarEsquerdo eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarEsquerdo ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:18px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_polegar}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarPolegarEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarEsquerdo eq 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '6')" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Polegar Esquerdo" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarPolegarEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarEsquerdo ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show() ;realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '6')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Polegar Esquerdo" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirPolegarEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarEsquerdo ne 0}" render="form,  panelCadastroBiometrico" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalPolegarEsquerdo}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Polegar Esquerdo" accesskey="1">
+										<a4j:param name="argIdDigitalPolegarEsquerdo" noEscape="true" value="6" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorEsquerdo eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorEsquerdo ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:15px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_indicador}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarIndicadorEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorEsquerdo eq 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '7')" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Indicador Esquerdo" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarIndicadorEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorEsquerdo ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '7')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Indicador Esquerdo" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirIndicadorEsquerdo" render="form, panelCadastroBiometrico" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorEsquerdo ne 0}" action="#{BiometriaControle.excluir}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalIndicadorEsquerdo}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Indicador Esquerdo" accesskey="1">
+										<a4j:param name="argIdDigitalIndicadorEsquerdo" noEscape="true" value="7" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioEsquerdo eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioEsquerdo ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:25px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_medio}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarMedioEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioEsquerdo eq 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '8')" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Medio Esquerdo" title="#{msg.msg_novo_dados}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarMedioEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioEsquerdo ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '8')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Medio Esquerdo" title="#{msg.btn_editar}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirMedioEsquerdo" render="form,panelCadastroBiometrico" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioEsquerdo ne 0}" action="#{BiometriaControle.excluir}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalMedioEsquerdo}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Medio Esquerdo" title="#{msg.msg_excluir_dados}" accesskey="1">
+										<a4j:param name="argIdDigitalMedioEsquerdo" noEscape="true" value="8" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularEsquerdo eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularEsquerdo ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:25px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_anular}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarAnularEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularEsquerdo eq 0}" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Anular Esquerdo" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '9')" title="#{msg.msg_novo_dados}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarAnularEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularEsquerdo ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '9')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Anular Esquerdo" title="#{msg.btn_editar}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirAnularEsquerdo" render="form,panelCadastroBiometrico" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularEsquerdo ne 0}" action="#{BiometriaControle.excluir}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalAnularEsquerdo}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Anular Esquerdo" title="#{msg.msg_excluir_dados}" accesskey="1">
+										<a4j:param name="argIdDigitalAnularEsquerdo" noEscape="true" value="9" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoEsquerdo eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoEsquerdo ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:25px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_minimo}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarMinimoEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoEsquerdo eq 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '10')" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Minimo Esquerdo" title="#{msg.msg_novo_dados}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarMinimoEsquerdo" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoEsquerdo ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '10')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Minimo Esquerdo" title="#{msg.btn_editar}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirMinimoEsquerdo" render="form,panelCadastroBiometrico" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoEsquerdo ne 0}" action="#{BiometriaControle.excluir}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalMinimoEsquerdo}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Minimo Esquerdo" title="#{msg.msg_excluir_dados}" accesskey="1">
+										<a4j:param name="argIdDigitalMinimoEsquerdo" noEscape="true" value="10" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+						</h:panelGrid>
+					</rich:panel>
+					<rich:panel style="margin:4px;" header="#{msg_aplic.prt_Biometria_maoDireita}">
+						<h:panelGrid id="panelGridCadastrarMaoDireia" columns="5" width="100%">
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarDireito eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarDireito ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:18px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_polegar}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarPolegarDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarDireito eq 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '1')" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Polegar Direito" title="#{msg.msg_novo_dados}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarPolegarDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarDireito ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '1')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Polegar Direito" title="#{msg.btn_editar}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirPolegarDireito" render="form,panelCadastroBiometrico" rendered="#{BiometriaControle.biometriaVO.idDigitalPolegarDireito ne 0}" action="#{BiometriaControle.excluir}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalPolegarDireito}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Polegar Direito" title="#{msg.msg_excluir_dados}" accesskey="1">
+										<a4j:param name="argIdDigitalPolegarEsquerdo" noEscape="true" value="1" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorDireito eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorDireito ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:15px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_indicador}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarIndicadorDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorDireito eq 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '2')" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Indicador Direito" title="#{msg.msg_novo_dados}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarIndicadorDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorDireito ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '2')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Indicador Direito" title="#{msg.btn_editar}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirIndicadorDireito" render="form,panelCadastroBiometrico" rendered="#{BiometriaControle.biometriaVO.idDigitalIndicadorDireito ne 0}" action="#{BiometriaControle.excluir}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalIndicadorDireito}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Indicador Direito" title="#{msg.msg_excluir_dados}" accesskey="1">
+										<a4j:param name="argIdDigitalIndicadorEsquerdo" noEscape="true" value="2" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioDireito eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioDireito ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:25px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_medio}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarMedioDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioDireito eq 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '3')" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Medio Direito" title="#{msg.msg_novo_dados}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarMedioDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioDireito ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '3')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Medio Direito" title="#{msg.btn_editar}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirMedioDireito" render="form,panelCadastroBiometrico" rendered="#{BiometriaControle.biometriaVO.idDigitalMedioDireito ne 0}" action="#{BiometriaControle.excluir}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalMedioDireito}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Medio Direito" title="#{msg.msg_excluir_dados}" accesskey="1">
+										<a4j:param name="argIdDigitalMedioEsquerdo" noEscape="true" value="3" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularDireito eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularDireito ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:25px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_anular}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarAnularDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularDireito eq 0}" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Anular Direito" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '4')" title="#{msg.msg_novo_dados}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarAnularDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularDireito ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '4')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Anular Direito" title="#{msg.btn_editar}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirAnularDireito" render="form, panelCadastroBiometrico" rendered="#{BiometriaControle.biometriaVO.idDigitalAnularDireito ne 0}" action="#{BiometriaControle.excluir}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalAnularDireito}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Anular Direito" title="#{msg.msg_excluir_dados}" accesskey="1">
+										<a4j:param name="argIdDigitalAnularEsquerdo" noEscape="true" value="4" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+							<h:panelGroup>
+								<h:panelGrid columns="1" width="100%">
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoDireito eq 0}" url="#{resource['imagens/botaoBiometriaNaoCadastrada.png']}" />
+									<h:graphicImage style="position:relative; left:15px;" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoDireito ne 0}" url="#{resource['imagens/botaoBiometriaCadastrada.png']}" />
+									<h:outputText style="position:relative; top:2px; left:25px;" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Biometria_minimo}" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="cadastrarMinimoDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoDireito eq 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '5')" icon="fas fa-fingerprint" styleClass="btn btn-primary iconePequeno" tooltip="Cadastrar Minimo Direito" title="#{msg.msg_novo_dados}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="editarMinimoDireito" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoDireito ne 0}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarInicioCadastro('#{BiometriaControle.biometriaVO.pessoaVO.codigo}', '5')" icon="fas fa-pencil-alt" styleClass="btn btn-primary iconePequeno" tooltip="Editar Minimo Direito" title="#{msg.btn_editar}" accesskey="1" />
+									<otm:commandIcon style="position: relative;top: 4px; left:28px" id="excluirMinimoDireito" render="form,panelCadastroBiometrico" rendered="#{BiometriaControle.biometriaVO.idDigitalMinimoDireito ne 0}" action="#{BiometriaControle.excluir}" onclick="#{rich:component('panelCadastroBiometrico')}.show(); realizarExclusaoDigital('#{BiometriaControle.biometriaVO.idDigitalMinimoDireito}')" icon="far fa-trash-alt" styleClass="btn btn-danger iconePequeno" tooltip="Excluir Minimo Direito" title="#{msg.msg_excluir_dados}" accesskey="1">
+										<a4j:param name="argIdDigitalMinimoEsquerdo" noEscape="true" value="5" assignTo="#{BiometriaControle.biometriaVO.idDedo}" />
+									</otm:commandIcon>
+								</h:panelGrid>
+							</h:panelGroup>
+						</h:panelGrid>
+					</rich:panel>
+				</h:panelGrid>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGrid id="panelGridMensagens">
+						<otm:mensagem bean="#{BiometriaControle}"></otm:mensagem>
+					</h:panelGrid>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+						<h:panelGroup>
+							<otm:commandButton id="novo" immediate="true" action="#{BiometriaControle.novo}" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" />
+							<otm:spacer width="5" />
+							<otm:commandButton id="gravar" action="#{BiometriaControle.persistir}" styleClass="btn btn-dark btn-gravar" render="panelGridMensagens" accesskey="2" value="#{msg_bt.btn_gravar}" title="#{msg.msg_gravar_dados}" />
+							<otm:spacer width="5" />
+							<otm:commandButton id="consultar" immediate="true" action="#{BiometriaControle.inicializarConsulta}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="4" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

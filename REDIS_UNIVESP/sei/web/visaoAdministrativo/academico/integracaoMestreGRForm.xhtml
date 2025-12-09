@@ -1,0 +1,2012 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_IntegracaoMestreGR_tituloForm}" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+
+		<h:form id="form" rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}">
+
+			<h:commandLink action="#{IntegracaoMestreGRControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+
+			<!-- Filtro Ano -->
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_IntegracaoMestreGR_ano}" />
+				<h:inputText id="anoLote" styleClass="form-control camposObrigatorios" size="4" maxlength="4" value="#{IntegracaoMestreGRControle.anoLote}" onkeypress="aceitarSomenteValorNumerico(this)">
+					<a4j:ajax event="change" execute="@form" render="form" listener="#{IntegracaoMestreGRControle.consultarLoteFiltro}" />
+				</h:inputText>
+			</h:panelGroup>
+
+			<!-- Filtro Semestre -->
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_IntegracaoMestreGR_semestre}" />
+				<h:selectOneMenu styleClass="form-control camposObrigatorios" id="semestre" value="#{IntegracaoMestreGRControle.semestre}">					
+					<f:selectItems id="semestreFiltro" value="#{IntegracaoMestreGRControle.listaSelectItemSemestre}" />
+					<a4j:ajax event="change" execute="@form" render="form" listener="#{IntegracaoMestreGRControle.consultarLoteFiltro}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+
+			<!-- Filtro Bimestre -->
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_IntegracaoMestreGR_bimestre}" />
+				<h:selectOneMenu styleClass="form-control camposObrigatorios" id="bimestre" value="#{IntegracaoMestreGRControle.bimestre}">
+					<a4j:ajax event="change" execute="@form" render="form" listener="#{IntegracaoMestreGRControle.consultarLoteFiltro}" />					
+					<f:selectItems id="bimestreFiltro" value="#{IntegracaoMestreGRControle.listaSelectItemBimestre}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			
+
+			<!-- Unidade de Ensino -->
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_IntegracaoMestreGR_unidadeEnsino}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText id="unidadeEnsino" size="53" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{IntegracaoMestreGRControle.unidadeEnsinoApresentar}" />
+					<span class="append-icon right"> <otm:commandIcon id="selecionarUnidadeEnsino" oncomplete="#{rich:component('panelUnidadeEnsino')}.show()" icon="#{msg_botoes.btn_icon_adicionar_embutido}" tooltip="Selecionar Unidade Ensino" render="formUnidadeEnsino" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+			
+<!-- 			<h:panelGroup layout="block" styleClass="col-md-6"> -->
+<!-- 				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_nivelEducacional}" /> -->
+<!-- 				<h:selectOneMenu styleClass="form-control camposObrigatorios" id="nivelEducacional" value="#{IntegracaoMestreGRControle.nivelEducacional}"> -->
+<!-- 					<a4j:ajax event="change" execute="@form" render="form" listener="#{IntegracaoMestreGRControle.consultarLoteFiltroNivelEducacional}" />					 -->
+<!-- 					<f:selectItems value="#{IntegracaoMestreGRControle.listaSelectItemNivelEducacional}" /> -->
+<!-- 				</h:selectOneMenu> -->
+<!-- 			</h:panelGroup> -->
+
+			<!-- Curso -->
+			<h:panelGroup id="cursos" layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_IntegracaoMestreGR_curso}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText readonly="true" id="nomeCurso" size="62" styleClass="form-control camposSomenteLeitura" value="#{IntegracaoMestreGRControle.cursoApresentar}" />
+					<span class="append-icon right"> <otm:commandIcon id="consultaDadosCurso" focus="nomeCurso" tooltip="Localizar Curso" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show()" icon="#{msg_botoes.btn_icon_adicionar_embutido}" /> <otm:commandIcon id="limparDadosCurso" tooltip="Limpar Dados" action="#{IntegracaoMestreGRControle.limparCurso}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+
+			<!--Disciplina-->
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UploadArquivos_Disciplina}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText id="disciplinaNome" size="50" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{IntegracaoMestreGRControle.disciplinaVO.nome}" />
+					<span class="append-icon right"> <otm:commandIcon id="consultaDadosDisciplina" alt="Localizar Disciplina" render="formDisciplina" oncomplete="#{rich:component('panelDisciplina')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosDisciplina" alt="Limpar Dados" action="#{IntegracaoMestreGRControle.limparDisciplina}" render="form:disciplinaNome" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+
+			<!-- Operacoes -->
+			<h:panelGroup rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" layout="block" styleClass="col-md-12 mt10">
+				<!-- 				<h:outputText styleClass="title" value="#{msg_aplic.prt_IntegracaoMestreGR_operacoes}" /> -->
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+
+					<otm:commandButton style="margin-rigth:5px" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="#{msg_aplic.prt_IntegracaoMestreGR_gerarLoteAlunos}" id="btnConsultarLoteAluno" render="formLoteIntegracaoAluno" action="#{IntegracaoMestreGRControle.consultarIntegracaoLote('TURMA')}" styleClass="btn btn-success mr-5" oncomplete="#{IntegracaoMestreGRControle.oncompleteModal}" execute="@form">
+
+					</otm:commandButton>
+					<otm:commandButton style="margin-rigth:5px" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="#{msg_aplic.prt_IntegracaoMestreGR_gerarLoteAlunosSegundaChamada}" id="btnConsultarAlunoSegundaChamada" render="formLoteIntegracaoAlunoSegundaChamada" action="#{IntegracaoMestreGRControle.consultarIntegracaoLote('TURMA_2CH')}" styleClass="btn btn-primary mr-5" oncomplete="#{IntegracaoMestreGRControle.oncompleteModal}" execute="@form ">
+
+					</otm:commandButton>
+					<otm:commandButton icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="#{msg_aplic.prt_IntegracaoMestreGR_gerarLoteAlunosExames}" id="btnConsultarLoteAlunoExame" render="formLoteIntegracaoAlunoExame" action="#{IntegracaoMestreGRControle.consultarIntegracaoLote('TURMA_EXAME')}" styleClass="btn btn-warning" oncomplete="#{IntegracaoMestreGRControle.oncompleteModal}" execute="@form">
+
+					</otm:commandButton>
+				</h:panelGroup>
+
+			</h:panelGroup>
+
+			<h:panelGroup rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" id="panelLotesInferior" layout="block" styleClass="col-md-12 mt10">
+
+
+
+				<!-- 					<h:outputText styleClass="title" value="#{msg_aplic.prt_IntegracaoMestreGR_lotesIntegracao}" style="font-weight: bold;" /> -->
+
+
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<!--Consultar Registro De Lotes-->
+					<otm:commandButton style="margin-rigth:5px" id="btnConsultarLotesGerados" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="#{msg_aplic.prt_IntegracaoMestreGR_consultarLotes}" render="form" action="#{IntegracaoMestreGRControle.consultarIntegracaoLoteExistentes}" styleClass="btn btn-dark mr-5" execute="@form">
+
+					</otm:commandButton>
+
+					<!--Consultar Erro Integracao-->
+					<otm:commandButton style="margin-rigth:5px" id="btnConsultarLogErroIntegracao" icon="#{msg_botoes.btn_icon_alerta_triangulo_embutido}" value="Log Erro Geração Lote" render="formLoteIntegracaoErro" action="#{IntegracaoMestreGRControle.errosLoteGeralExistentes}" styleClass="btn btn-dark mr-5" execute="@form" oncomplete="#{rich:component('panelLoteIntegracaoErro')}.show();">
+
+					</otm:commandButton>
+
+					<!--Log Atualizacao Alunos-->
+					<otm:commandButton id="btnConsultarLogAtualizacaoAlunos" icon="#{msg_botoes.btn_icon_info_embutido}" value="Lote Operações Tempo Real" render="formLoteIntegracaoLogAluno, form" action="#{IntegracaoMestreGRControle.consultarIntegracaoLogAlunos}" oncomplete="#{IntegracaoMestreGRControle.oncompleteModal}" execute="@form" styleClass="btn btn-dark mr-5">
+
+					</otm:commandButton>
+
+				</h:panelGroup>
+			</h:panelGroup>
+
+
+
+			<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+			<h:panelGroup rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" id="panelLotesInferior2" layout="block" styleClass="col-md-12">
+				<rich:dataTable id="resultadoLoteTurmaInferior" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote}" rows="10" var="loteItem">
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Tipo Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.origem.valorApresentar}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.nomeLote}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.codigoLote}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Qtde de Registros" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.qtdeRegistros}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.situacao}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data Geração" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.created}">
+								<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+							</h:outputText>
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data Envio" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.dataTransmissao}">
+								<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+							</h:outputText>
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Responsável" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.nomeCreated}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Unidade(s) de Ensino" />
+						</f:facet>
+						<otm:commandIcon tooltip="#{loteItem.unidadeEnsinos}" rendered="#{!empty loteItem.unidadeEnsinos}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="unidadeEnsinos2">
+
+						</otm:commandIcon>
+
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Cursos" />
+						</f:facet>
+						<otm:commandIcon tooltip="#{loteItem.cursos}" rendered="#{!empty loteItem.cursos}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="cursos2">
+
+						</otm:commandIcon>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Disciplina" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.disciplinaVO.abreviatura}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Período 2ª Chamada" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.periodoRequerimento}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="form:resultadoLoteTurmaInferior" maxPages="10" id="scResultadoMatriculaInferior" boundaryControls="auto" stepControls="auto" fastControls="hide" page="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote.page}" scrollListener="#{IntegracaoMestreGRControle.scrollerListenerRegistroIntegracaoLote}" rendered="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote.apresentarPaginador}" />
+					</f:facet>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+
+						<rich:column styleClass="optionsColumn">
+
+							<otm:commandIcon id="btnConsultarLoteItensAlunoExame" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" render="formLoteIntegracaoItensAluno" action="#{IntegracaoMestreGRControle.consultarItensLoteFiltrados(loteItem.codigo, loteItem.origem.valor)}" oncomplete="#{rich:component('panelLoteIntegracaoItensAluno')}.show();" execute="@this" tooltip="Visualizar">
+
+							</otm:commandIcon>
+
+
+
+							<!--Excluir Lote-->
+							<a4j:commandLink id="btnExcluirLoteInferior" render="form" oncomplete="#{rich:component('panelAlertaExclusaoLote')}.show();" execute="@this" alt="Excluir Dados" title="Excluir" >
+								<rich:tooltip value="Remover Lote" />
+								<span class="#{msg_botoes.btn_icon_remover} iconePequeno border-radius-all"></span>
+								<f:setPropertyActionListener target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoIntegracao}" value="#{loteItem.codigo}" />
+								<f:setPropertyActionListener for="btnExcluirLoteInferior" target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoLote.paginaAtual}" value="1" />
+								<f:setPropertyActionListener for="btnExcluirLoteInferior" target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoLote.page}" value="1" />
+							</a4j:commandLink>
+							
+
+							<!--Transmitir-->
+							<a4j:commandLink id="transmitirDadosLoteInferior" onclick="return confirm('Gostaria de realmente transmitir este lote?')" render="form panelProgressBar" action="#{IntegracaoMestreGRControle.realizarInicioProgressBarTransmitirLoteSelecionado}" execute="@this" alt="Transmitir Dados" title="Transmitir" rendered="#{loteItem.situacao eq 'AGUARDANDO'}">
+								<rich:tooltip value="Transmitir Lote" />
+								<span class="#{msg_botoes.btn_icon_enviar_email} iconePequeno border-radius-all"></span>
+								<f:setPropertyActionListener target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoIntegracao}" value="#{loteItem.codigo}" />
+							</a4j:commandLink>
+							<!--Transmitir-->
+							<a4j:commandLink id="retransmitirDadosLoteInferior" onclick="return confirm('Ao retransmitir o lote deve ser garantido que no sistema de provas os itens deste lote foram excluidos. Gostaria de realmente transmitir este lote?')" render="form panelProgressBar" action="#{IntegracaoMestreGRControle.realizarInicioProgressBarTransmitirLoteSelecionado}" execute="@this" alt="Transmitir Dados" title="Transmitir" rendered="#{loteItem.situacao eq 'INTERROMPIDO'}">
+								<rich:tooltip value="Retransmitir Lote" />
+								<span class="#{msg_botoes.btn_icon_enviar_email} iconePequeno border-radius-all"></span>
+								<f:setPropertyActionListener target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoIntegracao}" value="#{loteItem.codigo}" />
+							</a4j:commandLink>
+
+							<!--Mensagem Erro-->
+							<a4j:commandLink id="alertaDadosLoteInferior" render="formLoteIntegracaoErro" action="#{IntegracaoMestreGRControle.consultarErroLoteSelecionado}" oncomplete="#{rich:component('panelLoteIntegracaoErro')}.show();" execute="@this" rendered="#{loteItem.situacao eq 'ERRO'}">
+								<rich:tooltip value="Mensagem De Erro" />
+								<span class="#{msg_botoes.btn_icon_alerta_triangulo_lista} iconePequeno border-radius-all"></span>
+								<f:setPropertyActionListener for="alertaDadosLoteInferior" target="#{IntegracaoMestreGRControle.controleConsultaErroRegistroIntegracaoLote.paginaAtual}" value="1" />
+								<f:setPropertyActionListener for="alertaDadosLoteInferior" target="#{IntegracaoMestreGRControle.controleConsultaErroRegistroIntegracaoLote.page}" value="1" />
+								<f:setPropertyActionListener for="alertaDadosLoteInferior" target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoIntegracao}" value="#{loteItem.codigo}" />
+							</a4j:commandLink>
+						</rich:column>
+
+					</rich:column>
+
+
+				</rich:dataTable>
+
+
+				<h:panelGroup id="panelMensagem" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{IntegracaoMestreGRControle}"></otm:mensagem>
+				</h:panelGroup>
+
+
+
+			</h:panelGroup>
+
+		</h:form>
+
+		<!-- PopUp Disciplina -->
+		<rich:popupPanel id="panelDisciplina" styleClass="modalMaximizado" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_UploadArquivos_consultarDisciplina}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelink3" />
+					<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaDisciplina" value="#{IntegracaoMestreGRControle.campoConsultaDisciplina}">
+						<f:selectItems value="#{IntegracaoMestreGRControle.tipoConsultaComboDisciplina}" />
+						<a4j:ajax event="change" render="formDisciplina" execute="formDisciplina" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaDisciplina" rendered="#{IntegracaoMestreGRControle.campoConsultaDisciplina ne 'codigo'}" size="20" styleClass="form-control campos" value="#{IntegracaoMestreGRControle.valorConsultaDisciplina}" />
+					<h:inputText id="valorConsultaDisciplinaCodigo" rendered="#{IntegracaoMestreGRControle.campoConsultaDisciplina eq 'codigo'}" size="20" styleClass="form-control campos" value="#{IntegracaoMestreGRControle.valorConsultaDisciplina}" onkeypress="aceitarSomenteValorNumerico(this)" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formDisciplina:mensagemConsultaDisciplina, formDisciplina:resultadoConsultaDisciplina, formDisciplina:scResultadoDisciplina" action="#{IntegracaoMestreGRControle.consultarDisciplina}" value="#{msg_botoes.btn_consultar}" icon="#{msg_botoes.btn_icon_lupa_embutido}" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaDisciplina" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{IntegracaoMestreGRControle.listaConsultaDisciplina}" rows="5" var="disciplinaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{IntegracaoMestreGRControle.selecionarDisciplina}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="#{disciplinaItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{IntegracaoMestreGRControle.selecionarDisciplina}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="#{disciplinaItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Abreviatura" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{IntegracaoMestreGRControle.selecionarDisciplina}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="#{disciplinaItens.abreviatura}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{IntegracaoMestreGRControle.selecionarDisciplina}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formDisciplina:resultadoConsultaDisciplina" maxPages="10" id="scResultadoDisciplina" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" id="mensagemConsultaDisciplina" styleClass="row">
+					<otm:mensagem bean="#{IntegracaoMestreGRControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+
+		<!-- PopUp de Pesquisa Universidade -->
+		<rich:popupPanel rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" styleClass="modalMaximizado" id="panelUnidadeEnsino" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_IntegracaoMestreGR_selecionarUnidadeEnsino}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hideUnidadeEnsino" />
+					<rich:componentControl target="panelUnidadeEnsino" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUnidadeEnsino">
+				<h:panelGroup columns="1" width="100%" style="text-align: left;">
+					<h:panelGroup id="unidadeEnsinos" style="height:485px;width:99%">
+						<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+							<rich:dataTable align="left" id="filtrosUnidadeEnsino" width="100%" var="unidadeEnsinoItens" value="#{IntegracaoMestreGRControle.unidadeEnsinoVOs}">
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosUnidadeEnsino', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosUnidadeEnsino', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="unidadeEnsinos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="unidadeEnsinos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosUnidadeEnsino')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{unidadeEnsinoItens.nome}" />
+								</rich:column>
+								<rich:column filterType="custom" filterExpression="#{!unidadeEnsinoItens.filtrarUnidadeEnsino}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso, form:turnos" action="#{IntegracaoMestreGRControle.marcarTodasUnidadesEnsinoAction}">
+											<f:setPropertyActionListener value="true" target="#{IntegracaoMestreGRControle.marcarTodasUnidadeEnsino}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso, form:turnos" action="#{IntegracaoMestreGRControle.verificarTodasUnidadesSelecionadas}">
+										<f:setPropertyActionListener value="true" target="#{unidadeEnsinoItens.filtrarUnidadeEnsino}" />
+									</a4j:commandButton>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+							<rich:dataTable align="left" id="filtrosUnidadeEnsino2" width="100%" var="unidadeEnsinoItens" value="#{IntegracaoMestreGRControle.unidadeEnsinoVOs}">
+								<rich:column filterType="custom" filterExpression="#{unidadeEnsinoItens.filtrarUnidadeEnsino}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso, form:turnos" action="#{IntegracaoMestreGRControle.marcarTodasUnidadesEnsinoAction}">
+											<f:setPropertyActionListener value="false" target="#{IntegracaoMestreGRControle.marcarTodasUnidadeEnsino}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso, form:turnos" action="#{IntegracaoMestreGRControle.verificarTodasUnidadesSelecionadas}">
+										<f:setPropertyActionListener value="false" target="#{unidadeEnsinoItens.filtrarUnidadeEnsino}" />
+									</a4j:commandButton>
+								</rich:column>
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosUnidadeEnsino2', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosUnidadeEnsino2', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="unidadeEnsinos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="unidadeEnsinos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosUnidadeEnsino2')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{unidadeEnsinoItens.nome}" />
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<!-- PopUp de Curso -->
+		<rich:popupPanel rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" styleClass="modalMaximizado" id="panelCurso" style="overflow:auto;" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_IntegracaoMestreGR_selecionarUnidadeEnsino_filtrar_curso}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink19" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup id="cursos" style="height:485px;width:99%">
+						<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+							<rich:dataTable align="left" id="filtrosCurso" width="100%" var="cursoItens" value="#{IntegracaoMestreGRControle.cursosFiltradosGraduacao}">
+								<rich:column filterType="custom" filterValue="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO').filtro}" filter="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="cursos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="cursos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosCurso')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{cursoItens.codigo} - #{cursoItens.nome}" />
+								</rich:column>
+								<rich:column filterType="custom" filterExpression="#{!cursoItens.filtrarCursoVO}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formCurso, form:nomeCurso" action="#{IntegracaoMestreGRControle.realizarMarcacaoCursos}">
+											<f:setPropertyActionListener value="true" target="#{IntegracaoMestreGRControle.marcarTodosCursos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="form:nomeCurso, cursos" action="#{IntegracaoMestreGRControle.verificarTodosCursosSelecionados}">
+										<f:setPropertyActionListener value="true" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+							<rich:dataTable align="left" id="filtrosCurso2" width="100%" var="cursoItens" value="#{IntegracaoMestreGRControle.cursosFiltradosGraduacao}">
+								<rich:column filterType="custom" filterExpression="#{cursoItens.filtrarCursoVO}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formCurso, form:nomeCurso" action="#{IntegracaoMestreGRControle.realizarMarcacaoCursos}">
+											<f:setPropertyActionListener value="false" target="#{IntegracaoMestreGRControle.marcarTodosCursos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="form:nomeCurso, cursos" action="#{IntegracaoMestreGRControle.verificarTodosCursosSelecionados}">
+										<f:setPropertyActionListener value="false" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+								<rich:column filterType="custom" filterValue="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO').filtro}" filter="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="cursos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="cursos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosCurso2')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{cursoItens.codigo} - #{cursoItens.nome}" />
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+
+
+		<!--Lote popUp Aluno-->
+		<rich:popupPanel rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" styleClass="modalMaximizado100" id="panelLoteIntegracaoAluno" shadowOpacity="true" width="760" height="550">
+
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_IntegracaoMestreGR_gerarLoteAlunos}" />
+				</h:panelGroup>
+			</f:facet>
+
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkLoteAluno" />
+					<rich:componentControl target="panelLoteIntegracaoAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formLoteIntegracaoAluno">
+
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+
+				<rich:dataTable id="resultadoLoteIntegracaoAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote}" rows="10" var="loteItem">
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.nomeLote}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.codigoLote}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Tipo Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.origem.valorApresentar}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Qtde de Registros" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.qtdeRegistros}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.situacao}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data Geração" />
+						</f:facet>
+						<h:outputText value="#{loteItem.created}">
+							<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+						</h:outputText>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data Envio" />
+						</f:facet>
+						<h:outputText value="#{loteItem.dataTransmissao}">
+							<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+						</h:outputText>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Responsável" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.nomeCreated}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Unidade(s) de Ensino" />
+						</f:facet>
+						<otm:commandIcon tooltip="#{loteItem.unidadeEnsinos}" rendered="#{!empty loteItem.unidadeEnsinos}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="unidadeEnsinos2">
+
+						</otm:commandIcon>
+
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Cursos" />
+						</f:facet>
+						<otm:commandIcon tooltip="#{loteItem.cursos}" rendered="#{!empty loteItem.cursos}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="cursos2">
+
+						</otm:commandIcon>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Disciplina" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.disciplinaVO.abreviatura}" />
+						</h:panelGroup>
+					</rich:column>
+
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+
+
+						<otm:commandIcon id="btnConsultarLoteItensAluno" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" render="formLoteIntegracaoItensAluno" action="#{IntegracaoMestreGRControle.consultarItensLoteFiltrados(loteItem.codigo, loteItem.origem.valor)}" oncomplete="#{rich:component('panelLoteIntegracaoItensAluno')}.show();" execute="@this" tooltip="Visualizar">
+
+						</otm:commandIcon>
+
+
+					</rich:column>
+
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="formLoteIntegracaoAluno:resultadoLoteIntegracaoAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" page="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote.page}" scrollListener="#{IntegracaoMestreGRControle.scrollerListenerRegistroIntegracaoLote}" rendered="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote.apresentarPaginador}" />
+					</f:facet>
+
+				</rich:dataTable>
+
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+
+					<!--Gerar -->
+					<otm:commandButton id="btnGerarLoteAluno" value="Gerar Novo Lote" icon="#{msg_botoes.btn_icon_gravar_embutido}" style="margin-right: 5px;" execute="@form" render="form panelProgressBar" oncomplete="#{IntegracaoMestreGRControle.oncompleteModal}" action="#{IntegracaoMestreGRControle.realizarInicioProgressBarGerarLote}" styleClass="btn btn-info btn-novo">
+
+					</otm:commandButton>
+
+
+				</h:panelGroup>
+
+				<h:panelGroup id="mensagemConsultaLoteAluno" columns="1" width="100%" styleClass="tabMensagens" style="margin-bottom: 100px">
+					<otm:mensagem bean="#{IntegracaoMestreGRControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+
+		</rich:popupPanel>
+
+		<!--Lote popUp Aluno Segunda Chamada-->
+		<rich:popupPanel rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" styleClass="modalMaximizado" id="panelLoteIntegracaoAlunoSegundaChamada" shadowOpacity="true" width="760" height="550">
+
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_IntegracaoMestreGR_gerarLoteAlunosSegundaChamada}" />
+				</h:panelGroup>
+			</f:facet>
+
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkLoteAlunoSegundaChamada" />
+					<rich:componentControl target="panelLoteIntegracaoAlunoSegundaChamada" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formLoteIntegracaoAlunoSegundaChamada">
+
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+
+				<rich:dataTable id="resultadoLoteIntegracaoAlunoSegundaChamada" rendered="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote.apresentarListaConsulta}" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote}" rows="10" var="loteItem">
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.nomeLote}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.codigoLote}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Tipo Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.origem.valorApresentar}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Qtde de Registros" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.qtdeRegistros}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.situacao}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data Geração" />
+						</f:facet>
+						<h:outputText value="#{loteItem.created}">
+							<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+						</h:outputText>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data Envio" />
+						</f:facet>
+						<h:outputText value="#{loteItem.dataTransmissao}">
+							<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+						</h:outputText>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Responsável" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.nomeCreated}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Período 2ª Chamada" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.periodoRequerimento}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Unidade(s) de Ensino" />
+						</f:facet>
+						<otm:commandIcon tooltip="#{loteItem.unidadeEnsinos}" rendered="#{!empty loteItem.unidadeEnsinos}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="unidadeEnsinos3">
+
+						</otm:commandIcon>
+
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Cursos" />
+						</f:facet>
+						<otm:commandIcon tooltip="#{loteItem.cursos}" rendered="#{!empty loteItem.cursos}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="cursos3">
+
+						</otm:commandIcon>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Disciplina" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.disciplinaVO.abreviatura}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+
+						<rich:column styleClass="optionsColumn">
+							<otm:commandIcon id="btnConsultarLoteItensAluno2CH" icon="#{msg_botoes.btn_icon_lupa}  iconePequeno" render="formLoteIntegracaoItensAluno" action="#{IntegracaoMestreGRControle.consultarItensLoteFiltrados(loteItem.codigo, loteItem.origem.valor)}" oncomplete="#{rich:component('panelLoteIntegracaoItensAluno')}.show();" execute="@this" tooltip="Visualizar">
+
+							</otm:commandIcon>
+						</rich:column>
+
+					</rich:column>
+
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="formLoteIntegracaoAlunoSegundaChamada:resultadoLoteIntegracaoAlunoSegundaChamada" maxPages="10" id="scResultadoAlunoSegundaChamada" boundaryControls="auto" stepControls="auto" fastControls="hide" page="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote.page}" scrollListener="#{IntegracaoMestreGRControle.scrollerListenerRegistroIntegracaoLote}" rendered="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote.apresentarPaginador}" />
+					</f:facet>
+
+				</rich:dataTable>
+
+				<h:panelGroup styleClass="row mt10 border rounded p-10" layout="block">
+					<h:panelGroup styleClass="col-md-12" layout="block">
+						<h:outputText styleClass="field control-label tituloCampos" value="Período Requerimento 2ª Chamada" />
+					</h:panelGroup>
+					<h:panelGroup styleClass="col-md-3" layout="block">
+						<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+							<otm:calendar id="data" inputClass="form-control camposObrigatorios" value="#{IntegracaoMestreGRControle.dataInicioRequerimento}" />
+						</h:panelGroup>
+					</h:panelGroup>
+
+					<h:panelGroup styleClass="col-md-3" layout="block">						
+						<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+							<otm:calendar id="dataFim" inputClass="form-control camposObrigatorios" value="#{IntegracaoMestreGRControle.dataFimRequerimento}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+
+
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+
+				
+
+					<!--Gerar -->
+					<otm:commandButton id="btnGerarLoteAluno2CH" value="Gerar Novo Lote" icon="#{msg_botoes.btn_icon_gravar_embutido}" style="margin-right: 5px;" execute="@form" render="form panelProgressBar" oncomplete="#{IntegracaoMestreGRControle.oncompleteModal}" action="#{IntegracaoMestreGRControle.realizarInicioProgressBarGerarLote}" styleClass="btn btn-info btn-novo">
+
+					</otm:commandButton>
+
+
+
+
+				</h:panelGroup>
+
+				<h:panelGroup id="mensagemConsultaLoteAlunoSegundaChamada" columns="1" width="100%" styleClass="tabMensagens" style="margin-bottom: 100px">
+					<otm:mensagem bean="#{IntegracaoMestreGRControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+
+		</rich:popupPanel>
+
+		<!--Lote popUp Aluno Exame-->
+		<rich:popupPanel rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" styleClass="modalMaximizado" id="panelLoteIntegracaoAlunoExame" shadowOpacity="true" width="760" height="550">
+
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_IntegracaoMestreGR_gerarLoteAlunosExames}" />
+				</h:panelGroup>
+			</f:facet>
+
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkLoteAlunoExame" />
+					<rich:componentControl target="panelLoteIntegracaoAlunoExame" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formLoteIntegracaoAlunoExame">
+
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+
+				<rich:dataTable id="resultadoLoteIntegracaoAlunoExame" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote}" rows="10" var="loteItem">
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.nomeLote}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink value="#{loteItem.codigoLote}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Tipo Lote" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.origem.valorApresentar}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Qtde de Registros" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.qtdeRegistros}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.situacao}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data Geração" />
+						</f:facet>
+						<h:outputText value="#{loteItem.created}">
+							<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+						</h:outputText>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data Envio" />
+						</f:facet>
+						<h:outputText value="#{loteItem.dataTransmissao}">
+							<h:outputText pattern="dd/MM/yy HH:mm" />
+						</h:outputText>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Responsável" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.nomeCreated}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Unidade(s) de Ensino" />
+						</f:facet>
+						<otm:commandIcon tooltip="#{loteItem.unidadeEnsinos}" rendered="#{!empty loteItem.unidadeEnsinos}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="unidadeEnsinos4">
+
+						</otm:commandIcon>
+
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Cursos" />
+						</f:facet>
+						<otm:commandIcon tooltip="#{loteItem.cursos}" rendered="#{!empty loteItem.cursos}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="cursos3">
+
+						</otm:commandIcon>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Disciplina" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{loteItem.disciplinaVO.abreviatura}" />
+						</h:panelGroup>
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+
+						<rich:column styleClass="optionsColumn">
+							<otm:commandIcon id="btnConsultarLoteItensAlunoExame" icon="#{msg_botoes.btn_icon_lupa}  iconePequeno" render="formLoteIntegracaoItensAluno" action="#{IntegracaoMestreGRControle.consultarItensLoteFiltrados(loteItem.codigo, loteItem.origem.valor)}" oncomplete="#{rich:component('panelLoteIntegracaoItensAluno')}.show();" execute="@this" tooltip="Visualizar">
+
+							</otm:commandIcon>
+						</rich:column>
+
+					</rich:column>
+
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="formLoteIntegracaoAlunoExame:resultadoLoteIntegracaoAlunoExame" maxPages="10" id="scResultadoAlunoExame" boundaryControls="auto" stepControls="auto" fastControls="hide" page="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote.page}" scrollListener="#{IntegracaoMestreGRControle.scrollerListenerRegistroIntegracaoLote}" rendered="#{IntegracaoMestreGRControle.controleConsultaRegistroIntegracaoLote.apresentarPaginador}" />
+					</f:facet>
+
+				</rich:dataTable>
+
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+
+					<!--Gerar -->
+					<otm:commandButton id="btnGerarLoteAlunoExame" value="Gerar Novo Lote" icon="#{msg_botoes.btn_icon_gravar_embutido}" style="margin-right: 5px;" execute="@form" render="form, panelProgressBar" oncomplete="#{IntegracaoMestreGRControle.oncompleteModal}" action="#{IntegracaoMestreGRControle.realizarInicioProgressBarGerarLote}" styleClass="btn btn-info btn-novo">
+
+					</otm:commandButton>
+
+				</h:panelGroup>
+
+				<h:panelGroup id="mensagemConsultaLoteAlunoExame" columns="1" width="100%" styleClass="tabMensagens" style="margin-bottom: 100px">
+					<otm:mensagem bean="#{IntegracaoMestreGRControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+
+		</rich:popupPanel>
+
+
+
+		
+
+		
+		<!-- ITEM DO LOTE DE ALUNOS -->
+		<rich:popupPanel rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" styleClass="modalMaximizado100" id="panelLoteIntegracaoItensAluno" shadowOpacity="true" width="760" height="550">
+
+			<f:facet name="header" id="headerItens">
+				<h:panelGroup>
+					<h:outputText value="Itens Alunos" />
+				</h:panelGroup>
+			</f:facet>
+
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkLoteAlunoItens" />
+					<rich:componentControl target="panelLoteIntegracaoItensAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formLoteIntegracaoItensAluno">
+
+				<h:panelGroup layout="block" styleClass="row row-overflow">
+
+					<rich:dataTable id="resultadoLoteItensAluno" style="width: 100%;" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoLote}" rows="10" var="loteItem">
+						<!-- Ano -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Ano" />
+									<!--								<h:panelGroup layout="block" styleClass="col-md-12 pn">-->
+									<!--                                    <span class="append-icon right">-->
+									<!--                                        <otm:commandIcon-->
+									<!--												action="#{IntegracaoMestreGRControle.limparAno}"-->
+									<!--												tooltip="Limpar Filtro"-->
+									<!--												render="formLoteIntegracaoItensDisciplina"-->
+									<!--												icon="#{msg_botoes.btn_icon_limpar_embutido}"/>-->
+									<!--                                    </span>-->
+									<!--									&lt;!&ndash; Campo de entrada para o filtro &ndash;&gt;-->
+									<!--									<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.ano}">-->
+									<!--										<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensDisciplina" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />-->
+									<!--									</h:inputText>-->
+									<!--								</h:panelGroup>-->
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.ano}" />
+						</rich:column>
+
+						<!-- Ensino -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Ensino" />
+									<!--								<h:panelGroup layout="block" styleClass="col-md-12 pn">-->
+									<!--                                    <span class="append-icon right">-->
+									<!--                                        <otm:commandIcon-->
+									<!--												action="#{IntegracaoMestreGRControle.limparEnsino}"-->
+									<!--												tooltip="Limpar Filtro"-->
+									<!--												render="formLoteIntegracaoItensAluno"-->
+									<!--												icon="#{msg_botoes.btn_icon_limpar_embutido}"/>-->
+									<!--                                    </span>-->
+									<!--									&lt;!&ndash; Campo de entrada para o filtro &ndash;&gt;-->
+									<!--									<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.ensino}">-->
+									<!--										<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />-->
+									<!--									</h:inputText>-->
+									<!--								</h:panelGroup>-->
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText styleClass="alinhamento-texto" value="#{loteItem.ensino.equals('03') ? 'SU' : loteItem.ensino.equals('02') ? 'EX' : loteItem.ensino.equals('01') ? 'FU' : 'Adicionar'}" />
+							</h:panelGroup>
+						</rich:column>
+
+						<!-- Semestre -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Semestre" />
+									<!--								<h:panelGroup layout="block" styleClass="col-md-12 pn">-->
+									<!--                                    <span class="append-icon right">-->
+									<!--                                        <otm:commandIcon-->
+									<!--												action="#{IntegracaoMestreGRControle.limparSemestre}"-->
+									<!--												tooltip="Limpar Filtro"-->
+									<!--												render="formLoteIntegracaoItensAluno"-->
+									<!--												icon="#{msg_botoes.btn_icon_limpar_embutido}"/>-->
+									<!--                                    </span>-->
+									<!--									&lt;!&ndash; Campo de entrada para o filtro &ndash;&gt;-->
+									<!--									<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.semestre}">-->
+									<!--										<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />-->
+									<!--									</h:inputText>-->
+									<!--								</h:panelGroup>-->
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText styleClass="alinhamento-texto" value="#{loteItem.semestre}" />
+							</h:panelGroup>
+						</rich:column>
+
+						<!-- Turno -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Turno" />
+									<!--								<h:panelGroup layout="block" styleClass="col-md-12 pn">-->
+									<!--                                    <span class="append-icon right">-->
+									<!--                                        <otm:commandIcon-->
+									<!--												action="#{IntegracaoMestreGRControle.limparTurno}"-->
+									<!--												tooltip="Limpar Filtro"-->
+									<!--												render="formLoteIntegracaoItensAluno"-->
+									<!--												icon="#{msg_botoes.btn_icon_limpar_embutido}"/>-->
+									<!--                                    </span>-->
+									<!--									&lt;!&ndash; Campo de entrada para o filtro &ndash;&gt;-->
+									<!--									<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.turno}">-->
+									<!--										<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />-->
+									<!--									</h:inputText>-->
+									<!--								</h:panelGroup>-->
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText styleClass="alinhamento-texto" value="#{loteItem.turno}" />
+							</h:panelGroup>
+						</rich:column>
+
+						<!-- Turma Chave -->
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Turma Chave" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{loteItem.chaveTurma}" />
+							</h:panelGroup>
+						</rich:column>
+
+						<!-- Turma Codigo -->
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Turma Código" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{loteItem.codigoTurma}" />
+							</h:panelGroup>
+						</rich:column>
+
+						<!-- Turma Código Interno -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Turma Código Interno" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoInternoTurma}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoInternoTurma}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoInternoTurma}" />
+							</h:panelGroup>
+						</rich:column>
+
+						<!-- Turma Nome -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Turma Nome" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparNomeTurma}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" size="10" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.nomeTurma}">
+											<a4j:ajax event="change" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText styleClass="alinhamento-texto" value="#{loteItem.nomeTurma}" />
+							</h:panelGroup>
+						</rich:column>
+
+						<!-- Sigla Disciplina -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Sigla Disciplina" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparSiglaDisciplina}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.siglaDisciplina}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.siglaDisciplina}" />
+						</rich:column>
+
+						<!-- Nome Disciplina -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Nome Disciplina" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparNomeDisciplina}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.nomeDisciplina}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.nomeDisciplina}" />
+						</rich:column>
+
+						<!-- Codigo Disciplina -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Código Disciplina" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoDisciplina}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoDisciplina}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoDisciplina}" />
+						</rich:column>
+
+						<!--Aluno-->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Código Interno Aluno" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoInternoAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoInternoAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoInternoAluno}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Código Aluno" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoAluno}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Nome Aluno" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparNomeAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.nomeAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.nomeAluno}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Email Aluno" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparEmailAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.emailAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.emailAluno}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Código Dia Semana Aluno" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoDiaSemanaAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoDiaSemanaAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoDiaSemanaAluno}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Tempo Estendido Aluno" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparTempoEstendidoAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.tempoEstendidoAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.tempoEstendidoAluno}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Número Celular" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparNumeroCelular}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.numeroCelularAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.numeroCelularAluno}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Código Interno Polo" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoInternoPolo}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoInternoPolo}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoInternoPolo}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Código Polo" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoPolo}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoPolo}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoPolo}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Descrição Polo" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparDescricaoPolo}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.descricaoPolo}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.descricaoPolo}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Código Interno Curso" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoInternoCurso}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoInternoCurso}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoInternoCurso}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Código Curso" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoCurso}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoCurso}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoCurso}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Descrição Curso" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparDescricaoCurso}" tooltip="Limpar Filtro" render="formLoteIntegracaoItensAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos input-padronizado" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.descricaoCurso}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoItensAluno" listener="#{IntegracaoMestreGRControle.consultarItensFiltrados}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.descricaoCurso}" />
+						</rich:column>
+
+					</rich:dataTable>
+
+					<rich:dataScroller align="center" for="formLoteIntegracaoItensAluno:resultadoLoteItensAluno" maxPages="10" id="scResultadoLoteAlunoItens" boundaryControls="auto" stepControls="auto" fastControls="hide" page="#{IntegracaoMestreGRControle.controleConsultaIntegracaoLote.page}" scrollListener="#{IntegracaoMestreGRControle.scrollerListenerIntegracaoLote}" rendered="#{IntegracaoMestreGRControle.controleConsultaIntegracaoLote.apresentarPaginador}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaLoteAlunoItens" columns="1" width="100%" styleClass="tabMensagens" style="margin-bottom: 100px">
+					<otm:mensagem bean="#{IntegracaoMestreGRControle}"></otm:mensagem>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+					<!-- Gerar Excel-->
+					<a4j:jsFunction name="download" render="form:msgs, form:panelProgressBar" oncomplete="#{IntegracaoMestreGRControle.fazerDownload} ? location.href='#{IntegracaoMestreGRControle.caminhoUrl}/DownloadRelatorioSV?relatorio=#{IntegracaoMestreGRControle.caminhoRelatorio}' : ''"></a4j:jsFunction>
+					<a4j:commandLink id="btnGerarExcelLoteIntegracaoMestreGR" render="formLoteIntegracaoItensAluno panelProgressBar" action="#{IntegracaoMestreGRControle.realizarInicioProgressBarGerarExcelLote}" oncomplete="#{rich:component('panelLoteIntegracaoItensAluno')}.hide();" execute="@this" tooltip="btn_consultar" styleClass="btn btn-success">
+						<span class="#{msg_botoes.btn_icon_excel_embutido}"> </span>
+						<h:outputText style="margin: 10px" value="Gerar Relatório (Excel)"></h:outputText>
+						<f:setPropertyActionListener target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoIntegracao}" value="#{loteItem.codigo}" />
+						<f:setPropertyActionListener target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.origem}" value="#{loteItem.origem}" />
+					</a4j:commandLink>
+				</h:panelGroup>
+
+			</h:form>
+
+		</rich:popupPanel>
+
+		<!--ITEM ERRO-->
+		<rich:popupPanel rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" styleClass="modalMaximizado100" id="panelLoteIntegracaoErro" shadowOpacity="true" width="760" height="550">
+
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Log Erro Integração" />
+				</h:panelGroup>
+			</f:facet>
+
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkLoteErro" />
+					<rich:componentControl target="panelLoteIntegracaoErro" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formLoteIntegracaoErro">
+				<h:panelGroup layout="block" styleClass="row">
+					<a4j:jsFunction name="consultarErroPeriodo" render="formLoteIntegracaoErro" execute="@form" action="#{IntegracaoMestreGRControle.consultarErroLoteInicial}"></a4j:jsFunction>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText value="Data Início"></h:outputText>
+						<otm:calendar jsFunction="consultarErroPeriodo()" id="valorConsultaDataInicio2" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.created}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText value="Data Fim"></h:outputText>
+						<otm:calendar jsFunction="consultarErroPeriodo()" id="valorConsultaDataFim2" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.createdFinal}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row row-overflow">
+					<rich:dataTable rowKeyVar="row" id="resultadoLoteIntegracaoErro" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{IntegracaoMestreGRControle.controleConsultaErroRegistroIntegracaoLote}" rows="10" var="loteItem">
+
+						<rich:column filterType="custom" style="width: 80px">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Código Lote" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoLogErro}" tooltip="Limpar Filtro" render="formLoteIntegracaoErro" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoLote}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoErro" listener="#{IntegracaoMestreGRControle.consultarErroLoteInicial}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoLote == 0 ? 'Operação Sem Código De Lote ' : loteItem.codigoLote}" />
+						</rich:column>
+
+						<rich:column filterType="custom" style="width: 200px">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Nome Lote" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparLogNomeLoteErro}" tooltip="Limpar Filtro" render="formLoteIntegracaoErro" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.nomeLote}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoErro" listener="#{IntegracaoMestreGRControle.consultarErroLoteInicial}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.nomeLote}" />
+						</rich:column>
+
+
+						<rich:column filterType="custom" style="width: 200px">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Origem" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparLogOrigemErro}" tooltip="Limpar Filtro" render="formLoteIntegracaoErro" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.origem}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoErro" listener="#{IntegracaoMestreGRControle.consultarErroLoteInicial}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.origem.valorApresentar}" />
+						</rich:column>
+
+						<!-- Matricula -->
+						<rich:column filterType="custom" style="width: 100px">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Matrícula" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparLogMatriculaErro}" tooltip="Limpar Filtro" render="formLoteIntegracaoErro" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.matricula}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoErro" listener="#{IntegracaoMestreGRControle.consultarErroLoteInicial}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.matricula}" />
+						</rich:column>
+
+						<!-- Nome Disciplina -->
+						<rich:column filterType="custom" style="width: 200px">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Disciplina" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparLogNomeDisciplinaErro}" tooltip="Limpar Filtro" render="formLoteIntegracaoErro" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.nomeDisciplina}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoErro" listener="#{IntegracaoMestreGRControle.consultarErroLoteInicial}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.nomeDisciplina}" />
+						</rich:column>
+
+						<!-- Created -->
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Data Integração" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText title="#{loteItem.nomeCreated}" value="#{loteItem.created}">
+									<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+								</h:outputText>
+							</h:panelGroup>
+						</rich:column>
+
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Status" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{loteItem.statusJson eq 'ERROR' ? 'ERRO' : loteItem.statusJson}" />
+							</h:panelGroup>
+						</rich:column>
+
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Observações" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{loteItem.dataJson}" />
+							</h:panelGroup>
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Dados Envio" />
+
+								</h:panelGroup>
+							</f:facet>
+							<otm:commandIcon tooltip="#{loteItem.dadosEnvio}" rendered="#{!empty loteItem.dadosEnvio}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="dadosenvioaluno2">
+
+							</otm:commandIcon>
+
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Dados Retorno" />
+
+								</h:panelGroup>
+							</f:facet>
+							<otm:commandIcon tooltip="#{loteItem.dadosRetorno}" rendered="#{!empty loteItem.dadosRetorno}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="dadosretornoaluno2">
+
+							</otm:commandIcon>
+
+
+						</rich:column>
+
+					</rich:dataTable>
+
+					<rich:dataScroller style="margin-bottom:30px;" align="center" for="formLoteIntegracaoErro:resultadoLoteIntegracaoErro" maxPages="10" id="scResultadoErroIntegracaoInferior" boundaryControls="auto" stepControls="auto" fastControls="hide" page="#{IntegracaoMestreGRControle.controleConsultaErroRegistroIntegracaoLote.page}" scrollListener="#{IntegracaoMestreGRControle.scrollerListenerErroIntegracaoLote}" rendered="#{IntegracaoMestreGRControle.controleConsultaErroRegistroIntegracaoLote.apresentarPaginador}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+					<a4j:jsFunction name="download" render="form:msgs, form:panelProgressBar" oncomplete="#{IntegracaoMestreGRControle.fazerDownload} ? location.href='#{IntegracaoMestreGRControle.caminhoUrl}/DownloadRelatorioSV?relatorio=#{IntegracaoMestreGRControle.caminhoRelatorio}' : ''"></a4j:jsFunction>
+					<!-- Gerar Excel-->
+					<a4j:commandLink id="btnGerarExcelLogErro" execute="form" render="formLoteIntegracaoErro panelProgressBar" action="#{IntegracaoMestreGRControle.realizarInicioProgressBarGerarExcelLogErro}" oncomplete="#{rich:component('panelLoteIntegracaoErro')}.hide();" styleClass="btn btn-success">
+						<span class="#{msg_botoes.btn_icon_excel_embutido}"></span>
+						<h:outputText style="margin: 10px" value="Gerar Relatório (Excel)"></h:outputText>
+						<f:setPropertyActionListener for="btnGerarExcelLogErro" target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoLote.paginaAtual}" value="1" />
+						<f:setPropertyActionListener for="btnGerarExcelLogErro" target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoLote.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+
+			</h:form>
+
+		</rich:popupPanel>
+
+		<!--LOG ALUNO -->
+		<rich:popupPanel rendered="#{LoginControle.permissaoAcessoMenuVO.integracaoMestreGR}" styleClass="modalMaximizado100" id="panelLoteIntegracaoLogAluno" shadowOpacity="true">
+
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Log de Integração" />
+				</h:panelGroup>
+			</f:facet>
+
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkLogAluno" />
+					<rich:componentControl target="panelLoteIntegracaoLogAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formLoteIntegracaoLogAluno">
+				<h:panelGroup layout="block" styleClass="row">
+					<a4j:jsFunction name="consultarAlunoPeriodo" render="formLoteIntegracaoLogAluno" execute="@form" action="#{IntegracaoMestreGRControle.consultarLogsAlunosFiltro}"></a4j:jsFunction>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText value="Data Início"></h:outputText>
+						<otm:calendar jsFunction="consultarAlunoPeriodo()" id="valorConsultaDataInicio2" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.created}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText value="Data Fim"></h:outputText>
+						<otm:calendar jsFunction="consultarAlunoPeriodo()" id="valorConsultaDataFim2" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.createdFinal}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row row-overflow">
+
+
+					<rich:dataTable rowKeyVar="row" id="resultadoLoteIntegracaoLogAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{IntegracaoMestreGRControle.controleConsultaLogRegistroIntegracaoLote}" rows="10" var="loteItem">
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="ID" />
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigo}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Data" />
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText title="#{loteItem.nomeCreated}" styleClass="alinhamento-texto" value="#{loteItem.created_apresentar}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Origem" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparOrigemLogAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoLogAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:selectOneMenu styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.origem}">
+											<f:selectItems value="#{IntegracaoMestreGRControle.listaSelectItemOrigem}"></f:selectItems>
+											<a4j:ajax event="change" execute="@this" render="formLoteIntegracaoLogAluno" listener="#{IntegracaoMestreGRControle.consultarLogsAlunosFiltro}" />
+										</h:selectOneMenu>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.origem.valorApresentar}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="RA" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparCodigoAlunoLogAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoLogAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.codigoAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoLogAluno" listener="#{IntegracaoMestreGRControle.consultarLogsAlunosFiltro}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoAluno}" />
+						</rich:column>
+						<!-- Nome Aluno -->
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Nome Aluno" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparAlunoLogAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoLogAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.nomeAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoLogAluno" listener="#{IntegracaoMestreGRControle.consultarLogsAlunosFiltro}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.nomeAluno}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="E-mail" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparEmailLogAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoLogAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.emailAluno}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoLogAluno" listener="#{IntegracaoMestreGRControle.consultarLogsAlunosFiltro}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.emailAluno}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Celular" />
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.numeroCelularAluno}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Dia Semana" />
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.codigoDiaSemanaAluno_apresentar}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Tempo Estendido" />
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.tempoEstendidoAluno}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Chave Turma" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparChaveTurmaDisciplinas}" tooltip="Limpar Filtro" render="formLoteIntegracaoLogAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.chaveTurma}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoLogAluno" listener="#{IntegracaoMestreGRControle.consultarLogsAlunosFiltro}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.chaveTurma}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Situação" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparSituacaoLogAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoLogAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.situacao}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoLogAluno" listener="#{IntegracaoMestreGRControle.consultarLogsAlunosFiltro}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.status}" />
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Erro" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<span class="append-icon right"> <otm:commandIcon action="#{IntegracaoMestreGRControle.limparErroLogAluno}" tooltip="Limpar Filtro" render="formLoteIntegracaoLogAluno" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+										<!-- Campo de entrada para o filtro -->
+										<h:inputText styleClass="form-control campos" value="#{IntegracaoMestreGRControle.controleConsultaIntegracaoMestreGR.mensagemErro}">
+											<a4j:ajax event="blur" execute="@this" render="formLoteIntegracaoLogAluno" listener="#{IntegracaoMestreGRControle.consultarLogsAlunosFiltro}" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText styleClass="alinhamento-texto" value="#{loteItem.mensagemErro}" />
+						</rich:column>
+
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Dados Envio" />
+
+								</h:panelGroup>
+							</f:facet>
+							<otm:commandIcon tooltip="#{loteItem.dadosEnvio}" rendered="#{!empty loteItem.dadosEnvio}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="dadosenvioaluno">
+
+							</otm:commandIcon>
+						</rich:column>
+						<rich:column filterType="custom">
+							<f:facet name="header">
+								<h:panelGroup layout="block" styleClass="row alinhamento-coluna">
+									<h:outputText value="Dados Retorno" />
+
+								</h:panelGroup>
+							</f:facet>
+							<otm:commandIcon tooltip="#{loteItem.dadosRetorno}" rendered="#{!empty loteItem.dadosRetorno}" horizontalOffset="0" verticalOffset="0" icon="#{msg_botoes.btn_icon_info}  iconePequeno" id="dadosretornoaluno">
+
+							</otm:commandIcon>
+
+
+						</rich:column>
+
+					</rich:dataTable>
+
+					<rich:dataScroller style="margin-bottom:30px;" align="center" for="formLoteIntegracaoLogAluno:resultadoLoteIntegracaoLogAluno" maxPages="10" id="scResultadoLogAlunoIntegracaoInferior" boundaryControls="auto" stepControls="auto" fastControls="hide" page="#{IntegracaoMestreGRControle.controleConsultaLogRegistroIntegracaoLote.page}" scrollListener="#{IntegracaoMestreGRControle.scrollerListenerLogIntegracaoLote}" rendered="#{IntegracaoMestreGRControle.controleConsultaLogRegistroIntegracaoLote.apresentarPaginador}" />
+
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+					<!-- Gerar Excel-->
+					<a4j:commandLink id="btnGerarExcelLog" execute="form" render="formLoteIntegracaoLogAluno panelProgressBar" action="#{IntegracaoMestreGRControle.realizarInicioProgressBarGerarExcelLog}" oncomplete="#{rich:component('panelLoteIntegracaoLogAluno')}.hide();" styleClass="btn btn-success">
+						<span class="#{msg_botoes.btn_icon_excel_embutido}"> </span>
+						<h:outputText style="margin: 10px" value="Gerar Relatório (Excel)"></h:outputText>
+						<f:setPropertyActionListener for="btnGerarExcelLog" target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoLote.paginaAtual}" value="1" />
+						<f:setPropertyActionListener for="btnGerarExcelLog" target="#{IntegracaoMestreGRControle.controleConsultaIntegracaoLote.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+
+			</h:form>
+
+		</rich:popupPanel>
+
+		<!-- Inferior-->
+
+
+		<!--	Exlusão Lotes	-->
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAlertaExclusaoLote" shadowOpacity="true" width="400" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Alerta Exclusão Lote"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" id="hidelinkAlertaExclusao" />
+					<rich:componentControl target="panelAlertaExclusao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAlertaExclusao">
+				<h:panelGroup columns="1" width="100%" styleClass="tabForm">
+
+					<h:panelGroup layout="block" style="width:100%;text-align:center;font-size: 14px;">
+						<h:outputText value="Deseja Realmente Excluir o Lote, certifique-se de excluir este lote também no sistema de provas?" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton render="formAlertaExclusao, formDocumentoAssinado, form" icon="#{msg_botoes.btn_icon_selecionar_embutido}" styleClass="btn btn-success" value="Sim" accesskey="2" action="#{IntegracaoMestreGRControle.excluirRegistroLoteIntegracao}" oncomplete="#{rich:component('panelAlertaExclusaoLote')}.hide()" />
+						<otm:spacer width="10px" />
+						<otm:commandButton styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Não" title="Não" render="formAlertaExclusao" oncomplete="#{rich:component('panelAlertaExclusaoLote')}.hide()" />
+					</h:panelGroup>
+
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<!-- Mensagem -->
+
+		<otm2:progressBar bean="#{IntegracaoMestreGRControle}" width="500" height="120px" interval="1000" bar="progressBarIntegracaoMestreGR" render="panelProgressBar form:msgs, form:panelProgressBar form" id="panelProgressBar" oncomplete="download()">
+			<ui:define name="botoesADDProgressBar">
+				<h:panelGroup layout="block" styleClass="row mt40 mb10 text-center">
+					<otm:commandButton style="margin-right:5px" render="panelProgressBar form" action="#{IntegracaoMestreGRControle.realizarInterrupcaoProcessamento}" value="Interromper" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn btn-default" tooltip="Interromper Processamento" />
+				</h:panelGroup>
+			</ui:define>
+		</otm2:progressBar>
+
+		<style>
+/* Operacoes */
+.operacoes-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 1px;
+	margin: 200px;
+	width: 85%;
+	box-sizing: border-box;
+}
+
+.input-padronizado {
+	width: 150px; /* Tamanho fixo do input */
+	margin-right: 10px; /* Espaçamento entre inputs */
+	text-align: center; /* Centraliza o texto */
+	padding: 0; /* Remove padding que possa interferir */
+}
+
+/* Classe para alinhar os textos dentro das células */
+.alinhamento-texto {
+	text-align: center;
+	vertical-align: middle;
+}
+</style>
+
+		<script>
+			document.getElementById("form:nome").focus();
+			document.getElementById("form:unidadeEnsino").focus();
+		</script>
+
+	</ui:define>
+</ui:composition>
+</html>

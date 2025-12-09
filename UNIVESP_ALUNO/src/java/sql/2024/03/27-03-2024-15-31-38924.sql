@@ -1,0 +1,2 @@
+ alter table if exists  periodoChamadaProcSeletivo  add COLUMN  if not exists  periodoInicialUploadDocumentoIndeferido timestamp  ;
+ alter table if exists  periodoChamadaProcSeletivo  add COLUMN if not exists  periodoFinalUploadDocumentoIndeferido timestamp  ;

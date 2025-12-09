@@ -1,0 +1,2 @@
+ALTER table if exists configuracaogeralsistema ADD COLUMN IF NOT EXISTS habilitaroperacoestemporealintegracaomestregr BOOLEAN DEFAULT false;
+ALTER table if exists configuracaogeralsistema ADD COLUMN IF NOT EXISTS integracaomestregrurlbaseapi varchar(100) default '';

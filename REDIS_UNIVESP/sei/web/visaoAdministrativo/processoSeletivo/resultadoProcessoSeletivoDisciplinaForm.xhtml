@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ResultadoProcessoSeletivo_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelNotaPorDisciplina" autosized="false" style="over-flow:auto" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Registrar Nota Por Disciplina"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkNotaPorDisciplina" />
+					<rich:componentControl target="panelNotaPorDisciplina" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNotaPorDisciplinas">
+				<h:panelGroup id="disciplinas">
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Inscricao_codigo}" />
+							<h:inputText size="10" maxlength="10" disabled="true" styleClass="form-control camposSomenteLeitura" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.inscricao.codigo}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nome}" />
+						<h:inputText size="50" maxlength="200" disabled="true" styleClass="form-control camposSomenteLeitura" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.inscricao.candidato.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.grupoDisciplinaProcSeletivoVO.codigo > 0}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GrupoDisciplinaProcSeletivo_formulaCaluloAprovacao}" />
+						<h:inputText size="50" maxlength="200" disabled="true" styleClass="form-control camposSomenteLeitura" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.grupoDisciplinaProcSeletivoVO.formulaCalculoAprovacao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataTable id="resultadoDisciplinaProcSeletivoVO" rowKeyVar="row" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.resultadoDisciplinaProcSeletivoVOs}" var="resultadoDisciplinaProcSeletivoItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ResultadoDisciplinaProcSeletivo_disciplinaProcSeletivo}" />
+							</f:facet>
+							<h:outputText value="#{resultadoDisciplinaProcSeletivoItens.disciplinaProcSeletivo.nome}" />
+						</rich:column>
+						<rich:column rendered="#{!ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.calculoMedia}">
+							<f:facet name="header">
+								<h:outputText value="Acertos" />
+							</f:facet>
+							<h:inputText rendered="#{!resultadoDisciplinaProcSeletivoItens.editavel}" id="quantidadeAcertosSomenteLeitura" value="#{resultadoDisciplinaProcSeletivoItens.quantidadeAcertos}" styleClass="form-control camposSomenteLeitura" size="10" maxlength="5" readonly="true" />
+							<h:inputText onfocus="$(this).select();" onkeydown="aceitarSomenteValorNumerico(this)" onkeypress="return Tecla(event);" rendered="#{resultadoDisciplinaProcSeletivoItens.editavel and !ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.calculoMedia}" id="quantidadeAcertos" value="#{resultadoDisciplinaProcSeletivoItens.quantidadeAcertos}" styleClass="form-control campos" size="10" maxlength="5">
+								<a4j:ajax event="change" listener="#{ResultadoProcessoSeletivoControle.calcularMediaNotaDisciplinaLancadaManualmente}" oncomplete="setFocus(formNotaPorDisciplinas, 'formNotaPorDisciplinas:resultadoDisciplinaProcSeletivoVO:#{row+1}:quantidadeAcertos')" render="formNotaPorDisciplinas, form:listaCandidato, formNotaPorDisciplinas:resultadoDisciplinaProcSeletivoVO:#{row}" />
+							</h:inputText>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ResultadoDisciplinaProcSeletivo_nota}" />
+							</f:facet>
+							<h:inputText rendered="#{!resultadoDisciplinaProcSeletivoItens.editavel}" id="notaCalculoSomenteLeitura" value="#{resultadoDisciplinaProcSeletivoItens.nota}" styleClass="form-control camposSomenteLeitura" size="10" readonly="true" onkeyup="limitarCasasDecimais(this, this.value, #{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}); aceitarSomenteValorDecimal(this);">
+								<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+								<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+							</h:inputText>
+							<h:inputText onfocus="$(this).select();" rendered="#{resultadoDisciplinaProcSeletivoItens.editavel}" readonly="#{!ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.calculoMedia}" id="notaCalculo" value="#{resultadoDisciplinaProcSeletivoItens.nota}" styleClass="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.calculoMedia?'form-control campos':'form-control camposSomenteLeitura'}" size="10" maxlength="15" onkeydown="aceitarSomenteValorDecimal(this); if (event.keyCode == '13'){ return false }">
+								<a4j:ajax event="change" listener="#{ResultadoProcessoSeletivoControle.calcularMediaNotaDisciplinaLancadaManualmente}" oncomplete="setFocus(formNotaPorDisciplinas, 'formNotaPorDisciplinas:resultadoDisciplinaProcSeletivoVO:#{row+1}:notaCalculo')" render="form:listaCandidato, formNotaPorDisciplinas:resultadoDisciplinaProcSeletivoVO:#{row}" />
+								<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+								<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+							</h:inputText>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Nota Mín. Repr. Imed." />
+							</f:facet>
+							<h:outputText value="#{resultadoDisciplinaProcSeletivoItens.notaMinimaReprovadoImediato}">
+								<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+								<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+							</h:outputText>
+						</rich:column>
+						<rich:column rendered="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.grupoDisciplinaProcSeletivoVO.codigo > 0}">
+							<f:facet name="header">
+								<h:outputText value="Variável Nota" />
+							</f:facet>
+							<h:outputText value="#{resultadoDisciplinaProcSeletivoItens.variavelNota}">
+							</h:outputText>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ResultadoDisciplinaProcSeletivo_observacoes}" />
+							</f:facet>
+							<h:inputText id="observacoes" styleClass="form-control campos" style="width:98%" value="#{resultadoDisciplinaProcSeletivoItens.observacoes}">
+								<a4j:ajax event="change" render="form" />
+							</h:inputText>
+						</rich:column>
+					</rich:dataTable>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelGabarito" autosized="false" style="over-flow:auto" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Registrar Resposta Gabarito"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkGabarito" />
+					<rich:componentControl target="panelGabarito" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formGabarito">
+				<h:panelGroup id="panelGabarito">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Inscricao_codigo}" />
+						<h:inputText size="10" maxlength="10" disabled="true" styleClass="form-control camposSomenteLeitura" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.inscricao.codigo}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-10">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nome}" />
+						<h:inputText size="50" maxlength="200" disabled="true" styleClass="form-control camposSomenteLeitura" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.inscricao.candidato.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataGrid id="items" rowKeyVar="rowC" border="none" style="border:none;" columnClasses="columnSemBorda" align="center" columns="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.qtdeColuna}" width="100%" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.colunaGabaritoVOs}" rendered="#{!empty ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.colunaGabaritoVOs}" var="colunaGabarito">
+						<rich:dataTable id="questoes" style="border:none;" rowKeyVar="row" border="none" columnClasses="columnSemBorda" align="left" value="#{colunaGabarito.resultadoProcessoSeletivoGabaritoRespostaVOs}" var="gabaritoRespostaItens" columns="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.qtdeColuna}">
+							<rich:column style="border:none;">
+								<h:outputText id="nrQuestao" value="#{gabaritoRespostaItens.nrQuestao}º" styleClass="tituloCamposRecados" />
+								<otm:spacer rendered="#{gabaritoRespostaItens.nrQuestao lt 10}" width="16px;" />
+								<otm:spacer rendered="#{gabaritoRespostaItens.nrQuestao >= 10}" width="10px;" />
+								<h:inputText id="respostaCorreta" value="#{gabaritoRespostaItens.respostaCorreta}" maxlength="1" size="5" styleClass="form-control camposObrigatorios">
+									<a4j:ajax event="change" oncomplete="#{fn:length(colunaGabarito.resultadoProcessoSeletivoGabaritoRespostaVOs) - 1 == row } ? setFocus(formGabarito, 'formGabarito:items:#{rowC+1}:questoes:0:respostaCorreta') : setFocus(formGabarito, 'formGabarito:items:#{rowC}:questoes:#{row+1}:respostaCorreta')" render="panelGabarito, listaCandidato" listener="#{ResultadoProcessoSeletivoControle.calcularMediaNotaDisciplinaLancadaManualmente}" />
+								</h:inputText>
+							</rich:column>
+						</rich:dataTable>
+					</rich:dataGrid>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProva" autosized="false" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Registrar Resposta Prova"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkProva" />
+					<rich:componentControl target="panelProva" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProva">
+				<h:panelGroup id="panelProvaProcessoSeletivo">
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Inscricao_codigo}" />
+							<h:inputText size="10" maxlength="10" disabled="true" styleClass="form-control camposSomenteLeitura" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.inscricao.codigo}" />
+						</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-10">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nome}" />
+						<h:inputText size="50" maxlength="200" disabled="true" styleClass="form-control camposSomenteLeitura" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.inscricao.candidato.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<a4j:repeat id="questaoProvaProcessoSeletivoVOs" rowKeyVar="row" var="questaoProvaProcessoSeletivoVOItens" value="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO.inscricao.provaProcessoSeletivoVO.questaoProvaProcessoSeletivoVOs}">
+						<h:panelGroup layout="block" styleClass="row mn p5 border rounded-top bg-gray">
+							<h:panelGroup layout="block" styleClass="col-md-11">
+								<h:panelGroup layout="block" styleClass="col-md-1">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{questaoProvaProcessoSeletivoVOItens.ordemApresentacao})" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-11" id="editorFinish">
+									<h:outputText escape="false" styleClass="field control-label tituloCampos" value="#{questaoProvaProcessoSeletivoVOItens.questaoProcessoSeletivo.enunciado}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<a4j:repeat id="opcaoRespostaQuestaoProcessoSeletivoVOs" var="opcaoRespostaQuestaoProcessoSeletivoVOItens" value="#{questaoProvaProcessoSeletivoVOItens.questaoProcessoSeletivo.opcaoRespostaQuestaoProcessoSeletivoVOs}">
+							<div style="width: 100% !important; display: flex;">
+								<div style="width: 10% !important">
+									<h:outputText styleClass="field control-label tituloCampos mr5" value="#{opcaoRespostaQuestaoProcessoSeletivoVOItens.letraCorrespondente})" />
+									<h:selectBooleanCheckbox value="#{opcaoRespostaQuestaoProcessoSeletivoVOItens.marcada}">
+										<a4j:ajax event="click" render="panelProvaProcessoSeletivo, listaCandidato" execute="@this" listener="#{ResultadoProcessoSeletivoControle.calcularMediaNotaDisciplinaLancadaManualmente}" />
+									</h:selectBooleanCheckbox>
+								</div>
+								<div style="width: 90% !important" id="editorFinish">
+									<h:outputText escape="false" value="#{opcaoRespostaQuestaoProcessoSeletivoVOItens.opcaoResposta}" />
+								</div>
+							</div>
+						</a4j:repeat>
+					</a4j:repeat>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:panelGroup id="pgGeral">
+				<h:panelGroup id="panelResultadoPorProcessoSeletivo">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Inscricao_procSeletivo}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:selectOneMenu id="procSeletivo" styleClass="form-control camposObrigatorios" value="#{ResultadoProcessoSeletivoControle.inscricaoVO.procSeletivo.codigo}">
+								<a4j:ajax event="change" execute="@this" listener="#{ResultadoProcessoSeletivoControle.inicializarDadosSubordinadoProcessoSeletivo}" render="form:pgGeral" />
+								<f:selectItems value="#{ResultadoProcessoSeletivoControle.listaSelectItemProcSeletivo}" />
+							</h:selectOneMenu>
+							<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_procSeletivo" tooltip="Atualizar Proc Seletivo" execute="@this" action="#{ResultadoProcessoSeletivoControle.montarListaSelectItemProcSeletivo}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" render="form:procSeletivo" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ResultadoProcessoSeletivoControle.apresentarComboBoxSala}">
+						<h:outputText rendered="#{ResultadoProcessoSeletivoControle.apresentarComboBoxSala}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Inscricao_dataProva}" />
+						<h:selectOneMenu rendered="#{ResultadoProcessoSeletivoControle.apresentarComboBoxSala}" id="dataProvaProcSel" styleClass="form-control campos" value="#{ResultadoProcessoSeletivoControle.dataProva}">
+							<a4j:ajax event="change" execute="@this" listener="#{ResultadoProcessoSeletivoControle.montarListaSelectItemSalaProcSeletivo}" render="form:pgGeral, mensagemBotoes" />
+							<f:selectItems value="#{ResultadoProcessoSeletivoControle.listaSelectItemItemDataProcSeletivo}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ResultadoProcessoSeletivoControle.apresentarComboBoxSala}">
+						<h:outputText rendered="#{ResultadoProcessoSeletivoControle.apresentarComboBoxSala}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DistribuirSalaProcessoSeletivo_sala}" />
+						<h:selectOneMenu id="salaProcSeletivo" rendered="#{ResultadoProcessoSeletivoControle.apresentarComboBoxSala}" styleClass="form-control campos" value="#{ResultadoProcessoSeletivoControle.sala}">
+							<a4j:ajax event="change" render="pgGeral, mensagemBotoes" listener="#{ResultadoProcessoSeletivoControle.limparCandidato}" execute="@this" />
+							<f:selectItems value="#{ResultadoProcessoSeletivoControle.listaSelectItemSalaProcSeletivo}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton id="consultarCanditado" render="pgGeral" immediate="true" action="#{ResultadoProcessoSeletivoControle.consultarCanditadoFiltrarDisciplina}" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" value="Consultar Canditado" accesskey="1" image="#{resource['/imagens/botaoConsultarCandidatos.png']}" />
+				</h:panelGroup>
+				<h:panelGroup id="candidatos">
+					<h:panelGroup rendered="#{!empty ResultadoProcessoSeletivoControle.listaResultadoProcessoSeletivo and !empty ResultadoProcessoSeletivoControle.listaSelectItemDisciplinaProcSeletivo}">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="Lançar Nota #{msg_aplic.prt_Disciplina_tituloForm}" />
+							<h:selectOneMenu id="disciplina" styleClass="form-control campos" value="#{ResultadoProcessoSeletivoControle.disciplinasProcSeletivoVO.codigo}">
+								<a4j:ajax event="change" listener="#{ResultadoProcessoSeletivoControle.realizarGeracaoResultadoProcessoSeletivoLancamentoNotaPorDisciplina}" render="pgGeral, mensagemBotoes" />
+								<f:selectItems value="#{ResultadoProcessoSeletivoControle.listaSelectItemDisciplinaProcSeletivo}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataTable id="listaCandidato" render="sclistaCandidato" rowKeyVar="row" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ResultadoProcessoSeletivoControle.listaResultadoProcessoSeletivo}" rendered="#{!empty ResultadoProcessoSeletivoControle.listaResultadoProcessoSeletivo}" rows="10" var="resultado">
+						<rich:column filterType="custom" filter="#{FilterFactory.filter('listaCandidatoDisciplina', 'inscricao.codigo', 'INTEIRO')}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Inscricao_codigo}" />
+								<otm:spacer width="2px" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('listaCandidatoDisciplina', 'inscricao.codigo', 'INTEIRO').filtro}">
+										<a4j:ajax event="change" execute="@this" render="listaCandidato" />
+									</h:inputText>
+									<span class="append-icon right"> <otm:commandIcon render="listaCandidato" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('listaCandidatoDisciplina')}" tooltip="Limpar" />
+									</span>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{resultado.inscricao.codigo}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column filterType="custom" filter="#{FilterFactory.filter('listaCandidatoDisciplina2', 'inscricao.candidato.nome', 'TEXTO')}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+								<otm:spacer width="2px" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('listaCandidatoDisciplina2', 'inscricao.candidato.nome', 'TEXTO').filtro}">
+										<a4j:ajax event="change" execute="@this" render="listaCandidato" />
+									</h:inputText>
+									<span class="append-icon right"> <otm:commandIcon render="listaCandidato" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('listaCandidatoDisciplina2')}" tooltip="Limpar" />
+									</span>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{resultado.inscricao.candidato.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column rendered="#{!ResultadoProcessoSeletivoControle.calculoMedia and ResultadoProcessoSeletivoControle.disciplinasProcSeletivoVO.codigo > 0}">
+							<f:facet name="header">
+								<h:outputText value="Acertos - #{ResultadoProcessoSeletivoControle.disciplinasProcSeletivoVO.nome} " />
+							</f:facet>
+							<h:inputText rendered="#{!resultado.resultadoDisciplinaProcSeletivoVO.editavel}" id="quantidadeAcertosSomenteLeitura" value="#{resultado.resultadoDisciplinaProcSeletivoVO.quantidadeAcertos}" styleClass="form-control camposSomenteLeitura" size="10" maxlength="5" readonly="true" />
+							<h:inputText onfocus="$(this).select();" onkeydown="aceitarSomenteValorNumerico(this)" onkeypress="return Tecla(event);" rendered="#{resultado.resultadoDisciplinaProcSeletivoVO.editavel and !resultado.calculoMedia}" id="quantidadeAcertos" value="#{resultado.resultadoDisciplinaProcSeletivoVO.quantidadeAcertos}" styleClass="form-control campos" size="10" maxlength="5">
+								<a4j:ajax event="change" oncomplete="setFocus(form, 'form:listaCandidato:#{row+1}:quantidadeAcertos')" listener="#{ResultadoProcessoSeletivoControle.editarCalcularMediaNotaDisciplinaLancadaManualmente}" render="form:listaCandidato" />
+							</h:inputText>
+						</rich:column>
+						<rich:column rendered="#{ResultadoProcessoSeletivoControle.disciplinasProcSeletivoVO.codigo > 0}">
+							<f:facet name="header">
+								<h:outputText value="Nota - #{ResultadoProcessoSeletivoControle.disciplinasProcSeletivoVO.nome} " />
+							</f:facet>
+							<h:panelGroup>
+								<h:inputText rendered="#{!resultado.resultadoDisciplinaProcSeletivoVO.editavel}" id="notaCalculoSomenteLeitura" value="#{resultado.resultadoDisciplinaProcSeletivoVO.nota}" styleClass="form-control camposSomenteLeitura" size="10" readonly="true" onkeyup="limitarCasasDecimais(this, this.value, #{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}); aceitarSomenteValorDecimal(this);">
+									<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+									<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+								</h:inputText>
+								<h:inputText onfocus="$(this).select();" rendered="#{resultado.resultadoDisciplinaProcSeletivoVO.editavel}" readonly="#{!resultado.calculoMedia}" id="notaCalculo" value="#{resultado.resultadoDisciplinaProcSeletivoVO.nota}" styleClass="#{resultado.calculoMedia ? 'form-control campos':'form-control camposSomenteLeitura'}" size="10" maxlength="15" onkeydown="aceitarSomenteValorDecimal(this); if (event.keyCode == '13'){ return false }">
+									<a4j:ajax event="change" oncomplete="setFocus(form, 'form:listaCandidato:#{row+1}:notaCalculo')" listener="#{ResultadoProcessoSeletivoControle.editarCalcularMediaNotaDisciplinaLancadaManualmente}" render="form:listaCandidato" />
+									<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+									<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+								</h:inputText>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column rendered="#{ResultadoProcessoSeletivoControle.disciplinasProcSeletivoVO.codigo > 0}">
+							<f:facet name="header">
+								<h:outputText value="Nota Min. Repro. #{ResultadoProcessoSeletivoControle.disciplinasProcSeletivoVO.nome}" />
+							</f:facet>
+							<h:outputText value="#{resultado.resultadoDisciplinaProcSeletivoVO.notaMinimaReprovadoImediato}">
+								<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+								<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+							</h:outputText>
+						</rich:column>
+						<rich:column rendered="#{ResultadoProcessoSeletivoControle.inscricaoVO.procSeletivo.regimeAprovacao == 'quantidadeAcertosRedacao'}">
+							<f:facet name="header">
+								<h:outputText value="Nota da Redação" />
+							</f:facet>
+							<h:inputText onfocus="$(this).select();" id="notaRedacao" size="10" styleClass="form-control campos" value="#{resultado.notaRedacao}" onkeydown="aceitarSomenteValorDecimal(this);if (event.keyCode == '13'){ return false }">
+								<a4j:ajax event="change" oncomplete="#{resultado.desbloquearSomatorioAcerto} ? setFocus(form, 'form:listaCandidato:#{row}:somatorioAcertos') : setFocus(form, 'form:listaCandidato:#{row+1}:notaRedacao')" render="form, listaCandidato" execute="@this" listener="#{ResultadoProcessoSeletivoControle.editarCalcularMediaNotaDisciplinaLancadaManualmente}" />
+								<f:converter converterId="FormatadorNumerico" />
+								<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+							</h:inputText>
+						</rich:column>
+						<rich:column rendered="#{ResultadoProcessoSeletivoControle.inscricaoVO.procSeletivo.regimeAprovacao == 'quantidadeAcertosRedacao' || ResultadoProcessoSeletivoControle.inscricaoVO.procSeletivo.regimeAprovacao == 'quantidadeAcertos'}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ResultadoProcessoSeletivo_somatorioAcertos}" />
+							</f:facet>
+							<h:panelGroup>
+								<h:inputText rendered="#{!resultado.desbloquearSomatorioAcerto}" readonly="true" styleClass="form-control" value="#{resultado.somatorioAcertos}">
+									<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+									<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="0" />
+								</h:inputText>
+								<h:inputText onfocus="$(this).select();" onkeydown="aceitarSomenteValorNumerico(this)" id="somatorioAcertos" rendered="#{resultado.desbloquearSomatorioAcerto}" size="11" maxlength="10" styleClass="#{resultado.cssSomatorioAcerto} form-control" value="#{resultado.somatorioAcertos}">
+									<a4j:ajax event="change" oncomplete="#{ResultadoProcessoSeletivoControle.inscricaoVO.procSeletivo.regimeAprovacao == 'quantidadeAcertosRedacao'} ? setFocus(form, 'form:listaCandidato:#{row+1}:notaRedacao') : setFocus(form, 'form:listaCandidato:#{row+1}:somatorioAcertos')" listener="#{ResultadoProcessoSeletivoControle.editarCalcularMediaNotaDisciplinaLancadaManualmente}" render="form:listaCandidato" />
+									<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+									<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="0" />
+								</h:inputText>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ResultadoProcessoSeletivo_mediaNotasProcSeletivo}" />
+							</f:facet>
+							<h:panelGroup>
+								<h:inputText rendered="#{!resultado.desbloquearMediaNota}" readonly="true" styleClass="form-control" value="#{resultado.mediaNotasProcSeletivo}">
+									<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+									<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+								</h:inputText>
+								<h:inputText id="mediaNotasProcSeletivo" rendered="#{resultado.desbloquearMediaNota}" size="11" maxlength="15" styleClass="#{resultado.cssMediaNota} form-control" value="#{resultado.mediaNotasProcSeletivo}" onkeyup="limitarCasasDecimais(this, this.value, #{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}); aceitarSomenteValorDecimal(this);">
+									<a4j:ajax event="change" oncomplete="setFocus(form, 'form:listaCandidato:#{row+1}:mediaNotasProcSeletivo')" listener="#{ResultadoProcessoSeletivoControle.editarCalcularMediaNotaDisciplinaLancadaManualmente}" render="form:listaCandidato" />
+									<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+									<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{ResultadoProcessoSeletivoControle.configuracaoGeralPadraoSistema.quantidadeCasaDecimalConsiderarNotaProcessoSeletivo}" />
+								</h:inputText>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Situação" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText id="resultadoCandi" value="#{resultado.situacaoAprovacaoGeralProcessoSeletivo}" />
+								<rich:tooltip target="resultadoCandi" followMouse="true" direction="topLeft" horizontalOffset="0" verticalOffset="0">
+									<h:panelGroup columns="2" width="100%" columnClasses="colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada">
+										<h:outputText rendered="#{resultado.opcao1}" styleClass="field control-label tituloCampos" value="Curso #{msg_aplic.prt_ResultadoProcessoSeletivo_resultadoPrimeiraOpcao}" />
+										<h:panelGroup rendered="#{resultado.opcao1}">
+											<h:inputText style="width:330px" size="60" maxlength="120" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{resultado.inscricao.cursoOpcao1.curso.nome}" />
+										</h:panelGroup>
+										<h:outputText styleClass="field control-label tituloCampos" value="Situação Opção 1" />
+										<h:inputText readonly="true" disabled="true" style="width:330px" id="resultadoPrimeiraOpcaoProva" styleClass="form-control camposSomenteLeitura" value="#{resultado.resultadoPrimeiraOpcao_Apresentar}" />
+										<h:outputText rendered="#{resultado.opcao2}" styleClass="field control-label tituloCampos" value="Curso #{msg_aplic.prt_ResultadoProcessoSeletivo_resultadoSegundaOpcao}" />
+										<h:panelGroup rendered="#{resultado.opcao2}">
+											<h:inputText style="width:330px" size="60" maxlength="120" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{resultado.inscricao.cursoOpcao2.curso.nome}" />
+										</h:panelGroup>
+										<h:outputText rendered="#{resultado.opcao2}" styleClass="field control-label tituloCampos" value="Situação Opção 2" />
+										<h:inputText readonly="true" disabled="true" style="width:330px" rendered="#{resultado.opcao2}" id="resultadoSegundaOpcaoProva" styleClass="form-control camposSomenteLeitura" value="#{resultado.resultadoSegundaOpcao_Apresentar}" />
+										<h:outputText rendered="#{resultado.opcao3}" styleClass="field control-label tituloCampos" value="Curso #{msg_aplic.prt_ResultadoProcessoSeletivo_resultadoTerceiraOpcao}" />
+										<h:panelGroup rendered="#{resultado.opcao3}">
+											<h:inputText style="width:330px" size="60" maxlength="120" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{resultado.inscricao.cursoOpcao3.curso.nome}" />
+										</h:panelGroup>
+										<h:outputText rendered="#{resultado.opcao3}" styleClass="field control-label tituloCampos" value="Situação Opção 3" />
+										<h:inputText readonly="true" disabled="true" style="width:330px" rendered="#{resultado.opcao3}" id="resultadoTerceiraOpcaoProva" styleClass="form-control camposSomenteLeitura" value="#{resultado.resultadoTerceiraOpcao_Apresentar}" />
+									</h:panelGroup>
+								</rich:tooltip>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<a4j:commandLink id="editarResulado" action="#{ResultadoProcessoSeletivoControle.editarResultadoProcessoSeletivo}" alt="Editar Resultado" image="#{resource['/imagens/iconeEdicao.png']}">
+								<span class="#{msg_botoes.btn_icon_editar} border-radius-all iconePequeno" />
+								<rich:tooltip value="Editar Resultado" />
+								<f:setPropertyActionListener value="#{resultado}" target="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO}" />
+							</a4j:commandLink>
+							<a4j:commandLink id="notasGabarito" rendered="#{resultado.apresentarAbaGabarito}" alt="Registrar Gabarito" render="formGabarito" oncomplete="#{rich:component('panelGabarito')}.show()" image="#{resource['/imagens/iconeCartaoResposta.png']}">
+								<span class="#{msg_botoes.btn_icon_engrenagem} border-radius-all iconePequeno" />
+								<rich:tooltip value="Registrar Prova" />
+								<f:setPropertyActionListener value="#{resultado}" target="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO}" />
+							</a4j:commandLink>
+							<a4j:commandLink id="notasProvas" rendered="#{resultado.apresentarAbaProvaProcessoSeletivo}" alt="Registrar Gabarito" render="formProva" oncomplete="#{rich:component('panelProva')}.show()" image="#{resource['/imagens/botaoGradeCurricular.jpg']}">
+								<span class="#{msg_botoes.btn_icon_confirmar} border-radius-all iconePequeno" />
+								<rich:tooltip value="Registrar Prova" />
+								<f:setPropertyActionListener value="#{resultado}" target="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO}" />
+							</a4j:commandLink>
+							<a4j:commandLink id="notasDisciplinas" rendered="#{resultado.apresentarAbaNotasPorDisciplina}" render="formNotaPorDisciplinas" oncomplete="#{rich:component('panelNotaPorDisciplina')}.show()" image="#{resource['/imagens/botaoTransfAlunosPeq.png']}">
+								<span class="#{msg_botoes.btn_icon_adicionar} border-radius-all iconePequeno" />
+								<rich:tooltip value="Registrar Nota Por Disciplina" />
+								<f:setPropertyActionListener value="#{resultado}" target="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO}" />
+							</a4j:commandLink>
+							<a4j:commandLink id="gravarResultado" action="#{ResultadoProcessoSeletivoControle.gravarLancamentoNotaPorDisciplinaIndividual}" alt="Gravar Resultado" render="mensagemBotoes" image="#{resource['/imagens/iconeSalvar.gif']}">
+								<span class="#{msg_botoes.btn_icon_gravar} border-radius-all iconePequeno" />
+								<rich:tooltip value="Gravar Resultado" />
+								<f:setPropertyActionListener value="#{resultado}" target="#{ResultadoProcessoSeletivoControle.resultadoProcessoSeletivoVO}" />
+							</a4j:commandLink>
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller id="sclistaCandidato" render="sclistaCandidato, listaCandidato" boundaryControls="auto" stepControls="auto" fastControls="hide" for="listaCandidato" limitToList="10" align="center" rendered="#{!empty ResultadoProcessoSeletivoControle.listaResultadoProcessoSeletivo}" />
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemBotoes" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup id="mensagem">
+						<otm:mensagem bean="#{ResultadoProcessoSeletivoControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{ResultadoProcessoSeletivoControle.inscricaoVO.codigo == 0}" layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton id="novo" immediate="true" action="#{ResultadoProcessoSeletivoControle.voltarResultadoProcessoSeletivo}" onclick="return confirm('Ao voltar qualquer alteração não gravada será perdida. Deseja realmente voltar?');" icon="#{msg_botoes.btn_icon_voltar}" value="Voltar" styleClass="btn btn-primary mr5" accesskey="1" image="#{resource['/imagens/botaoVoltarTela.png']}" />
+					<otm:commandButton render="form:candidatos, form:mensagemBotoes" rendered="#{!empty ResultadoProcessoSeletivoControle.listaResultadoProcessoSeletivo}" id="salvar" action="#{ResultadoProcessoSeletivoControle.gravarLancamentoNotaPorDisciplina}" value="#{msg_botoes.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

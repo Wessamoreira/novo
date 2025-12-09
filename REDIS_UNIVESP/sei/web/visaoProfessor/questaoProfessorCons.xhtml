@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText styleClass="tituloFormulario" rendered="#{QuestaoControle.telaUsoExercicio}" value="#{msg_aplic.prt_Questao_usoExercicio} " />
+		<h:outputText styleClass="tituloFormulario" rendered="#{QuestaoControle.telaUsoOnline}" value="#{msg_aplic.prt_Questao_usoOnline} " />
+		<h:outputText styleClass="tituloFormulario" rendered="#{QuestaoControle.telaUsoPresencial}" value="#{msg_aplic.prt_Questao_usoPresencial} " />
+		<h:outputText styleClass="tituloFormulario" rendered="#{QuestaoControle.telaUsoTarefaDiscursiva}" value="#{msg_aplic.prt_Questao_usoAtividadeDiscursiva} " />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style type="text/css">
+.rich-dtascroller-table {
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.ric
+h-datascr-button {
+	border: none;
+}
+
+.rich-datascr-button-dsbld {
+	background-color: transparent;
+}
+</style>
+		<!-- 	<ui:include src="richPanelImagem.xhtml" /> -->
+		<h:form id="form">
+<!-- 			<h1 class="title1"> -->
+<!-- 				<h:outputText styleClass="tituloFormulario" rendered="#{QuestaoControle.telaUsoExercicio}" value="#{msg_aplic.prt_Questao_usoExercicio} " /> -->
+<!-- 				<h:outputText styleClass="tituloFormulario" rendered="#{QuestaoControle.telaUsoOnline}" value="#{msg_aplic.prt_Questao_usoOnline} " /> -->
+<!-- 				<h:outputText styleClass="tituloFormulario" rendered="#{QuestaoControle.telaUsoPresencial}" value="#{msg_aplic.prt_Questao_usoPresencial} " /> -->
+<!-- 				<h:outputText styleClass="tituloFormulario" rendered="#{QuestaoControle.telaUsoTarefaDiscursiva}" value="#{msg_aplic.prt_Questao_usoAtividadeDiscursiva} " /> -->
+<!-- 			</h1> -->
+			<h:commandLink action="#{QuestaoControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+						<h:selectOneMenu styleClass="form-control campos" id="consulta" value="#{QuestaoControle.controleConsulta.campoConsulta}">
+							<a4j:ajax event="change" listener="#{QuestaoControle.limparCamposBusca}" focus="valorConsulta" render="form" execute="form" />
+							<f:selectItems value="#{QuestaoControle.tipoConsultaCombo}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{QuestaoControle.controleConsulta.campoConsulta eq 'codigo' or QuestaoControle.controleConsulta.campoConsulta eq ''}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Valor Consulta" />
+					<h:inputText styleClass="form-control campos" value="#{QuestaoControle.controleConsulta.valorConsulta}" onkeydown="aceitarSomenteValorNumerico(this)" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{QuestaoControle.controleConsulta.campoConsulta eq 'disciplina'}">
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!QuestaoControle.isApresentarCampoDisciplina}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_disciplina}" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{QuestaoControle.questaoConsultaVO.disciplina.codigo}">
+							<f:selectItems value="#{QuestaoControle.listaSelectItemDisciplina}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{QuestaoControle.isApresentarCampoDisciplina}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Consulta Disciplina" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="valorConsulta" size="50" maxlength="100" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{QuestaoControle.questaoConsultaVO.disciplina.nome}" />
+							<span class="append-icon right"> <otm:commandIcon id="consultarDisciplina" render="formDisciplina" oncomplete="#{rich:component('panelDisciplina')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg.msg_consultar_dados}" /> <otm:commandIcon id="limparDisciplina" render="panelGridForm" action="#{QuestaoControle.limparDisciplinaConsulta}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_botoes.btn_btnLimpar}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_enunciado}" />
+						<h:inputText styleClass="form-control campos" value="#{QuestaoControle.questaoConsultaVO.enunciado}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_situacao}" />
+						<h:selectOneMenu styleClass="form-control campos" value="#{QuestaoControle.situacaoQuestaoEnum}">
+							<f:selectItems value="#{QuestaoControle.listaSelectItemSituacaoQuestaoConsulta}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_nivelComplexidadeQuestaoEnum}" />
+						<h:selectOneMenu styleClass="form-control campos" value="#{QuestaoControle.nivelComplexidadeQuestaoEnum}">
+							<f:selectItems value="#{QuestaoControle.listaSelectItemComplexidadeQuestaoConsulta}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!QuestaoControle.telaUsoTarefaDiscursiva}">
+						<h:outputText rendered="#{!QuestaoControle.telaUsoTarefaDiscursiva}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_tipoQuestao}" />
+						<h:selectOneMenu rendered="#{!QuestaoControle.telaUsoTarefaDiscursiva}" styleClass="form-control campos" value="#{QuestaoControle.tipoQuestaoEnum}">
+							<f:selectItems value="#{QuestaoControle.listaSelectItemTipoQuestaoConsulta}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+					<h:panelGroup>
+						<a4j:commandLink id="consultar" render="form" execute="@form" value="#{msg_botoes.btn_consultar}" action="#{QuestaoControle.consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2">
+							<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"> </span>
+							<f:setPropertyActionListener target="#{QuestaoControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+							<f:setPropertyActionListener target="#{QuestaoControle.controleConsultaOtimizado.page}" value="1" />
+						</a4j:commandLink>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="resultado" columns="1" columnClasses="colunaCentralizada" width="100%">
+					<rich:dataTable id="items" style="margin-top:10px; width:100%" rendered="#{!empty QuestaoControle.controleConsultaOtimizado.listaConsulta}" headerClass="consulta" rowKeyVar="row" value="#{QuestaoControle.controleConsultaOtimizado}" width="100%" rows="10" var="questaoItem">
+						<rich:column style="text-align:center !important">
+							<f:facet name="header">
+								<h:outputText value="Código" />
+							</f:facet>
+							<h:outputText escape="false" value="#{questaoItem.codigo}" />
+						</rich:column>
+						<rich:column style="text-align:center !important">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Questao_enunciado}" />
+							</f:facet>
+							<h:outputText escape="false" value="#{questaoItem.enunciado}" />
+						</rich:column>
+						<rich:column style="text-align:center !important">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Questao_disciplina}" />
+							</f:facet>
+							<h:outputText escape="false" value="#{questaoItem.disciplina.nome}" />
+						</rich:column>
+						<rich:column style="text-align:center !important;vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Questao_situacao}" />
+							</f:facet>
+							<h:outputText value="#{questaoItem.situacaoQuestaoEnum.valorApresentar}" />
+						</rich:column>
+						<rich:column style="text-align:center !important;vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Questao_nivelComplexidadeQuestaoEnum}" />
+							</f:facet>
+							<h:outputText value="#{questaoItem.nivelComplexidadeQuestao.valorApresentar}" />
+						</rich:column>
+						<rich:column style="text-align:center !important;vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{QuestaoControle.editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar" image="#{resource['/imagens/botaoEdicao.png']}" />
+							<otm:commandIcon id="inativar" rendered="#{QuestaoControle.possuiPermissaoInativarConsulta(questaoItem)}" icon="#{msg_botoes.btn_icon_inativar} iconePequeno" action="#{QuestaoControle.editarConsulta}" image="#{resource['/imagens/botaoInativar.png']}" tooltip="#{msg_botoes.btn_inativar}" accesskey="5" oncomplete="#{rich:component('panelConfirmarInativacao')}.show();" />
+							<otm:commandIcon render="form" id="ativar" rendered="#{QuestaoControle.permiteReativarQuestaoConsulta(questaoItem)}" action="#{QuestaoControle.ativarQuestaoConsulta}" icon="#{msg_botoes.btn_icon_ativar} iconePequeno btn-success" image="#{resource['/imagens/botaoAtivar.png']}" tooltip="Ativar" accesskey="5" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="form:items" render="itens, panelGridMensagens" id="scResultadoConsulta" scrollListener="#{QuestaoControle.paginarConsulta}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<h:panelGroup>
+						<otm:commandButton id="novo" action="#{QuestaoControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" title="#{msg.msg_novo_dados}" accesskey="1" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagens" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{QuestaoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplina" shadowOpacity="true" top="0" width="750" onshow="document.getElementById('formDisciplina:valorConsultaDisciplina').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink" />
+					<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaDisciplina" value="#{QuestaoControle.campoConsultaDisciplina}">
+						<f:selectItems value="#{QuestaoControle.tipoConsultaComboDisciplina}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaDisciplina" size="10" styleClass="form-control campos" value="#{QuestaoControle.valorConsultaDisciplina}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formDisciplina:mensagemConsultaDisciplina, formDisciplina:resultadoConsultaDisciplina, formDisciplina:scResultadoDisciplina" action="#{QuestaoControle.consultarDisciplina}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaDisciplina" style="width:100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{QuestaoControle.listaConsultaDisciplina}" rows="10" var="disciplinaItem">
+					<rich:column colspan="3" style="text-align:center !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Disciplina_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{QuestaoControle.selecionarDisciplinaConsulta}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="#{disciplinaItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3" style="text-align:center !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Disciplina_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{QuestaoControle.selecionarDisciplinaConsulta}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="#{disciplinaItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="1" style="text-align:center !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{QuestaoControle.selecionarDisciplinaConsulta}" oncomplete="#{rich:component('panelDisciplina')}.hide()" render="form" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" fastControls="hide" boundaryControls="auto" stepControls="auto" for="formDisciplina:resultadoConsultaDisciplina" maxPages="10" id="scResultadoDisciplina" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaDisciplina" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{QuestaoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelMensagemErro" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg.msg_RichMensagemErro}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkMensagemErro" />
+					<rich:componentControl target="panelMensagemErro" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMensagemErro" onkeydown="fecharModal('panelMensagemErro',event);">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="listaMensagemErro" width="100%" styleClass="field control-label mensagemDetalhada col-md-12" columnClasses="colunaEsquerda" value="#{QuestaoControle.listaMensagemErro}" var="mensagem" rows="10">
+						<rich:column>
+							<h:outputText value="#{mensagem}" />
+						</rich:column>
+					</rich:dataTable>
+					<rich:dataScroller align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" for="formMensagemErro:listaMensagemErro" maxPages="10" id="scResultadoListaMensagemErro" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelConfirmarInativacao" shadowOpacity="true" minWidth="400" autosized="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Questao_confirmarInativacao}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkConfirmarInativacao">
+						<rich:componentControl target="panelConfirmarInativacao" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="ConfirmarInativacao">
+				<h:panelGrid columns="2" columnClasses="colunaCentralizada" width="100%">
+					<h:panelGrid columns="1" width="100%">
+						<h:outputText value="#{msg.msg_Questao_inativarQuestao}" styleClass="field control-label tituloCampos" />
+						<h:panelGroup style="margin-top: 5px">
+							<otm:commandButton style="margin-right:5px" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Sim" action="#{QuestaoControle.inativarQuestao}" oncomplete="#{rich:component('panelConfirmarInativacao')}.hide();" render="form" />
+							<otm:commandButton styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Não" oncomplete="#{rich:component('panelConfirmarInativacao')}.hide();" />
+						</h:panelGroup>
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,177 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" >
+
+<script>
+	
+		var indice = 0;	
+	
+		(function($) {
+		    $(window).ready(function () {
+		    	if(#{session != null and session.getAttribute("LoginControle") != null
+		    		and session.getAttribute("LoginControle").getUsuarioLogado() != null
+		    		and session.getAttribute("LoginControle").getUsuarioLogado().getCodigo() > 0
+		    			and (!session.getAttribute("LoginControle").getUsuarioLogado().getIsApresentarVisaoAdministrativa()
+		    			and !session.getAttribute("LoginControle").getNomeTelaAtual().contains("avaliacaoInstitucionalPublicacaoRel.xhtml")
+		    			and !session.getAttribute("LoginControle").getNomeTelaAtual().contains("showCase.xhtml")
+		    			and !session.getAttribute("LoginControle").getNomeTelaAtual().contains("documentoAssinado.xhtml")
+		    			and !session.getAttribute("LoginControle").getNomeTelaAtual().contains("diploma.xhtml")
+		    			and !session.getAttribute("LoginControle").getNomeTelaAtual().contains("historico.xhtml")
+		    			and !session.getAttribute("LoginControle").getNomeTelaAtual().contains("homeOuvidoriaForm.xhtml")
+		    			and !session.getAttribute("LoginControle").getNomeTelaAtual().contains("homeOuvidoriaCons.xhtml")
+		    			and !(session.getAttribute("LoginControle").getNomeTelaAtual().contains("conteudoForm.xhtml") and session.getAttribute("LoginControle").getUsuarioLogado().getIsApresentarVisaoProfessor())
+		    			and !(session.getAttribute("LoginControle").getNomeTelaAtual().contains("unidadeConteudoForm.xhtml") and session.getAttribute("LoginControle").getUsuarioLogado().getIsApresentarVisaoProfessor())
+		    		)
+		    	}) {
+		    		$(location).attr('href', '../../acessoRestrito.xhtml?faces-redirect=true');
+		    	};	 
+		    	
+		    	abrirPesquisaPadrao = function() {
+		    		$('#painelPesquisaPadrao').css('display', 'inline');
+		    	};
+		    	
+		    	fecharPesquisaPadrao = function() {
+		    		$('#painelPesquisaPadrao').css('display', 'none');
+		    	};
+		    	
+				iniciarPesquisaPadrao = function() {
+					$('#painelPesquisaPadrao').attr('class', 'painelPesquisaPadrao');
+					abrirPesquisaPadrao();
+					setTimeout(function() {
+						document.getElementById("inputPesquisaPadrao").focus();
+					}, 250);
+				};
+				$("#form").click(function() {
+					fecharPesquisaPadrao();
+				});
+				$("#formCadastro").click(function() {
+					fecharPesquisaPadrao();
+				});
+				$(document).bind('keydown', function(e){
+					if (e.keyCode == 113) {
+						iniciarPesquisaPadrao();
+					    e.preventDefault();
+					}
+				});
+				$(document).bind('keydown', function(e){
+					if (e.keyCode == 115 || e.keyCode == 27) {
+						if (e.keyCode == 115) {
+							e.keyCode = 27;
+						}
+						fecharPesquisaPadrao();
+					    e.preventDefault();
+					}
+				});
+		    });
+		   
+		    
+		    fecharPopup = function(nomeJanela){
+	    		if(#{session != null and session.getAttribute("LoginControle") != null and session.getAttribute("LoginControle").popupAberto(nomeJanela)}) {
+	    			fecharPopupEspecifico(nomeJanela);	
+		    	}			    	
+	    	};
+		    		    
+		}(jQuery));
+		
+		function limparIndiceFormula() {
+			indice = 0;
+		}
+
+		function validarDigitouValorNumerico(numeroSelecionado) {
+			if (numeroSelecionado != "" ) {
+				var numeros = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+				for (var i = 0; i &lt;= numeros.length; i++) {
+					if (numeroSelecionado == numeros[i] || numeroSelecionado == '.') {
+						return true;
+					}				
+				}
+			}
+			return false;
+		}
+
+		function concatenarFormula(texto, posicao, event) {
+			var formula = document.getElementById("form:formula").value;
+			var primeiroParte = formula.substr(0, posicao);
+			var segundaParte = formula.substr(posicao, formula.length);
+			
+			var valorNumerico = false;
+			if (event != "") {				
+				valorNumerico = validarDigitouValorNumerico(event);
+			}
+
+			if (texto === "apagar") {
+				if (indice != 0) {
+					var formula = document.getElementById("form:formula").value;
+					texto = "";
+	
+					 if (indice == formula.length) {
+						document.getElementById("form:formula").value = formula.substr(0, formula.length-1);
+					} else {
+						document.getElementById("form:formula").value = formula.substr(0, indice-1) + formula.substr(indice, formula.length) ;
+					} 
+					if (indice >= 0) {
+						indice = indice-1;
+					}
+				}
+			} else if(texto == "espaco") {
+				var formula = document.getElementById("form:formula").value;
+				texto = "";
+
+				 if (indice == formula.length) {
+					document.getElementById("form:formula").value = formula + " ";
+				} else {
+					document.getElementById("form:formula").value = formula.substr(0, indice)+ " " + formula.substr(indice, formula.length) ;
+				}
+				if (indice >= 0) {
+					indice = indice+1;
+				}
+			} else {
+				if (valorNumerico) {
+					document.getElementById("form:formula").value = primeiroParte + texto + segundaParte;				
+				} else {				
+					document.getElementById("form:formula").value = primeiroParte + texto + segundaParte + " ";
+				}
+
+				if (texto.length >= indice) {
+					console.log(true);
+					indice = indice + texto.length+1;
+				} else {
+					console.log(false);
+					indice = indice + texto.length;
+				}
+			}
+		}
+
+		function pegarPosicaoCursorTextArea() {
+			var textarea = document.querySelector("textarea");
+			textarea.addEventListener("click", function() {
+				indice =  getCaretPosition(textarea);
+				return indice;
+			});
+
+			textarea.addEventListener("blur", function() {
+				indice = getCaretPosition(textarea);
+				return indice;
+			});
+
+			function getCaretPosition(textarea) {
+				return textarea.selectionStart
+			}
+		}
+		
+			
+	
+		
+	</script>
+
+<h:form id="formPoupup">
+
+
+	<h:panelGroup id="panelLogout" style="width:15px;float-left;">
+		<h:inputHidden id="finalizarPopups" value="#{LoginControle.finalizarPopups}" />
+	</h:panelGroup>
+	<a4j:jsFunction name="adicionarPopup" render="panelLogout" execute="panelLogout" action="#{LoginControle.adicionarPopup}">
+		<a4j:param assignTo="#{LoginControle.popup}" name="param1"></a4j:param>
+	</a4j:jsFunction>
+</h:form>
+
+
+</html>

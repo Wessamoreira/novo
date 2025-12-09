@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<ui:composition template="/visaoAluno/template/visaoAluno.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_VisaoAluno_minhasNotas}" />
+	</ui:define>
+	<ui:define name="modal">
+		<rich:popupPanel styleClass="modalMaximizado" id="panelHistoricoDisciplinasReprovadas" shadowOpacity="true" rendered="#{VisaoAlunoControle.apresentarListaDisciplinaReprovadas}" width="700" autosized="true" domElementAttachment="parent" show="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Prezado Aluno, você encontra-se reprovado em algumas disciplinas do curso, segue listagem abaixo:"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkReprovadas" />
+					<rich:componentControl target="panelHistoricoDisciplinasReprovadas" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formHistoricoDisciplinasReprovadas">
+				<a4j:repeat var="listaSecundaria" value="#{VisaoAlunoControle.listaHistoricoDisciplinasReprovadas}">
+					<rich:dataTable id="notasReprovadas" style="background-color: transparent;position:relative; top:0; left:0;" width="650px" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{listaSecundaria}" var="historicoVOItens">
+						<rich:column width="30%" style="background-color: transparent">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_VisaoAluno_disciplina}" />
+							</f:facet>
+							<h:outputText id="matriculaAlunoReprovadas" value="#{historicoVOItens.disciplina.nomeMinhasNotasAluno}" />
+						</rich:column>
+						<rich:column id="colunaMediaFinalReprovadas" width="5%" style="background-color: transparent;">
+							<f:facet name="header">
+								<h:outputText id="mediaFinaloutReprovadas" value="Média Final" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{historicoVOItens.mediaFinal}" rendered="#{historicoVOItens.mediaFinalConceito.codigo eq 0 and historicoVOItens.mediaFinal ne null}">
+									<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+									<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{historicoVOItens.configuracaoAcademico.quantidadeCasasDecimaisPermitirAposVirgula}" />
+								</h:outputText>
+								<h:outputText value="#{historicoVOItens.mediaFinalTexto}" rendered="#{historicoVOItens.mediaFinalConceito.codigo eq 0 and listaSecundaria[0].configuracaoAcademico.apresentarTextoSemNotaCampoNuloHistorico
+                                                          and historicoVOItens.mediaFinal eq null}" />
+								<h:outputText value="#{historicoVOItens.mediaFinalConceito.conceitoNota}" rendered="#{historicoVOItens.mediaFinalConceito.codigo > 0}" />
+								<otm:spacer width="5" />
+								<otm:commandIcon action="#{VisaoAlunoControle.selecionarDisciplinaParaReposicao(historicoVOItens.disciplina.codigo)}" image="#{resource['/imagens/botaoReposicao.png']}" rendered="#{historicoVOItens.reprovado and VisaoAlunoControle.apresentarBotaoReposicao and historicoVOItens.permiteMarcarReposicao}" icon="#{msg_botoes.btn_icon_calendario_embutido} iconePequeno" tooltip="Solicitar Requerimento P/ Reposição de Aula" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column id="colunaSituacaoReprovadas" width="5%" style="background-color: transparent;">
+							<f:facet name="header">
+								<h:outputText id="situacaoLayoutReprovadas" value="Situação" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{historicoVOItens.situacao_Apresentar}" rendered="#{historicoVOItens.mediaFinalConceito.codigo eq 0 and historicoVOItens.mediaFinal ne null}">
+								</h:outputText>
+							</h:panelGroup>
+						</rich:column>
+					</rich:dataTable>
+					<otm:spacer height="15px" />
+				</a4j:repeat>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form" styleClass="row">
+			<style>
+.rf-edt-c {
+	width: auto !important;
+	height: 60px;
+}
+
+.rf-edt-hdr-c-cnt {
+	height: 26px;
+}
+
+.rf-edt-td-coluna-turma {
+	width: 200px !important;
+}
+
+.rf-edt-td-coluna-disciplina {
+	width: 400px !important;
+}
+
+.rf-edt-c-coluna-turma {
+	width: 200px !important;
+	vertical-align: baseline !important;
+}
+
+.rf-edt-c-coluna-disciplina {
+	width: 400px !important;
+	vertical-align: baseline !important;
+	overflow-x: auto;
+}
+
+.rf-edt-c-coluna-situacao {
+	width: 100px !important;
+}
+
+.rf-edt-td-coluna-situacao {
+	width: 100px !important;
+}
+
+.rf-edt-c-coluna-frequencia {
+	width: 100px !important;
+}
+
+.rf-edt-td-coluna-frequencia {
+	width: 100px !important;
+}
+
+.rf-edt-c-coluna-falta {
+	width: 100px !important;
+}
+
+.rf-edt-td-coluna-falta {
+	width: 100px !important;
+}
+
+.rf-edt-c-coluna-media-final {
+	width: 100px !important;
+}
+
+.rf-edt-td-coluna-media-final {
+	width: 100px !important;
+}
+
+.rf-edt-c-coluna-data-aula {
+	width: 100px !important;
+}
+
+.rf-edt-td-coluna-data-aula {
+	width: 100px !important;
+}
+
+.rf-edt-c-coluna-professor {
+	width: 200px !important;
+	overflow: auto;
+}
+
+.rf-edt-td-coluna-professor {
+	width: 200px !important;
+}
+
+.rf-edt-c-coluna-nota {
+	width: 400px !important;
+	overflow: auto;
+}
+
+.rf-edt-td-coluna-nota {
+	width: 400px !important;
+}
+</style>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText rendered="#{VisaoAlunoControle.isApresentarCampoAno and VisaoAlunoControle.isApresentarCampoSemestre}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_anoSemestre}" />
+				<h:outputText rendered="#{VisaoAlunoControle.isApresentarCampoAno and !VisaoAlunoControle.isApresentarCampoSemestre}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_ano}" />
+				<otm:spacer rendered="#{VisaoAlunoControle.isApresentarCampoAno}" width="10px" />
+				<h:selectOneMenu id="selectItemAnoSemestre1" rendered="#{VisaoAlunoControle.isApresentarCampoAno}" styleClass="form-control campos" value="#{VisaoAlunoControle.filterAnoSemestre}">
+					<f:selectItems value="#{VisaoAlunoControle.listaSelectItemAnoSemestre}" />
+					<a4j:ajax event="change" render="form:gridTotal" listener="#{VisaoAlunoControle.consultarNotasAluno}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+				<h:panelGroup rendered="#{VisaoAlunoControle.loginControle.permissaoAcessoMenuVO.permitirGerarRelatorioDocumentoIntegralizacaoCurricular}">
+					<otm:commandButton style="margin-right:5px" id="cmdB02" styleClass="btn btn-default dark btn-imprimir" render="form:gridTotal, panelGridMensagens" value="Gerar Documento" action="#{VisaoAlunoControle.imprimirDocumentoIntegracaoCurricular}" icon="#{msg_botoes.btn_icon_imprimir_embutido}" oncomplete="#{VisaoAlunoControle.download};" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{VisaoAlunoControle.loginControle.permissaoAcessoMenuVO.permitirImprimirMatrizCurricularAluno}">
+					<otm:commandButton id="imprimirMatrizCurricular" styleClass="btn btn-default" action="#{VisaoAlunoControle.imprimirMatrizCurricularAluno}" title="Imprimir Matriz Curricular" value="Imprimir Matriz Curricular" icon="#{msg_botoes.btn_icon_imprimir_embutido}" oncomplete="#{VisaoAlunoControle.download}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="gridTotal" layout="block">
+				<a4j:repeat id="periodo" rowKeyVar="rowPer" var="listaSecundaria" value="#{VisaoAlunoControle.listaPrincipalHistoricos}">
+					<h:panelGroup rendered="#{VisaoAlunoControle.isApresentarCampoAno}" layout="block" styleClass="col-md-12 title mt10">
+						<h:outputText rendered="#{VisaoAlunoControle.isApresentarCampoAno}" value="#{listaSecundaria[0].anoHistorico}" />
+						<h:outputText value="/" rendered="#{VisaoAlunoControle.isApresentarCampoSemestre}" />
+						<h:outputText value="#{listaSecundaria[0].semestreHistorico}" rendered="#{VisaoAlunoControle.isApresentarCampoSemestre}" />
+						<h:outputText value=" - " />
+						<h:outputText value="#{listaSecundaria[0].matriculaPeriodo.peridoLetivo.descricao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row row-overflow" style="width:100% !important" rendered="#{!empty listaSecundaria and empty VisaoAlunoControle.filterAnoSemestre or VisaoAlunoControle.filterAnoSemestre eq listaSecundaria[0].anoSemestreApresentar}">
+						<rich:dataTable id="notas" rowKeyVar="rowHis" value="#{listaSecundaria}" var="historicoVOItens">
+							<rich:column id="coluna-turma" style="width:200px !important;background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'}; text-align: center !important">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_CriterioAvaliacaoAluno_turma}" />
+								</f:facet>
+								<otm:spacer width="10" rendered="#{historicoVOItens.historicoDisciplinaFazParteComposicao}" />
+								<h:outputText id="turmaMatriuclaPeriodo" value="#{historicoVOItens.matriculaPeriodo.turma.identificadorTurma}" />
+							</rich:column>
+							<rich:column id="coluna-disciplina" style="width:400px !important;background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'}; text-align: center !important">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_VisaoAluno_disciplina}" />
+								</f:facet>
+								<otm:spacer width="10" rendered="#{historicoVOItens.historicoDisciplinaFazParteComposicao}" />
+								<h:outputText id="matriculaAluno2" value="#{historicoVOItens.disciplina.nomeMinhasNotasAluno}" />
+							</rich:column>
+							<rich:column id="coluna-data-aula" styleClass="rf-edt-c-coluna-100px" style="background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'}" rendered="#{listaSecundaria[0].matricula.curso.nivelEducacionalPosGraduacao}">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_VisaoAluno_dataAula}" />
+								</f:facet>
+								<h:outputText id="dataAula" value="#{historicoVOItens.periodoAula_Apresentar}" />
+							</rich:column>
+							<rich:column id="coluna-professor" style="background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'}" rendered="#{listaSecundaria[0].matricula.curso.nivelEducacionalPosGraduacao and VisaoAlunoControle.apresentarCampoProfessor}" styleClass="colunaEsquerda">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_VisaoAluno_professor}" />
+								</f:facet>
+								<h:outputText id="nomeProfessor" value="#{historicoVOItens.nomeProfessor}" />
+							</rich:column>
+							<rich:column id="coluna-frequencia" style="background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'}; text-align: center !important" rendered="#{VisaoAlunoControle.configuracaoAcademico.tipoApresentarFrequenciaVisaoAluno eq 'PO'}">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_VisaoAluno_frequencia}" />
+								</f:facet>
+								<h:outputText id="frequencia" rendered="#{!historicoVOItens.ocultarFrequenciaFalta}" value="#{historicoVOItens.freguencia}(%)" />
+								<h:outputText id="freq" rendered="#{historicoVOItens.ocultarFrequenciaFalta}" value="--" />
+							</rich:column>
+							<rich:column id="coluna-falta" style="background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'}; text-align: center !important" rendered="#{VisaoAlunoControle.configuracaoAcademico.tipoApresentarFrequenciaVisaoAluno ne 'PO'}">
+								<f:facet name="header">
+									<h:outputText value="Faltas" />
+								</f:facet>
+								<h:outputText id="faltas2" rendered="#{!historicoVOItens.ocultarFrequenciaFalta}" value="#{historicoVOItens.totalFalta}">
+									<f:convertNumber maxFractionDigits="0" />
+								</h:outputText>
+								<h:outputText id="faltas3" rendered="#{historicoVOItens.ocultarFrequenciaFalta}" value="--" />
+							</rich:column>
+							<!-- <rich:column style="background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'};text-align:left;padding:0px !important;"> -->
+							<rich:column id="coluna-nota" style="background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'}">
+								<f:facet name="header">
+									<h:outputText value="Notas" />
+								</f:facet>
+								<h:panelGroup layout="block" styleClass="row" style="max-height:100px;overflow:auto">
+									<a4j:repeat id="notasId" value="#{historicoVOItens.historicoNotaMobileVOs}" var="notas" rowKeyVar="rowNota">
+										<h:panelGroup layout="block" styleClass="col-md-12 p5 border-bottom">
+											<h:outputText styleClass="pull-left fs11 " value="#{notas.tituloNota}" />
+											<otm:commandIcon icon="#{msg_botoes.btn_icon_info_embutido} text-success pull-right ml5" rendered="#{!empty notas.historicoNotaParcialVOs}" id="notaParcial">
+												<rich:tooltip id="notatooltip" target="form:periodo:#{rowPer}:notas:#{rowHis}:notasId:#{rowNota}:notaParcial:notaParcial" styleClass="tooltipRich" style="z-index:10000" followMouse="true" horizontalOffset="0" verticalOffset="0" direction="topLeft" showDelay="500">
+													<h:panelGroup layout="block" styleClass="row">
+														<a4j:repeat value="#{notas.historicoNotaParcialVOs}" var="notaParcials">
+															<h:panelGroup layout="block" styleClass="col-md-12 p5 border-bottom">
+																<h:outputText styleClass="pull-left fs11 " value="#{notaParcials.turmaDisciplinaNotaParcial.tituloNota}" />
+																<h:outputText styleClass="pull-right fs11" value="#{notaParcials.nota}">
+																	<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+																	<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{historicoVOItens.configuracaoAcademico.quantidadeCasasDecimaisPermitirAposVirgula}" />
+																</h:outputText>
+															</h:panelGroup>
+														</a4j:repeat>
+													</h:panelGroup>
+												</rich:tooltip>
+											</otm:commandIcon>
+											<h:outputText styleClass="pull-right fs11" value="#{notas.notaApresentar}" />
+										</h:panelGroup>
+									</a4j:repeat>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column id="coluna-media-final" style="background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'}; text-align: center !important">
+								<f:facet name="header">
+									<h:outputText id="mediaFinalout" value="Média Final" />
+								</f:facet>    
+								<h:panelGroup rendered="#{historicoVOItens.calendarioLancamentoNotaVO.apresentarCalculoMediaFinalVisaoAluno}">
+									<h:outputText value="--" rendered="#{historicoVOItens.ocultarMediaFinalDisciplinaMaeCasoReprovadoDisciplinaFilha and historicoVOItens.mediaFinalConceito.codigo eq 0 and historicoVOItens.mediaFinal != null}">
+									</h:outputText>
+									<h:outputText value="#{historicoVOItens.mediaFinal}" rendered="#{!historicoVOItens.ocultarMediaFinalDisciplinaMaeCasoReprovadoDisciplinaFilha and historicoVOItens.mediaFinalConceito.codigo eq 0 and historicoVOItens.mediaFinal != null}">
+										<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+										<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="#{historicoVOItens.configuracaoAcademico.quantidadeCasasDecimaisPermitirAposVirgula}" />
+									</h:outputText>
+									<h:outputText value="#{historicoVOItens.mediaFinalTexto}" rendered="#{historicoVOItens.mediaFinalConceito.codigo eq 0 and historicoVOItens.configuracaoAcademico.apresentarTextoSemNotaCampoNuloHistorico and historicoVOItens.mediaFinal == null}" />
+									<h:outputText value="#{historicoVOItens.mediaFinalConceito.conceitoNota}" rendered="#{historicoVOItens.mediaFinalConceito.codigo > 0}" />
+									<otm:spacer width="5" />
+									<a4j:commandButton action="#{VisaoAlunoControle.selecionarDisciplinaParaReposicao(historicoVOItens.disciplina.codigo)}" style="position:relative; top:-1px;" image="#{resource['/imagens/botaoReposicao.png']}" rendered="#{historicoVOItens.reprovado and VisaoAlunoControle.apresentarBotaoReposicao and historicoVOItens.permiteMarcarReposicao and VisaoAlunoControle.apresentarBotaoNovoRequerimento}" title="Solicitar Requerimento P/ Reposição de Aula" />
+								</h:panelGroup>
+							</rich:column>
+							<rich:column id="coluna-situacao" style="background-color: #{historicoVOItens.historicoDisciplinaFazParteComposicao?'#f1f1f1':'transparent'}; text-align: center !important" >
+								<f:facet name="header">
+									<h:outputText id="situacaoLayout" value="Situação" />
+								</f:facet>
+								<h:panelGroup rendered="#{historicoVOItens.apresentarSituacaoAplicandoRegraConfiguracaoAcademica and historicoVOItens.calendarioLancamentoNotaVO.apresentarCalculoMediaFinalVisaoAluno}">
+									<h:outputText value="#{historicoVOItens.situacao_Apresentar}#{historicoVOItens.emRecuperacaoApresentar}" rendered="#{(historicoVOItens.mediaFinalConceito.codigo eq 0 and historicoVOItens.mediaFinal != null) or historicoVOItens.aprovado or historicoVOItens.emRecuperacao}">
+									</h:outputText>
+								</h:panelGroup>
+							</rich:column>
+							<f:facet name="footer"  >	
+							   <h:panelGroup style="width:100%;display:block;text-align: left !important;" layout="block"  rendered="#{(!VisaoAlunoControle.matricula.curso.integral) and  empty VisaoAlunoControle.filterAnoSemestre}" >								
+								    <h:outputText styleClass="tituloCampos"   style="text-transform: none!important;" value="Carga Horária Total Período: " />
+								   <h:outputText styleClass="tituloCampos"  style="text-transform: none!important;" value="#{listaSecundaria[0].matriculaPeriodo.peridoLetivo.totalCargaHoraria}" />
+								   <h:outputText styleClass="tituloCampos"  style="padding-left: 68px;text-transform: none!important;" value="CH cumprida: " />					
+								   <h:outputText styleClass="tituloCampos"  style="text-transform: none!important;" value="#{listaSecundaria[0].totalCargaHorariaPeriodoLetivoCumprida}" />	
+							   </h:panelGroup>				
+					        </f:facet>
+						</rich:dataTable>
+					</h:panelGroup>
+				</a4j:repeat>
+			</h:panelGroup>
+			<h:panelGroup  rendered="#{! empty VisaoAlunoControle.listaPrincipalHistoricos}" style="width:100%;display:block;text-align: left !important;padding-left: 10px!important;" layout="block" >								
+					<h:outputText styleClass="tituloCampos" value="Carga Horária Total Todos Períodos: " />
+				    <h:outputText styleClass="tituloCampos" value="#{VisaoAlunoControle.totalCargaHorariaPeriodoLetivoExigida}" />					
+				   <h:outputText style="padding-left: 20px;" styleClass="tituloCampos" value="CH cumprida Total Todos Períodos: " />					
+				   <h:outputText styleClass="tituloCampos" value="#{VisaoAlunoControle.totalCargaHorariaPeriodoLetivoCumprida}" />				
+			</h:panelGroup>	
+			<h:panelGroup id="panelGridMensagens" layout="block">
+				<otm:mensagem bean="#{VisaoAlunoControle}"></otm:mensagem>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

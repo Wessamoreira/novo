@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" >
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Ouvidoria" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:head>
+			<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" />
+			<meta http-equiv="Cache-Control" content="no-cache" />
+			<meta http-equiv="Pragma" content="no-cache" />
+			<meta http-equiv="Expires" content="0" />
+			<title><h:outputText value="#{LoginControle.versaoSistema}" /></title>
+			<link rel="shortcut icon" href="#{resource['V2/icones/favicon.ico']}" type="image/x-icon" />
+			<h:outputScript name="jquery.js" library="V2/script" />
+			<h:outputScript name="script.js" library="script" />
+		</h:head>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelLoginUsuarioOuvidoria" shadowOpacity="true" autosized="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Login usuário ouvidoria"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['imagens/close.png']}" style="cursor:pointer" id="hidelinkpanelLoginUsuarioOuvidoria">
+						<rich:componentControl target="panelLoginUsuarioOuvidoria" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formpanelLoginUsuarioOuvidoria">
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:outputText styleClass="tituloCampos" value="Usuário" />
+					<h:inputText id="username" styleClass="form-control" tabindex="1" value="#{LoginControle.username}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="tituloCampos" value="Senha" />
+					<h:inputSecret id="senha" styleClass="form-control" value="#{LoginControle.senha}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3 pt5">
+					<otm:spacer width="100%" />
+					<otm:commandButton id="btLogin" action="#{LoginControle.login3}" icon="#{msg_botoes.btn_icon_entrar_embutido}" styleClass="btn btn-default pl30 pr30" value="Entrar" render="formpanelLoginUsuarioOuvidoria" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row">
+					<otm:mensagem bean="#{OuvidoriaControle}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:panelGroup id="menuCentral">
+				<rich:panel escape="false" id="mensagemOuvidoria" style="width:100%; position:relative; top:0; left:0;" rendered="#{OuvidoriaControle.lerOuvidoria and !empty OuvidoriaControle.configuracaoAtendimentoVO.textoParaOrientacaoOuvidoria}">
+					<h:outputText escape="false" value="#{OuvidoriaControle.configuracaoAtendimentoVO.textoParaOrientacaoOuvidoria}" rendered="#{OuvidoriaControle.lerOuvidoria}" />
+				</rich:panel>
+				<h:panelGroup id="unidadeOuvidoria" rendered="#{OuvidoriaControle.novoOuvidoria}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="Para iniciar o cadastro da OUVIDORIA por favor informa uma unidade de ensino." />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="#{OuvidoriaControle.existeUnidadeEnsinoInformada and OuvidoriaControle.novoOuvidoria ? 'col-md-9' : 'col-md-10'}">
+						<h:selectOneMenu id="unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{OuvidoriaControle.codigoUnidadeEnsino}" rendered="#{OuvidoriaControle.novoOuvidoria}">
+							<f:selectItems value="#{OuvidoriaControle.listaSelectItemUnidadeEnsino}" />
+							<a4j:ajax event="change" listener="#{OuvidoriaControle.novoOuvidoriaVisaoUsuarioSemVinculo}" execute="@this" render="form:menuCentral, form" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{OuvidoriaControle.novoOuvidoria}">
+					<h:panelGroup layout="block" styleClass="#{OuvidoriaControle.existeUnidadeEnsinoInformada and OuvidoriaControle.novoOuvidoria ? 'col-md-3' : 'col-md-2'}">
+						<otm:commandButton action="#{OuvidoriaControle.realizarRegistoManifestacao}" render="form:menuCentral" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info mr5 pl30 pr30" value="Registrar" />
+						<otm:commandButton oncomplete="#{rich:component('panelLoginUsuarioOuvidoria')}.show();" render="form:menuCentral" rendered="#{OuvidoriaControle.existeUnidadeEnsinoInformada and OuvidoriaControle.novoOuvidoria}" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default pr30 pl30" value="Consultar" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn" id="conteudo" rendered="#{OuvidoriaControle.lerOuvidoria}">
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:panelGroup layout="block" styleClass="col-md-1">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_codigo}" />
+							<h:inputText id="codigo" size="15" maxlength="14" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{OuvidoriaControle.atendimentoVO.codigo}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:outputHelp id="helpsituacao" styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_situacaoOuvidoriaEnum}">
+							<h:outputText value="#{msg.help_Ouvidoria_situacao}" />
+						</otm:outputHelp>
+						<h:inputText id="situacao" readonly="true" size="56" styleClass="form-control camposSomenteLeitura" value="#{OuvidoriaControle.atendimentoVO.situacaoAtendimentoEnum}" converter="EnumConverter" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_Ouvidor}" />
+						<h:inputText id="ouvidor" size="88" maxlength="100" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{OuvidoriaControle.atendimentoVO.responsavelAtendimento.pessoa.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pessoa_CPF}" />
+						<h:inputText id="cpf" size="14" onkeypress="return mascara(this.form, 'form:cpf', '999.999.999-99', event);" styleClass="form-control camposObrigatorios" value="#{OuvidoriaControle.atendimentoVO.CPF}">
+							<a4j:ajax event="change" listener="#{OuvidoriaControle.realizarConsultarPessoaExistePorCPF}" render="form:nome,form:telefone, form:email,form:celular, form:panelGridMensagens, form:panekGroupTextoMatricula, form:panekGroupMatricula, form:panelUserName, form:panelSenha, form" oncomplete="document.getElementById('form:nome').focus()" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pessoa_nome}" />
+						<h:inputText id="nome" size="55" maxlength="100" styleClass="form-control camposObrigatorios" value="#{OuvidoriaControle.atendimentoVO.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Filiacao_telefoneRes}" />
+						<h:inputText id="telefone" size="14" maxlength="13" styleClass="form-control camposObrigatorios" onkeypress="return mascara(this.form, 'form:telefone', '(99)9999-9999', event);" value="#{OuvidoriaControle.atendimentoVO.telefone}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Pessoa_email}" />
+						<h:inputText id="email" size="55" maxlength="100" styleClass="form-control camposObrigatorios" value="#{OuvidoriaControle.atendimentoVO.email}" />
+					</h:panelGroup>
+					<h:panelGroup id="panelSenha">
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}">
+							<h:panelGroup layout="block" id="panelUserName">
+								<h:outputText rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}" styleClass="tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+							</h:panelGroup>
+							<h:inputText id="username" readonly="true" size="14" maxlength="30" styleClass="form-control camposSomenteLeitura" value="#{OuvidoriaControle.atendimentoVO.username}" rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Usuario_senha}" rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}" />
+							<h:inputSecret id="senha" redisplay="true" size="14" maxlength="64" styleClass="form-control camposObrigatorios" value="#{OuvidoriaControle.atendimentoVO.senha}" rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}">
+							<h:outputText styleClass="tituloCamposVermelho" value="Senha para acompanhar sua(s) ouvidoria(s)" rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{OuvidoriaControle.atendimentoVO.existePessoa and OuvidoriaControle.apresentarCampoMatricula}">
+						<h:panelGroup layout="block" id="panekGroupTextoMatricula">
+							<h:outputText id="textoMatriculaAluno" styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_matriculaAluno}" rendered="#{OuvidoriaControle.atendimentoVO.existePessoa and OuvidoriaControle.apresentarCampoMatricula}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" id="panekGroupMatricula">
+							<h:selectOneMenu styleClass="form-control camposObrigatorios" id="matriculaAluno" value="#{OuvidoriaControle.atendimentoVO.matriculaAluno}" rendered="#{OuvidoriaControle.atendimentoVO.existePessoa and OuvidoriaControle.apresentarCampoMatricula}">
+								<f:selectItems value="#{OuvidoriaControle.listaSelectItemMatriculaAluno}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="#{OuvidoriaControle.atendimentoVO.existePessoa and OuvidoriaControle.apresentarCampoMatricula ? 'col-md-4' : 'col-md-6'}">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_tipagemOuvidoria}" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" id="tipagemOuvidoria" value="#{OuvidoriaControle.atendimentoVO.tipagemOuvidoriaVO.codigo}">
+							<f:selectItems value="#{OuvidoriaControle.listaSelectItemtipagemOuvidoriaVO}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_assunto}" />
+						<h:inputText id="assunto" size="87" maxlength="100" styleClass="form-control camposObrigatorios" value="#{OuvidoriaControle.atendimentoVO.assunto}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_descricao}" />
+						<otm:editor id="descricao" width="548" height="150" value="#{OuvidoriaControle.atendimentoVO.descricao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="Anexar arquivos" />
+						<rich:fileUpload listHeight="20" listWidth="20" allowFlash="false" noDuplicate="true" fileUploadListener="#{OuvidoriaControle.upLoadArquivoVisaoExterna}" maxFilesQuantity="1" addControlLabel="Selecionar Arquivo" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{OuvidoriaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." progressLabel="Enviando" stopControlLabel="Parar" onupload="return validarTamanhoUploadArquivo(event, 'form:uploadAluno', #{OuvidoriaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload});" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" id="uploadAluno">
+							<a4j:ajax listener="#{OuvidoriaControle.adicionarArquivoLista}" event="uploadcomplete" render="form:nomeArquivoAnexado, form:panelGridMensagens" />
+							<a4j:ajax event="clear" render="form:nomeArquivoAnexado,form:panelGridMensagens" />
+							<a4j:ajax event="uploadcomplete" render="form:nomeArquivoAnexado,form:panelGridMensagens " />
+						</rich:fileUpload>
+						<h:outputText id="nomeArquivoAnexado" styleClass="tituloCampos" value="#{OuvidoriaControle.arquivoVO.descricao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_dataRegistro}" />
+						<h:inputText id="dataRegistro" readonly="true" styleClass="form-control camposSomenteLeitura" size="17" value="#{OuvidoriaControle.atendimentoVO.dataRegistroApresentar}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<h:panelGroup>
+							<otm:commandButton render="form:menuCentral" id="novo" action="#{OuvidoriaControle.realizarInicializacaoPeloServlet}" icon="#{msg_botoes.btn_icon_novoArquivo_embutido}" styleClass="btn btn-info mr5" value="Novo" accesskey="1" />
+							<otm:commandButton render="form:menuCentral" id="gravar" action="#{OuvidoriaControle.persistirPorOutrasVisoes}" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" value="Gravar" accesskey="2" oncomplete="#{CandidatoControle.apresentarRichMensagem}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{OuvidoriaControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_QuestaoProcessoSeletivo_tituloForm} " />
+	</ui:define>
+	<ui:define name="modal">
+		<rich:popupPanel id="panelUpload" domElementAttachment="parent" shadowOpacity="false" width="450" height="160">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelUpload" />
+					<rich:componentControl target="panelUpload" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUplod">
+				<h:panelGroup id="panelArquivoUpload" columns="1" width="100%" headerClass="subordinado" columnClasses="colunaCentralizada">
+					<h:panelGroup id="arquivoUpload2" columns="1" width="100%" style="position: absolute;left: 130px;top: 78px;">
+						<rich:fileUpload listHeight="40" listWidth="270" noDuplicate="true" fileUploadListener="#{QuestaoProcessoSeletivoControle.upLoadArquivo}" acceptedTypes="png, jpg, bmp, jpeg" ontyperejected="alert('Capa e Contra-Capa só poderá ser anexado no formato  JPG, PNG , JPEG and BMP');" maxFilesQuantity="1" addLabel="Selecionar Arquivo" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo Permitido 2 MB" uploadLabel="Enviar" clearAllLabel="Limpar lista" serverErrorLabel="Falha de Transmissão" immediateUpload="true">
+							<a4j:ajax event="uploadcomplete" oncomplete="#{rich:component('panelUpload')}.hide();" render="form:imagens, form:panelGridMensagens" />
+						</rich:fileUpload>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+	<ui:define name="conteudo">
+		<style type="text/css">
+.rich-dtascroller-table {
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.rich-datascr-button {
+	border: none;
+}
+
+.rich-datascr-button-dsbld {
+	background-color: transparent;
+}
+
+.rich-list-item {
+	display: block;
+}
+</style>
+		<rich:dragIndicator id="indicator">
+		</rich:dragIndicator>
+		<h:form id="form">
+			<h:commandLink action="#{QuestaoProcessoSeletivoControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_disciplina}" />
+						<h:selectOneMenu readonly="#{!QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" disabled="#{!QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" id="valorConsulta" styleClass="form-control campos" value="#{QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.disciplinaProcSeletivo.codigo}">
+							<a4j:ajax event="change" execute="@form" render="imagens" listener="#{QuestaoProcessoSeletivoControle.montarListaArquivosImagem()}"></a4j:ajax>
+							<f:selectItems value="#{QuestaoProcessoSeletivoControle.listaSelectItemDisciplinaProcessoSeletivo}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_situacao}" />
+						<h:inputText size="20" id="situacao" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.situacaoQuestaoEnum.valorApresentar}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_nivelComplexidadeQuestaoEnum}" />
+					<h:selectOneMenu readonly="#{!QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" disabled="#{!QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" styleClass="form-control campos" value="#{QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.nivelComplexidadeQuestao}">
+						<f:selectItems value="#{QuestaoProcessoSeletivoControle.listaSelectItemComplexidadeQuestao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_enunciado}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<otm:editor height="200" readonly="#{!QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" value="#{QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.enunciado}">
+					</otm:editor>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row border rounded bg-white mt10 ml5 mr5 mb10 p10" id="imagens">
+					<h:panelGroup layout="block" styleClass="col-md-12 title">
+						<h:outputText rendered="#{QuestaoProcessoSeletivoControle.disciplinaImagem.nome != ''}" styleClass="float-left" value="Imagens Disciplina: #{QuestaoControle.disciplinaImagem.nome}" />
+						<h:outputText rendered="#{QuestaoProcessoSeletivoControle.disciplinaImagem.nome eq ''}" styleClass="float-left" value="Clique no Icone para Adicionar a Imagem" />
+						<otm:commandIcon id="btnUpImg" render="formUplod" oncomplete="#{rich:component('panelUpload')}.show();" rendered="#{QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.disciplinaProcSeletivo.codigo > 0}" styleClass="float-right" tooltip="Upload (Escolha o Arquivo)" accesskey="2" icon="#{msg_botoes.btn_icon_upload_embutido} iconePequeno mr5" />
+					</h:panelGroup>
+					<a4j:repeat id="listaImagens" rendered="#{!empty QuestaoProcessoSeletivoControle.arquivoVOs}" value="#{QuestaoProcessoSeletivoControle.arquivoVOs}" var="imagemItens">
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:graphicImage id="imgArquivo" url="#{imagemItens.descricao}" style="max-height: 100px" width="150px">
+								<rich:tooltip horizontalOffset="0" followMouse="false" target="form:listaImagens:imgArquivo" verticalOffset="0" direction="topLeft" value="#{imagemItens.descricao}" />
+							</h:graphicImage>
+							<h:panelGroup layout="block" style="width:100%; text-align:center">
+								<otm:commandIcon render="form" id="excluirImagem" onclick="return confirm('Verifique se este arquivo está sendo utilizado em outros cadastrados. Confirma exclusão do arquivo?');" action="#{QuestaoProcessoSeletivoControle.excluirArquivo}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="#{msg.msg_excluir_dados}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</a4j:repeat>
+					<h:panelGroup layout="block" rendered="#{!empty QuestaoControle.arquivoVOs}" styleClass="col-md-12  text-center">
+						<rich:dataScroller id="scrollimagens" for="listaImagens" boundaryControls="auto" stepControls="auto" fastControls="hide"></rich:dataScroller>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:outputText styleClass="col-md-12 ml5 title" value="Respostas" />
+				<h:panelGroup id="respostas" layout="block" styleClass="row" style="display:flex !important">
+					<a4j:jsFunction action="#{QuestaoProcessoSeletivoControle.editarOpcaoRespostaQuestao}" name="editarOpcaoResposta" render="respostas">
+						<a4j:param name="opcaoRespostaQuestaoOrdemApresentacao" assignTo="#{QuestaoProcessoSeletivoControle.opcaoRespostaQuestaoProcessoSeletivoVO.ordemApresentacao}" />
+					</a4j:jsFunction>
+					<a4j:jsFunction action="#{QuestaoProcessoSeletivoControle.finalizarEditacaoOpcaoRespostaQuestao}" name="finalizarOpcaoResposta" render="respostas">
+						<a4j:param name="opcaoRespostaQuestaoOrdemApresentacao" assignTo="#{QuestaoProcessoSeletivoControle.opcaoRespostaQuestaoProcessoSeletivoVO.ordemApresentacao}" />
+					</a4j:jsFunction>
+					<a4j:repeat id="items" footerClass="footerOpcaoRespostaQuestao" headerClass="consulta" rowKeyVar="row" value="#{QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.opcaoRespostaQuestaoProcessoSeletivoVOs}" width="835px" var="opcaoRespostaQuestaoItens">
+						<h:panelGroup layout="block" styleClass="col-md-12 pn bg-white rounded border">
+							<rich:dragSource dragType="OpcaoRespostaQuestaoVO" dragIndicator="indicator" dragValue="#{opcaoRespostaQuestaoItens}" />
+							<rich:dropTarget dropValue="#{opcaoRespostaQuestaoItens}" render="form:respostas" dropListener="#{QuestaoProcessoSeletivoControle.alterarOrdemApresentacaoOpcaoRespostaQuestao}" acceptedTypes="OpcaoRespostaQuestaoVO" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pt5" style="min-height:100px !important">
+								<h:panelGroup layout="block" styleClass="float-left pr10" style="width:24px">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{opcaoRespostaQuestaoItens.letraCorrespondente})" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" style="width:97%" styleClass="float-left" rendered="#{opcaoRespostaQuestaoItens.editar}" id="editor">
+									<otm:editor height="200" disabled="#{!opcaoRespostaQuestaoItens.editar}" value="#{opcaoRespostaQuestaoItens.opcaoResposta}">
+									</otm:editor>
+								</h:panelGroup>
+								<h:panelGroup layout="block" style="width:97%" styleClass="float-left" rendered="#{!opcaoRespostaQuestaoItem.editar}" id="editorClose">
+									<h:outputText rendered="#{!empty opcaoRespostaQuestaoItens.textoInformado}" escape="false" styleClass="tituloCampos fs16" value="#{opcaoRespostaQuestaoItens.opcaoResposta}" />
+									<h:outputText rendered="#{empty opcaoRespostaQuestaoItens.opcaoResposta}" styleClass="tituloCampos fs16" value="Clique no icone a direita (Icone de um + com cor azul) Para adicionar a opção da resposta" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" id="opcEditor" styleClass="col-md-12 text-right pt5 border-top">
+								<h:panelGroup layout="block" styleClass="float-left">
+									<h:outputText styleClass="tituloCampos mr5" value="Opção Correta? "></h:outputText>
+									<a4j:region>
+										<otm:selectBooleanCheckbox readonly="#{!QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" disabled="#{!QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" id="correta" value="#{opcaoRespostaQuestaoItens.correta}">
+											<a4j:ajax event="click" render="form:items:correta" />
+										</otm:selectBooleanCheckbox>
+									</a4j:region>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="float-right mt10">
+									<otm:commandIcon action="#{QuestaoProcessoSeletivoControle.removerOpcaoRespostaQuestao}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Opcao Resposta Questao" render="respostas" rendered="#{!opcaoRespostaQuestaoItens.editar}" />
+									<otm:commandIcon action="#{QuestaoProcessoSeletivoControle.editarOpcaoRespostaQuestao}" tooltip="Editar Opção Resposta Questão" rendered="#{!opcaoRespostaQuestaoItens.editar and opcaoRespostaQuestaoItens.textoInformado}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" render="respostas" />
+									<otm:commandIcon action="#{QuestaoProcessoSeletivoControle.editarOpcaoRespostaQuestao}" tooltip="Adicionar Opção Resposta Questão" rendered="#{!opcaoRespostaQuestaoItens.editar and !opcaoRespostaQuestaoItens.textoInformado and QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" render="respostas" />
+									<otm:commandIcon action="#{QuestaoProcessoSeletivoControle.finalizarEditacaoOpcaoRespostaQuestao}" rendered="#{opcaoRespostaQuestaoItens.editar}" icon="#{msg_botoes.btn_icon_confirmar} iconePequeno" tooltip="Finalizar Editação Opção Resposta Questão" render="respostas" />
+									<otm:commandIcon rendered="#{row gt 0 and row lt QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.numeroOpcoes}" action="#{QuestaoProcessoSeletivoControle.subirOpcaoRespostaQuestao}" icon="#{msg_botoes.btn_icon_subir} iconePequeno" tooltip="Subir Opção Resposta Questão" render="respostas" />
+									<otm:commandIcon rendered="#{(row+1) lt QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.numeroOpcoes}" action="#{QuestaoProcessoSeletivoControle.descerOpcaoRespostaQuestao}" tooltip="Descer Opção Resposta Questão" icon="#{msg_botoes.btn_icon_descer} iconePequeno" render="respostas" />
+								</h:panelGroup>
+								<!-- 									<otm:commandIcon style="margin:5px" action="#{QuestaoProcessoSeletivoControle.removerOpcaoRespostaQuestao}" tooltip="#{msg_botoes.btn_remover}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" render="respostas" /> -->
+								<!-- 									<otm:commandIcon style="margin:5px" ignoreDupResponses="true" action="#{QuestaoProcessoSeletivoControle.editarOpcaoRespostaQuestao}" rendered="#{!opcaoRespostaQuestaoItens.editar}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" render="respostas" /> -->
+								<!-- 									<otm:commandIcon style="margin:5px" ignoreDupResponses="true" action="#{QuestaoProcessoSeletivoControle.finalizarEditacaoOpcaoRespostaQuestao}" rendered="#{opcaoRespostaQuestaoItens.editar}" tooltip="#{msg_botoes.btn_confirmar}" icon="#{msg_botoes.btn_icon_confirmar} iconePequeno" image="#{resource['/imagens/iconeFinalizado.png']}" render="respostas" /> -->
+								<!-- 									<otm:commandIcon style="margin:5px" ignoreDupResponses="true" rendered="#{row gt 0 and row lt QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.numeroOpcoes}" action="#{QuestaoProcessoSeletivoControle.subirOpcaoRespostaQuestao}" tooltip="#{msg_botoes.btn_subir}" icon="#{msg_botoes.btn_icon_subir} iconePequeno" render="respostas" /> -->
+								<!-- 									<otm:commandIcon style="margin:5px" ignoreDupResponses="true" rendered="#{(row+1) lt QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.numeroOpcoes}" action="#{QuestaoProcessoSeletivoControle.descerOpcaoRespostaQuestao}" tooltip="#{msg_botoes.btn_descer}" icon="#{msg_botoes.btn_icon_descer} iconePequeno" render="respostas" /> -->
+							</h:panelGroup>
+						</h:panelGroup>
+					</a4j:repeat>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt10 mb10 text-center">
+						<otm:commandButton rendered="#{QuestaoControle.questaoVO.situacaoQuestaoEnum.valorApresentar ne 'Ativa'}" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="#{msg_botoes.btn_adicionar} Opção Resposta" action="#{QuestaoProcessoSeletivoControle.adicionarOpcaoRespostaQuestao}" render="form" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_justificativa}" />
+					<h:inputTextarea readonly="#{!QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" id="justificativa" styleClass="form-control campos" value="#{QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.justificativa}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_ajuda}" />
+					<h:inputTextarea readonly="#{!QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" id="ajuda" styleClass="form-control campos" value="#{QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.ajuda}" />
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagens" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{QuestaoProcessoSeletivoControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<otm:commandButton style="margin-right:5px" id="novo" action="#{QuestaoProcessoSeletivoControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" title="#{msg.msg_novo_dados}" accesskey="1" />
+						<otm:commandButton style="margin-right:5px" id="gravar" rendered="#{QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" render="form" action="#{QuestaoProcessoSeletivoControle.persistir}" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" title="#{msg.msg_gravar_dados}" accesskey="2" />
+						<otm:commandButton style="margin-right:5px" id="excluir" rendered="#{QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" action="#{QuestaoProcessoSeletivoControle.excluir}" value="#{msg_botoes.btn_excluir}" styleClass="btn btn-danger btn-excluir" title="#{msg.msg_editar_dados}" accesskey="3" />
+						<otm:commandButton style="margin-right:5px" render="form" id="ativar" rendered="#{QuestaoProcessoSeletivoControle.permiteAlterarQuestao}" action="#{QuestaoProcessoSeletivoControle.ativarQuestao}" value="#{msg_botoes.btn_ativar}" icon="#{msg_botoes.btn_icon_ativar_embutido}" styleClass="btn btn-info" image="#{resource['/imagens/botaoAtivar.png']}" title="#{msg.msg_ativar_dados}" accesskey="5" />
+						<otm:commandButton style="margin-right:5px" render="form:situacao, form:panelGridMensagens" id="inativar" rendered="#{QuestaoProcessoSeletivoControle.possuiPermissaoInativar}" action="#{QuestaoProcessoSeletivoControle.inativarQuestao}" value="#{msg_botoes.btn_inativar}" icon="#{msg_botoes.btn_icon_inativar_embutido}" styleClass="btn btn-danger" image="#{resource['/imagens/botaoInativar.png']}" title="#{msg_botoes.btn_inativar}" accesskey="5" />
+						<otm:commandButton style="margin-right:5px" render="form:situacao, form:panelGridMensagens" id="cancelar" rendered="#{QuestaoProcessoSeletivoControle.possuiPermissaoCancelarQuestao}" action="#{QuestaoProcessoSeletivoControle.cancelarQuestao}" value="#{msg_botoes.btn_cancelar}" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" title="#{msg_botoes.btn_cancelar}" accesskey="6" />
+						<otm:commandButton style="margin-right:5px" render="form" id="clonar" rendered="#{!QuestaoProcessoSeletivoControle.questaoProcessoSeletivoVO.novoObj}" action="#{QuestaoProcessoSeletivoControle.clonarQuestao}" value="#{msg_botoes.btn_clonar}" icon="#{msg_botoes.btn_icon_clonar_embutido}" styleClass="btn btn-warning" image="#{resource['/imagens/botaoClonar.png']}" title="#{msg_botoes.btn_clonar}" accesskey="7" />
+						<otm:commandButton id="consultar" action="#{QuestaoProcessoSeletivoControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="4" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

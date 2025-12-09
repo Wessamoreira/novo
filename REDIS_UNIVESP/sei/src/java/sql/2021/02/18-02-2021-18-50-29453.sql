@@ -1,0 +1,1 @@
+ALTER TABLE public.pixcontacorrente ALTER COLUMN txid SET NOT NULL;

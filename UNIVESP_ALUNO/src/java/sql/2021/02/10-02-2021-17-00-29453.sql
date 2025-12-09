@@ -1,0 +1,17 @@
+alter table banco add column if not exists urlapipixproducao varchar(250);
+alter table banco add column if not exists urlapipixhomologacao varchar(250);
+alter table banco add column if not exists urlapipixautenticacao varchar(250);
+alter table banco add column if not exists orientacaopix text;
+alter table banco add column if not exists integracaoPix boolean default false;
+alter table banco add column if not exists possuiWebhook boolean default false;
+alter table banco add column if not exists tipocobrancapixenum varchar(10) default 'IMEDIATA';
+alter table contacorrente add column if not exists chaveaplicacaodesenvolvedorpix varchar(250);
+alter table pixcontacorrente add column if not exists txid varchar(35);
+alter table pixcontacorrente add column if not exists documentopagador varchar(20);
+alter table pixcontacorrente add column if not exists nomepagador varchar(250);
+alter table pixcontacorrente add column if not exists updated timestamp;
+alter table pixcontacorrente add column if not exists motivoCancelamento text;
+alter table pixcontacorrente add column if not exists statusPixenum varchar(35) default 'ATIVA';
+ALTER TABLE public.pixcontacorrente ALTER COLUMN situacaopixenum TYPE varchar(35);
+ALTER TABLE public.pixcontacorrente drop CONSTRAINT unique_pix_nossonumero_contacorrente;
+ALTER TABLE public.pixcontacorrente ADD CONSTRAINT unique_pix_txid UNIQUE (txid);

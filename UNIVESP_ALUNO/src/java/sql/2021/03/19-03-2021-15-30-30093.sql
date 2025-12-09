@@ -1,0 +1,1 @@
+alter table classroomoperacao add column if not exists erro text;

@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_tituloForm}" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+
+		<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+		<script type="text/javascript">
+			window.onload = function() {
+				document.getElementById("form:codigoConsulta").focus();
+			}
+			
+			function mascaraCnpjOuCpf(o,f){
+			    v_obj=o
+			    v_fun=f
+			    setTimeout('execmascara()',1)
+			}
+			 
+			function execmascara(){
+			    v_obj.value=v_fun(v_obj.value)
+			}
+			 
+			function cnpjCpf(v){
+			 
+			    //Remove tudo o que não é dígito
+			    v=v.replace(/\D/g,"")
+			 
+			    if (v.length &lt; 12) { //CPF
+			 
+			        //Coloca um ponto entre o terceiro e o quarto dígitos
+			        v=v.replace(/(\d{3})(\d)/,"$1.$2")
+			 
+			        //Coloca um ponto entre o terceiro e o quarto dígitos
+			        //de novo (para o segundo bloco de números)
+			        v=v.replace(/(\d{3})(\d)/,"$1.$2")
+			 
+			        //Coloca um hífen entre o terceiro e o quarto dígitos
+			        v=v.replace(/(\d{3})(\d{1,2})$/,"$1-$2")
+			 
+			    } else { //CNPJ
+			 
+			        //Coloca ponto entre o segundo e o terceiro dígitos
+			        v=v.replace(/^(\d{2})(\d)/,"$1.$2")
+			 
+			        //Coloca ponto entre o quinto e o sexto dígitos
+			        v=v.replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3")
+			 
+			        //Coloca uma barra entre o oitavo e o nono dígitos
+			        v=v.replace(/\.(\d{3})(\d)/,".$1/$2")
+			 
+			        //Coloca um hífen depois do bloco de quatro dígitos
+			        v=v.replace(/(\d{4})(\d)/,"$1-$2")
+			 
+			    }
+			 
+			    return v
+			 
+			}
+			
+		</script>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProdutoServico" onshow="document.getElementById('formTurma:valorConsultarTurma').focus()" shadowOpacity="true" top="100" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_consultaProdutoServico}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkProdutoServico" />
+					<rich:componentControl target="panelProdutoServico" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProdutoServico">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_NotaFiscalEntrada_nomeProdutoServico}" />
+					<h:inputText id="valorConsultarProdutoServico" size="45" styleClass="form-control campos" value="#{NotaFiscalEntradaControle.valorConsultaProdutoServico}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:spacer width="100%" />
+					<otm:commandButton id="btnConsultar" render="formProdutoServico:mensagemConsultarProdutoServico, formProdutoServico:resultadoConsultarProdutoServico, formProdutoServico:scResultadoProdutoServico" action="#{NotaFiscalEntradaControle.consultarProdutoServico}" styleClass="btn btn-default" value="#{msg_bt.btn_consultar}" icon="#{msg_botoes.btn_icon_lupa_embutido}" image="#{resource['/imagens/botaoConsultar.png']}" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultarProdutoServico" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{NotaFiscalEntradaControle.listaProdutoServico}" rows="5" var="produtoServicoItens">
+					<rich:column sortBy="#{produtoServicoItens.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_EstoqueRel_produtoServico}" />
+						</f:facet>
+						<a4j:commandLink action="#{NotaFiscalEntradaControle.selecionarProdutoServico}" id="curso" oncomplete="#{rich:component('panelProdutoServico')}.hide()" render="form" value="#{produtoServicoItens.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{NotaFiscalEntradaControle.selecionarProdutoServico}" render="form" oncomplete="#{rich:component('panelProdutoServico')}.hide();" tooltip="#{msg_botoes.btn_selecionar}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formProdutoServico:resultadoConsultarProdutoServico" maxPages="10" id="scResultadoProdutoServico" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultarProdutoServico" layout="block" styleClass="row">
+					<otm:mensagem bean="#{NotaFiscalEntradaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{NotaFiscalEntradaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-1">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalEntrada_codigo}" />
+						<h:inputText id="codigoConsulta" size="16" styleClass="form-control campos" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.codigo}" onkeypress="return somenteNumero1(event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalEntrada_fornecedor}" />
+						<h:inputText styleClass="form-control campos" size="52" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.fornecedorVO.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Fornecedor_CNPJCPF}" />
+						<h:inputText size="15" id="cnpjCpfFornecedor" maxlength="18" styleClass="form-control campos" value="#{NotaFiscalEntradaControle.cnpjOuCpf}" onkeypress="mascaraCnpjOuCpf(this,cnpjCpf)" onblur="clearTimeout()">
+							<a4j:ajax event="change" render="form" execute="form" oncomplete="document.getElementById('form:id_ListaUnidadeEnsino').focus()" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConfiguracaoContabil_unidadeEnsino}" />
+						<h:selectOneMenu id="id_ListaUnidadeEnsino" styleClass="form-control campos" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.unidadeEnsinoVO.codigo}">
+							<a4j:ajax event="change" render="form" execute="form" oncomplete="document.getElementById('form:numero').focus()" />
+							<f:selectItems value="#{NotaFiscalEntradaControle.listaSelectItemUnidadeEnsino}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Período de Emissão" />
+						<otm:calendar value="#{NotaFiscalEntradaControle.controleConsultaOtimizado.dataIni}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Periodo Fim" />
+						<otm:calendar value="#{NotaFiscalEntradaControle.controleConsultaOtimizado.dataFim}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Período de Entrada" />
+						<otm:calendar id="id_inicioPeriodoEntrada" value="#{NotaFiscalEntradaControle.dataEntradaInicio}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Periodo Fim" />
+						<otm:calendar value="#{NotaFiscalEntradaControle.dataEntradaFim}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_NotaFiscalEntrada_totalNotaEntrada}" />
+						<h:inputText styleClass="form-control" size="10" onkeydown="aceitarSomenteValorDecimal(this)" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.totalNotaEntradaIncio}">
+							<a4j:ajax event="change" render="@this" execute="@this" />
+							<f:converter converterId="FormatadorNumerico" />
+							<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="2" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ate}" />
+						<h:inputText styleClass="form-control" size="10" onkeydown="aceitarSomenteValorDecimal(this)" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.totalNotaEntradaFim}">
+							<a4j:ajax event="change" render="@this" execute="@this" />
+							<f:converter converterId="FormatadorNumerico" />
+							<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="2" />
+						</h:inputText>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalEntrada_numero}" />
+					<h:inputText id="numero" styleClass="form-control campos" size="18" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.numero}" onkeypress="return somenteNumero1(event);" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_NotaFiscalEntrada_liquidoAPagar}" />
+					<h:inputText styleClass="form-control" size="10" onkeydown="aceitarSomenteValorDecimal(this)" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.notaEntradaLiquidoAPagarInicio}">
+						<a4j:ajax event="change" render="@this" execute="@this" />
+						<f:converter converterId="FormatadorNumerico" />
+						<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="2" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ate}" />
+					<h:inputText styleClass="form-control" size="10" onkeydown="aceitarSomenteValorDecimal(this)" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.notaEntradaLiquidoAPagarFim}">
+						<a4j:ajax event="change" render="@this" execute="@this" />
+						<f:converter converterId="FormatadorNumerico" />
+						<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="2" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalEntrada_tipoNotaFiscalEntradaEnum}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.tipoNotaFiscalEntradaEnum}">
+						<a4j:ajax event="change" listener="#{NotaFiscalEntradaControle.selecionarTipoNotaFiscalEntrada}" render="form" execute="form" />
+						<f:selectItem></f:selectItem>
+						<f:selectItems value="#{EnumControle.comboboxTipoNotaFiscalEntradaEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_NotaFiscalEntrada_produtoServico}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="turma" size="60" styleClass="form-control camposSomenteLeitura" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.produtoServicoVO.nome}" readonly="true">
+								<a4j:ajax event="change" listener="#{NotaFiscalEntradaControle.consultarProdutoServico}" render="form" />
+							</h:inputText>
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosProdutoServico" focus="valorConsultaProdutoServico" tooltip="Consultar Produtos e Serviços" render="formProdutoServico" oncomplete="#{rich:component('panelProdutoServico')}.show(), setFocus(formProdutoServico,'formProdutoServico:valorConsultaProdutoServico');" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparProdutoServico" tooltip="Limpar Dados" action="#{NotaFiscalEntradaControle.limparProdutoServico}" render="form" image="#{resource['/imagens/limpar.gif']}" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalEntrada_naturezaOperacao}" />
+						<h:inputText size="52" id="nomeNaturezaOperacao" styleClass="form-control campos" value="#{NotaFiscalEntradaControle.notaFiscalEntradaVO.naturezaOperacaoVO.nome}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<a4j:commandLink render="form" id="consultar" type="submit" styleClass="btn btn-default btn-consultar" value="#{msg_botoes.btn_consultar}" action="#{NotaFiscalEntradaControle.consultarDados}" accesskey="2">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener for="consultar" target="#{NotaFiscalEntradaControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener for="consultar" target="#{NotaFiscalEntradaControle.controleConsultaOtimizado.page}" value="1" />
+						<f:setPropertyActionListener for="consultar" target="#{NotaFiscalEntradaControle.consultaDataScroller}" value="false" />
+					</a4j:commandLink>
+					<otm:commandButton style="margin-left:5px" id="novo" styleClass="btn btn-info btn-novo" action="#{NotaFiscalEntradaControle.novo}" value="#{msg_botoes.btn_novo}" accesskey="1" />
+				</h:panelGroup>
+				<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{NotaFiscalEntradaControle.controleConsultaOtimizado}" rendered="#{NotaFiscalEntradaControle.controleConsultaOtimizado.apresentarPaginador}" rows="10" var="notaFiscalEntradaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_codigo}" />
+						</f:facet>
+						<a4j:commandLink id="codigo" action="#{NotaFiscalEntradaControle.editar}" value="#{notaFiscalEntradaItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ConfiguracaoContabil_unidadeEnsino}" />
+						</f:facet>
+						<a4j:commandLink id="unidadEnsinoNotaFiscal" action="#{NotaFiscalEntradaControle.editar}" value="#{notaFiscalEntradaItens.unidadeEnsinoVO.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_fornecedor}" />
+						</f:facet>
+						<a4j:commandLink id="fornecedorNotaFiscal" action="#{NotaFiscalEntradaControle.editar}" value="#{notaFiscalEntradaItens.fornecedorVO.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Fornecedor_CPF} / #{msg_aplic.prt_Fornecedor_CNPJ}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{NotaFiscalEntradaControle.editar}" rendered="#{notaFiscalEntradaItens.fornecedorVO.tipoEmpresa == 'FI'}" value="#{notaFiscalEntradaItens.fornecedorVO.CPF}" />
+							<a4j:commandLink action="#{NotaFiscalEntradaControle.editar}" rendered="#{notaFiscalEntradaItens.fornecedorVO.tipoEmpresa == 'JU'}" value="#{notaFiscalEntradaItens.fornecedorVO.CNPJ}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_tipoNotaFiscalEntradaEnum}" />
+						</f:facet>
+						<a4j:commandLink id="tipoNotaFiscal" action="#{NotaFiscalEntradaControle.editar}">
+							<h:outputText value="#{notaFiscalEntradaItens.tipoNotaFiscalEntradaEnum}" converter="EnumConverter" />
+						</a4j:commandLink>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_numero}" />
+						</f:facet>
+						<a4j:commandLink id="numero" action="#{NotaFiscalEntradaControle.editar}" value="#{notaFiscalEntradaItens.numero}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_serie}" />
+						</f:facet>
+						<a4j:commandLink id="serie" action="#{NotaFiscalEntradaControle.editar}" value="#{notaFiscalEntradaItens.serie}" />
+					</rich:column>
+					<!-- <rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_dataEntrada}" />
+							</f:facet>
+							<a4j:commandLink id="dataEntrada" action="#{NotaFiscalEntradaControle.editar}">
+								<h:outputText value="#{notaFiscalEntradaItens.dataEntrada}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</a4j:commandLink>
+						</rich:column> -->
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_dataEmissao}" />
+						</f:facet>
+						<a4j:commandLink id="dataEmissao" action="#{NotaFiscalEntradaControle.editar}">
+							<h:outputText value="#{notaFiscalEntradaItens.dataEmissao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</a4j:commandLink>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_NotaFiscalEntrada_valorTotal}" />
+						</f:facet>
+						<a4j:commandLink id="totalNotaEntrada" action="#{NotaFiscalEntradaControle.editar}">
+							<h:outputText value="#{notaFiscalEntradaItens.totalNotaEntrada}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+						</a4j:commandLink>
+						<f:facet name="footer">
+							<h:outputText value="#{NotaFiscalEntradaControle.totalNotaFiscalEntrada}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+						</f:facet>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{NotaFiscalEntradaControle.editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller for="form:items" id="paginador" page="#{NotaFiscalEntradaControle.controleConsultaOtimizado.page}" scrollListener="#{NotaFiscalEntradaControle.scrollerListener}" rendered="#{NotaFiscalEntradaControle.controleConsultaOtimizado.apresentarPaginador}" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<otm:mensagem bean="#{NotaFiscalEntradaControle}"></otm:mensagem>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

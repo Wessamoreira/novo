@@ -1,0 +1,1 @@
+alter table LogExclusaoArquivo alter column origem type varchar(50);

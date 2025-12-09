@@ -1,0 +1,2 @@
+alter table layoutRelatorioSEIDecidirArquivo add column if not exists utilizarComoSumario boolean default false;
+alter table layoutRelatorioSEIDecidirArquivo add column if not exists utilizarFiltrosPrincipais boolean default true;

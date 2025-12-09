@@ -1,0 +1,1 @@
+alter table registroAtividadeComplementarMatricula add column if not exists justificativaAlteracaoCHConsiderada text;

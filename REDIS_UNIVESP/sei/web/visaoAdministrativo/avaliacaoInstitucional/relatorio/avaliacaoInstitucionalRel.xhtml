@@ -1,0 +1,829 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+
+			<style>
+.rf-dg {
+	background-color: transparent !important;
+	border: none !important;
+	width: 100% !important;
+}
+
+.tituloCamposQuestao {
+	display: flex;
+	overflow: auto;
+	white-space: nowrap;
+	padding: 5px;
+}
+
+.width-panel {
+	width: calc(100% - 20px) !important;
+}
+
+.display-icon {
+	display: none !important;
+}
+</style>
+			<h:commandLink action="#{AvaliacaoInstitucionalRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="row mn" id="filtros">
+				<h:panelGroup layout="block" styleClass="row mn">
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_avaliacao}" styleClass="field control-label tituloCampos" />
+							<h:panelGroup layout="block" styleClass="pn col-md-12">
+								<span class="append-icon right"> <otm:commandIcon id="consultaDadosAvaliacao" tooltip="Localizar Avaliação" render="formAvaliacao, filtros" oncomplete="#{rich:component('panelAvaliacao')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparAvaliacao" tooltip="Limpas Dados" action="#{AvaliacaoInstitucionalRelControle.limparAvaliacao}" render="form, formAvaliacao" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+								</span>
+								<h:inputText id="avaliacao" styleClass="form-control camposObrigatorios" disabled="true" readonly="true" value="#{AvaliacaoInstitucionalRelControle.nomeAvaliacao}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_questionario}" styleClass="field control-label tituloCampos" />
+							<h:selectOneMenu id="questionario" value="#{AvaliacaoInstitucionalRelControle.questionario}" styleClass="form-control campos camposObrigatorios">
+								<f:selectItems value="#{AvaliacaoInstitucionalRelControle.listaQuestionarios}" />
+								<a4j:ajax event="change" render="form:filtros" execute="form:filtros" listener="#{AvaliacaoInstitucionalRelControle.limparQuestionario}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoInstitucionalRelControle.isApresentarPergunta}">
+						<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_pergunta}" styleClass="field control-label tituloCampos" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosPergunta" tooltip="Localizar Pergunta" action="#{AvaliacaoInstitucionalRelControle.consultarPergunta}" render="formPergunta" oncomplete="#{rich:component('panelPergunta')}.show();" icon="#{msg_botoes.btn_icon_adicionar_embutido}" /> <otm:commandIcon id="limparPergunta" tooltip="Limpas Dados" action="#{AvaliacaoInstitucionalRelControle.limparPerguta}" render="form, formPergunta" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+							<h:inputText id="pergunta" styleClass="form-control camposObrigatorios" disabled="true" readonly="true" value="#{AvaliacaoInstitucionalRelControle.pergunta}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_nivelDetalhamento}" styleClass="field control-label tituloCampos" />
+						<h:selectOneMenu styleClass="form-control campos camposObrigatorios" value="#{AvaliacaoInstitucionalRelControle.nivelDetalhamento}">
+							<f:selectItems value="#{AvaliacaoInstitucionalRelControle.listaSelectItemNivelDetalhamento}" />
+							<a4j:ajax event="change" execute="form:filtros, form:btns" render="form:filtros, form:btns" listener="#{AvaliacaoInstitucionalRelControle.limparFiltrosGeral}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_unidadeEnsino}" styleClass="field control-label tituloCampos" />
+						<h:selectOneMenu id="codigoUnidadeEnsino" value="#{AvaliacaoInstitucionalRelControle.codigoUnidadeEnsino}" styleClass="form-control campos">
+							<f:selectItems value="#{AvaliacaoInstitucionalRelControle.listaUnidadesEnsino}" />
+							<a4j:ajax event="change" render="form:filtros" execute="form:filtros" listener="#{AvaliacaoInstitucionalRelControle.limparCurso}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoInstitucionalRelControle.isApresentarPergunta and AvaliacaoInstitucionalRelControle.apresentarFiltroProfessor}">
+						<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_professor}" styleClass="field control-label tituloCampos" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosProfessor" tooltip="Localizar Professor" render="formProfessor" oncomplete="#{rich:component('panelProfessor')}.show();" icon="#{msg_botoes.btn_icon_adicionar_embutido}" /> <otm:commandIcon id="limparProfessor" tooltip="Limpas Dados" action="#{AvaliacaoInstitucionalRelControle.limparProfessor}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+							<h:inputText id="professor" styleClass="form-control camposSomenteLeitura" disabled="true" readonly="true" value="#{AvaliacaoInstitucionalRelControle.professor}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!AvaliacaoInstitucionalRelControle.relatorioGeral}">
+						<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_turno}" styleClass="field control-label tituloCampos" />
+						<h:selectOneMenu id="turno" value="#{AvaliacaoInstitucionalRelControle.turno}" rendered="#{!AvaliacaoInstitucionalRelControle.relatorioGeral}" styleClass="form-control campos">
+							<f:selectItems value="#{AvaliacaoInstitucionalRelControle.listaTurnos}" />
+							<a4j:ajax event="change" render="form:filtros" execute="form:filtros" listener="#{AvaliacaoInstitucionalRelControle.atualizarTurnoECurso}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!AvaliacaoInstitucionalRelControle.relatorioGeral}">
+						<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_curso}" styleClass="field control-label tituloCampos" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosCurso" tooltip="Localizar Curso" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparCurso" tooltip="Limpas Dados" action="#{AvaliacaoInstitucionalRelControle.limparCurso}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+							<h:inputText id="curso" styleClass="form-control camposSomenteLeitura" disabled="true" readonly="true" value="#{AvaliacaoInstitucionalRelControle.nomeCurso}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!AvaliacaoInstitucionalRelControle.relatorioGeral}">
+						<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_turma}" styleClass="field control-label tituloCampos" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" tooltip="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparTurma" tooltip="Limpas Dados" action="#{AvaliacaoInstitucionalRelControle.limparTurma}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+							<h:inputText id="turma" styleClass="form-control camposSomenteLeitura" disabled="true" readonly="true" value="#{AvaliacaoInstitucionalRelControle.identificadorTurma}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoInstitucionalRelControle.apresentarFiltroProfessor and !AvaliacaoInstitucionalRelControle.relatorioGeral}">
+						<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_disciplina}" styleClass="field control-label tituloCampos" />
+						<h:panelGroup layout="block" styleClass="pn col-md-12">
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosDisciplina" tooltip="Localizar Disciplina" render="formDisciplina" oncomplete="#{rich:component('panelDisciplina')}.show();" action="#{AvaliacaoInstitucionalRelControle.consultarDisciplina}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" /> <otm:commandIcon id="limparDisciplina" tooltip="Limpas Dados" action="#{AvaliacaoInstitucionalRelControle.limparDisciplina}" render="form:disciplina" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+							<h:inputText id="disciplina" styleClass="form-control camposSomenteLeitura" disabled="true" readonly="true" value="#{AvaliacaoInstitucionalRelControle.nomeDisciplina}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4 pn">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_periodo}" styleClass="field control-label tituloCampos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6 h36">
+							<otm:calendar id="dataInicio" value="#{AvaliacaoInstitucionalRelControle.dataInicio}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-1 text-center">
+							<h:outputText styleClass="field control-label tituloCampos" value="á" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-5">
+							<otm:calendar id="dataFim" value="#{AvaliacaoInstitucionalRelControle.dataFim}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalRel_apresentarAgrupamento}" styleClass="field control-label tituloCampos" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="apresentarRespostaPorAgrupamento" value="#{AvaliacaoInstitucionalRelControle.apresentarRespostaPorAgrupamento}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center m5" rendered="#{AvaliacaoInstitucionalRelControle.avaliacao.codigo > 0}" id="btns">
+				<otm:commandButton value="Gerar Relatório" icon="#{msg_botoes.btn_icon_grafico_embutido}" styleClass="btn btn-info mr5 mb5" id="botaoImprimirBarra" image="#{resource['/imagens/botaoGerarRelatorio2.png']}" oncomplete="resize()" action="#{AvaliacaoInstitucionalRelControle.gerarRelatorioGrafico}" render="form" />
+				<a4j:commandLink value="Gerar Relatório (PDF)" styleClass="btn btn-danger mr5 mb5" id="botaoGerarRelatorioGraficoEmPDF" image="#{resource['/imagens/botaoGerarRelatorioGraficoEmPDF.png']}" action="#{AvaliacaoInstitucionalRelControle.consultarQuantidadeRelatorioGerar}" render="statusPanelBaixa, formQuestionarioSelecionar, msgs, filtros" execute="statusPanelBaixa, formQuestionarioSelecionar, msgs, botaoGerarRelatorioGraficoEmPDF, filtros">
+					<span class="#{msg_botoes.btn_icon_grafico_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+					<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.tipoRelatorioGerar}" value="gerarRelatorioFormatoGrafico" />
+				</a4j:commandLink>
+				<otm:commandButton value="Gerar Relatório Respondentes (PDF)" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-warning mr5 mb5" id="imprimirPDF" render="form" action="#{AvaliacaoInstitucionalRelControle.realizarImpressaoRelatorioRespondentes}" oncomplete="#{AvaliacaoInstitucionalRelControle.download}" accesskey="2" image="#{resource['/imagens/botaoGerarRelatorioEmPDF2Respondente.png']}" />
+				<a4j:commandLink value="Gerar Relatório (PDF)" styleClass="btn btn-danger mr5 mb5" id="botaoGerarRelatorioEmPDF2" image="#{resource['/imagens/botaoGerarRelatorioEmPDF2.png']}" action="#{AvaliacaoInstitucionalRelControle.consultarQuantidadeRelatorioGerar}" render="statusPanelBaixa, formQuestionarioSelecionar, msgs, filtros" execute="statusPanelBaixa, formQuestionarioSelecionar, msgs, botaoGerarRelatorioEmPDF2, filtros">
+					<span class="#{msg_botoes.btn_icon_pdf_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+					<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.tipoRelatorioGerar}" value="gerarRelatorio" />
+				</a4j:commandLink>
+				<otm:commandButton value="Respostas Textuais (PDF)" icon="#{msg_botoes.btn_icon_gerar_relatorio_embutido}" styleClass="btn btn-primary mr5 mb5" id="botaoGerarRelatorioTextual" image="#{resource['/imagens/botaoGerarRelatorioTextual.png']}" oncomplete="#{AvaliacaoInstitucionalRelControle.download}" action="#{AvaliacaoInstitucionalRelControle.gerarRelatorioPerguntasTextuais}" render="msgs" />
+				<a4j:commandLink value="Gerar Relatório (EXCEL)" styleClass="btn btn-success mr5 mb5" id="botaoGerarRelatorioEmExcel" image="#{resource['/imagens/botaoGerarRelatorioEmExcel.png']}" action="#{AvaliacaoInstitucionalRelControle.consultarQuantidadeRelatorioGerar}" render="statusPanelBaixa, formQuestionarioSelecionar, msgs, filtros" execute="statusPanelBaixa, formQuestionarioSelecionar, msgs, botaoGerarRelatorioEmExcel, filtros">
+					<span class="#{msg_botoes.btn_icon_excel_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+					<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.tipoRelatorioGerar}" value="gerarRelatorioExcel" />
+				</a4j:commandLink>
+				<otm:commandButton value="Respostas Textuais (DOC)" icon="#{msg_botoes.btn_icon_word_embutido}" styleClass="btn btn-primary mr5 mb5" id="botaoGerarRelatorioEmTxt" image="#{resource['/imagens/botaoGerarRespostaTextualDoc.png']}" oncomplete="#{AvaliacaoInstitucionalRelControle.download}" action="#{AvaliacaoInstitucionalRelControle.gerarRelatorioPerguntasTextuaisDOC}" render="msgs" />
+			</h:panelGroup>
+			<h:panelGroup id="grafico" styleClass="row mn border rounded p5 mt10" rendered="#{AvaliacaoInstitucionalRelControle.existeRelatorio  and !empty AvaliacaoInstitucionalRelControle.avaliacaoInstucionalRelVO.questionarioRelVOs}">
+				<ui:include src="../relatorio/avaliacaoInstitucionalGraficoRel.xhtml" />
+			</h:panelGroup>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{AvaliacaoInstitucionalRelControle}" />
+			</h:panelGroup>
+		</h:form>
+
+		<otm2:progressBar bean="#{AvaliacaoInstitucionalRelControle}" bar="progressBarVO" id="statusPanelBaixa" oncomplete="#{AvaliacaoInstitucionalRelControle.abrirModalQuestionarioSelecionar}" render="formQuestionarioSelecionar, form:msgs">
+		</otm2:progressBar>
+
+		<style>
+.barra-btn-flutuante-modal-80 {
+	position: fixed;
+	width: 80%;
+	background-color: #dedede;
+	padding: 10px 5px 5px 5px;
+	left: 10%;
+	border-radius: 0px 0px 10px 10px;
+	margin: 0 auto;
+	bottom: 5%;
+	z-index: 1;
+	text-align: center;
+	min-height: 35px;
+}
+</style>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelQuestionarioSelecionar" shadowOpacity="false" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Selecionar Relatório que Deseje Visualizar"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkAvaliacaoSelecionar" />
+					<rich:componentControl target="panelQuestionarioSelecionar" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formQuestionarioSelecionar">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<h:outputText styleClass="field control-label tituloCampos" value="Caso existam mais de 10 relatórios a serem gerados, o sistema irá disponibilizar um arquivo no formato .zip com todos os relatórios gerados, dentro deste zip existirá uma arquivo com o nome Indice.pdf, ao abrir este arquivo existirá diversos link onde ao clicar irá abrir o pdf correspondente." />
+				</h:panelGroup>
+				<rich:dataTable render="formQuestionarioSelecionar" id="questionarioRelVOs" value="#{AvaliacaoInstitucionalRelControle.questionarioRelVOs}" width="100%" var="questionarioItem" styleClass="consulta" rows="10">
+					<rich:column filterType="custom" filter="#{FilterFactory.filter('questionarioRelVOs', 'nomeUnidadeEnsino', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_tituloForm}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('questionarioRelVOs', 'nomeUnidadeEnsino', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="questionarioRelVOs" />
+								</h:inputText>
+								<span class="append-icon right"> <otm:commandIcon render="questionarioRelVOs" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('questionarioRelVOs')}" tooltip="Limpar Filtro" />
+								</span>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{questionarioItem.nomeUnidadeEnsino}" />
+					</rich:column>
+					<rich:column filterType="custom" filter="#{FilterFactory.filter('questionarioRelVOs2', 'nomeCurso', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_tituloForm}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('questionarioRelVOs2', 'nomeCurso', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="questionarioRelVOs" />
+								</h:inputText>
+								<span class="append-icon right"> <otm:commandIcon render="questionarioRelVOs" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('questionarioRelVOs2')}" tooltip="Limpar Filtro" />
+								</span>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{questionarioItem.nomeCurso}" />
+					</rich:column>
+					<rich:column rendered="#{AvaliacaoInstitucionalRelControle.tipoRelatorioGerar eq 'gerarRelatorioPorRespondentePDF'}" filterType="custom" filter="#{FilterFactory.filter('questionarioRelVOs3', 'nomeDisciplina', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Disciplina_tituloForm}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('questionarioRelVOs3', 'nomeDisciplina', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="questionarioRelVOs" />
+								</h:inputText>
+								<span class="append-icon right"> <otm:commandIcon render="questionarioRelVOs" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('questionarioRelVOs3')}" tooltip="Limpar Filtro" />
+								</span>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{questionarioItem.nomeDisciplina}" />
+					</rich:column>
+					<rich:column rendered="#{AvaliacaoInstitucionalRelControle.nivelDetalhamento == 'TURMA'}">
+						<f:facet name="header">
+							<h:outputText value="Turma" />
+						</f:facet>
+						<h:outputText value="#{questionarioItem.identificadorTurma}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Qtde de Relatório" />
+						</f:facet>
+						<h:outputText value="#{questionarioItem.qtdeRelatorio}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Qtde de Respondentes" />
+						</f:facet>
+						<h:outputText value="#{questionarioItem.qtdeRespondentes}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<a4j:region>
+							<otm:commandIcon id="botaoGerarRelatorioEmPDF4" icon="#{msg_botoes.btn_icon_gerar_relatorio} iconePequeno" image="#{resource['/imagens/botaoGerarRelatorio2.png']}" oncomplete="#{rich:component('panelQuestionarioSelecionar')}.hide()" action="#{AvaliacaoInstitucionalRelControle.selecionarRelatorioPorQuestionario}" render="statusPanelBaixa, formQuestionarioSelecionar" />
+						</a4j:region>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller stepControls="auto" fastControls="hide" boundaryControls="auto" for="questionarioRelVOs" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<a4j:commandLink value="Gerar Relatório" styleClass="btn btn-success" id="botaoGerarRelatorioEmPDF4" oncomplete="#{rich:component('panelQuestionarioSelecionar')}.hide()" action="#{AvaliacaoInstitucionalRelControle.inicializarProgressBar}" render="statusPanelBaixa">
+						<span class="#{msg_botoes.btn_icon_graficoPizza_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.gerarRelatorioQuestionarioSelecionado}" value="false" />
+					</a4j:commandLink>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAvaliacao" shadowOpacity="false" onshow="document.getElementById('formAvaliacao:valorConsultaAvaliacao').focus();" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Avaliação Institucional Consulta"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkAvaliacao" />
+					<rich:componentControl target="panelAvaliacao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAvaliacao">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAvaliacao" value="#{AvaliacaoInstitucionalRelControle.campoConsultaAvaliacao}">
+						<f:selectItems value="#{AvaliacaoInstitucionalRelControle.tipoConsultaComboAvaliacao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaAvaliacao" size="30" styleClass="form-control campos" value="#{AvaliacaoInstitucionalRelControle.valorConsultaAvaliacao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarAvaliacao" render="formAvaliacao" action="#{AvaliacaoInstitucionalRelControle.consultarAvaliacao}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAvaliacao" width="100%" headerClass="consulta" style="background-color: transparent;" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AvaliacaoInstitucionalRelControle.controleConsulta.listaConsulta}" rows="10" var="avaliacaoItens">
+			<!--		<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucional_unidadeEnsino}" />
+						</f:facet>
+						<a4j:commandLink render="form" action="#{AvaliacaoInstitucionalRelControle.selecionarAvaliacao}" oncomplete="#{rich:component('panelAvaliacao')}.hide()" id="unidadeEnsino" value="#{avaliacaoItens.unidadeEnsino.nome}" />
+					</rich:column>-->
+					<rich:column style="background-color: transparent;">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<a4j:commandLink render="form" action="#{AvaliacaoInstitucionalRelControle.selecionarAvaliacao}" oncomplete="#{rich:component('panelAvaliacao')}.hide()" id="nome" value="#{avaliacaoItens.nome}" />
+
+					</rich:column>
+					<rich:column style="background-color: transparent;">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucional_dataInicio}" />
+						</f:facet>
+						<a4j:commandLink render="form" action="#{AvaliacaoInstitucionalRelControle.selecionarAvaliacao}" oncomplete="#{rich:component('panelAvaliacao')}.hide()">
+							<h:outputText rendered="#{!avaliacaoItens.avaliacaoUltimoModulo}" id="dataInicioRS" value="#{avaliacaoItens.dataInicio}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</a4j:commandLink>
+					</rich:column>
+					<rich:column style="background-color: transparent;">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucional_dataFinal}" />
+						</f:facet>
+						<a4j:commandLink render="form" action="#{AvaliacaoInstitucionalRelControle.selecionarAvaliacao}" oncomplete="#{rich:component('panelAvaliacao')}.hide()">
+							<h:outputText rendered="#{!avaliacaoItens.avaliacaoUltimoModulo}" id="dataFinalRS" value="#{avaliacaoItens.dataFinal}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</a4j:commandLink>
+					</rich:column>
+					<rich:column style="background-color: transparent;">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucional_publicoAlvo}" />
+						</f:facet>
+						<a4j:commandLink render="form" action="#{AvaliacaoInstitucionalRelControle.selecionarAvaliacao}" oncomplete="#{rich:component('panelAvaliacao')}.hide()">
+							<h:outputText id="publicoAlvo" value="#{avaliacaoItens.publicoAlvo_Apresentar}" />
+						</a4j:commandLink>
+					</rich:column>
+					<rich:column style="background-color: transparent;">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucional_situacao}" />
+						</f:facet>
+						<a4j:commandLink render="form" action="#{AvaliacaoInstitucionalRelControle.selecionarAvaliacao}" oncomplete="#{rich:component('panelAvaliacao')}.hide()">
+							<h:outputText id="situacao" value="#{avaliacaoItens.situacao_Apresentar}" />
+						</a4j:commandLink>
+					</rich:column>
+					<rich:column style="background-color: transparent;">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AvaliacaoInstitucionalRelControle.selecionarAvaliacao}" tooltip="#{avaliacaoItens.situacao == 'EC' ? 'Não é possível selecionar esta avaliação' : 'Selecionar' }" render="form" icon="#{avaliacaoItens.situacao == 'EC' ? msg_botoes.btn_icon_cancelar_embutido : msg_botoes.btn_icon_selecionar} iconePequeno" disabled="#{avaliacaoItens.situacao == 'EC' ? true : false }" oncomplete="#{rich:component('panelAvaliacao')}.hide()" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="resultadoConsultaAvaliacao" limitToList="10" align="center" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AvaliacaoInstitucionalRelControle}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" onshow="document.getElementById('formTurma:valorConsultaTurma').focus()" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkTurma" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{AvaliacaoInstitucionalRelControle.campoConsultaTurma}">
+						<f:selectItems value="#{AvaliacaoInstitucionalRelControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaTurma" size="10" styleClass="form-control campos" value="#{AvaliacaoInstitucionalRelControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarTurma" render="formTurma" action="#{AvaliacaoInstitucionalRelControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AvaliacaoInstitucionalRelControle.listaConsultaTurma}" rows="5" var="turmaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_identificador}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AvaliacaoInstitucionalRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AvaliacaoInstitucionalRelControle.selecionarTurma}" focus="nometurma" tooltip="Selecionar" render="form" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" oncomplete="#{rich:component('panelTurma')}.hide()" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="resultadoConsultaTurma" limitRender="10" align="center" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AvaliacaoInstitucionalRelControle}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" shadowOpacity="false" onshow="document.getElementById('formCurso:valorConsultaCurso').focus();" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Curso Consulta"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkCurso" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{AvaliacaoInstitucionalRelControle.campoConsultaCurso}">
+						<f:selectItems value="#{AvaliacaoInstitucionalRelControle.tipoConsultaComboCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCurso" size="10" styleClass="form-control campos" value="#{AvaliacaoInstitucionalRelControle.valorConsultaCurso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCurso" action="#{AvaliacaoInstitucionalRelControle.consultarCurso}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCurso" width="100%" headerClass="consulta" style="background-color: transparent;" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AvaliacaoInstitucionalRelControle.listaConsultaCurso}" rows="5" var="cursoItens">
+					<rich:column style="background-color: transparent;">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<h:outputText id="nome" value="#{cursoItens.nome}" />
+					</rich:column>
+					<rich:column style="background-color: transparent;">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AvaliacaoInstitucionalRelControle.selecionarCurso}" tooltip="Selecionar" render="form" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" oncomplete="#{rich:component('panelCurso')}.hide()" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" boundaryControls="auto" maxPages="5" stepControls="auto" fastControls="hide" for="formCurso:resultadoConsultaCurso" id="scResultadoCurso" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AvaliacaoInstitucionalRelControle}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelPergunta" shadowOpacity="false" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Pergunta Consulta"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPerfunta" />
+					<rich:componentControl target="panelPergunta" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPergunta">
+				<h:panelGroup id="disciplinas" style="height:485px;width:99%">
+					<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+						<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+						<rich:dataTable id="resultadoConsultaPergunta" width="100%" value="#{AvaliacaoInstitucionalRelControle.listaConsultaPergunta}" var="perguntaItens">
+							<rich:column style="background-color: transparent;" filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaPergunta', 'descricao', 'TEXTO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('resultadoConsultaPergunta', 'descricao', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="resultadoConsultaPergunta" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="resultadoConsultaPergunta" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaPergunta')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText id="nome" value="#{perguntaItens.descricao}" />
+							</rich:column>
+							<rich:column filterExpression="#{!perguntaItens.selecionado}" style="background-color: transparent;" filterType="custom">
+								<f:facet name="header">
+									<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formPergunta, pergunta" action="#{AvaliacaoInstitucionalRelControle.selecionarTudo}">
+										<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.selecionarTudo}" value="true" />
+									</a4j:commandButton>
+								</f:facet>
+								<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="formPergunta, pergunta" action="#{AvaliacaoInstitucionalRelControle.selecionarPergunta}">
+									<f:setPropertyActionListener value="true" target="#{perguntaItens.selecionado}" />
+								</a4j:commandButton>
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+					<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+						<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+						<rich:dataTable id="resultadoConsultaPergunta2" width="100%" value="#{AvaliacaoInstitucionalRelControle.listaPerguntasSelecionadas}" var="perguntaItens">
+							<rich:column style="background-color: transparent;">
+								<f:facet name="header">
+									<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formPergunta, pergunta, professor, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarTudo}">
+										<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.selecionarTudo}" value="false" />
+									</a4j:commandButton>
+								</f:facet>
+								<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="formPergunta, pergunta, professor, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarPergunta}">
+									<f:setPropertyActionListener value="false" target="#{perguntaItens.selecionado}" />
+								</a4j:commandButton>
+							</rich:column>
+							<rich:column style="background-color: transparent;" filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaPergunta2', 'descricao', 'TEXTO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('resultadoConsultaPergunta2', 'descricao', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="resultadoConsultaPergunta2" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="resultadoConsultaPergunta2" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaPergunta2')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText id="nome" value="#{perguntaItens.descricao}" />
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AvaliacaoInstitucionalRelControle}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton render="form" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelPergunta')}.hide()" value="Fechar" styleClass="btn btn-danger" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProfessor" shadowOpacity="false" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtrar por Professor"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkProfessor" />
+					<rich:componentControl target="panelProfessor" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProfessor">
+				<h:panelGroup id="professores" style="height:485px;width:99%">
+					<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+						<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+						<rich:dataTable id="resultadoConsultaProfessor" width="100%" value="#{AvaliacaoInstitucionalRelControle.listaConsultaProfessor}" var="professor">
+							<rich:column style="background-color: transparent;" filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaProfessor', 'nome', 'TEXTO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('resultadoConsultaProfessor', 'nome', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="resultadoConsultaProfessor" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="resultadoConsultaProfessor" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaProfessor')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText id="nome" value="#{professor.nome}" />
+							</rich:column>
+							<rich:column filterExpression="#{!professor.selecionado}" style="background-color: transparent;" filterType="custom">
+								<f:facet name="header">
+									<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formProfessor, professor" action="#{AvaliacaoInstitucionalRelControle.selecionarProfessor}">
+										<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.selecionarTudo}" value="true" />
+									</a4j:commandButton>
+								</f:facet>
+								<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="formProfessor, professor" action="#{AvaliacaoInstitucionalRelControle.selecionarProfessor}">
+									<f:setPropertyActionListener value="true" target="#{professor.selecionado}" />
+								</a4j:commandButton>
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+					<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+						<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+						<rich:dataTable id="resultadoConsultaProfessor2" width="100%" value="#{AvaliacaoInstitucionalRelControle.listaConsultaProfessorSelecionados}" var="professor">
+							<rich:column filterExpression="#{professor.selecionado}" style="background-color: transparent;" filterType="custom">
+								<f:facet name="header">
+									<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formProfessor, professor" action="#{AvaliacaoInstitucionalRelControle.selecionarProfessor}">
+										<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.selecionarTudo}" value="false" />
+									</a4j:commandButton>
+								</f:facet>
+								<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="formProfessor, professor" action="#{AvaliacaoInstitucionalRelControle.selecionarProfessor}">
+									<f:setPropertyActionListener value="false" target="#{professor.selecionado}" />
+								</a4j:commandButton>
+							</rich:column>
+							<rich:column style="background-color: transparent;" filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaProfessor2', 'nome', 'TEXTO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('resultadoConsultaProfessor2', 'nome', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="resultadoConsultaProfessor2" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="resultadoConsultaProfessor2" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaProfessor2')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText id="nome" value="#{professor.nome}" />
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup columns="1" id="mensagemConsultaProfessor" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AvaliacaoInstitucionalRelControle}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton render="form" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelProfessor')}.hide()" value="Fechar" styleClass="btn btn-danger" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelRespondente" shadowOpacity="false" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtrar por Respondente"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkRespondente" />
+					<rich:componentControl target="panelRespondente" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formRespondente">
+				<h:panelGroup id="respondentesVos" style="height:485px;width:99%">
+					<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+						<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+						<rich:dataTable id="resultadoConsultaRespondente" width="100%" value="#{AvaliacaoInstitucionalRelControle.listaConsultaRespondente}" var="respondente">
+							<rich:column style="background-color: transparent;" filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaRespondente', 'nome', 'TEXTO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('resultadoConsultaRespondente', 'nome', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="resultadoConsultaRespondente" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="resultadoConsultaRespondente" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaRespondente')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText id="nome" value="#{respondente.nome}" />
+							</rich:column>
+							<rich:column filterExpression="#{!respondente.selecionado}" style="background-color: transparent;" filterType="custom">
+								<f:facet name="header">
+									<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formRespondente, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarRespondente}">
+										<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.selecionarTudo}" value="true" />
+									</a4j:commandButton>
+								</f:facet>
+								<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="formRespondente, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarRespondente}">
+									<f:setPropertyActionListener value="true" target="#{respondente.selecionado}" />
+								</a4j:commandButton>
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+					<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+						<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+						<rich:dataTable id="resultadoConsultaRespondente2" width="100%" value="#{AvaliacaoInstitucionalRelControle.listaConsultaRespondenteSelecionados}" var="respondente">
+							<rich:column filterExpression="#{respondente.selecionado}" style="background-color: transparent;" filterType="custom">
+								<f:facet name="header">
+									<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formRespondente, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarRespondente}">
+										<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.selecionarTudo}" value="false" />
+									</a4j:commandButton>
+								</f:facet>
+								<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="formRespondente, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarRespondente}">
+									<f:setPropertyActionListener value="false" target="#{respondente.selecionado}" />
+								</a4j:commandButton>
+							</rich:column>
+							<rich:column style="background-color: transparent;" filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaRespondente2', 'nome', 'TEXTO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('resultadoConsultaRespondente2', 'nome', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="resultadoConsultaRespondente2" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="resultadoConsultaRespondente2" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaRespondente2')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText id="nome" value="#{respondente.nome}" />
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+				</h:panelGroup>
+				<!-- 				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80"> -->
+				<!-- 					<a4j:commandButton render="form" oncomplete="#{rich:component('panelRespondente')}.hide()" image="#{resource['/imagens/botaoConcluirCandidato.png']}" value="#{msg_botoes.btn_selecionar}" /> -->
+				<!-- 				</h:panelGroup> -->
+				<h:panelGroup columns="1" id="mensagemConsultaRespondente" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AvaliacaoInstitucionalRelControle}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelGraficoPergunta" style="overflow:auto;" shadowOpacity="false" width="400" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Gráfico Avaliação Pergunta"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkGraficoPergunta" />
+					<rich:componentControl target="panelGraficoPergunta" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formGraficoPergunta">
+				<rich:dataScroller align="center" for="formGraficoPergunta:respostas" maxPages="100" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoCurso" />
+				<rich:dataGrid id="respostas" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" columns="1" value="#{AvaliacaoInstitucionalRelControle.perguntaRelVO.respostaTexto}" var="resposta">
+					<h:panelGrid columns="2">
+						<h:panelGrid>
+							<h:outputText value="#{resposta.nomeResposta}:" />
+						</h:panelGrid>
+						<h:panelGrid>
+							<h:outputText style="align:left" value="#{resposta.quantidadePessoa}" />
+						</h:panelGrid>
+					</h:panelGrid>
+				</rich:dataGrid>
+				<h:panelGrid styleClass="colunaCentralizada">
+					<h:outputText value="Total de respostas: #{AvaliacaoInstitucionalRelControle.perguntaRelVO.totalPessoas}" />
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplina" shadowOpacity="false" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Disciplina Consulta"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkDisciplina" />
+					<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup id="disciplinas" style="height:485px;width:99%">
+					<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+						<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+						<rich:dataTable id="resultadoConsultaDisciplina" width="100%" value="#{AvaliacaoInstitucionalRelControle.listaConsultaDisciplina}" var="disciplinaItens">
+							<rich:column filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaDisciplina', 'nome', 'TEXTO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('resultadoConsultaDisciplina', 'nome', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="resultadoConsultaDisciplina" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="resultadoConsultaDisciplina" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaDisciplina')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText id="nome" value="#{disciplinaItens.nome}" />
+							</rich:column>
+							<rich:column filterExpression="#{!disciplinaItens.selecionado}" style="background-color: transparent;" filterType="custom">
+								<f:facet name="header">
+									<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formDisciplina, disciplina, professor, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarDisciplina}">
+										<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.selecionarTudo}" value="true" />
+									</a4j:commandButton>
+								</f:facet>
+								<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="formDisciplina, disciplina, professor, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarDisciplina}">
+									<f:setPropertyActionListener value="true" target="#{disciplinaItens.selecionado}" />
+								</a4j:commandButton>
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+					<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+						<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+						<rich:dataTable id="resultadoConsultaDisciplina2" width="100%" value="#{AvaliacaoInstitucionalRelControle.listaDisciplinasSelecionadas}" var="disciplina">
+							<rich:column filterExpression="#{disciplinaItens.selecionado}" style="background-color: transparent;" filterType="custom">
+								<f:facet name="header">
+									<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formDisciplina, disciplina, professor, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarDisciplina}">
+										<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.selecionarTudo}" value="false" />
+									</a4j:commandButton>
+								</f:facet>
+								<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="formDisciplina, disciplina, professor, respondente" action="#{AvaliacaoInstitucionalRelControle.selecionarDisciplina}">
+									<f:setPropertyActionListener value="false" target="#{disciplinaItens.selecionado}" />
+								</a4j:commandButton>
+							</rich:column>
+							<rich:column style="background-color: transparent;" filterType="custom" filter="#{FilterFactory.filter('resultadoConsultaDisciplina2', 'nome', 'TEXTO')}">
+								<f:facet name="header">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('resultadoConsultaDisciplina2', 'nome', 'TEXTO').filtro}">
+											<a4j:ajax event="change" execute="@this" render="resultadoConsultaDisciplina2" />
+										</h:inputText>
+										<span class="append-icon right"> <otm:commandIcon render="resultadoConsultaDisciplina2" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('resultadoConsultaDisciplina2')}" tooltip="Limpar Filtro" />
+										</span>
+									</h:panelGroup>
+								</f:facet>
+								<h:outputText id="nome" value="#{disciplinaItens.nome}" />
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+				</h:panelGroup>
+				<!-- 				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80"> -->
+				<!-- 					<otm:commandButton render="form" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="Fechar" styleClass="btn btn-primary dark btn-fechar" /> -->
+				<!-- 				</h:panelGroup> -->
+				<h:panelGroup columns="1" id="mensagemConsultaDisciplina" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AvaliacaoInstitucionalRelControle}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,858 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+	<script type="text/javascript">
+		window.onload = function() {
+			document.getElementById("form:descricao").focus();
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_FormulaFP_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{FormulaFolhaPagamentoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="colunaFormulario">
+				<h:panelGroup id="panelDadosTodos">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="form1Titulo" value="#{msg_aplic.prt_FormulaFP_Identificador}" />
+						<h:inputText id="identificador" maxlength="50" size="45" styleClass="form-control camposObrigatorios" value="#{FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.identificador}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="form1Titulo" value="#{msg_aplic.prt_FormulaFP_Situacao}" />
+						<h:inputText id="ativo" readonly="true" styleClass="form-control campos" value="#{FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.situacao.getValorApresentar()}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="form1Titulo" value="#{msg_aplic.prt_FormulaFP_Descricao}" />
+						<h:inputText id="descricao" maxlength="50" size="80" styleClass="form-control camposObrigatorios" value="#{FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.descricao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="form1Titulo" value="#{msg_aplic.prt_FormulaFP_Formula}" />
+						<h:inputTextarea id="formula" onclick="pegarPosicaoCursorTextArea()" styleClass="form-control camposObrigatorios" value="#{FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.formula}">
+							<a4j:ajax event="change" render="@this" execute="@this"></a4j:ajax>
+						</h:inputTextarea>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6 pn" id="pnlFuncionario">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText value="#{msg_aplic.prt_FormulaFP_Funcionario}" styleClass="field control-label tituloCampos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:inputText id="matriculaCargo" size="11" styleClass="form-control campos" value="#{FormulaFolhaPagamentoControle.funcionarioVO.matriculaCargo}">
+								<a4j:ajax event="change" listener="#{FormulaFolhaPagamentoControle.consultarFuncionarioPelaMatriculaCargo}" execute="form" render="form" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-8">
+							<h:inputText size="60" maxlength="50" readonly="true" id="nomeFuncionario" styleClass="form-control camposSomenteLeitura" value="#{FormulaFolhaPagamentoControle.funcionarioVO.funcionarioVO.pessoa.nome}" />
+							<span class="append-icon right"> <otm:commandIcon render="formFuncionario" execute="@this" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelFuncionario')}.show();" tooltip="Consultar Funcionario" /> <otm:commandIcon action="#{FormulaFolhaPagamentoControle.limparFuncionario}" id="limparFuncionario" render="pnlFuncionario" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="Limpar Filtro" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText value="#{msg_aplic.prt_TextoPadrao_resultado}" styleClass="field control-label tituloCampos" />
+						<rich:panel bodyClass="msgFlutuanteVisaoAdm">
+							<f:facet name="header">#{msg_aplic.prt_TextoPadrao_resultadoFormula}</f:facet>
+							<h:inputTextarea id="retornoFormula" cols="80" rows="6" style="width: 560px!important;" disabled="true" value="#{FormulaFolhaPagamentoControle.retornoFuncao}"></h:inputTextarea>
+						</rich:panel>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="colunaCalculadora">
+				<h:panelGroup columns="1" width="100%" columnClasses="colunaVerticalmenteCentralizado, colunaVerticalmenteCentralizado" style="float: left">
+					<h:panelGroup>
+						<h:panelGroup columns="2" style="float: left">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="form1Titulo" value="Filtro Mapas" />
+									<h:selectOneMenu id="valorFiltro" styleClass="form-control" value="#{FormulaFolhaPagamentoControle.valorFiltro}">
+										<f:selectItem itemLabel="Todos" itemValue="TODOS"></f:selectItem>
+										<f:selectItem itemLabel="Gerais" itemValue="MAPAS_GERAIS"></f:selectItem>
+										<f:selectItem itemLabel="Folha Normal" itemValue="MAPAS_FOLHA_NORMAL"></f:selectItem>
+										<f:selectItem itemLabel="Férias" itemValue="MAPAS_FERIAS"></f:selectItem>
+										<f:selectItem itemLabel="Décimo Terceiro" itemValue="MAPAS_DECIMO_TERCEIRO"></f:selectItem>
+										<a4j:ajax event="change" render="gridBotoes" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+								<h:outputText styleClass="form1Titulo" value="#{msg_aplic.prt_TextoPadrao_legenda}:" />
+								<h:panelGroup style="margin-top:5px" layout="block" styleClass="col-md-12 pn">
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_help} iconePequeno" tooltip="Formula Options" id="formula_options" execute="@this" image="#{resource['/imagens/botaoLegendaIcone.png']}" onclick="#{rich:component('panelLegenda')}.show();" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12" style="border: double; border-radius: 10px;">
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:5px">
+									<otm:commandButton style="margin-right:10px" id="virgula" styleClass="botoesFormulaEscuro" value="," title="Vigula" onclick="concatenarFormula(',' , indice, '')" />
+									<otm:commandButton style="margin-right:10px" id="espaco" styleClass="botoesFormulaEscuro" value="Espaço" title="Espaço" image="#{resource['imagens/botaoEspacoIcone.png']}" onclick="concatenarFormula('espaco', indice, '')" />
+									<otm:commandButton style="margin-right:10px" id="apagar" styleClass="botoesFormulaEscuro" value="Apagar" title="Apagar" image="#{resource['imagens/botaoApagarIcone.png']}" onclick="concatenarFormula('apagar', indice, '')" />
+								</h:panelGroup>
+								<div style="float: left; position: relative; overflow-y: auto; height: 209px; right: 62px; top: 17px;">
+									<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:5px" id="gridBotoes">
+										<!-- Padrão -->
+										<otm:commandButton style="margin-right:10px" id="return" styleClass="botoesFormulaEscuro" value="RETURN" title="Retorno do resultado" onclick="concatenarFormula('return', indice, '')" />
+										<otm:commandButton style="margin-right:10px" id="variavel" styleClass="botoesFormulaEscuro" value="VAR" title="Declara Variável " onclick="concatenarFormula('var', indice, event)" />
+										<!-- Eventos -->
+										<otm:commandButton style="margin-right:10px" id="eventos" styleClass="botoesFormulaEventos" value="EVT VLR" title="Recupera valor dos eventos, necessário informar o indentificador. " onclick="concatenarFormula('eventos.e', indice, '')" />
+										<otm:commandButton style="margin-right:10px" id="eventosReferencia" styleClass="botoesFormulaEventos" value="EVT REF" title="Recupera referência dos eventos, necessário informar o indentificador. " onclick="concatenarFormula('eventos.r', indice, '')" />
+										<!-- Funcoes -->
+										<otm:commandButton style="margin-right:10px" id="faixaValor" styleClass="botoesFormulaFuncao" value="FAIXA VLR" title="Função de Faixa Valor" onclick="concatenarFormula('funcoes.consultarFaixaValor(identificador , mapa.VIGENCIA, 0)', indice, '')" />
+										<otm:commandButton style="margin-right:10px" id="sql" styleClass="botoesFormulaFuncao" value="SQL" title="Função de SQL" onclick="concatenarFormula('funcoes.executaSQL(identificador, mapa.VIGENCIA, contexto.getCodigo())', indice, '')" />
+										<otm:commandButton style="margin-right:10px" id="valorFixo" styleClass="botoesFormulaFuncao" value="VLR FIXO" title="Função de consulta Valor Fixo" onclick="concatenarFormula('funcoes.consultarValorFixo(identificador, mapa.VIGENCIA)', indice, '')" />
+										<otm:commandButton style="margin-right:10px" id="funcaoFormula" styleClass="botoesFormulaFuncao" value="FORMULA" title="Função de processar formula " onclick="concatenarFormula('formula(identificador, contexto)', indice, '')" />
+										<otm:commandButton style="margin-right:10px" id="funcaoAfastamento" styleClass="botoesFormulaFuncao" value="AFASTAMENTO" title="Função que retorna a quantidade de dias afastatado por motivo " onclick="concatenarFormula('afastamento(motivo)', indice, '')" />
+										<!-- Contexto -->
+										<otm:commandButton style="margin-right:10px" id="contextoSalario" styleClass="botoesFormulaContexto" value="SAL EF" title="Contexto salário do funcionario" onclick="concatenarFormula('contexto.getSalario()', indice, '')" />
+										<otm:commandButton style="margin-right:10px" id="contextoSalarioAtual" styleClass="botoesFormulaContexto" value="SAL AT" title="Contexto salário do cargo atual do funcionario" onclick="concatenarFormula('contexto.getSalarioCargoAtual()', indice, '')" />
+										<otm:commandButton style="margin-right:10px" id="mapaSituacaoFuncionario" styleClass="botoesFormulaContexto" value="SIT FUNC" title="Situação Funcionário" onclick="concatenarFormula('contexto.getSituacaoFuncionario()', indice, '')" />
+										<otm:commandButton style="margin-right:10px" id="mapaFormaContratacao" styleClass="botoesFormulaContexto" value="CONTRAT" title="Forma de Contratação" onclick="concatenarFormula('contexto.getFormaContratacao()', indice, '')" />
+										<!-- Mapas Gerais -->
+										<otm:commandButton style="margin-right:10px" id="mapaDiasInformados" styleClass="botoesFormulaMapa" value="DIAS TRAB" title="Dias Trabalhados" onclick="concatenarFormula('mapa.DIAS_TRABALHADOS', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaVigencia" styleClass="botoesFormulaMapa" value="VIGENCIA" title="Data de Vigência" onclick="concatenarFormula('mapa.VIGENCIA', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaNumDependentes" styleClass="botoesFormulaMapa" value="NUM DEP" title="Número de dependentes do IRRF" onclick="concatenarFormula('mapa.NUM_DEPENDENTE_IRRF', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaNumDependentesSalFamilia" styleClass="botoesFormulaMapa" value="N DEP SAL" title="Número de dependentes do Salário Família" onclick="concatenarFormula('mapa.NUM_DEPENDENTE_IRRF', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaValorDependente" styleClass="botoesFormulaMapa" value="VLR DEP" title="Valor Dependente" onclick="concatenarFormula('mapa.VLR_DEPENDENTE', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaValorReferencia" styleClass="botoesFormulaMapa" value="VLR REF" title="Valor de referência" onclick="concatenarFormula('mapa.VLR_REFERENCIA', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaTotalProventos" styleClass="botoesFormulaMapa" value="TOT PROV" title="Total Proventos" onclick="concatenarFormula('mapa.TOTAL_PROVENTOS', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaMesesTrabalhados" styleClass="botoesFormulaMapa" value="MES TRAB" title="Mêses Trabalhados" onclick="concatenarFormula('mapa.MESES_TRABALHADOS', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaMesesTrabalhadosQuinquenio" styleClass="botoesFormulaMapa" value="MES QUINQ" title="Mêses Trabalhados Quinquênio" onclick="concatenarFormula('mapa.MESES_TRABALHADOS_QUINQUENIO', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapa30DiaMesJunho" styleClass="botoesFormulaMapa" value="30 JUNHO" title="Dia 30 do Mês de junho do ano Atual" onclick="concatenarFormula('mapa.30_JUNHO', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaMesAtual" styleClass="botoesFormulaMapa" value="Mês Atual" title="MES ATUAL" onclick="concatenarFormula('mesAtual()', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAfastamento" styleClass="botoesFormulaMapa" value="AFASTA" title="Afastamento" onclick="concatenarFormula('mapa.AFASTAMENTO', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaSituacaoAfastamento" styleClass="botoesFormulaMapa" value="SIT AFAST" title="Situação Afastamento" onclick="concatenarFormula('mapa.SITUACAO_AFASTAMENTO', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaQuantidadeDiasAfastamento" styleClass="botoesFormulaMapa" value="DIAS AFA" title="Quantidade de dias afastamento" onclick="concatenarFormula('mapa.QUANTIDADE_DIAS_AFASTAMENTO', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaDiasAbono" styleClass="botoesFormulaMapa" value="D ABONO" title="Dias Abono" onclick="concatenarFormula('mapa.DIAS_ABONO', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapa1DiaMesAtual" styleClass="botoesFormulaMapa" value="1 DIA MES" title="1 Dia do Mês Atual" onclick="concatenarFormula('mapa.PRIMEIRO_DIA_MES', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaUltimoDiaMesAtual" styleClass="botoesFormulaMapa" value="MES ATUAL" title="Mês atual" onclick="concatenarFormula('mapa.ULTIMO_DIA_MES', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAnoAtual" styleClass="botoesFormulaMapa" value="ANO ATUAL" title="Ano atual" onclick="concatenarFormula('mapa.ANO_ATUAL', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaEventoFixo" styleClass="botoesFormulaMapa" value="EVT FIXO" title="Evento Fixo do funcionário" onclick="concatenarFormula('EVT_FIXO(identificador)', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaSecaoFolhaPagamento" styleClass="botoesFormulaMapa" value="SECAO" title="Identificador da Seção Folha de pagamento" onclick="concatenarFormula('mapa.SECAO', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasGerais()}" />
+										<!-- Mapas folha normal -->
+										<otm:commandButton style="margin-right:10px" id="mapaBaseIRRF" styleClass="botoesFormulaMapa" value="IRRF" title="Base do IRRF" onclick="concatenarFormula('mapa.BASE_IRRF', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaIncideValeTransporte" styleClass="botoesFormulaMapa" value="INC VT" title="Incide Vale Transporte" onclick="concatenarFormula('mapa.INCIDE_VT', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaBasePrevidencia" styleClass="botoesFormulaMapa" value="BASE PREV" title="Base Previdência" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaPrevidenciaPropria" styleClass="botoesFormulaMapa" value="PREV PRO" title="Previdência Própria" onclick="concatenarFormula('mapa.PREV_PROPRIA', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaSalarioFamilia" styleClass="botoesFormulaMapa" value="SAL FAM" title="Salário Família" onclick="concatenarFormula('mapa.SALARIO_FAMILIA', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaIncidePlanoSaude" styleClass="botoesFormulaMapa" value="IN PL SAU" title="Incide Plano de Saúde" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAssociacaoSindicato" styleClass="botoesFormulaMapa" value="ASS SIND" title="Associação Sindicato" onclick="concatenarFormula('mapa.ASSOCIACAO_SINDICATO', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAdicionalTempoServico" styleClass="botoesFormulaMapa" value="TEM SERV" title="Adicional Por Tempo de Serviço" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaValeTransporte" styleClass="botoesFormulaMapa" value="VAL TRANS" title="Vale Transporte" onclick="concatenarFormula('mapa.VALE_TRANSPORTE', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaBasePrevidenciaTotal" styleClass="botoesFormulaMapa" value="BAS P TOT" title="Base Previdência Total" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_TOTAL', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaPlanoSaude" styleClass="botoesFormulaMapa" value="PL SAUDE" title="Plano de Saúde" onclick="concatenarFormula('mapa.PLANO_SAUDE', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFolhaPagamento()}" />
+										<!-- Mapas Ferias -->
+										<otm:commandButton style="margin-right:10px" id="mapaIncidePlanoSaudeFerias" styleClass="botoesFormulaMapa" value="PL SAU_FER" title="Incide Plano de Saúde de Férias" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE_FERIAS', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFerias()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaBasePrevidenciaObrigatoria" styleClass="botoesFormulaMapa" value="BAS P OBG" title="Base Previdência Obrigatória" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_OBRIGATORIA', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFerias()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAdiantamentoFerias" styleClass="botoesFormulaMapa" value="AD FERIAS" title="Adiantamento de Férias" onclick="concatenarFormula('mapa.POSSUI_ADIANTAMENTO_FERIAS', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFerias()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaNumeroDiasFerias" styleClass="botoesFormulaMapa" value="N D FERIAS" title="Número de Dias de Férias" onclick="concatenarFormula('mapa.ND_FERIAS', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFerias()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAdicionalTempoServicoFerias" styleClass="botoesFormulaMapa" value="AD T FER" title="Adicional Por Tempo de Serviço Férias" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO_FERIAS', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFerias()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAdicionalFerias" styleClass="botoesFormulaMapa" value="AD FER" title="Adicional de Férias" onclick="concatenarFormula('mapa.ADICIONAL_FERIAS', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFerias()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAvoFeriasProporcionais" styleClass="botoesFormulaMapa" value="AVO Ferias" title="Número de avos férias" onclick="concatenarFormula('mapa.AVO_FERIASP', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasFerias()}" />
+										<!-- Mapas Decimo Terceiro -->
+										<otm:commandButton style="margin-right:10px" id="mapaINSSDecimoTerceiro" styleClass="botoesFormulaMapa" value="INSS 13" title="Base INSS 13º" onclick="concatenarFormula('mapa.BASE_INSS_13', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasDecimoTerceiro()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaIRRFDecimoTerceiro" styleClass="botoesFormulaMapa" value="IRRF 13" title="Base IRFF 13º" onclick="concatenarFormula('mapa.BASE_IRRF_13', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasDecimoTerceiro()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaIncidePlanoSaudeDecimoTerceiro" styleClass="botoesFormulaMapa" value="PLN S_13" title="Incide Plano Saúde 13º" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE_13', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasDecimoTerceiro()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaBasePrevidenciaDecimoTerceiro" styleClass="botoesFormulaMapa" value="PREV 13" title="Prêvidencia 13º" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_13', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasDecimoTerceiro()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaBasePrevidenciaObrigatoriaDecimoTerceiro" styleClass="botoesFormulaMapa" value="P OBR 13" title="Prêvidencia Obrigátoria 13º" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_OBRIGATORIA_13', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasDecimoTerceiro()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAssociacaoSindicatoDecimoTerceiro" styleClass="botoesFormulaMapa" value="A SIND 13" title="Associação/Sindicato 13º" onclick="concatenarFormula('mapa.ASSOCIACAO_SINDICATO_13', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasDecimoTerceiro()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAdicionarTempoServicoDecimoTerceiro" styleClass="botoesFormulaMapa" value="TEMP S 13" title="Adicional Tempo Serviço 13" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO_13', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasDecimoTerceiro()}" />
+										<otm:commandButton style="margin-right:10px" id="mapaAvo13" styleClass="botoesFormulaMapa" value="AVO 13" title="Número de Avos 13º" onclick="concatenarFormula('mapa.AVO_13', indice, '')" rendered="#{FormulaFolhaPagamentoControle.apresentarMapasDecimoTerceiro()}" />
+									</h:panelGroup>
+								</div>
+								<h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:5px; float: left; position: relative; overflow-y: auto; height: 112px; right: 62px; top: 17px;">
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value=";" onclick="concatenarFormula(';', indice, '')" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value="(" onclick="concatenarFormula('(', indice, '')" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value=")" onclick="concatenarFormula(')', indice, '')" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value="%" onclick="concatenarFormula('%', indice, '')" render="formula" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="7" onclick="concatenarFormula('7', indice, 7)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="8" onclick="concatenarFormula('8', indice, 8)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="9" onclick="concatenarFormula('9', indice, 9)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value="÷" onclick="concatenarFormula('/', indice, '')" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="4" onclick="concatenarFormula('4', indice, 4)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="5" onclick="concatenarFormula('5', indice, 5)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="6" onclick="concatenarFormula('6', indice, 6)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value="X" onclick="concatenarFormula('*', indice, '')" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="1" onclick="concatenarFormula('1', indice, 1)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="2" onclick="concatenarFormula('2', indice, 2)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="3" onclick="concatenarFormula('3', indice, 3)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value="-" onclick="concatenarFormula('-', indice, '')" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaClaro" value="0" onclick="concatenarFormula('0', indice, 1)" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value="." onclick="concatenarFormula('.', indice, '.')" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value="=" onclick="concatenarFormula('=', indice, '')" />
+										<otm:commandButton style="margin-right:10px" styleClass="botoesFormulaEscuro" value="+" onclick="concatenarFormula('+', indice, '')" />
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+									<otm:commandButton render="form" execute="@this" action="#{FormulaFolhaPagamentoControle.executarFormula}" image="#{resource['imagens/formula2.png']}" value="Executar Formula" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_calculadora}" />
+								</h:panelGroup>
+						</h:panelGroup>
+						<div style="margin-top: 38px; float: left">
+							<h:panelGroup columns="3" columnClasses="colunaVerticalmenteCentralizado, colunaVerticalmenteCentralizado">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_log}" styleClass="field control-label tituloCampos" />
+								<otm:spacer width="30" />
+								<rich:panel bodyClass="msgFlutuanteVisaoAdm">
+									<f:facet name="header">#{msg_aplic.prt_TextoPadrao_resultadoLog}</f:facet>
+									<h:inputTextarea id="retornoFormulaLog" cols="80" rows="6" style="width: 560px!important;" disabled="true" value="#{FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.resultadoLog}"></h:inputTextarea>
+								</rich:panel>
+							</h:panelGroup>
+						</div>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup columns="1" width="100%">
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{FormulaFolhaPagamentoControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<h:panelGroup>
+							<otm:commandButton accesskey="1" action="#{FormulaFolhaPagamentoControle.novo}" onclick="limparIndiceFormula()" id="novo" styleClass="btn btn-info btn-novo" immediate="true" render="form" value="#{msg_botoes.btn_novo}" />
+							<otm:spacer width="5" />
+							<otm:commandButton accesskey="2" action="#{FormulaFolhaPagamentoControle.gravar}" onclick="limparIndiceFormula()" id="salvar" styleClass="btn btn-dark btn-gravar" render="form" value="#{msg_botoes.btn_gravar}" />
+							<otm:spacer width="5" />
+							<otm:commandButton accesskey="3" action="#{FormulaFolhaPagamentoControle.excluir}" id="excluir" styleClass="btn btn-danger btn-excluir" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" render="form" value="#{msg_botoes.btn_excluir}" />
+							<otm:spacer width="5" />
+							<otm:commandButton accesskey="4" action="#{FormulaFolhaPagamentoControle.inicializarConsultar}" id="consultar" styleClass="btn btn-default btn-consultar" immediate="true" value="#{msg_botoes.btn_consultar}" />
+							<otm:spacer width="5" />
+							<otm:commandButton accesskey="5" action="#{FormulaFolhaPagamentoControle.inativar}" rendered="#{FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.situacao eq 'ATIVO' and FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.codigo != 0}" onclick="return confirm('#{msg.msg_confirmacao_inativacao}');" render="form" id="inativar" image="#{resource['imagens/botaoInativar.png']}" immediate="true" value="Inativar" icon="#{msg_botoes.btn_icon_inativar_embutido}" styleClass="btn btn-danger" />
+							<otm:spacer width="5" rendered="#{FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.situacao eq 'ATIVO' and FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.codigo != 0}" />
+							<otm:commandButton accesskey="6" action="#{FormulaFolhaPagamentoControle.ativar}" rendered="#{FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.situacao eq 'INATIVO'}" onclick="return confirm('#{msg.msg_confirmacao_ativacaoEventoFolha}');" render="form" id="ativar" image="#{resource['imagens/botaoAtivar.png']}" immediate="true" value="Ativar" icon="#{msg_botoes.btn_icon_ativar_embutido}" styleClass="btn btn-primary" />
+							<otm:spacer width="5" rendered="#{FormulaFolhaPagamentoControle.formulaFolhaPagamentoVO.situacao eq 'INATIVO'}" />
+							<otm:commandButton accesskey="7" action="#{FormulaFolhaPagamentoControle.imprimir}" render="form" id="imprimi" image="#{resource['imagens/botaoImprimirLogFormula.png']}" immediate="true" value="Imprimir" icon="#{msg_botoes.btn_icon_imprimir_embutido}" styleClass="btn btn-default" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<!-- Consulta funcionario -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Tramite_funcionario}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="Consultar por" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaDestinatarioNotaFiscal" value="#{FormulaFolhaPagamentoControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{FormulaFolhaPagamentoControle.tipoConsultaComboFuncionarios}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionario" size="10" styleClass="form-control campos" value="#{FormulaFolhaPagamentoControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" accesskey="4" render="formFuncionario:mensagemConsultaFuncionario, formFuncionario:resultadoConsultaFuncionario, formFuncionario:scResultadoFuncionario" action="#{FormulaFolhaPagamentoControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaFuncionario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{FormulaFolhaPagamentoControle.listaConsultaFuncionario}" rows="5" var="funcionarioItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_EventoFixoFuncionario_matricula}" />
+						</f:facet>
+						<a4j:commandLink action="#{FormulaFolhaPagamentoControle.selecionarFuncionario}" oncomplete="#{rich:component('panelFuncionario')}.hide();" render="pnlFuncionario" value="#{funcionarioItem.funcionarioVO.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_LancamentoFolhaPagamento_funcionario}" />
+						</f:facet>
+						<a4j:commandLink action="#{FormulaFolhaPagamentoControle.selecionarFuncionario}" oncomplete="#{rich:component('panelFuncionario')}.hide();" render="pnlFuncionario" value="#{funcionarioItem.funcionarioVO.pessoa.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_EventoFixoFuncionario_matriculaCargo}" />
+						</f:facet>
+						<a4j:commandLink action="#{FormulaFolhaPagamentoControle.selecionarFuncionario}" oncomplete="#{rich:component('panelFuncionario')}.hide();" render="pnlFuncionario" value="#{funcionarioItem.matriculaCargo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cargo_tituloForm}" />
+						</f:facet>
+						<a4j:commandLink action="#{FormulaFolhaPagamentoControle.selecionarFuncionario}" oncomplete="#{rich:component('panelFuncionario')}.hide();" render="pnlFuncionario" value="#{funcionarioItem.cargoExercidoFuncionarioCargo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{FormulaFolhaPagamentoControle.selecionarFuncionario}" oncomplete="#{rich:component('panelFuncionario')}.hide();" render="pnlFuncionario" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formFuncionario:resultadoConsultaFuncionario" maxPages="10" id="scResultadoFuncionario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup id="mensagemFuncionario">
+						<otm:mensagem bean="#{FormulaFolhaPagamentoControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- LEGENDAS DA FORMULA  -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelLegenda" shadowOpacity="true" width="900" height="550">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_TextoPadrao_legenda}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" />
+					<rich:componentControl target="panelLegenda" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLegenda">
+				<div style="height: 16px; width: 16px; background-color: #607d8b99; float: left; margin-right: 10px;" />
+				<h2>Funções</h2>
+				<hr></hr>
+				<h:panelGrid columns="3" width="100%" columnClasses="width-90px, width-200px, width-500px" style="float: left;margin-bottom: 15px">
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSigla}" escape="false"></h:outputText>
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValor}" escape="false"></h:outputText>
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricao}" escape="false" />
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('funcoes.consultarFaixaValor(identificador , mapa.VIGENCIA, 0)', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaFAIXAVLR}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('funcoes.consultarFaixaValor(identificador , mapa.VIGENCIA, 0)', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorConsultaFaixaValor}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('funcoes.consultarFaixaValor(identificador , mapa.VIGENCIA, 0)', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoConsultaFaixaValor}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('funcoes.executaSQL(identificador, mapa.VIGENCIA, contexto.getCodigo())', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaSQL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('funcoes.executaSQL(identificador, mapa.VIGENCIA, contexto.getCodigo())', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorExecutaSQL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('funcoes.executaSQL(identificador, mapa.VIGENCIA, contexto.getCodigo())', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoExecutaSQL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('funcoes.consultarValorFixo(identificador, mapa.VIGENCIA)', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaVLR_FIXO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('funcoes.consultarValorFixo(identificador, mapa.VIGENCIA)', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorConsultarValorFixo}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('funcoes.consultarValorFixo(identificador, mapa.VIGENCIA)', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoConsultaValorFixo}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mesAtual()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaMesAtual}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mesAtual()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorMesAtual}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mesAtual()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoMesAtual}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('afastamento(motivo)', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaAfastamento}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('afastamento(motivo)', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorAfastemento}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('afastamento(motivo)', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoAfastamento}" />
+					</a4j:commandLink>
+				</h:panelGrid>
+				<br />
+				<div style="height: 16px; width: 16px; background-color: #4fa0e07a; float: left; margin-right: 10px;" />
+				<h2>Contexto</h2>
+				<hr></hr>
+				<h:panelGrid columns="3" width="100%" columnClasses="width-90px, width-200px, width-500px" style="float: left;margin-bottom: 15px">
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSigla}" escape="false"></h:outputText>
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValor}" escape="false"></h:outputText>
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricao}" escape="false" />
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getSalario()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaCONTSAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getSalario()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorContextoSalario}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getSalario()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoContextoSalario}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getSalarioCargoAtual()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaCONTSALAT}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getSalario()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorContextoSalarioAtual}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getSalario()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoContextoSalarioAtual}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getSituacaoFuncionario()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaSITFUNC}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getSituacaoFuncionario()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorContextoSituacao}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getSituacaoFuncionario()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoContextoSituacao}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getFormaContratacao()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaCONTRAT}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getFormaContratacao()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorContextoContratacao}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('contexto.getFormaContratacao()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoContextoContratacao}" />
+					</a4j:commandLink>
+				</h:panelGrid>
+				<br />
+				<div style="height: 16px; width: 16px; background-color: #a291d6; float: left; margin-right: 10px;" />
+				<h2>Eventos</h2>
+				<hr></hr>
+				<h:panelGrid columns="3" width="100%" columnClasses="width-90px, width-200px, width-500px" style="float: left;margin-bottom: 15px">
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSigla}" escape="false"></h:outputText>
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValor}" escape="false"></h:outputText>
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricao}" escape="false" />
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('eventos.e', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaEVTVLR}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('eventos.e', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorEVTVLR}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('eventos.e', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoEVT_VLR}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('eventos.r', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaEVTREF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('eventos.r', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorEVTREF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('eventos.r', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoEVT_REF}" />
+					</a4j:commandLink>
+				</h:panelGrid>
+				<br />
+				<div style="height: 16px; width: 16px; background-color: #8bc34a85; float: left; margin-right: 10px;" />
+				<h2>Mapas</h2>
+				<hr></hr>
+				<h:panelGrid columns="3" width="100%" columnClasses="width-90px, width-200px, width-500px" style="float: left; margin-bottom: 20px">
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSigla}" escape="false"></h:outputText>
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValor}" escape="false"></h:outputText>
+					<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricao}" escape="false" />
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.DIAS_TRABALHADOS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaDIAS_TRABALHADOS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.DIAS_TRABALHADOS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorDIAS_TRABALHADOS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.DIAS_TRABALHADOS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoDIAS_TRABALHADOS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VIGENCIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaVIGENCIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VIGENCIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorVIGENCIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VIGENCIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoVIGENCIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_IRRF', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaBASE_IRRF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_IRRF', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorBASE_IRRF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_IRRF', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoBASE_IRRF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.NUM_DEPENDENTE_IRRF', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaNUM_DEPENDENTE_IRRF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.NUM_DEPENDENTE_IRRF', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorNUM_DEPENDENTE_IRRF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.NUM_DEPENDENTE_IRRF', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoNUM_DEPENDENTE_IRRF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.NUM_DEPENDENTE_SF', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaNUM_DEPENDENTE_SF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.NUM_DEPENDENTE_SF', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorNUM_DEPENDENTE_SF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.NUM_DEPENDENTE_SF', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoNUM_DEPENDENTE_SF}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VLR_DEPENDENTE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaVLR_DEPENDENTE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VLR_DEPENDENTE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorVLR_DEPENDENTE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VLR_DEPENDENTE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoVLR_DEPENDENTE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaBASE_PREVIDENCIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorBASE_PREVIDENCIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoBASE_PREVIDENCIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.PREV_PROPRIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaPREV_PROPRIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.PREV_PROPRIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorPREV_PROPRIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.PREV_PROPRIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoPREV_PROPRIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VLR_REFERENCIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaVLR_REFERENCIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VLR_REFERENCIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorVLR_REFERENCIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VLR_REFERENCIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoVLR_REFERENCIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.TOTAL_PROVENTOS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaTOTAL_PROVENTOS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.TOTAL_PROVENTOS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorTOTAL_PROVENTOS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.TOTAL_PROVENTOS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoTOTAL_PROVENTOS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.MESES_TRABALHADOS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaMESES_TRABALHADOS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.MESES_TRABALHADOS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorMESES_TRABALHADOS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.MESES_TRABALHADOS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoMESES_TRABALHADOS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.MESES_TRABALHADOS_QUINQUENIO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaMESES_TRABALHADOS_QUINQUENIO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.MESES_TRABALHADOS_QUINQUENIO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorMESES_TRABALHADOS_QUINQUENIO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.MESES_TRABALHADOS_QUINQUENIO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msghelp_formula_folha_pagamento_formulaDescricaoMESES_TRABALHADO_QUINQUENIO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_VT', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaINCIDE_VT}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_VT', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorINCIDE_VT}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_VT', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoINCIDE_VT}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.SALARIO_FAMILIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaSALARIO_FAMILIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.SALARIO_FAMILIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorSALARIO_FAMILIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.SALARIO_FAMILIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoSALARIO_FAMILIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaINCIDE_PLANO_SAUDE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorINCIDE_PLANO_SAUDE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoINCIDE_PLANO_SAUDE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaINCIDE_PLANO_SAUDE_FERIAS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorINCIDE_PLANO_SAUDE_FERIAS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoINCIDE_PLANO_SAUDE_FERIAS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ASSOCIACAO_SINDICATO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaASSOCIACAO_SINDICATO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ASSOCIACAO_SINDICATO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorASSOCIACAO_SINDICATO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ASSOCIACAO_SINDICATO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoASSOCIACAO_SINDICATO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaADICIONAL_TEMPO_SERVICO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorADICIONAL_TEMPO_SERVICO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoADICIONAL_TEMPO_SERVICO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VALE_TRANSPORTE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaVALE_TRANSPORTE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VALE_TRANSPORTE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorVALE_TRANSPORTE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.VALE_TRANSPORTE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoVALE_TRANSPORTE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_TOTAL', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaBASE_PREVIDENCIA_TOTAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_TOTAL', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorBASE_PREVIDENCIA_TOTAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_TOTAL', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoBASE_PREVIDENCIA_TOTAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_OBRIGATORIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaBASE_PREVIDENCIA_OBRIGATORIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_OBRIGATORIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorBASE_PREVIDENCIA_OBRIGATORIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_OBRIGATORIA', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoBASE_PREVIDENCIA_OBRIGATORIA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.PLANO_SAUDE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaPLANO_SAUDE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.PLANO_SAUDE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorPLANO_SAUDE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.PLANO_SAUDE', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoPLANO_SAUDE}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.POSSUI_ADIANTAMENTO_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaPOSSUI_ADIANTAMENTO_FERIAS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.POSSUI_ADIANTAMENTO_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorPOSSUI_ADIANTAMENTO_FERIAS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.POSSUI_ADIANTAMENTO_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoPOSSUI_ADIANTAMENTO_FERIAS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ND_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaND_FERIAS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ND_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorND_FERIAS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ND_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoND_FERIAS}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.DIAS_ABONO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaDIAS_ABONO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.DIAS_ABONO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorDIAS_ABONO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.DIAS_ABONO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoDIAS_ABONO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.PRIMEIRO_DIA_MES', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSigla1DIAMES}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.PRIMEIRO_DIA_MES', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValor1DIAMES}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.PRIMEIRO_DIA_MES', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricao1DIAMES}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ULTIMO_DIA_MES', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaMESATUAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ULTIMO_DIA_MES', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorMESATUAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ULTIMO_DIA_MES', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoMESATUAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ANO_ATUAL', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaANOATUAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ANO_ATUAL', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorANOATUAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ANO_ATUAL', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoANOATUAL}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.EVT_FIXO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaEVTFIXO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.EVT_FIXO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorEVTFIXO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.EVT_FIXO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoEVTFIXO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaADTFER}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorADTFER}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoADTFER}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO_13', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaTSERV13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO_13', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorTSERV13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_TEMPO_SERVICO_13', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoTSERV13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.SECAO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaSECAO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.SECAO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorSECAO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.SECAO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoSECAO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaADFER}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorADFER}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ADICIONAL_FERIAS', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoADFER}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.AVO_13', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaAVO_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.AVO_13', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorAVO_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.AVO_13', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoAVO_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.AVO_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaAVO_Ferias}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.AVO_13', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorAVO_Ferias}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.AVO_13', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoAVO_Ferias}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.30_JUNHO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSigla30Junho}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.30_JUNHO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValor30_JUNHO}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.30_JUNHO', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricao30Junho}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mesAtual()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaMesAtual}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mesAtual()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorMesAtual}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mesAtual()', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoMesAtual}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.AFASTAMENTO ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaAFASTA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.AFASTAMENTO ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorAFASTA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.AFASTAMENTO ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoAFASTA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.SITUACAO_AFASTAMENTO ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaSITAFAST}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.SITUACAO_AFASTAMENTO ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorSITAFAST}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.SITUACAO_AFASTAMENTO ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoSITAFAST}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.QUANTIDADE_DIAS_AFASTAMENTO ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaDIASAFA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.QUANTIDADE_DIAS_AFASTAMENTO ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorDIASAFA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.QUANTIDADE_DIAS_AFASTAMENTO ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoDIASAFA}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_INSS_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaBASE_INSS_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_INSS_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorBASE_INSS_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_INSS_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoBASE_INSS_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_IRRF_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaBASE_IRRF_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_IRRF_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorBASE_IRRF_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_IRRF_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoBASE_IRRF_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaINCIDE_PLANO_SAUDE_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorINCIDE_PLANO_SAUDE_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.INCIDE_PLANO_SAUDE_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoINCIDE_PLANO_SAUDE_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ASSOCIACAO_SINDICATO_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaASSOCIACAO_SINDICATO_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ASSOCIACAO_SINDICATO_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorASSOCIACAO_SINDICATO_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.ASSOCIACAO_SINDICATO_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoASSOCIACAO_SINDICATO_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_OBRIGATORIA_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaSiglaBASE_PREVIDENCIA_OBRIGATORIA_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_OBRIGATORIA_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaValorBASE_PREVIDENCIA_OBRIGATORIA_13}" />
+					</a4j:commandLink>
+					<a4j:commandLink styleClass="commandLinkFormula" onclick="concatenarFormula('mapa.BASE_PREVIDENCIA_OBRIGATORIA_13 ', indice, '')" oncomplete="#{rich:component('panelLegenda')}.hide();">
+						<h:outputText value="#{msg.help_formula_folha_pagamento_formulaDescricaoBASE_PREVIDENCIA_OBRIGATORIA_13}" />
+					</a4j:commandLink>
+				</h:panelGrid>
+			</h:form>
+			<br />
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

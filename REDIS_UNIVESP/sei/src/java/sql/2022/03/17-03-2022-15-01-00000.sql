@@ -1,0 +1,1 @@
+delete from dashboard d where tipodashboard  = 'BANCO_CURRICULUM';

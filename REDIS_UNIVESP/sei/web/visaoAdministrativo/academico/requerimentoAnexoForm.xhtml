@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+
+<h:form id="form">
+	<h:commandLink action="#{RequerimentoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+
+	<rich:tabPanel width="100%" activeItem="form:richTabMaterial" switchType="ajax">
+		<rich:tab id="richTab" header="Dados Básicos" action="#{RequerimentoControle.navegarAbaDadosBasicos}">
+
+		</rich:tab>
+
+		<rich:tab id="richQuestionarioAluno" render="listaPerguntaVis" action="#{RequerimentoControle.realizarResponderQuestionarioNavegandoAba}" rendered="#{RequerimentoControle.isPermiteVisualizarQuestionario}" header="#{msg_aplic.prt_Requerimento_questionarioRequerente}">
+
+		</rich:tab>
+
+		<rich:tab id="richTramite" action="#{RequerimentoControle.navegarAbaTramite}" rendered="#{(!RequerimentoControle.requerimentoVO.novoObj and  !RequerimentoControle.isRequerimentoPessoaLogada and RequerimentoControle.usuarioLogado.isApresentarVisaoAdministrativa) || (!RequerimentoControle.requerimentoVO.novoObj and RequerimentoControle.usuarioLogado.isApresentarVisaoAluno) || (!RequerimentoControle.requerimentoVO.novoObj and ((RequerimentoControle.permitirRequerenteVisualizarTramite and RequerimentoControle.isRequerimentoPessoaLogada) or (!RequerimentoControle.isRequerimentoPessoaLogada)) and RequerimentoControle.usuarioLogado.isApresentarVisaoProfessor) || (!RequerimentoControle.requerimentoVO.novoObj and ((RequerimentoControle.permitirRequerenteVisualizarTramite and RequerimentoControle.isRequerimentoPessoaLogada) or (!RequerimentoControle.isRequerimentoPessoaLogada)) and RequerimentoControle.usuarioLogado.isApresentarVisaoCoordenador)}"
+			header="#{msg_aplic.prt_Requerimento_tramiteEntreDepartamentos}">
+
+		</rich:tab>
+		<rich:tab id="richTabMaterial" header="Arquivo(s) Anexado(s)">
+			<h:panelGroup layout="block" styleClass="row mn">
+				<h:panelGroup rendered="#{!RequerimentoControle.isRequerimentoPessoaLogada or RequerimentoControle.permitirRequerenteAnexarArquivo}" id="pgMaterialRequerimento">
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:outputText styleClass="tituloCampos" value="Descrição" />
+						<h:inputText id="descricaoMaterialRequerimento" size="80" maxlength="160" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.materialRequerimento.descricao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" id="panelUploadArquivoAnexo" >
+						<otm:outputHelp id="tamalhoUpload" styleClass="tituloCampos" value="#{msg_aplic.prt_UploadArquivos_escolherArquivo}" tooltip="#{RequerimentoControle.tamanhoMaximoUpload}" />
+						<rich:fileUpload listHeight="60" render="form:tabMensagens, form:panelUploadArquivoAnexo" listWidth="390" acceptedTypes="pdf, txt, doc, docx, xls, xlsx, png, jpg, jpeg, gif" noDuplicate="true" fileUploadListener="#{RequerimentoControle.upLoadArquivoMaterialReq}" maxFilesQuantity="1" addLabel="Selecionar Arquivo" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{RequerimentoControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." allowFlash="false" cancelEntryControlLabel="Cancelar" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllLabel=" " clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" id="uploadRequerimento" immediateUpload="true" serverErrorLabel="Arquivo não Enviado. Formato inválido do arquivo" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');" sizeExceededLabel="alert('Arquivo não Enviado. Tamanho Máximo Permitido #{UploadArquivosComunsControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB.');">
+							<a4j:ajax event="uploadcomplete" render="form:tabMensagens, form:panelUploadArquivoAnexo" />
+						</rich:fileUpload>
+						<otm:spacer width="auto" />
+						<h:outputText styleClass="tituloCampos" value="( #{RequerimentoControle.materialRequerimento.arquivoVO.descricao} )" rendered="#{!empty RequerimentoControle.materialRequerimento.arquivoVO.descricao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Requerimento_materialRequerimento_disponibilizarParaRequerente}" rendered="#{!RequerimentoControle.isRequerimentoPessoaLogada}" />
+						<otm:selectBooleanCheckbox id="disponibilizarParaRequerente" value="#{RequerimentoControle.materialRequerimento.disponibilizarParaRequerente}" rendered="#{!RequerimentoControle.isRequerimentoPessoaLogada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5" rendered="#{!RequerimentoControle.isRequerimentoPessoaLogada or RequerimentoControle.permitirRequerenteAnexarArquivo}">
+					<otm:commandButton rendered="#{RequerimentoControle.materialRequerimento.codigo eq 0}" id="adicionarMaterialRequerimento" value="Adicionar" styleClass="btn btn-primary pl30 pr30 mr5" icon="#{msg_botoes.btn_icon_adicionar_embutido}" render="form, form:richTramite"  action="#{RequerimentoControle.adicionarMaterialRequerimento}" accesskey="8" image="#{resource['imagens/botaoAdicionarLista.png']}" />
+					<otm:commandButton accesskey="2" image="#{resource['imagens/botaoAlterar.png']}" id="editarMaterialRequerimento" rendered="#{RequerimentoControle.materialRequerimento.codigo > 0}" styleClass="btn btn-info pl30 pr30 mr5" icon="#{msg_botoes.btn_icon_editar_embutido}" value="Alterar" action="#{RequerimentoControle.alterarDescricaoMaterialRequerimento}" render="form, form:pgListaMaterialRequerimento" />
+					<otm:commandButton action="#{RequerimentoControle.cancelarEdicaoMaterialRequerimento}" accesskey="3" id="btnCancelarContaPagar" rendered="#{RequerimentoControle.materialRequerimento.codigo > 0}" value="Cancelar" styleClass="btn btn-danger pl30 pr30" icon="#{msg_botoes.btn_icon_cancelar_embutido}" render="form:pgMaterialRequerimento, form" />
+				</h:panelGroup>
+				<h:panelGroup id="pgListaMaterialRequerimento">
+					<rich:dataTable id="listamaterialRequerimento" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" rows="10" columnClasses="colunaAlinhamento" value="#{RequerimentoControle.requerimentoVO.materialRequerimentoVOs}" var="materialRequerimentoVOItem">
+						<rich:column filterType="custom" filterExpression="#{(materialRequerimentoVOItem.disponibilizarParaRequerente and RequerimentoControle.isRequerimentoPessoaLogada) or (!RequerimentoControle.isRequerimentoPessoaLogada)}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_descricao}" />
+							</f:facet>
+							<h:outputText value="#{materialRequerimentoVOItem.descricao}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_arquivo}" />
+							</f:facet>
+							<h:outputText value="#{materialRequerimentoVOItem.arquivoVO.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Requerimento_materialRequerimento_usuarioDisponibilizouArquivo}" />
+							</f:facet>
+							<h:outputText value="#{materialRequerimentoVOItem.usuarioDisponibilizouArquivo.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Requerimento_materialRequerimento_dataDisponibilizacaoArquivo}" />
+							</f:facet>
+							<h:outputText value="#{materialRequerimentoVOItem.dataDisponibilizacaoArquivo_Apresentar}">
+							</h:outputText>
+						</rich:column>
+						<rich:column rendered="#{!RequerimentoControle.isRequerimentoPessoaLogada}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Requerimento_materialRequerimento_disponibilizarParaRequerente}" />
+							</f:facet>
+							<otm:selectBooleanCheckbox value="#{materialRequerimentoVOItem.disponibilizarParaRequerente}" disabled="#{materialRequerimentoVOItem.usuarioDisponibilizouArquivo.codigo ne LoginControle.usuarioLogado.codigo}">
+								<a4j:ajax event="change" render="form:pgListaMaterialRequerimento" listener="#{RequerimentoControle.alterarDisponibilizarParaRequerenteMaterialRequerimento}" />
+							</otm:selectBooleanCheckbox>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Download" />
+							</f:facet>
+							<a4j:commandLink immediate="true" execute="@this" render="form" id="downloadMaterialRequerimento" rendered="#{materialRequerimentoVOItem.arquivoVO.codigo ne 0 and RequerimentoControle.usuarioLogado.isApresentarVisaoAluno}" oncomplete="#{materialRequerimentoVOItem.arquivoVO.servidorArquivoOnline eq 'APACHE'} ? location.href='../DownloadSV' : abrirPopup('../DownloadSV', 'DownloadSV_#{materialRequerimentoVOItem.arquivoVO.codigo}',950,595)" action="#{RequerimentoControle.realizarDownloadArquivo(materialRequerimentoVOItem.arquivoVO)}">
+								<span class="#{msg_botoes.btn_icon_download} iconePequeno border-radius-all" />
+							</a4j:commandLink>
+							<otm:commandIcon rendered="#{materialRequerimentoVOItem.arquivoVO.codigo ne 0 and !RequerimentoControle.usuarioLogado.isApresentarVisaoAluno}" oncomplete="location.href='../../DownloadSV'" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download} iconePequeno" action="#{RequerimentoControle.realizarDownloadMaterialRequerimento}" />
+							<otm:commandIcon icon="fas fa-eye btn-white btn-primary iconePequeno" oncomplete="#{rich:component('panelPreviewAnexo')}.show();" render="formPreviewAnexo" tooltip="Visualizar Arquivo" action="#{RequerimentoControle.realizarVisualizarArquivoRequerimento(materialRequerimentoVOItem.arquivoVO)}" rendered="#{(materialRequerimentoVOItem.arquivoVO.isPdF or materialRequerimentoVOItem.arquivoVO.isImagem) and RequerimentoControle.usuarioLogado.isApresentarVisaoAdministrativa}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<h:panelGroup>
+								<otm:commandIcon id="editarMaterialRequerimento" tooltip="Editar" rendered="#{materialRequerimentoVOItem.usuarioDisponibilizouArquivo.codigo eq LoginControle.usuarioLogado.codigo}" render="form" action="#{RequerimentoControle.editarMaterialRequerimento}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+								<otm:commandIcon id="removermaterialRequerimento" tooltip="Remover" render="form:listamaterialRequerimento, form:mensagem" action="#{RequerimentoControle.removerMaterialRequerimento}" accesskey="8" icon="#{msg_botoes.btn_icon_remover} iconePequeno" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+							</h:panelGroup>
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="listamaterialRequerimento" boundaryControls="auto" stepControls="auto" fastControls="hide" maxPages="10" id="scListamaterialRequerimentoVOs" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+			</h:panelGroup>
+		</rich:tab>
+	</rich:tabPanel>
+</h:form>
+</html>

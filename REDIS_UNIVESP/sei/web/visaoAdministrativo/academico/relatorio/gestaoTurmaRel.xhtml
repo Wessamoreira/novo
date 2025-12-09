@@ -1,0 +1,968 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_GestaoTurma_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<!-- 		<ui:include src="../../../loadsRel.xhtml" /> -->
+		<style>
+.botaoVerde {
+	color: #fff;
+	opacity: 0.7;
+	margin: 0 3px;
+	font-size: 13px;
+	font-weight: bold;
+	padding: 1px 4px;
+	border-radius: 3px;
+	display: inline-block;
+	text-decoration: none;
+	-moz-border-radius: 3px;
+	border: 1px solid #0BF95A;
+	-webkit-border-radius: 3px;
+	background: url('../../../resouces/V2/imagens/degrade4.png') repeat-x
+		#0BF95A;
+}
+
+.rf-cp-hdr {
+	border-right: solid 1px #D4CFC7 !important;
+	border-bottom: solid 1px #D4CFC7 !important;
+	border-left: solid 1px #D4CFC7 !important;
+	border-top: solid 1px #D4CFC7 !important;
+	background: none !important;
+	background-image: none !important;
+	background-color: #F8F8F8 !important;
+}
+
+.rich-stglpanel-header {
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	font-weight: normal;
+	font-style: italic;
+}
+
+.linhaPar {
+	background-color: #FFFFF;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.linhaImpar {
+	background-color: #F4F4F4;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+}
+</style>
+		
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelGravarFiltros" autosized="true" shadowOpacity="true" width="450" height="100" onshow="document.getElementById('formGravarFiltros:nomeAgrupador').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Gravar Filtros"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkGravarFiltros" />
+					<rich:componentControl target="panelGravarFiltros" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formGravarFiltros">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="Será gravado apena os filtros de situação das turma e o filtro do período letivo. Informe abaixo o nome das combinações dos filtros." />
+					<h:inputText styleClass="form-control camposObrigatorios" value="#{GestaoTurmaRelControle.nomeAgrupadorFiltros}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton styleClass="btn btn-dark mr5" value="Gravar" icon="#{msg_botoes.btn_icon_gravar_embutido}" id="gravarFiltros" render="form:msgs, apresentarDisciplina" action="#{GestaoTurmaRelControle.persistirFiltros}" alt="#{msg_botoes.btn_gravar}" oncomplete="#{rich:component('panelGravarFiltros')}.hide();" />
+					<otm:commandButton styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" id="fecharGravarFiltros" alt="Fechar" oncomplete="#{rich:component('panelGravarFiltros')}.hide();" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFiltros" autosized="false" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Selecionar/Excluir Filtro"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkFiltros" />
+					<rich:componentControl target="panelFiltros" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFiltros">
+				<rich:dataTable id="listFiltros" style="width:100%" rows="10" value="#{GestaoTurmaRelControle.layoutPadraoVOs}" var="layout">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Filtro"></h:outputText>
+						</f:facet>
+						<a4j:commandLink render="pgFiltros, filtragem, resultadoConsulta" execute="@this, filtragem" oncomplete="#{rich:component('panelFiltros')}.hide();" action="#{GestaoTurmaRelControle.selecionarFiltros}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{layout.agrupador}"></h:outputText>
+						</a4j:commandLink>
+					</rich:column>
+					<rich:column style="text-align:center">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}"></h:outputText>
+						</f:facet>
+						<otm:commandIcon action="#{GestaoTurmaRelControle.selecionarFiltros}" execute="@this, filtragem" render="pgFiltros, resultadoConsulta, filtragem" oncomplete="#{rich:component('panelFiltros')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+						<otm:commandIcon action="#{GestaoTurmaRelControle.excluirFiltros}" render="formFiltros, form" execute="@form" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Excluir" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller for="listFiltros" stepControls="auto" fastControls="hide" boundaryControls="auto" id="scrFiltros"></rich:dataScroller>
+					</f:facet>
+				</rich:dataTable>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAlterarTurma" autosized="false" shadowOpacity="true" width="600" height="150" onshow="document.getElementById('formAlterarTurma:alterarTurma').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Confirmar Alteração Situação Turma"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkAlterarTurma" />
+					<rich:componentControl target="panelAlterarTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAlterarTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<h:outputText styleClass="field control-label tituloCampos font-weight-bold" value="Deseja Alterar a Situção da Turma #{GestaoTurmaRelControle.gestaoTurmaRelVO.turmaVO.identificadorTurma} de #{GestaoTurmaRelControle.gestaoTurmaRelVO.turmaVO.situacao_Apresentar} para  #{GestaoTurmaRelControle.gestaoTurmaRelVO.turmaVO.situacao eq 'AB' ? 'Fechada' : 'Aberta'} ? " />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton styleClass="btn btn-primary mr5" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Confirmar" id="alterarTurma" render="form:resultadoConsulta, form:msgs" execute="form:resultadoConsulta, form:msgs" action="#{GestaoTurmaRelControle.alteracaoSituacaoTurma}" alt="#{msg_botoes.btn_gravar}" oncomplete="#{rich:component('panelAlterarTurma')}.hide()" />
+					<otm:commandButton styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" id="naoalterarTurma" alt="Fechar" oncomplete="#{rich:component('panelAlterarTurma')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAlunos" shadowOpacity="true" width="800" height="420">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Lista de Alunos"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkAlunos" />
+					<rich:componentControl target="panelAlunos" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAlunos">
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:inputText value="#{GestaoTurmaRelControle.gestaoTurmaRelVO.turmaVO.identificadorTurma}" styleClass="form-control camposSomenteLeitura" readonly="true" size="30">
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Disciplina_tituloForm}" />
+					<h:inputText value="#{GestaoTurmaRelControle.gestaoTurmaDisciplinaRelVO.disciplinaVO.nome}" styleClass="form-control camposSomenteLeitura" readonly="true" size="50">
+					</h:inputText>
+				</h:panelGroup>
+				<rich:dataTable id="tableMatricula" rows="10" width="100%" headerClass="consulta" value="#{GestaoTurmaRelControle.alunosPorUnidadeCursoTurmaRelVOs}" var="matriculaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+						</f:facet>
+						<h:outputText value="#{matriculaItem.matricula}"></h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_curso}" />
+						</f:facet>
+						<h:outputText value="#{matriculaItem.curso}"></h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Aluno_tituloForm}" />
+						</f:facet>
+						<h:outputText value="#{matriculaItem.nomeAluno}"></h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação" />
+						</f:facet>
+						<h:outputText value="#{matriculaItem.situacaoMatriculaPeriodoApresentar}"></h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Turma Base" />
+						</f:facet>
+						<h:outputText value="#{matriculaItem.turmaBase}"></h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Turma Prática" />
+						</f:facet>
+						<h:outputText value="#{matriculaItem.turmaPratica}"></h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Turma Teórica" />
+						</f:facet>
+						<h:outputText value="#{matriculaItem.turmaTeorica}"></h:outputText>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formAlunos:tableMatricula" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scrollTableMatricula" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="imprimirPDF" render="form" execute="form" oncomplete="#{GestaoTurmaRelControle.download}" action="#{GestaoTurmaRelControle.imprimirListaAlunosPdf}" value="Gerar Relatório (PDF)" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_pdf_embutido}" accesskey="2" />
+					<otm:spacer width="5px"></otm:spacer>
+					<otm:commandButton id="imprimirExcel" render="form" execute="form" oncomplete="#{GestaoTurmaRelControle.download}" action="#{GestaoTurmaRelControle.imprimirListaAlunosExcel}" value="Gerar Relatório (Excel)" styleClass="btn btn-success" icon="#{msg_botoes.btn_icon_excel_embutido}" accesskey="2" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{GestaoTurmaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" autosized="false" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtrar Curso"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink19" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup id="cursos" style="height:485px;width:99%">
+						<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+							<rich:dataTable align="left" id="filtrosCurso" width="100%" var="cursoItens" value="#{GestaoTurmaRelControle.cursoVOs}">
+								<rich:column filterType="custom" filterValue="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO').filtro}" filter="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="cursos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="cursos" execute="cursos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosCurso')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{cursoItens.codigo} - #{cursoItens.nome}" />
+								</rich:column>
+								<rich:column filterType="custom" filterExpression="#{!cursoItens.filtrarCursoVO}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" style="width:100%;text-align:center">
+											<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;text-align:center" render="formCurso, form:nomeCurso" execute="formCurso, form:nomeCurso" action="#{GestaoTurmaRelControle.realizarMarcacaoCursos}">
+												<f:setPropertyActionListener value="true" target="#{GestaoTurmaRelControle.marcarTodosCursos}" />
+											</a4j:commandButton>
+										</h:panelGroup>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="form:nomeCurso, cursos" execute="form:nomeCurso, cursos" action="#{GestaoTurmaRelControle.verificarTodosCursosSelecionados}">
+										<f:setPropertyActionListener value="true" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+							<rich:dataTable align="left" id="filtrosCurso2" width="100%" var="cursoItens" value="#{GestaoTurmaRelControle.cursoVOs}">
+								<rich:column filterType="custom" filterExpression="#{cursoItens.filtrarCursoVO}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" style="width:100%;text-align:center">
+											<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;text-align:center" render="formCurso, form:nomeCurso" execute="formCurso, form:nomeCurso" action="#{GestaoTurmaRelControle.realizarMarcacaoCursos}">
+												<f:setPropertyActionListener value="false" target="#{GestaoTurmaRelControle.marcarTodosCursos}" />
+											</a4j:commandButton>
+										</h:panelGroup>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="form:nomeCurso, cursos" execute="formCurso, form:nomeCurso" action="#{GestaoTurmaRelControle.verificarTodosCursosSelecionados}">
+										<f:setPropertyActionListener value="false" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+								<rich:column filterType="custom" filterValue="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO').filtro}" filter="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this, pgFiltros" render="cursos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="cursos" execute="cursos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosCurso2')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:panelGroup style="vertical-align:middle">
+										<h:outputText value="#{cursoItens.codigo} - #{cursoItens.nome}" />
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurno" autosized="false" shadowOpacity="true" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtrar Turno"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink20" />
+					<rich:componentControl target="panelTurno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurno">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup id="turnos" style="height:485px;width:99%">
+						<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+							<rich:dataTable align="left" id="filtrosturno" width="100%" var="turnoItens" value="#{GestaoTurmaRelControle.turnoVOs}">
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosturno', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosturno', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="turnos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="turnos" execute="turnos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosturno')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{turnoItens.nome}" />
+								</rich:column>
+								<rich:column filterType="custom" filterExpression="#{!turnoItens.filtrarTurnoVO}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;" render="formTurno, form:turnos" execute="formTurno, form:turnos" action="#{GestaoTurmaRelControle.realizarMarcacaoTurnos}">
+											<f:setPropertyActionListener value="true" target="#{GestaoTurmaRelControle.marcarTodosTurnos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="formTurno, form:turnos" execute="formTurno, form:turnos" action="#{GestaoTurmaRelControle.verificarTodosTurnosSelecionados}">
+										<f:setPropertyActionListener value="true" target="#{turnoItens.filtrarTurnoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+							<rich:dataTable align="left" id="filtrosturno2" width="100%" var="turnoItens" value="#{GestaoTurmaRelControle.turnoVOs}">
+								<rich:column filterType="custom" filterExpression="#{turnoItens.filtrarTurnoVO}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;" render="formTurno, form:turnos" execute="formTurno, form:turnos" action="#{GestaoTurmaRelControle.realizarMarcacaoTurnos}">
+											<f:setPropertyActionListener value="false" target="#{GestaoTurmaRelControle.marcarTodosTurnos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="formTurno, form:turnos" execute="formTurno, form:turnos" action="#{GestaoTurmaRelControle.verificarTodosTurnosSelecionados}">
+										<f:setPropertyActionListener value="false" target="#{turnoItens.filtrarTurnoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosturno2', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosturno2', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this, pgFiltros" render="filtrosturno2" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="turnos" execute="turnos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosturno2')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:panelGroup style="vertical-align:middle">
+										<h:outputText value="#{turnoItens.nome}" />
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplina" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formDisciplina:valorConsultaDisciplina').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_consultarDisciplina}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkDisciplina" />
+					<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaDisciplina" value="#{GestaoTurmaRelControle.campoConsultaDisciplina}">
+						<f:selectItems value="#{GestaoTurmaRelControle.tipoConsultaComboDisciplina}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaDisciplina" size="10" styleClass="form-control campos" value="#{GestaoTurmaRelControle.valorConsultaDisciplina}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarDisciplina" render="formDisciplina:mensagemConsultaDisciplina, formDisciplina:resultadoConsultaDisciplina, formDisciplina:scResultadoDisciplina" action="#{GestaoTurmaRelControle.consultarDisciplina}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaDisciplina" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{GestaoTurmaRelControle.listaConsultaDisciplina}" rows="5" var="disciplinaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoTurmaRelControle.selecionarDisciplina}" render="form:pgFiltros, form:resultadoConsulta" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="#{disciplinaItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoTurmaRelControle.selecionarDisciplina}" render="form:pgFiltros, form:resultadoConsulta" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="#{disciplinaItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{GestaoTurmaRelControle.selecionarDisciplina}" render="form:pgFiltros, form:resultadoConsulta" oncomplete="#{rich:component('panelDisciplina')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tootip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formDisciplina:resultadoConsultaDisciplina" boundaryControls="auto" fastControls="hide" stepControls="auto" maxPages="10" id="scResultadoDisciplina" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaDisciplina" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{GestaoTurmaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="750" height="350" onshow="document.getElementById('formTurma:valorConsultaTurma').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Turma_consultarTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkTurma" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{GestaoTurmaRelControle.campoConsultaTurma}">
+						<f:selectItems value="#{GestaoTurmaRelControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaTurma" size="10" styleClass="form-control campos" value="#{GestaoTurmaRelControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarTurma" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{GestaoTurmaRelControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{GestaoTurmaRelControle.listaConsultaTurma}" rows="5" var="turmaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoTurmaRelControle.selecionarTurma}" render="form:pgFiltros, form:resultadoConsulta" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_identificadorTurma}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoTurmaRelControle.selecionarTurma}" render="form:pgFiltros, form:resultadoConsulta" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItem.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_curso}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoTurmaRelControle.selecionarTurma}" render="form:pgFiltros, form:resultadoConsulta" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItem.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_turno}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoTurmaRelControle.selecionarTurma}" render="form:pgFiltros, form:resultadoConsulta" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItem.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{GestaoTurmaRelControle.selecionarTurma}" render="form:pgFiltros, form:resultadoConsulta" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" maxPages="10" id="scResultadoTurma" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{GestaoTurmaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{GestaoTurmaRelControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="pgFiltros">
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_periodicidade}" />
+						<h:selectOneMenu disabled="#{(GestaoTurmaRelControle.filtrarPor eq 'turma' and GestaoTurmaRelControle.turmaVO.codigo ne 0) or (GestaoTurmaRelControle.filtrarPor eq 'curso' and !empty GestaoTurmaRelControle.cursosApresentar)}" styleClass="form-control camposObrigatorios" id="periodicidade" value="#{GestaoTurmaRelControle.periodicidade}">
+							<a4j:ajax event="change" listener="#{GestaoTurmaRelControle.consultarCurso}" execute="@this, pgFiltros" render="pgFiltros" />
+							<f:selectItems value="#{GestaoTurmaRelControle.listaSelectItemPeriodicidade}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+						<h:selectOneMenu styleClass="form-control campos" id="filtrarPor" value="#{GestaoTurmaRelControle.filtrarPor}">
+							<a4j:ajax event="change" execute="@this, pgFiltros" listener="#{GestaoTurmaRelControle.limparTurma}" render="pgFiltros" />
+							<f:selectItems value="#{GestaoTurmaRelControle.listaSelectItemFiltrarPor}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="#{GestaoTurmaRelControle.periodicidade eq 'INTEGRAL' ? 'col-md-6' : GestaoTurmaRelControle.periodicidade eq 'ANUAL' ? 'col-md-5' : 'col-md-4'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_unidadeEnsino}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" id="unidadeEnsino" value="#{GestaoTurmaRelControle.unidadeEnsinoVO.codigo}">
+						<a4j:ajax event="change" render="pgFiltros" execute="@this, pgFiltros" listener="#{GestaoTurmaRelControle.limparDadosPertinenteUnidadeEnsino}" />
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectItemUnidadeEnsino}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{GestaoTurmaRelControle.periodicidade ne 'INTEGRAL'}">
+					<h:outputText rendered="#{GestaoTurmaRelControle.periodicidade ne 'INTEGRAL'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_ano}" />
+					<h:inputText rendered="#{GestaoTurmaRelControle.periodicidade ne 'INTEGRAL'}" styleClass="form-control camposObrigatorios" size="4" maxlength="4" value="#{GestaoTurmaRelControle.ano}" onkeydown="aceitarSomenteValorNumerico(this)" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{GestaoTurmaRelControle.periodicidade eq 'SEMESTRAL'}">
+					<h:outputText rendered="#{GestaoTurmaRelControle.periodicidade eq 'SEMESTRAL'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_semestre}" />
+					<h:selectOneMenu rendered="#{GestaoTurmaRelControle.periodicidade eq 'SEMESTRAL'}" styleClass="form-control camposObrigatorios" id="semestre" value="#{GestaoTurmaRelControle.semestre}">
+						<a4j:ajax event="change" render="pgFiltros" execute="@this, pgFiltros" />
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectItemSemestre}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{GestaoTurmaRelControle.filtrarPor eq 'curso'}" id="turnos">
+					<h:outputText rendered="#{GestaoTurmaRelControle.filtrarPor eq 'curso'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turno_tituloForm}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText readonly="true" id="nomeTurno" styleClass="form-control camposSomenteLeitura" value="#{GestaoTurmaRelControle.turnosApresentar}" />
+						<span class="append-icon right"> <otm:commandIcon id="addTurno" action="#{GestaoTurmaRelControle.consultarTurnoFiltroRelatorio}" focus="nomeTurno" alt="Localizar Curso" render="formTurno" execute="formTurno" oncomplete="#{rich:component('panelTurno')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurno" alt="Limpas Dados" action="#{GestaoTurmaRelControle.limparTurnos}" render="form:turnos" execute="form:turnos" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{GestaoTurmaRelControle.filtrarPor eq 'curso'}">
+					<h:outputText rendered="#{GestaoTurmaRelControle.filtrarPor eq 'curso'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_tituloForm}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText rendered="#{GestaoTurmaRelControle.filtrarPor eq 'curso'}" readonly="true" id="nomeCurso" styleClass="form-control camposSomenteLeitura" value="#{GestaoTurmaRelControle.cursosApresentar}" />
+						<span class="append-icon right"> <otm:commandIcon rendered="#{GestaoTurmaRelControle.filtrarPor eq 'curso'}" action="#{GestaoTurmaRelControle.consultarCurso}" id="consultaDadosCurso" render="formCurso:cursos" alt="Localizar Curso" oncomplete="#{rich:component('panelCurso')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon rendered="#{GestaoTurmaRelControle.filtrarPor eq 'curso'}" action="#{GestaoTurmaRelControle.limparCursos}" id="limparDadosCurso" alt="Limpar Curso" render="form:nomeCurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{GestaoTurmaRelControle.filtrarPor eq 'turma'}">
+					<h:outputText rendered="#{GestaoTurmaRelControle.filtrarPor eq 'turma'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turma_tituloForm}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText rendered="#{GestaoTurmaRelControle.filtrarPor eq 'turma'}" id="nomeTurma" styleClass="form-control campos" value="#{GestaoTurmaRelControle.turmaVO.identificadorTurma}">
+							<a4j:ajax event="change" execute="@this, pgFiltros" render="pgFiltros" listener="#{GestaoTurmaRelControle.consultarTurmaPorIdentificadorTurma}"></a4j:ajax>
+						</h:inputText>
+						<span class="append-icon right"> <otm:commandIcon rendered="#{GestaoTurmaRelControle.filtrarPor eq 'turma'}" id="consultaDadosTurma" alt="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon rendered="#{GestaoTurmaRelControle.filtrarPor eq 'turma'}" action="#{GestaoTurmaRelControle.limparTurma}" id="limparDadosTurma" alt="Limpar Turma" render="form:pgFiltros" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{GestaoTurmaRelControle.turmaVO.codigo eq 0}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Disciplina_tituloForm}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText rendered="#{GestaoTurmaRelControle.turmaVO.codigo eq 0}" readonly="true" id="nomeDisciplina" styleClass="form-control camposSomenteLeitura" value="#{GestaoTurmaRelControle.disciplinaVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon rendered="#{GestaoTurmaRelControle.turmaVO.codigo eq 0}" id="consultaDadosDisciplina" alt="Localizar Disciplina" oncomplete="#{rich:component('panelDisciplina')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon rendered="#{GestaoTurmaRelControle.turmaVO.codigo eq 0}" action="#{GestaoTurmaRelControle.limparDisciplina}" id="limparDadosDisciplina" alt="Limpar Disciplina" render="form:nomeDisciplina" execute="form:nomeDisciplina" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{GestaoTurmaRelControle.turmaVO.codigo ne 0}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Codigo Disciplina" />
+					<h:selectOneMenu rendered="#{GestaoTurmaRelControle.turmaVO.codigo ne 0}" styleClass="form-control campos" id="codigoDisciplina" value="#{GestaoTurmaRelControle.disciplinaVO.codigo}">
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectDisciplina}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Filtrar Sub-Turma" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'apenas'}" id="filtrarSubTurma" value="#{GestaoTurmaRelControle.considerarFiltroSubTurma}">
+						<a4j:ajax event="change" render="pgFiltros, filtragem, form" execute="@this, pgFiltros, filtragem" listener="#{GestaoTurmaRelControle.realizarDesmarcacaoDisciplinaSubTurma}"></a4j:ajax>
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectItemConsiderarFiltroSubTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Filtrar Turma Agrupada" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'apenas'}" id="filtrarTurmaAgrupada" value="#{GestaoTurmaRelControle.considerarFiltroTurmaAgrupada}">
+						<a4j:ajax event="change" render="pgFiltros, filtragem, form" execute="@this, pgFiltros, filtragem" listener="#{GestaoTurmaRelControle.realizarDesmarcacaoDisciplinaTurmaAgrupada}"></a4j:ajax>
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectItemConsiderarFiltroTurmaAgrupada}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turma_situacao} Turma Base" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'apenas' or GestaoTurmaRelControle.considerarFiltroSubTurma eq 'apenas'}" id="situacaoTurma" value="#{GestaoTurmaRelControle.situacaoTurma}">
+						<a4j:ajax event="change" render="pgFiltros, filtragem, form" />
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turma_situacao} Sub-Turma" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'naofiltrar'}" id="situacaoSubTurma" value="#{GestaoTurmaRelControle.situacaoTurmaSubTurma}">
+						<a4j:ajax event="change" render="pgFiltros, filtragem, form" />
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turma_situacao} Turma Agrupada" />
+					<h:selectOneMenu styleClass="form-control campos" id="situacaoTurmaAgrupada" disabled="#{GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'naofiltrar'}" value="#{GestaoTurmaRelControle.situacaoTurmaAgrupada}">
+						<a4j:ajax event="change" render="pgFiltros, filtragem, form" />
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Horário Aula Turma Base" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'apenas' or GestaoTurmaRelControle.considerarFiltroSubTurma eq 'apenas'}" id="situacaoProgramacaoAula" value="#{GestaoTurmaRelControle.situacaoProgramacaoAula}">
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoProgramacaoAula}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Horário Aula Sub-Turma" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'naofiltrar'}" id="situacaoProgramacaoAulaSubTurma" value="#{GestaoTurmaRelControle.situacaoProgramacaoAulaSubTurma}">
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoProgramacaoAula}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Horário Aula Turma Agrupada" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'naofiltrar'}" id="situacaoProgramacaoAulaTurmaAgrupada" value="#{GestaoTurmaRelControle.situacaoProgramacaoAulaTurmaAgrupada}">
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoProgramacaoAula}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Matrícula Aluno Turma Base" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'apenas' or GestaoTurmaRelControle.considerarFiltroSubTurma eq 'apenas'}" id="situacaoMatricula" value="#{GestaoTurmaRelControle.situacaoMatricula}">
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoMatricula}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Matrícula Aluno Sub-Turma" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'naofiltrar'}" id="situacaoMatriculaSubTurma" value="#{GestaoTurmaRelControle.situacaoMatriculaSubTurma}">
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoMatricula}" />
+						<f:selectItem itemLabel="Possui Aluno Não Distribuído" itemValue="possuiMatriculaSemDistribuicao" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Controle Vaga Turma Base" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'apenas' or GestaoTurmaRelControle.considerarFiltroSubTurma eq 'apenas'}" id="situacaoVaga" value="#{GestaoTurmaRelControle.situacaoVaga}">
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoVaga}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Controle Vaga Sub-Turma" />
+					<h:selectOneMenu styleClass="form-control campos" disabled="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'naofiltrar'}" id="situacaoVagaSubTurma" value="#{GestaoTurmaRelControle.situacaoVagaSubTurma}">
+						<f:selectItems value="#{GestaoTurmaRelControle.listaSelectSituacaoVaga}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup id="apresentarDisciplina" rendered="#{GestaoTurmaRelControle.turmaVO.codigo eq 0}">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText rendered="#{GestaoTurmaRelControle.turmaVO.codigo eq 0}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turma_periodoLetivo} De" />
+						<h:inputText onkeydown="aceitarSomenteValorNumerico(this)" styleClass="form-control campos" value="#{GestaoTurmaRelControle.periodoLetivoDe}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText rendered="#{GestaoTurmaRelControle.turmaVO.codigo eq 0}" styleClass="field control-label tituloCampos" value="Fim" />
+						<h:inputText onkeydown="aceitarSomenteValorNumerico(this)" styleClass="form-control campos" value="#{GestaoTurmaRelControle.periodoLetivoAte}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center mt10 mb10">
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton render="formGravarFiltros" id="gravarFiltrosNovos" value="Gravar Filtros" icon="#{msg_bt.btn_icon_gravar_embutido}" styleClass="btn btn-dark mr5" alt="Gravar Filtros" oncomplete="#{rich:component('panelGravarFiltros')}.show();" image="#{resource['/imagens/iconeSalvar.gif']}" />
+				<otm:commandButton render="msgs" id="imprimir" execute="msgs" oncomplete="#{GestaoTurmaRelControle.download}" icon="#{msg_bt.btn_icon_pdf_embutido}" value="imprimir PDF" action="#{GestaoTurmaRelControle.imprimirPDF}" accesskey="3" styleClass="btn btn-danger dark btn-imprimir">
+				</otm:commandButton>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+				<otm:commandButton render="formFiltros" id="consultarFiltros" rendered="#{!empty GestaoTurmaRelControle.layoutPadraoVOs}" alt="Selecionar Filtros" value="Selecionar Filtros" styleClass="btn btn-default mr5" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelFiltros')}.show();" />
+				<a4j:commandLink render="form, form:resultadoConsulta" id="consultar" value="#{msg_bt.btn_consultar}" action="#{GestaoTurmaRelControle.consultarDadosRelatorio}" accesskey="1" styleClass="btn btn-default btn-consultar" style="margin-left:5px">
+					<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 12px;"></span>
+					<f:setPropertyActionListener for="consultar" target="#{GestaoTurmaRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+					<f:setPropertyActionListener for="consultar" target="#{GestaoTurmaRelControle.controleConsultaOtimizado.page}" value="1" />
+				</a4j:commandLink>
+			</h:panelGroup>
+			<h:panelGroup id="filtragem" layout="block" styleClass="col-md-12 m10" style="text-align:left;">
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'filtrar' and GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'filtrar'}" escape="false" value="Com estes filtros o sistema irá considerar as &#60;strong&#62;TURMAS BASE OU SUBTURMAS OU TURMAS AGRUPADAS&#60;/strong&#62;." />
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'filtrar' and GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'naofiltrar'}" escape="false" value="Com estes filtros o sistema irá considerar as &#60;strong&#62;TURMAS BASE OU SUBTURMAS&#60;/strong&#62;." />
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'naofiltrar' and GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'filtrar'}" escape="false" value="Com estes filtros o sistema irá considerar as &#60;strong&#62;TURMAS BASE OU TURMAS AGRUPADAS&#60;/strong&#62;." />
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'naofiltrar' and GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'naofiltrar'}" escape="false" value="Com estes filtros o sistema irá apenas as &#60;strong&#62;TURMAS BASE&#60;/strong&#62;." />
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{GestaoTurmaRelControle.considerarFiltroSubTurma eq 'apenas'}" escape="false" value="Com estes filtros o sistema irá apenas as &#60;strong&#62;SUBTURMAS&#60;/strong&#62;." />
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{GestaoTurmaRelControle.considerarFiltroTurmaAgrupada eq 'apenas'}" escape="false" value="Com estes filtros o sistema irá apenas as &#60;strong&#62;TURMAS AGRUPADAS&#60;/strong&#62;." />
+			</h:panelGroup>
+			<h:panelGroup id="resultadoConsulta">
+				<rich:dataTable width="100%" id="items" value="#{GestaoTurmaRelControle.controleConsultaOtimizado}" rendered="#{GestaoTurmaRelControle.controleConsultaOtimizado.apresentarListaConsulta}" rows="10" var="gestaoTurma">
+					<rich:column style="border-bottom:none !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_tituloForm}" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{gestaoTurma.turmaVO.identificadorTurma}" />
+					</rich:column>
+					<rich:column style="border-bottom:none !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_curso}" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{gestaoTurma.turmaVO.curso.nome}" />
+					</rich:column>
+					<rich:column style="border-bottom:none !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_turno}" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{gestaoTurma.turmaVO.turno.nome}" />
+					</rich:column>
+					<rich:column style="text-align:center;border-bottom:none !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_situacao}" />
+						</f:facet>
+						<h:panelGroup>
+							<!-- 							<h:outputText styleClass="field control-label tituloCampos" style="position:relative;top:0px" value="#{gestaoTurma.turmaVO.situacao_Apresentar}" /> -->
+							<otm:commandIcon execute="@this" tooltip="#{gestaoTurma.turmaVO.situacao_Apresentar}" icon="#{(gestaoTurma.turmaVO.situacao eq 'AB') ? msg_botoes.btn_icon_cadeadoAberto : msg_botoes.btn_icon_cadeadoFechado} iconePequeno" action="#{GestaoTurmaRelControle.selecionarGestaoTurma}" disabled="#{!LoginControle.permissaoAcessoMenuVO.turma}" oncomplete="#{rich:component('panelAlterarTurma')}.show()" render="formAlterarTurma" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column style="text-align:center;border-bottom:none !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_periodoLetivo}" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{gestaoTurma.turmaVO.peridoLetivo.descricao}" />
+					</rich:column>
+					<rich:column style="text-align:center;border-bottom:none !important">
+						<f:facet name="header">
+							<h:outputText value="Vaga" />
+						</f:facet>
+						<otm:commandIcon style="z-index:10000" disabled="#{!LoginControle.permissaoAcessoMenuVO.vagaTurma}" id="vagaTurmaTurma" alt="Vaga Turma" execute="@this" tooltip="#{gestaoTurma.vagaTurmaDisciplinaVO.vagaTurma > 0 ? 'Possui Controle de Vagas':'Não Possui Controle de Vagas'}" oncomplete="#{!LoginControle.permissaoAcessoMenuVO.vagaTurma} ? '' : abrirPopupMaximizado2('../vagaTurmaForm.xhtml?turma=#{gestaoTurma.turmaVO.codigo}', 'vagaTurmaForm?turma=#{gestaoTurma.turmaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoVagaTurmaPorGestaoTurma}" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" image="#{resource['/imagens/botaoHistoricoAluno.png']}" />
+					</rich:column>
+					<rich:column style="text-align:center;border-bottom:none !important">
+						<f:facet name="header">
+							<h:outputText value="Horário Aula" />
+						</f:facet>
+						<otm:commandIcon execute="@this, pgFiltros" disabled="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula}" id="programarAula" alt="Horário Aula" tooltip="#{gestaoTurma.horarioTurmaVO.codigo > 0 ? 'Possui Aula Programada':'Não Possui Aula Programada'}" oncomplete="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula} ? '' : abrirPopupMaximizado2('../programacaoAulaForm.xhtml?turma=#{gestaoTurma.turmaVO.codigo}', 'programacaoAulaCons?turma=#{gestaoTurma.turmaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoHorarioTurmaPorGestaoTurma}" icon="#{msg_botoes.btn_icon_calendario} iconePequeno" image="#{resource['/imagens/iconeCalendario.png']}" />
+					</rich:column>
+					<rich:column breakRowBefore="true" colspan="7">
+						<h:panelGroup layout="block" style="width:100%">
+							<rich:collapsiblePanel style="border:none;background-color:#F8F8F8" header="#{gestaoTurma.turmaVO.turmaSelecionada ? 'Ocultar Disciplinas' : 'Visualizar Disciplinas'}" expanded="#{gestaoTurma.turmaVO.turmaSelecionada}" switchType="ajax">
+								<rich:dataTable width="100%" headerClass="consulta" columnClasses="colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada" value="#{gestaoTurma.gestaoTurmaDisciplinaRelVOs}" var="gestaoDisciplina">
+									<f:facet name="header">
+										<rich:columnGroup>
+											<rich:column colspan="3">
+												<h:outputText value="Disciplina"></h:outputText>
+											</rich:column>
+											<rich:column rowspan="2">
+												<h:outputText value="Vagas"></h:outputText>
+											</rich:column>
+											<rich:column rowspan="2">
+												<h:outputText value="Matrículas Ativas"></h:outputText>
+											</rich:column>
+											<rich:column rowspan="2">
+												<h:outputText value="Pré-Matrículas"></h:outputText>
+											</rich:column>
+											<rich:column colspan="7">
+												<h:outputText value="Horário Aula"></h:outputText>
+											</rich:column>
+											<rich:column breakRowBefore="true">
+												<h:outputText value="Sub-Turma/Agrupada"></h:outputText>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Turma"></h:outputText>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="#{msg_aplic.prt_Turma_situacao}"></h:outputText>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="CH"></h:outputText>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Hora Aula"></h:outputText>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Qtde Aula Prog."></h:outputText>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Hora Aula Prog."></h:outputText>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Qtde Aula Reg."></h:outputText>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Hora Aula Reg."></h:outputText>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Opções"></h:outputText>
+											</rich:column>
+										</rich:columnGroup>
+									</f:facet>
+									<rich:column colspan="3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{gestaoDisciplina.disciplinaVO.codigo} -  #{gestaoDisciplina.disciplinaVO.nome}" />
+									</rich:column>
+									<rich:column style="text-align:center">
+										<h:panelGroup layout="block" style="width:100%">
+											<h:panelGroup layout="block" style="width:50%;float:left">
+												<h:outputText style="width: 100%; text-align:right; display: inline-block;" styleClass="field control-label tituloCampos" value="#{gestaoDisciplina.totalVaga}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" style="width:50%;float:left" id="icone1">
+												<otm:commandIcon disabled="#{!LoginControle.permissaoAcessoMenuVO.vagaTurma}" id="vagaTurmadDisTurma" alt="Vaga Turma" execute="@this" tooltip="#{gestaoDisciplina.vagaTurmaDisciplinaVO.codigo > 0 ? 'Possui Controle de Vagas':'Não Possui Controle de Vagas'}" oncomplete="#{!LoginControle.permissaoAcessoMenuVO.vagaTurma} ? '': abrirPopupMaximizado2('../vagaTurmaForm.xhtml?turma=#{gestaoTurma.turmaVO.codigo}', 'vagaTurmaForm?turma=#{gestaoTurma.turmaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoVagaTurmaPorGestaoDisciplina}" icon="#{msg_botoes.btn_icon_aluno} iconePequeno #{gestaoDisciplina.vagaTurmaDisciplinaVO.codigo ne 0 ? 'btn-success' : 'btn-primary'}" />
+											</h:panelGroup>
+											<rich:tooltip target="icone1" value="#{gestaoDisciplina.vagaTurmaDisciplinaVO.codigo > 0 ? 'Possui Controle de Vagas':'Não Possui Controle de Vagas'}" />
+										</h:panelGroup>
+									</rich:column>
+									<rich:column style="text-align:center">
+										<a4j:commandLink action="#{GestaoTurmaRelControle.consultarAlunoAtivoGestaoTurmaDisciplina}" render="formAlunos" execute="formAlunos" oncomplete="#{rich:component('panelAlunos')}.show()" rendered="#{gestaoDisciplina.totalMatriculado ne '0'}">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{gestaoDisciplina.totalMatriculado}" />
+										</a4j:commandLink>
+									</rich:column>
+									<rich:column style="text-align:center">
+										<a4j:commandLink action="#{GestaoTurmaRelControle.consultarAlunoPreMatriculaGestaoTurmaDisciplina}" render="formAlunos" execute="formAlunos" oncomplete="#{rich:component('panelAlunos')}.show()" rendered="#{gestaoDisciplina.totalPreMatriculado ne '0'}">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{gestaoDisciplina.totalPreMatriculado}" />
+										</a4j:commandLink>
+									</rich:column>
+									<rich:column style="text-align:center">
+										<h:outputText styleClass="field control-label tituloCampos" id="chDisciplina" rendered="#{gestaoDisciplina.horarioTurmaVO.codigo ne 0}" value="#{gestaoDisciplina.cargaHoraria}" />
+										<rich:tooltip target="chDisciplina" followMouse="true" direction="topLeft">
+											<h:panelGroup columns="1" width="100%">
+												<h:outputText styleClass="field control-label tituloCampos" value="Carga Horária Prática: #{gestaoDisciplina.cargaHorariaPratica}" />
+												<h:outputText styleClass="field control-label tituloCampos" value="Carga Horária Teórica: #{gestaoDisciplina.cargaHorariaTeorica}" />
+											</h:panelGroup>
+										</rich:tooltip>
+									</rich:column>
+									<rich:column style="text-align:center">
+										<h:outputText title="Hora Aula" styleClass="field control-label tituloCampos" rendered="#{gestaoDisciplina.horarioTurmaVO.codigo ne 0}" value="#{gestaoDisciplina.horaAula}" />
+									</rich:column>
+									<rich:column style="text-align:center">
+										<h:outputText title="Quantidade de Aulas Programadas" styleClass="field control-label tituloCampos" rendered="#{gestaoDisciplina.horarioTurmaVO.codigo ne 0}" value="#{gestaoDisciplina.qtdeAulaProgramada}" />
+									</rich:column>
+									<rich:column style="text-align:center">
+										<h:outputText title="Horas de Aulas Programadas" styleClass="field control-label tituloCampos" rendered="#{gestaoDisciplina.horarioTurmaVO.codigo ne 0}" value="#{gestaoDisciplina.horaProgramada}" />
+									</rich:column>
+									<rich:column style="text-align:center">
+										<h:outputText title="Quantidade de Aulas Registradas" styleClass="field control-label tituloCampos" rendered="#{gestaoDisciplina.horarioTurmaVO.codigo ne 0}" value="#{gestaoDisciplina.qtdeAulaRegistrada}" />
+									</rich:column>
+									<rich:column style="text-align:center">
+										<h:outputText title="Horas de Aulas Registradas" styleClass="field control-label tituloCampos" rendered="#{gestaoDisciplina.horarioTurmaVO.codigo ne 0}" value="#{gestaoDisciplina.horaAulaRegistrada}">
+										</h:outputText>
+									</rich:column>
+									<rich:column style="text-align:center">
+										<otm:commandIcon disabled="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula}" id="programarAulaDisTurma" alt="Horário Aula" execute="@this, pgFiltros" tooltip="#{gestaoDisciplina.horarioTurmaVO.codigo > 0 ? 'Possui Aula Programada':'Não Possui Aula Programada'}" oncomplete="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula} ? '': abrirPopupMaximizado2('../programacaoAulaForm.xhtml?turma=#{gestaoTurma.turmaVO.codigo}', 'programacaoAulaForm?turma=#{gestaoTurma.turmaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoHorarioTurmaPorGestaoDisciplina}" icon="#{msg_botoes.btn_icon_calendario} iconePequeno" image="#{resource['/imagens/iconeCalendario.png']}" />
+										<a4j:commandLink disabled="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula}" id="profSub" execute="@this, pgFiltros" oncomplete="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula} ? '': abrirPopupMaximizado2('../programacaoAulaForm.xhtml?turma=#{gestaoTurma.turmaVO.codigo}', 'programacaoAulaForm?turma=#{gestaoTurma.turmaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoHorarioTurmaPorGestaoDisciplina}">
+											<span class="#{msg_botoes.btn_icon_professor} iconePequeno border-radius-all #{gestaoDisciplina.horarioTurmaVO.codigo > 0 ? 'btn-success' : 'btn-primary'}" />
+											<rich:tooltip target="profSub" followMouse="true" direction="topLeft">
+												<h:outputText styleClass="field control-label tituloCampos" value="Professor(es): #{gestaoDisciplina.professor}" />
+											</rich:tooltip>
+										</a4j:commandLink>
+										<otm:commandIcon rendered="#{LoginControle.permissaoAcessoMenuVO.lancamentoNota and gestaoDisciplina.horarioTurmaVO.codigo ne 0 and gestaoDisciplina.totalMatriculado ne '0'}" id="lancarNotaTurmaDis" alt="#{msg_menu.Menu_lancamentoNota}" tooltip="#{msg_menu.Menu_lancamentoNota}" execute="@this, pgFiltros" oncomplete="abrirPopupMaximizado2('../lancamentoNota.xhtml?turma=#{gestaoTurma.turmaVO.codigo}&amp;disciplina=#{gestaoDisciplina.disciplinaVO.codigo}', 'lancamentoNota?turma=#{gestaoTurma.turmaVO.codigo}&amp;disciplina=#{gestaoDisciplina.disciplinaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoLancamentoNotaPorGestaoDisciplina}" icon="#{msg_botoes.btn_icon_ficha_aluno} iconePequeno" image="#{resource['/imagens/fichaCliente.png']}" />
+										<otm:commandIcon rendered="#{LoginControle.permissaoAcessoMenuVO.registroAula and gestaoDisciplina.horarioTurmaVO.codigo ne 0 and gestaoDisciplina.totalMatriculado ne '0'}" id="registroAulaTurmaDis" alt="#{msg_menu.Menu_registrarAula}" execute="@this, pgFiltros" tooltip="#{msg_menu.Menu_registrarAula}" oncomplete="abrirPopupMaximizado2('../registroAulaForm.xhtml?turma=#{gestaoTurma.turmaVO.codigo}&amp;disciplina=#{gestaoDisciplina.disciplinaVO.codigo}', 'registroAulaForm?turma=#{gestaoTurma.turmaVO.codigo}&amp;disciplina=#{gestaoDisciplina.disciplinaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoRegistroAulaPorGestaoDisciplina}" icon="#{msg_botoes.btn_icon_relogio} iconePequeno" image="#{resource['/imagens/alterarDataHoraProvaProcessoSeletivo2.png']}" />
+									</rich:column>
+									<rich:collapsibleSubTable columnClasses="colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada" rendered="#{!empty gestaoDisciplina.gestaoTurmaRelVOs}" value="#{gestaoDisciplina.gestaoTurmaRelVOs}" var="gestaoSubTurma">
+										<rich:column style="padding-left: 40px;">
+											<h:outputText value="#{gestaoSubTurma.turmaVO.tipoTurmaApresentar}" />
+										</rich:column>
+										<rich:column>
+											<h:outputText value="#{gestaoSubTurma.turmaVO.identificadorTurma}" />
+										</rich:column>
+										<rich:column style="text-align:center">
+											<h:panelGroup>
+												<h:outputText styleClass="mr5" value="#{gestaoSubTurma.turmaVO.situacao_Apresentar}" />
+												<otm:commandIcon tooltip="#{gestaoSubTurma.turmaVO.situacao_Apresentar}" title="#{gestaoSubTurma.turmaVO.situacao_Apresentar}" execute="@this, pgFiltros" icon="#{gestaoSubTurma.turmaVO.situacao eq 'AB' ? msg_botoes.btn_icon_cadeadoAberto_embutido : msg_botoes.btn_icon_cadeadoFechado_embutido}" action="#{GestaoTurmaRelControle.selecionarGestaoSubTurma}" disabled="#{!LoginControle.permissaoAcessoMenuVO.turma}" oncomplete="#{rich:component('panelAlterarTurma')}.show()" render="formAlterarTurma" />
+											</h:panelGroup>
+										</rich:column>
+										<rich:column style="text-align:center">
+											<h:panelGroup layout="block" style="width:100%">
+												<h:panelGroup layout="block" style="width:50%;float:left">
+													<h:outputText styleClass="mr5" rendered="#{gestaoSubTurma.turmaVO.subturma}" value="#{gestaoSubTurma.totalVaga}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" style="width:50%;float:left" id="icone2">
+													<otm:commandIcon rendered="#{gestaoSubTurma.turmaVO.subturma}" disabled="#{!LoginControle.permissaoAcessoMenuVO.vagaTurma}" id="vagaTurmasubTurma" alt="Vaga Turma" execute="@this, pgFiltros" tooltip="#{gestaoSubTurma.vagaTurmaDisciplinaVO.codigo > 0 ? 'Possui Controle de Vagas':'Não Possui Controle de Vagas'}" oncomplete="#{!LoginControle.permissaoAcessoMenuVO.vagaTurma} ? '': abrirPopupMaximizado2('../vagaTurmaForm.xhtml?turma=#{gestaoSubTurma.turmaVO.codigo}', 'vagaTurmaForm?turma=#{gestaoSubTurma.turmaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoVagaTurmaPorGestaoSubTurma}" icon="#{msg_botoes.btn_icon_aluno} iconePequeno #{gestaoSubTurma.vagaTurmaDisciplinaVO.codigo ne 0 ? 'btn-success' : 'btn-primary'}" />
+												</h:panelGroup>
+												<rich:tooltip target="icone2" value="#{gestaoSubTurma.vagaTurmaDisciplinaVO.codigo > 0 ? 'Possui Controle de Vagas':'Não Possui Controle de Vagas'}" />
+											</h:panelGroup>
+										</rich:column>
+										<rich:column style="text-align:center">
+											<a4j:commandLink action="#{GestaoTurmaRelControle.consultarAlunoAtivoGestaoSubTurma}" render="formAlunos" execute="formAlunos" oncomplete="#{rich:component('panelAlunos')}.show()" rendered="#{gestaoSubTurma.totalMatriculado ne '0'}">
+												<h:outputText value="#{gestaoSubTurma.totalMatriculado}" />
+											</a4j:commandLink>
+										</rich:column>
+										<rich:column style="text-align:center">
+											<a4j:commandLink action="#{GestaoTurmaRelControle.consultarAlunoPreMatriculaGestaoSubTurma}" render="formAlunos" execute="formAlunos" oncomplete="#{rich:component('panelAlunos')}.show()" rendered="#{gestaoSubTurma.totalPreMatriculado ne '0'}">
+												<h:outputText value="#{gestaoSubTurma.totalPreMatriculado}" />
+											</a4j:commandLink>
+										</rich:column>
+										<rich:column style="text-align:center">
+											<h:outputText id="chSubDisciplina" styleClass="field control-label tituloCampos" rendered="#{gestaoSubTurma.horarioTurmaVO.codigo ne 0}" value="#{gestaoSubTurma.cargaHoraria}" />
+											<rich:tooltip target="chSubDisciplina" followMouse="true" direction="topLeft">
+												<h:panelGroup columns="1" width="100%">
+													<h:outputText styleClass="field control-label tituloCampos" value="Carga Horária Prática: #{gestaoSubTurma.cargaHorariaPratica}" />
+													<h:outputText styleClass="field control-label tituloCampos" value="Carga Horária Teórica: #{gestaoSubTurma.cargaHorariaTeorica}" />
+												</h:panelGroup>
+											</rich:tooltip>
+										</rich:column>
+										<rich:column style="text-align:center">
+											<h:outputText title="Hora Aula" styleClass="field control-label tituloCampos" rendered="#{gestaoSubTurma.horarioTurmaVO.codigo ne 0}" value="#{gestaoSubTurma.horaAula}" />
+										</rich:column>
+										<rich:column style="text-align:center">
+											<h:outputText title="Quantidade de Aulas Programadas" styleClass="field control-label tituloCampos" rendered="#{gestaoSubTurma.horarioTurmaVO.codigo ne 0}" value="#{gestaoSubTurma.qtdeAulaProgramada}" />
+										</rich:column>
+										<rich:column style="text-align:center">
+											<h:outputText title="Horas de Aulas Programadas" styleClass="field control-label tituloCampos" rendered="#{gestaoSubTurma.horarioTurmaVO.codigo ne 0}" value="#{gestaoSubTurma.horaProgramada}" />
+										</rich:column>
+										<rich:column style="text-align:center">
+											<h:outputText title="Quantidade de Aulas Registradas" styleClass="field control-label tituloCampos" rendered="#{gestaoSubTurma.horarioTurmaVO.codigo ne 0}" value="#{gestaoSubTurma.qtdeAulaRegistrada}" />
+										</rich:column>
+										<rich:column style="text-align:center">
+											<h:outputText title="Horas de Aulas Registradas" styleClass="field control-label tituloCampos" rendered="#{gestaoSubTurma.horarioTurmaVO.codigo ne 0}" value="#{gestaoSubTurma.horaAulaRegistrada}">
+											</h:outputText>
+										</rich:column>
+										<rich:column style="text-align:center">
+									 		<otm:commandIcon disabled="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula}" id="programarAulasubTurma" alt="Horário Aula" execute="@this, pgFiltros" tooltip="#{gestaoSubTurma.horarioTurmaVO.codigo ne 0 ? 'Possui Aula Programada':'Não Possui Aula Programada'}" oncomplete="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula} ? '': abrirPopupMaximizado2('../programacaoAulaForm.xhtml?turma=#{gestaoSubTurma.turmaVO.codigo}', 'programacaoAulaForm?turma=#{gestaoSubTurma.turmaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoHorarioTurmaPorGestaoSubTurma}" icon="#{msg_botoes.btn_icon_calendario} iconePequeno #{gestaoSubTurma.horarioTurmaVO.codigo ne 0 ? 'btn-success' : 'btn-primary'}" />
+											<rich:tooltip target="programarAulasubTurma" value="#{gestaoSubTurma.horarioTurmaVO.codigo ne 0 ? 'Possui Aula Programada':'Não Possui Aula Programada'}" />
+											<a4j:commandLink disabled="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula}" id="profSubTurma" execute="@this, pgFiltros" oncomplete="#{!LoginControle.permissaoAcessoMenuVO.programacaoAula} ? '': abrirPopupMaximizado2('../programacaoAulaForm.xhtml?turma=#{gestaoSubTurma.turmaVO.codigo}', 'programacaoAulaForm?turma=#{gestaoSubTurma.turmaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoHorarioTurmaPorGestaoSubTurma}">
+												<span class="#{msg_botoes.btn_icon_professor} iconePequeno border-radius-all #{gestaoSubTurma.horarioTurmaVO.codigo > 0 ? 'btn-success' : 'btn-primary'}" />
+												<rich:tooltip for="profSubTurma" followMouse="true" direction="topLeft">
+													<h:outputText styleClass="field control-label tituloCampos" value="Professor(es): #{gestaoSubTurma.professor}" />
+												</rich:tooltip>
+											</a4j:commandLink>
+											<otm:commandIcon rendered="#{LoginControle.permissaoAcessoMenuVO.lancamentoNota and gestaoSubTurma.horarioTurmaVO.codigo ne 0 and gestaoSubTurma.totalMatriculado ne '0'}" id="lancarNotasubTurma" alt="#{msg_menu.Menu_lancamentoNota}" tooltip="#{msg_menu.Menu_lancamentoNota}" execute="@this, pgFiltros" oncomplete="abrirPopupMaximizado2('../lancamentoNota.xhtml?turma=#{gestaoSubTurma.turmaVO.codigo}&amp;disciplina=#{gestaoDisciplina.disciplinaVO.codigo}', 'lancamentoNota?turma=#{gestaoSubTurma.turmaVO.codigo}&amp;disciplina=#{gestaoDisciplina.disciplinaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoLancamentoNotaPorGestaoSubTurma}" icon="#{msg_botoes.btn_icon_ficha_aluno} iconePequeno btn-success" />
+											<rich:tooltip target="lancarNotasubTurma" value="#{msg_menu.Menu_lancamentoNota}" />
+											<otm:commandIcon rendered="#{LoginControle.permissaoAcessoMenuVO.registroAula and gestaoSubTurma.horarioTurmaVO.codigo ne 0 and gestaoSubTurma.totalMatriculado ne '0'}" id="registroAulasubTurma" alt="#{msg_menu.Menu_registrarAula}" execute="@this, pgFiltros" tooltip="#{msg_menu.Menu_registrarAula}" oncomplete="abrirPopupMaximizado2('../registroAulaForm.xhtml?turma=#{gestaoSubTurma.turmaVO.codigo}&amp;disciplina=#{gestaoDisciplina.disciplinaVO.codigo}', 'registroAulaForm?turma=#{gestaoSubTurma.turmaVO.codigo}&amp;disciplina=#{gestaoDisciplina.disciplinaVO.codigo}', 950, 595);" action="#{GestaoTurmaRelControle.realizarNavegacaoRegistroAulaPorGestaoSubTurma}" icon="#{msg_botoes.btn_icon_atualizar} iconePequeno"/>
+											<rich:tooltip target="registroAulasubTurma" value="#{msg_menu.Menu_registrarAula}" />
+										</rich:column>
+									</rich:collapsibleSubTable>
+								</rich:dataTable>
+							</rich:collapsiblePanel>
+						</h:panelGroup>
+					</rich:column>
+				</rich:dataTable>
+				<rich:dataScroller align="center" for="form:items" boundaryControls="auto" stepControls="auto" fastControls="hide" id="paginador" page="#{GestaoTurmaRelControle.controleConsultaOtimizado.page}" scrollListener="#{GestaoTurmaRelControle.scrollerListener}" rendered="#{GestaoTurmaRelControle.controleConsultaOtimizado.apresentarPaginador}" />
+			</h:panelGroup>
+			<h:panelGroup columns="1" width="100%" id="msgs" styleClass="tabMensagens">
+				<otm:mensagem bean="#{GestaoTurmaRelControle}"></otm:mensagem>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+<script>
+	document.getElementById("form:periodicidade").focus();
+</script>
+</html>

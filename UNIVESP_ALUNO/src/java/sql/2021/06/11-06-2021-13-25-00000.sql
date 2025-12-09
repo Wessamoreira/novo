@@ -1,0 +1,1 @@
+alter table configuracaoldap add if not exists diretorio varchar(255);

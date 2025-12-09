@@ -1,0 +1,995 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_BuscaBiblioteca_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelReservadoComSucesso" shadowOpacity="true" width="600" domElementAttachment="parent" show="#{BuscaBibliotecaControle.mostrarModalReservadoComSucesso}" moveable="false" resizeable="false" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="AVISO" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formReservadoComSucesso">
+				<h:panelGroup columns="1" width="100%">
+					<h:outputText styleClass="field control-label mensagem col-md-12" value="Reserva de Catálogos:" />
+					<h:outputText styleClass="field control-label mensagem col-md-12" value="Detalhamento:" />
+					<h:outputText styleClass="field control-label mensagem col-md-12" value="#{BuscaBibliotecaControle.mensagemCatalogosReservadosComSucesso}" />
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton render="form, panelReservadoComSucesso" oncomplete="imprimir('#{BuscaBibliotecaControle.textoComprovante}');" rendered="#{!empty BuscaBibliotecaControle.reservaVOs  and BuscaBibliotecaControle.biblioteca.isImpressaoPorApplet}" action="#{BuscaBibliotecaControle.imprimirTicket}" id="imprimirPDFApplet" value="Imprimir Ticket" icon="#{msg_botoes.btn_icon_imprimir_embutido}" styleClass="btn btn-info ml5" accesskey="4" image="#{resource['/imagens/botaoComprovante.png']}" />
+						<otm:commandButton rendered="#{!empty BuscaBibliotecaControle.reservaVOs and BuscaBibliotecaControle.biblioteca.isImpressaoPorPool}" render="formReservadoComSucesso, formImpressora" oncomplete="#{rich:component('panelImpressora')}.show();" action="#{BuscaBibliotecaControle.montarListaSelectItemImpressora}" id="imprimirPDFPool" value="Comprovante" icon="#{msg_botoes.btn_icon_imprimir_embutido}" styleClass="btn btn-success ml5" accesskey="4" image="#{resource['/imagens/botaoComprovante.png']}" />
+						<otm:commandButton oncomplete="#{BuscaBibliotecaControle.download}" action="#{BuscaBibliotecaControle.imprimirTicketReservaPDF}" rendered="#{!empty BuscaBibliotecaControle.reservaVOs}" id="imprimirPDF" value="Download" accesskey="4" icon="#{msg_botoes.btn_icon_download_embutido}" styleClass="btn btn-primary ml5" />
+						<otm:commandButton render="form" oncomplete="#{rich:component('panelReservadoComSucesso')}.hide();" action="#{BuscaBibliotecaControle.fecharModalLimpandoListas}" value="Fechar" styleClass="btn btn-danger ml5" icon="#{msg_botoes.btn_icon_fechar_embutido}" title="Fechar" immediate="true" />
+					</h:panelGroup>
+					<script type="text/javascript">
+						function imprimir(texto) {
+							var Applet = document.impressora;
+
+							Applet.setImprimirTextoCompleto(texto);
+
+							Applet = null;
+						}
+					</script>
+					<h:panelGroup rendered="#{BuscaBibliotecaControle.biblioteca.isImpressaoPorApplet}" styleClass="applet" id="app">
+						<applet id="OrganogramaSucesso" style="" archive="AppletImpressaoComprovante.jar" codebase="./applet" code="ImprimeComprovante.class" height="0" width="0" name="impressora"> </applet>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelImpressora" autosized="true" shadowOpacity="true" width="600" moveable="false" resizeable="false" height="100">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:graphicImage styleClass="background-color:transparent;" height="24" width="24" url="#{resource['/imagens/aviso.png']}" />
+					<h:outputText value="Selecionar Impressora" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImpressora">
+				<h:panelGroup columns="1" width="100%" columnClasses="colunaCentralizada">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Impressora_tituloForm}" />
+						<h:selectOneMenu id="impressoras" styleClass="form-control camposObrigatorios" value="#{BuscaBibliotecaControle.impressoraVO.codigo}">
+							<f:selectItems value="#{BuscaBibliotecaControle.listaSelectItemImpressora}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<otm:spacer height="10px" />
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+						<otm:commandButton render="form" oncomplete="#{rich:component('panelImpressora')}.hide();" action="#{BuscaBibliotecaControle.imprimirTicket}" id="imprimirMPDFPool" value="Imprimir" icon="#{msg_botoes.btn_icon_imprimir_embutido}" styleClass="btn btn-default" image="#{resource['/imagens/botaoComprovante.png']}">
+						</otm:commandButton>
+						<otm:spacer width="5px" />
+						<otm:commandButton oncomplete="#{rich:component('panelImpressora')}.hide();" id="fecharModalImpressora" value="Cancelar Impressão" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger">
+						</otm:commandButton>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formAluno:consultarAluno').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Emprestimo_consultarAluno}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkAluno" />
+					<rich:componentControl target="panelAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarAluno" value="#{BuscaBibliotecaControle.campoConsultaAluno}">
+						<f:selectItems value="#{BuscaBibliotecaControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarAluno" styleClass="form-control campos" value="#{BuscaBibliotecaControle.valorConsultaAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarAluno" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno , formAluno:scResultadoAluno , formAluno" action="#{BuscaBibliotecaControle.consultarAluno}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{BuscaBibliotecaControle.listaConsultaAluno}" rows="10" var="alunoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.aluno.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.aluno.CPF}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_RG}" />
+						</f:facet>
+						<h:outputText value="#{alunoItens.aluno.RG}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{BuscaBibliotecaControle.selecionarAluno}" focus="aluno" render="form, formEscolherPessoa, formAluno" oncomplete="#{rich:component('panelAluno')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{BuscaBibliotecaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProfessor" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formProfessor:consultarProfessor').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Emprestimo_consultarProfessor}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkProfessor" />
+					<rich:componentControl target="panelProfessor" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProfessor">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarProfessor" value="#{BuscaBibliotecaControle.campoConsultaProfessor}">
+						<f:selectItems value="#{BuscaBibliotecaControle.tipoConsultaComboProfessor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarProfessor" styleClass="form-control campos" value="#{BuscaBibliotecaControle.valorConsultaProfessor}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarProfessor" render="formProfessor:mensagemConsultarProfessor, formProfessor:resultadoConsultaProfessor , formProfessor:scResultadoProfessor , formProfessor" action="#{BuscaBibliotecaControle.consultarProfessor}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaProfessor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{BuscaBibliotecaControle.listaConsultaProfessor}" rows="10" var="professorItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Funcionario_matricula}" />
+						</f:facet>
+						<h:outputText value="#{professorItens.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:outputText value="#{professorItens.pessoa.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+						</f:facet>
+						<h:outputText value="#{professorItens.pessoa.CPF}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_RG}" />
+						</f:facet>
+						<h:outputText value="#{professorItens.pessoa.RG}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{BuscaBibliotecaControle.selecionarProfessor}" focus="professor" render="form, formEscolherPessoa, formProfessor" oncomplete="#{rich:component('panelProfessor')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+				</rich:dataTable>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller align="center" for="formProfessor:resultadoConsultaProfessor" maxPages="10" id="scResultadoProfessor" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</div>
+				</f:facet>
+				<h:panelGroup id="mensagemConsultaProfessor" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{BuscaBibliotecaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formFuncionario:consultarFuncionario').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Emprestimo_consultarFuncionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkFuncionario" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarFuncionario" value="#{BuscaBibliotecaControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{BuscaBibliotecaControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarFuncionario" styleClass="form-control campos" value="#{BuscaBibliotecaControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarFuncionario" render="formFuncionario:mensagemConsultarFuncionario, formFuncionario:resultadoConsultaFuncionario , formFuncionario:scResultadoFuncionario , formFuncionario" action="#{BuscaBibliotecaControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFuncionario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{BuscaBibliotecaControle.listaConsultaFuncionario}" rows="10" var="funcionarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Funcionario_matricula}" />
+						</f:facet>
+						<h:outputText value="#{funcionarioItens.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:outputText value="#{funcionarioItens.pessoa.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+						</f:facet>
+						<h:outputText value="#{funcionarioItens.pessoa.CPF}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_RG}" />
+						</f:facet>
+						<h:outputText value="#{funcionarioItens.pessoa.RG}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{BuscaBibliotecaControle.selecionarFuncionario}" focus="funcionario" render="form, formEscolherPessoa, formFuncionario" oncomplete="#{rich:component('panelFuncionario')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+				</rich:dataTable>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller align="center" for="formFuncionario:resultadoConsultaFuncionario" maxPages="10" id="scResultadoFuncionario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</div>
+				</f:facet>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{BuscaBibliotecaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelEscolherPessoa" shadowOpacity="true" width="780" height="150" onshow="document.getElementById('formEscolherPessoa:tipoPessoa').focus()" domElementAttachment="parent" show="#{BuscaBibliotecaControle.mostrarModalEscolherPessoa}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_BuscaBiblioteca_escolherPessoa}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formEscolherPessoa">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Emprestimo_tipoPessoa}" />
+					<h:selectOneMenu id="tipoPessoa" styleClass="form-control camposObrigatorios" value="#{BuscaBibliotecaControle.tipoPessoa}">
+						<f:selectItems value="#{BuscaBibliotecaControle.tipoConsultaComboTipoPessoa}" />
+						<a4j:ajax listener="#{BuscaBibliotecaControle.selecionarFiltro}" event="change" render="formEscolherPessoa" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{BuscaBibliotecaControle.tipoPessoaAluno}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText rendered="#{BuscaBibliotecaControle.tipoPessoaAluno}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Emprestimo_Aluno}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText id="matricula" size="20" maxlength="20" styleClass="form-control campos" value="#{BuscaBibliotecaControle.matricula}">
+							<a4j:ajax event="change" listener="#{BuscaBibliotecaControle.consultarAlunoPorMatricula}" render="formEscolherPessoa" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText id="aluno" size="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{BuscaBibliotecaControle.pessoaVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon oncomplete="#{rich:component('panelAluno')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_Emprestimo_consultarAluno}" /> <otm:commandIcon id="limparAluno" immediate="true" action="#{BuscaBibliotecaControle.limparCampoAluno}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="aluno, matriculaAluno" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{BuscaBibliotecaControle.tipoPessoaProfessor}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText rendered="#{BuscaBibliotecaControle.tipoPessoaProfessor}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Emprestimo_Professor}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText id="matriculaProfessor" size="10" styleClass="form-control campos" value="#{BuscaBibliotecaControle.matriculaFuncionario}">
+							<a4j:ajax event="change" listener="#{BuscaBibliotecaControle.consultarProfessorPorMatricula}" render="formEscolherPessoa" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText id="professor" size="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{BuscaBibliotecaControle.pessoaVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon oncomplete="#{rich:component('panelProfessor')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_Emprestimo_consultarProfessor}" /> <otm:commandIcon id="limparProfessor" immediate="true" action="#{BuscaBibliotecaControle.limparCampoProfessor}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="professor, matriculaProfessor" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{BuscaBibliotecaControle.tipoPessoaFuncionario}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText rendered="#{BuscaBibliotecaControle.tipoPessoaFuncionario}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Emprestimo_Funcionario}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText id="matriculaFuncionario" size="10" styleClass="form-control campos" value="#{BuscaBibliotecaControle.matriculaFuncionario}">
+							<a4j:ajax event="change" listener="#{BuscaBibliotecaControle.consultarFuncionarioPorMatricula}" render="formEscolherPessoa" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText id="funcionario" size="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{BuscaBibliotecaControle.pessoaVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon oncomplete="#{rich:component('panelFuncionario')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_Emprestimo_consultarFuncionario}" /> <otm:commandIcon id="limparFuncionario" immediate="true" action="#{BuscaBibliotecaControle.limparCampoFuncionario}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="funcionario, matriculaFuncionario" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="form, formReservadoComSucesso" oncomplete="#{rich:component('panelEscolherPessoa')}.hide(); #{rich:component('panelReservadoComSucesso')}.show(); " action="#{BuscaBibliotecaControle.executarReservaCatalogos}" value="Confirmar Reserva" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info mr5" title="Confirmar Reserva" />
+					<otm:commandButton render="form" oncomplete="#{rich:component('panelEscolherPessoa')}.hide();" action="#{BuscaBibliotecaControle.fecharModal}" value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" title="Cancelar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelLoginSenha" shadowOpacity="true" width="330" height="100" onshow="document.getElementById('formLoginSenha:username').focus()" domElementAttachment="parent" show="#{BuscaBibliotecaControle.mostrarModalLoginSenha}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_BuscaBiblioteca_autenticar}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLoginSenha">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+					<h:inputText id="username" size="15" maxlength="15" styleClass="form-control camposObrigatorios" value="#{BuscaBibliotecaControle.usernameLiberarReserva}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_msg_senha}" />
+					<h:inputSecret id="senha" size="15" maxlength="15" styleClass="form-control camposObrigatorios" value="#{BuscaBibliotecaControle.senhaLiberarReserva}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="form, formLoginSenha" oncomplete="#{rich:component('panelLoginSenha')}.hide();" action="#{BuscaBibliotecaControle.executarReservaExemplares}" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Confirmar" styleClass="btn btn-info mr5" title="Confirmar" />
+					<otm:commandButton render="form, formLoginSenha" oncomplete="#{rich:component('panelLoginSenha')}.hide();" action="#{BuscaBibliotecaControle.fecharModal}" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" title="Fechar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelExemplares" width="600" height="400" shadowOpacity="true" domElementAttachment="parent" show="#{BuscaBibliotecaControle.mostrarModalExemplares}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{BuscaBibliotecaControle.catalogoVO.titulo}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExemplares">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="resultadoConsultaExemplares" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{BuscaBibliotecaControle.listaExemplares}" rows="10" var="exemplarItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Exemplar_biblioteca}" />
+							</f:facet>
+							<h:outputText value="#{exemplarItens.biblioteca.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Exemplar_secao}" />
+							</f:facet>
+							<h:outputText value="#{exemplarItens.secao.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Exemplar_local}" />
+							</f:facet>
+							<h:outputText value="#{exemplarItens.local}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Exemplar_codigoBarra}" />
+							</f:facet>
+							<h:outputText value="#{exemplarItens.codigoBarra}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Exemplar_situacaoAtual}" />
+							</f:facet>
+							<h:outputText value="#{exemplarItens.situacaoAtualApresentar}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon rendered="#{BuscaBibliotecaControle.isMostrarBotaoAdicionarAGuia}" action="#{BuscaBibliotecaControle.adicionarAGuia}" render="form, formExemplares" oncomplete="#{rich:component('panelExemplares')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+						</rich:column>
+					</rich:dataTable>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formExemplares:resultadoConsultaExemplares" maxPages="10" id="scResultadoExemplares" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<otm:commandButton render="form, formExemplares" oncomplete="#{rich:component('panelExemplares')}.hide();" action="#{BuscaBibliotecaControle.fecharModal}" value="Fechar" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" title="Fechar" />
+					</h:panelGroup>
+					<h:panelGroup id="mensagemConsultaExemplares" columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{BuscaBibliotecaControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<title><h:outputText value="#{msg_aplic.prt_BuscaBiblioteca_tituloForm}" /></title>
+
+		<h:form id="form">
+			<h:commandLink action="#{BuscaBibliotecaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<rich:tabPanel>
+					<rich:tab action="#{BuscaBibliotecaControle.limparListas}" header="#{msg_aplic.prt_BuscaBiblioteca_BuscaRapida}">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText id="biblioteca" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_biblioteca}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:selectOneMenu id="unidadeEnsino" styleClass="form-control campos" value="#{BuscaBibliotecaControle.biblioteca.codigo}">
+									<a4j:ajax event="change" render="panelGridForm" execute="this" listener="#{BuscaBibliotecaControle.carregarDadosBiblioteca}"></a4j:ajax>
+									<f:selectItems value="#{BuscaBibliotecaControle.listaItemBiblioteca}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText id="valorConsulta" styleClass="form-control campos" value="#{BuscaBibliotecaControle.controleConsulta.valorConsulta}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<a4j:commandLink id="consultar" render="form" type="submit" value="#{msg_botoes.btn_consultar}" action="#{BuscaBibliotecaControle.irPaginaInicial}" styleClass="btn btn-default btn-consultar" accesskey="2">
+									<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+									<f:setPropertyActionListener target="#{BuscaBibliotecaControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+									<f:setPropertyActionListener target="#{BuscaBibliotecaControle.controleConsultaOtimizado.page}" value="0" />
+								</a4j:commandLink>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText value="Apenas Exemplares Disponíveis para Empréstimo" styleClass="field control-label tituloCampos btn-block" />
+								<otm:selectBooleanCheckbox id="somenteExemplaresDisponiveis" value="#{BuscaBibliotecaControle.apenasExemplarDisponivel}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="row mt10">
+								<rich:list rows="1" id="listaConsulta" rowKeyVar="row" value="#{BuscaBibliotecaControle.controleConsultaOtimizado}" var="catalogoItens">
+									<otm2:panel name="panel_catalogo" renderedControl="false" styleClassFooter="dn">
+										<ui:define name="header">
+											<h:panelGroup layout="block" styleClass="col-md-11">
+												<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!empty catalogoItens.titulo}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_titulo}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.titulo}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!empty catalogoItens.nomeAutores}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_autores}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.nomeAutores}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.subtitulo}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_subtitulo}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.subtitulo}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.editora.nome}">
+													<h:outputText value="#{msg_aplic.prt_Editora_tituloForm}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.editora.nome}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.anoPublicacao}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_anoPublicacao}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.anoPublicacao}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.cidadePublicacaoCatalogo.nome}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_cidadePublicacao}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.cidadePublicacaoCatalogo.nome}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.edicao}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_edicao}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.edicao}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.assunto}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_assunto}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.assunto}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.isbn}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_isbn}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" readonly="true" value="#{catalogoItens.isbn}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.issn}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_issn}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.issn}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.cutterPha}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_cutterPha}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.cutterPha}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.classificacaoBibliografica}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_classificacao}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.classificacaoBibliografica}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.local}">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_local}" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.local}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoItens.biblioteca}">
+													<h:outputText value="Biblioteca" styleClass="tituloCamposNegrito btn-block" />
+													<h:outputText styleClass="tituloCampos" value="#{catalogoItens.biblioteca}" />
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup layout="block" style="float: right" styleClass="col-md-1 text-center">
+												<a4j:commandLink action="#{BuscaBibliotecaControle.consultarExemplares}" disabled="#{!catalogoItens.isHabilitarBotaoAdicionarGuia}">
+													<rich:tooltip value="Adicionar a Guia" />
+													<span class="fas fa-plus" style="font-size: 14px;"></span>
+													<a4j:ajax event="click" render="formExemplares, form, panelExemplares" />
+												</a4j:commandLink>
+												<otm:spacer width="5px" />
+												<a4j:commandLink render="form" action="#{BuscaBibliotecaControle.adicionarCatalogoNaGuiaDeReserva}">
+													<rich:tooltip value="Reservar" />
+													<span class="fas fa-retweet" style="font-size: 14px;"></span>
+													<a4j:ajax event="click" render="formReservadoComSucesso, panelReservadoComSucesso, form " />
+												</a4j:commandLink>
+												<otm:spacer width="5px" />
+												<a4j:commandLink render="form" action="#{BuscaBibliotecaControle.executarExportarArquivoMarc21XML}" oncomplete="#{BuscaBibliotecaControle.downloadArquivoMarc21Catalogo}">
+													<rich:tooltip value="Fazer Download Arquivo MARC XML" />
+													<span class="fas fa-download" style="font-size: 14px;"></span>
+												</a4j:commandLink>
+											</h:panelGroup>
+										</ui:define>
+										<ui:define name="body">
+											<h:panelGroup layout="block" styleClass="col-md-12">
+												<h:panelGroup layout="block" styleClass="col-md-2" id="panelGroupLinkCatalogoBuscaRapida" rendered="#{catalogoItens.link != ''}">
+													<h:outputText value="#{msg_aplic.prt_Catalogo_link}: " />
+													<a4j:commandLink id="linkConsultaRapida" value="#{catalogoItens.link}" onclick="window.open('#{catalogoItens.link}', '_blank');" />
+													<br />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3 text-center mt5">
+													<otm2:panel name="panel1" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+														<ui:define name="header">
+															<img src="https://img.icons8.com/wired/15/000000/book.png" />
+															<h:outputText styleClass="tituloCamposResultado text-info ml5 fs11" value="exemplare(s) existentes" />
+														</ui:define>
+														<ui:define name="body">
+															<h:outputText styleClass="tituloCamposResultado text-info fs11" value="#{catalogoItens.nrExemplaresEmprestado + catalogoItens.nrExemplaresParaEmprestimo}" rendered="#{catalogoItens.nrExemplaresEmprestado + catalogoItens.nrExemplaresParaEmprestimo ne 0}" />
+															<h:outputText styleClass="tituloCamposResultado text-primary" value="Nenhum exemplare(s) existentes" rendered="#{catalogoItens.nrExemplaresEmprestado + catalogoItens.nrExemplaresParaEmprestimo eq 0}" />
+														</ui:define>
+													</otm2:panel>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3 text-center mt5">
+													<otm2:panel name="panel2" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+														<ui:define name="header">
+															<img src="https://img.icons8.com/wired/15/000000/unlock.png" />
+															<h:outputText styleClass="tituloCamposResultado text-primary ml5 fs11" value="exemplar(es) disponível(eis) para empréstimo" />
+														</ui:define>
+														<ui:define name="body">
+															<h:outputText styleClass="tituloCamposResultado text-primary fs11" value="#{catalogoItens.nrExemplaresDisponivel}" rendered="#{catalogoItens.nrExemplaresDisponivel ne 0}" />
+															<h:outputText styleClass="tituloCamposResultado text-primary fs11" value="Nenhum exemplar disponível para empréstimo" rendered="#{catalogoItens.nrExemplaresDisponivel eq 0}" />
+														</ui:define>
+													</otm2:panel>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3 text-center mt5">
+													<otm2:panel name="panel3" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+														<ui:define name="header">
+															<img src="https://img.icons8.com/emoji/15/000000/magnifying-glass-tilted-right-emoji.png" />
+															<h:outputText styleClass="tituloCamposResultado text-warning ml5 fs11" value="unidade(s) disponível(eis) para consulta" />
+														</ui:define>
+														<ui:define name="body">
+															<h:outputText styleClass="tituloCamposResultado text-warning fs11" value="#{catalogoItens.nrExemplaresParaConsulta}" rendered="#{catalogoItens.nrExemplaresParaConsulta ne 0}" />
+															<h:outputText styleClass="tituloCamposResultado text-warning fs11" value="Nenhum exemplar disponível para consulta" rendered="#{catalogoItens.nrExemplaresParaConsulta eq 0}" />
+														</ui:define>
+													</otm2:panel>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3 text-center mt5">
+													<otm2:panel name="panel4" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+														<ui:define name="header">
+															<img src="https://img.icons8.com/carbon-copy/15/000000/unlock.png" />
+															<h:outputText styleClass="tituloCamposResultado text-danger ml5 fs11" value="exemplar(s) emprestado(s)" />
+														</ui:define>
+														<ui:define name="body">
+															<h:outputText styleClass="tituloCamposResultado text-danger fs11" value="#{catalogoItens.nrExemplaresEmprestado}" rendered="#{catalogoItens.nrExemplaresEmprestado ne 0}" />
+															<h:outputText styleClass="tituloCamposResultado text-danger fs11" value="Nenhuma exemplar emprestado" rendered="#{catalogoItens.nrExemplaresEmprestado eq 0}" />
+														</ui:define>
+													</otm2:panel>
+												</h:panelGroup>
+											</h:panelGroup>
+										</ui:define>
+									</otm2:panel>
+								</rich:list>
+								<h:panelGroup layout="block" styleClass="col-md-12 mt10">
+									<div style="text-align: center !important">
+										<rich:dataScroller align="center" for="form:listaConsulta" maxPages="10" id="paginador" page="#{BuscaBibliotecaControle.controleConsultaOtimizado.page}" scrollListener="#{BuscaBibliotecaControle.scrollerListener}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+									</div>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="row m10">
+									<h:panelGroup layout="block" styleClass="#{!empty BuscaBibliotecaControle.listaCatalogosAdicionadosNaGuiaReserva ? 'col-md-6 pn' : 'row'}" rendered="#{!empty BuscaBibliotecaControle.listaAdicionadosGuia}">
+										<otm2:panel name="panelGuia_#{row+1}" styleClassFooter=" " rendered="#{!empty BuscaBibliotecaControle.listaAdicionadosGuia}">
+											<ui:define name="header">
+												<h:outputText value="Guia" />
+											</ui:define>
+											<ui:define name="body">
+												<rich:dataTable id="listaAdicionadosGuia" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{BuscaBibliotecaControle.listaAdicionadosGuia}" var="exemplarGuiaItens">
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="Titulo" />
+														</f:facet>
+														<h:outputText value="#{exemplarGuiaItens.catalogo.titulo}" />
+													</rich:column>
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="Autor(es)" />
+														</f:facet>
+														<h:outputText escape="false" value="#{exemplarGuiaItens.catalogo.nomeAutores}" rendered="#{not empty exemplarGuiaItens.catalogo.nomeAutores}" />
+														<h:outputText value="Sem autores cadastrados!" rendered="#{empty exemplarGuiaItens.catalogo.nomeAutores}" />
+													</rich:column>
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="Codigo Barra" />
+														</f:facet>
+														<h:outputText value="#{exemplarGuiaItens.codigoBarra}" rendered="#{not empty exemplarGuiaItens.codigoBarra}" />
+													</rich:column>
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="Opções" />
+														</f:facet>
+														<otm:commandIcon render="form" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" action="#{BuscaBibliotecaControle.removerExemplarGuia}" />
+													</rich:column>
+												</rich:dataTable>
+											</ui:define>
+											<ui:define name="footer">
+												<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+													<otm:commandButton id="btnImprimir" action="#{BuscaBibliotecaControle.imprimirGuia}" icon="#{msg_botoes.btn_icon_imprimir_embutido}" value="Imprimir Guia" styleClass="btn btn-default" oncomplete="#{BuscaBibliotecaControle.download}" />
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="#{!empty BuscaBibliotecaControle.listaAdicionadosGuia ? 'col-md-6' : 'row'}" rendered="#{!empty BuscaBibliotecaControle.listaCatalogosAdicionadosNaGuiaReserva}">
+										<otm2:panel name="panel_#{row+1}" styleClassFooter=" " rendered="#{!empty BuscaBibliotecaControle.listaCatalogosAdicionadosNaGuiaReserva}">
+											<ui:define name="header">
+												<h:outputText value="Reserva" />
+											</ui:define>
+											<ui:define name="body">
+												<rich:dataTable id="listaAdicionadosReserva" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{BuscaBibliotecaControle.listaCatalogosAdicionadosNaGuiaReserva}" var="catalogoReservaItens">
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="Titulo" />
+														</f:facet>
+														<h:outputText value="#{catalogoReservaItens.titulo}" />
+													</rich:column>
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="Autor(es)" />
+														</f:facet>
+														<h:outputText value="#{catalogoReservaItens.nomeAutores}" rendered="#{!empty catalogoReservaItens.nomeAutores}" />
+														<h:outputText value="Sem autores cadastrados!" styleClass="tituloCampos" rendered="#{empty catalogoReservaItens.nomeAutores}" />
+													</rich:column>
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="Opções" />
+														</f:facet>
+														<otm:commandIcon render="form" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" action="#{BuscaBibliotecaControle.removerCatalogoDaGuiaDeReserva}" />
+													</rich:column>
+												</rich:dataTable>
+											</ui:define>
+											<ui:define name="footer">
+												<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+													<h:commandLink render="form, listaAdicionadosReserva" id="btnReservar" action="#{BuscaBibliotecaControle.verificarTipoModalParaContinuarReserva}" value="Finalizar Reservar" styleClass="btn btn-primary">
+														<span class="#{msg_botoes.btn_icon_confirmar_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+													</h:commandLink>
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup id="panelGridMensagens" columns="1" width="100%" styleClass="tabMensagens">
+								<otm:mensagem bean="#{BuscaBibliotecaControle}"></otm:mensagem>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+					<rich:tab action="#{BuscaBibliotecaControle.limparListas}" header="#{msg_aplic.prt_BuscaBiblioteca_BuscaAvancada}">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText id="biblio" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_biblioteca}" />
+								<h:selectOneMenu id="unidadeE" styleClass="form-control campos" value="#{BuscaBibliotecaControle.biblioteca.codigo}">
+									<a4j:ajax event="change" render="panelGridForm" execute="this" listener="#{BuscaBibliotecaControle.carregarDadosBiblioteca}"></a4j:ajax>
+									<f:selectItems value="#{BuscaBibliotecaControle.listaItemBiblioteca}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_titulo}" styleClass="field control-label tituloCampos" />
+								<h:inputText id="tituloBuscaAvancada" styleClass="form-control campos" size="50" value="#{BuscaBibliotecaControle.tituloBuscaAvancada}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_assunto}" styleClass="field control-label tituloCampos" />
+								<h:inputText id="assuntoBuscaAvancada" styleClass="form-control campos" size="50" value="#{BuscaBibliotecaControle.assuntoBuscaAvancada}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_palavrasChave}" styleClass="field control-label tituloCampos" />
+								<h:inputText id="palavrasChaveBuscaAvancada" styleClass="form-control campos" size="50" value="#{BuscaBibliotecaControle.palavrasChaveBuscaAvancada}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_codigoTombo}" styleClass="field control-label tituloCampos" />
+								<h:inputText id="codigoTomboBuscaAvancada" styleClass="form-control campos" size="50" value="#{BuscaBibliotecaControle.codigoTomboBuscaAvancada}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_autores}" styleClass="field control-label tituloCampos" />
+								<h:inputText id="autoresBuscaAvancada" styleClass="form-control campos" size="50" value="#{BuscaBibliotecaControle.autoresBuscaAvancada}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_classificacao}" styleClass="field control-label tituloCampos" />
+								<h:inputText id="classificacaoBuscaAvancada" styleClass="form-control campos" size="50" value="#{BuscaBibliotecaControle.classificacaoBuscaAvancada}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_areaDeConhecimento}" styleClass="field control-label tituloCampos" />
+								<h:selectOneMenu id="areaDeConhecimento" styleClass="form-control campos" value="#{BuscaBibliotecaControle.catalogoVO.areaConhecimentoVO.codigo}">
+									<f:selectItems value="#{BuscaBibliotecaControle.listaSelectItemAreaDeConhecimento}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_isbn}" styleClass="field control-label tituloCampos" />
+								<h:inputText id="isbnBuscaAvancada" styleClass="form-control campos" size="10" value="#{BuscaBibliotecaControle.isbnBuscaAvancada}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_issn}" styleClass="field control-label tituloCampos" />
+								<h:inputText id="issnBuscaAvancada" styleClass="form-control campos" size="10" value="#{BuscaBibliotecaControle.issnBuscaAvancada}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_cutterPha}" styleClass="field control-label tituloCampos" />
+								<h:inputText id="cutterPhaBuscaAvancada" styleClass="form-control campos" size="10" value="#{BuscaBibliotecaControle.cutterPhaBuscaAvancada}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText value="Apenas Exemplares Disponíveis para Empréstimo" styleClass="field control-label tituloCampos" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox id="somenteExemplaresDisponiveisBuscaAvancada" value="#{BuscaBibliotecaControle.apenasExemplarDisponivelAvancado}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+								<otm:commandButton render="form" id="buscaAvancada" value="#{msg_botoes.btn_consultar}" action="#{BuscaBibliotecaControle.consultarAvancada}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="2" />
+							</h:panelGroup>
+							<rich:list rows="1" id="listaConsultaAvancada" rowKeyVar="row" value="#{BuscaBibliotecaControle.listaConsultaBuscaAvancada}" var="catalogoBuscaAvancadaItens">
+								<otm2:panel name="panel_catalogo" renderedControl="false" styleClassFooter="dn">
+									<ui:define name="header">
+										<h:panelGroup layout="block" styleClass="col-md-11">
+											<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!empty catalogoBuscaAvancadaItens.titulo}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_titulo}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.titulo}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!empty catalogoBuscaAvancadaItens.nomeAutores}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_autores}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.nomeAutores}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.subtitulo}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_subtitulo}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.subtitulo}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.editora.nome}">
+												<h:outputText value="#{msg_aplic.prt_Editora_tituloForm}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.editora.nome}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.anoPublicacao}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_anoPublicacao}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.anoPublicacao}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.cidadePublicacaoCatalogo.nome}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_cidadePublicacao}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.cidadePublicacaoCatalogo.nome}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.edicao}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_edicao}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.edicao}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.assunto}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_assunto}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.assunto}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.isbn}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_isbn}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.isbn}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.issn}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_issn}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.issn}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.cutterPha}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_cutterPha}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.cutterPha}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.classificacaoBibliografica}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_classificacao}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.classificacaoBibliografica}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.local}">
+												<h:outputText value="#{msg_aplic.prt_Exemplar_local}" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.local}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!empty catalogoBuscaAvancadaItens.biblioteca}">
+												<h:outputText value="Biblioteca" styleClass="tituloCamposNegrito btn-block" />
+												<h:outputText styleClass="tituloCampos" value="#{catalogoBuscaAvancadaItens.biblioteca}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" style="float: right" styleClass="col-md-1 text-center">
+											<a4j:commandLink action="#{BuscaBibliotecaControle.consultarExemplares}" disabled="#{!catalogoBuscaAvancadaItens.isHabilitarBotaoAdicionarGuia}">
+												<rich:tooltip value="Adicionar a Guia" />
+												<span class="fas fa-plus" style="font-size: 14px;"></span>
+												<a4j:ajax event="click" render="formExemplares, form, panelExemplares" />
+											</a4j:commandLink>
+											<otm:spacer width="5px" />
+											<a4j:commandLink action="#{BuscaBibliotecaControle.adicionarCatalogoNaGuiaDeReserva}">
+												<rich:tooltip value="Reservar" />
+												<span class="fas fa-retweet" style="font-size: 14px;"></span>
+												<a4j:ajax event="click" render="formReservadoComSucesso, panelReservadoComSucesso, form " />
+											</a4j:commandLink>
+										</h:panelGroup>
+									</ui:define>
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<h:panelGroup layout="block" styleClass="col-md-2" id="panelGroupLinkCatalogoBuscaAvancada" rendered="#{catalogoBuscaAvancadaItens.link != ''}">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_link}: " />
+												<a4j:commandLink value="#{catalogoBuscaAvancadaItens.link}" onclick="window.open('#{catalogoBuscaAvancadaItens.link}', '_blank');" />
+												<br />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3 text-center mt5">
+												<otm2:panel name="panel11" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+													<ui:define name="header">
+														<img src="https://img.icons8.com/wired/15/000000/book.png" />
+														<h:outputText styleClass="tituloCamposResultado text-info ml5 fs11" value="exemplare(s) existentes" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="tituloCamposResultado text-info fs11" value="#{catalogoBuscaAvancadaItens.nrExemplaresEmprestado + catalogoBuscaAvancadaItens.nrExemplaresParaEmprestimo}" rendered="#{catalogoBuscaAvancadaItens.nrExemplaresEmprestado + catalogoBuscaAvancadaItens.nrExemplaresParaEmprestimo ne 0}" />
+														<h:outputText styleClass="tituloCamposResultado text-primary" value="Nenhum exemplare(s) existentes" rendered="#{catalogoBuscaAvancadaItens.nrExemplaresEmprestado + catalogoBuscaAvancadaItens.nrExemplaresParaEmprestimo eq 0}" />
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3 text-center mt5">
+												<otm2:panel name="panel22" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+													<ui:define name="header">
+														<img src="https://img.icons8.com/wired/15/000000/unlock.png" />
+														<h:outputText styleClass="tituloCamposResultado text-primary ml5 fs11" value="unidade(s) disponíveis para empréstimo" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="tituloCamposResultado text-primary fs11" value="#{catalogoBuscaAvancadaItens.nrExemplaresDisponivel}" rendered="#{catalogoBuscaAvancadaItens.nrExemplaresDisponivel ne 0}" />
+														<h:outputText styleClass="tituloCamposResultado text-primary fs11" value="Nenhum exemplar disponível para empréstimo" rendered="#{catalogoBuscaAvancadaItens.nrExemplaresDisponivel eq 0}" />
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3 text-center mt5">
+												<otm2:panel name="panel33" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+													<ui:define name="header">
+														<img src="https://img.icons8.com/emoji/15/000000/magnifying-glass-tilted-right-emoji.png" />
+														<h:outputText styleClass="tituloCamposResultado text-warning ml5 fs11" value="unidade(s) disponível(eis) para consulta" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="tituloCamposResultado text-warning fs11" value="#{catalogoBuscaAvancadaItens.nrExemplaresParaConsulta}" rendered="#{catalogoBuscaAvancadaItens.nrExemplaresParaConsulta ne 0}" />
+														<h:outputText styleClass="tituloCamposResultado text-warning fs11" value="Nenhum exemplar disponível para consulta" rendered="#{catalogoBuscaAvancadaItens.nrExemplaresParaConsulta eq 0}" />
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3 text-center mt5">
+												<otm2:panel name="panel44" renderedControl="false" styleClassFooter="dn" stylePanel="min-height: 105px;">
+													<ui:define name="header">
+														<img src="https://img.icons8.com/carbon-copy/15/000000/unlock.png" />
+														<h:outputText styleClass="tituloCamposResultado text-danger ml5 fs11" value="exemplar(s) emprestado(s)" />
+													</ui:define>
+													<ui:define name="body">
+														<h:outputText styleClass="tituloCamposResultado text-danger fs11" value="#{catalogoBuscaAvancadaItens.nrExemplaresEmprestado}" rendered="#{catalogoBuscaAvancadaItens.nrExemplaresEmprestado ne 0}" />
+														<h:outputText styleClass="tituloCamposResultado text-danger fs11" value="Nenhuma exemplar emprestado" rendered="#{catalogoBuscaAvancadaItens.nrExemplaresEmprestado eq 0}" />
+													</ui:define>
+												</otm2:panel>
+											</h:panelGroup>
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</rich:list>
+							<h:panelGroup layout="block" styleClass="col-md-12 mt10">
+								<div style="text-align: center !important">
+									<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="listaConsultaAvancada" limitRender="5" align="center" />
+								</div>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="row mn mt10">
+								<h:panelGroup layout="block" styleClass="#{!empty BuscaBibliotecaControle.listaCatalogosAdicionadosNaGuiaReserva ? 'col-md-6 pn' : 'row mn'}" rendered="#{!empty BuscaBibliotecaControle.listaAdicionadosGuia}">
+									<otm2:panel name="panelBuscaAvan_#{row+1}" styleClassFooter=" " rendered="#{!empty BuscaBibliotecaControle.listaAdicionadosGuia}">
+										<ui:define name="header">
+											<h:outputText value="Guia" />
+										</ui:define>
+										<ui:define name="body">
+											<rich:dataTable id="listaAdicionadosGuiaBuscaAvancada" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{BuscaBibliotecaControle.listaAdicionadosGuia}" var="exemplarGuiaItens">
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="Titulo" />
+													</f:facet>
+													<h:outputText value="#{exemplarGuiaItens.catalogo.titulo}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="Autor(es)" />
+													</f:facet>
+													<h:outputText value="#{exemplarGuiaItens.catalogo.nomeAutores}" rendered="#{not empty exemplarGuiaItens.catalogo.nomeAutores}" />
+													<h:outputText value="Sem autores cadastrados!" rendered="#{empty exemplarGuiaItens.catalogo.nomeAutores}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="Codigo Barra" />
+													</f:facet>
+													<h:outputText value="#{exemplarGuiaItens.codigoBarra}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="Opções" />
+													</f:facet>
+													<otm:commandIcon render="form" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" action="#{BuscaBibliotecaControle.removerExemplarGuia}" />
+												</rich:column>
+											</rich:dataTable>
+										</ui:define>
+										<ui:define name="footer">
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+												<otm:commandButton render="form" id="btnImprimirGuiaBuscaAvancada" action="#{BuscaBibliotecaControle.imprimirGuia}" icon="#{msg_botoes.btn_icon_imprimir_embutido}" value="Imprimir Guia" styleClass="btn btn-default" oncomplete="#{BuscaBibliotecaControle.download}" />
+											</h:panelGroup>
+										</ui:define>
+									</otm2:panel>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="#{!empty BuscaBibliotecaControle.listaAdicionadosGuia ? 'col-md-6 pn' : 'row mn'}" rendered="#{!empty BuscaBibliotecaControle.listaCatalogosAdicionadosNaGuiaReserva}">
+									<otm2:panel name="panelReserva_#{row+1}" styleClassFooter=" " rendered="#{!empty BuscaBibliotecaControle.listaCatalogosAdicionadosNaGuiaReserva}">
+										<ui:define name="header">
+											<h:outputText styleClass="tituloCamposResultado fs11" value="#{catalogoReservaItens.titulo}" />
+										</ui:define>
+										<ui:define name="body">
+											<rich:dataTable id="listaAdicionadosReservaBuscaAvancada" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{BuscaBibliotecaControle.listaCatalogosAdicionadosNaGuiaReserva}" var="catalogoReservaItens">
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="Titulo" />
+													</f:facet>
+													<h:outputText value="#{catalogoReservaItens.titulo}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="Autor(es)" />
+													</f:facet>
+													<h:outputText value="#{catalogoReservaItens.nomeAutores}" rendered="#{!empty catalogoReservaItens.nomeAutores}" />
+													<h:outputText value="Sem autores cadastrados!" rendered="#{empty catalogoReservaItens.nomeAutores}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="Opções" />
+													</f:facet>
+													<otm:commandIcon render="form" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" action="#{BuscaBibliotecaControle.removerCatalogoDaGuiaDeReserva}" />
+												</rich:column>
+											</rich:dataTable>
+										</ui:define>
+										<ui:define name="footer">
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+												<h:commandLink id="btnReservarBuscaAvancada" action="#{BuscaBibliotecaControle.verificarTipoModalParaContinuarReserva}" image="#{resource['/imagens/botaoFinalizarReserva.png']}" styleClass="btn btn-primary" value="Finalizar Reserva">
+													<span class="#{msg_botoes.btn_icon_confirmar_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+												</h:commandLink>
+											</h:panelGroup>
+										</ui:define>
+									</otm2:panel>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup id="panelGridMensagensBuscaAvancada" columns="1" width="100%" styleClass="tabMensagens">
+								<otm:mensagem bean="#{BuscaBibliotecaControle}"></otm:mensagem>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+				</rich:tabPanel>
+			</h:panelGroup>
+		</h:form>
+		<script>
+			document.getElementById("form:valorConsulta").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

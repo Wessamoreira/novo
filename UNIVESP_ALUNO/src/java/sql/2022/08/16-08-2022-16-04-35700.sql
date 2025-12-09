@@ -1,0 +1,1 @@
+alter table if exists documentoassinadopessoa add column if not exists documentoassinadoorigemenum varchar(100) default 'NENHUM';

@@ -1,0 +1,117 @@
+package negocio.interfaces.academico;
+
+import java.util.List;
+
+import negocio.comuns.academico.PlanoEnsinoVO;
+import negocio.comuns.academico.ReferenciaBibliograficaVO;
+import negocio.comuns.arquitetura.UsuarioVO;
+
+public interface ReferenciaBibliograficaInterfaceFacade {
+
+    /**
+     * Operação responsável por retornar um novo objeto da classe <code>ReferenciaBibliograficaVO</code>.
+     */
+    public ReferenciaBibliograficaVO novo() throws Exception;
+
+    /**
+     * Operação responsável por incluir no banco de dados um objeto da classe <code>ReferenciaBibliograficaVO</code>.
+     * Primeiramente valida os dados (<code>validarDados</code>) do objeto. Verifica a conexão com o banco de dados e a permissão do usuário
+     * para realizar esta operacão na entidade.
+     * Isto, através da operação <code>incluir</code> da superclasse.
+     * @param obj  Objeto da classe <code>ReferenciaBibliograficaVO</code> que será gravado no banco de dados.
+     * @exception Exception Caso haja problemas de conexão, restrição de acesso ou validação de dados.
+     */
+    public void incluir(ReferenciaBibliograficaVO obj, UsuarioVO usuario) throws Exception;
+
+    /**
+     * Operação responsável por alterar no BD os dados de um objeto da classe <code>ReferenciaBibliograficaVO</code>.
+     * Sempre utiliza a chave primária da classe como atributo para localização do registro a ser alterado.
+     * Primeiramente valida os dados (<code>validarDados</code>) do objeto. Verifica a conexão com o banco de dados e a permissão do usuário
+     * para realizar esta operacão na entidade.
+     * Isto, através da operação <code>alterar</code> da superclasse.
+     * @param obj    Objeto da classe <code>ReferenciaBibliograficaVO</code> que será alterada no banco de dados.
+     * @exception Execption Caso haja problemas de conexão, restrição de acesso ou validação de dados.
+     */
+    public void alterar(ReferenciaBibliograficaVO obj, UsuarioVO usuario) throws Exception;
+
+    /**
+     * Operação responsável por excluir no BD um objeto da classe <code>ReferenciaBibliograficaVO</code>.
+     * Sempre localiza o registro a ser excluído através da chave primária da entidade.
+     * Primeiramente verifica a conexão com o banco de dados e a permissão do usuário
+     * para realizar esta operacão na entidade.
+     * Isto, através da operação <code>excluir</code> da superclasse.
+     * @param obj    Objeto da classe <code>ReferenciaBibliograficaVO</code> que será removido no banco de dados.
+     * @exception Execption Caso haja problemas de conexão ou restrição de acesso.
+     */
+    public void excluir(ReferenciaBibliograficaVO obj, UsuarioVO usuario) throws Exception;
+
+    /**
+     * Responsável por realizar uma consulta de <code>ReferenciaBibliografica</code> através do valor do atributo
+     * <code>titulo</code> da classe <code>Exemplar</code>
+     * Faz uso da operação <code>montarDadosConsulta</code> que realiza o trabalho de prerarar o List resultante.
+     * @return  List Contendo vários objetos da classe <code>ReferenciaBibliograficaVO</code> resultantes da consulta.
+     * @exception Execption Caso haja problemas de conexão ou restrição de acesso.
+     */
+    public List<ReferenciaBibliograficaVO> consultarPorTituloExemplar(String valorConsulta, boolean controlarAcesso, UsuarioVO usuario) throws Exception;
+
+    /**
+     * Responsável por realizar uma consulta de <code>ReferenciaBibliografica</code> através do valor do atributo
+     * <code>nome</code> da classe <code>Disciplina</code>
+     * Faz uso da operação <code>montarDadosConsulta</code> que realiza o trabalho de prerarar o List resultante.
+     * @return  List Contendo vários objetos da classe <code>ReferenciaBibliograficaVO</code> resultantes da consulta.
+     * @exception Execption Caso haja problemas de conexão ou restrição de acesso.
+     */
+    public List<ReferenciaBibliograficaVO> consultarPorNomeDisciplina(String valorConsulta, boolean controlarAcesso, UsuarioVO usuario) throws Exception;
+
+    /**
+     * Responsável por realizar uma consulta de <code>ReferenciaBibliografica</code> através do valor do atributo
+     * <code>String tipoReferencia</code>. Retorna os objetos, com início do valor do atributo idêntico ao parâmetro fornecido.
+     * Faz uso da operação <code>montarDadosConsulta</code> que realiza o trabalho de prerarar o List resultante.
+     * @param   controlarAcesso Indica se a aplicação deverá verificar se o usuário possui permissão para esta consulta ou não.
+     * @return  List Contendo vários objetos da classe <code>ReferenciaBibliograficaVO</code> resultantes da consulta.
+     * @exception Exception Caso haja problemas de conexão ou restrição de acesso.
+     */
+    public List<ReferenciaBibliograficaVO> consultarPorTipoReferencia(String valorConsulta, boolean controlarAcesso, UsuarioVO usuario) throws Exception;
+
+    /**
+     * Responsável por realizar uma consulta de <code>ReferenciaBibliografica</code> através do valor do atributo
+     * <code>String tipoPublicacao</code>. Retorna os objetos, com início do valor do atributo idêntico ao parâmetro fornecido.
+     * Faz uso da operação <code>montarDadosConsulta</code> que realiza o trabalho de prerarar o List resultante.
+     * @param   controlarAcesso Indica se a aplicação deverá verificar se o usuário possui permissão para esta consulta ou não.
+     * @return  List Contendo vários objetos da classe <code>ReferenciaBibliograficaVO</code> resultantes da consulta.
+     * @exception Exception Caso haja problemas de conexão ou restrição de acesso.
+     */
+    public List<ReferenciaBibliograficaVO> consultarPorTipoPublicacao(String valorConsulta, boolean controlarAcesso, UsuarioVO usuario) throws Exception;
+
+    /**
+     * Responsável por realizar uma consulta de <code>ReferenciaBibliografica</code> através do valor do atributo
+     * <code>Integer codigo</code>. Retorna os objetos com valores iguais ou superiores ao parâmetro fornecido.
+     * Faz uso da operação <code>montarDadosConsulta</code> que realiza o trabalho de prerarar o List resultante.
+     * @param   controlarAcesso Indica se a aplicação deverá verificar se o usuário possui permissão para esta consulta ou não.
+     * @return  List Contendo vários objetos da classe <code>ReferenciaBibliograficaVO</code> resultantes da consulta.
+     * @exception Exception Caso haja problemas de conexão ou restrição de acesso.
+     */
+    public List<ReferenciaBibliograficaVO> consultarPorCodigo(Integer valorConsulta, boolean controlarAcesso, UsuarioVO usuario) throws Exception;   
+
+    /**
+     * Operação responsável por localizar um objeto da classe <code>ReferenciaBibliograficaVO</code>
+     * através de sua chave primária.
+     * @exception Exception Caso haja problemas de conexão ou localização do objeto procurado.
+     */
+    public ReferenciaBibliograficaVO consultarPorChavePrimaria(Integer codigoPrm, UsuarioVO usuario) throws Exception;
+
+    /**
+     * Operação reponsável por definir um novo valor para o identificador desta classe.
+     * Esta alteração deve ser possível, pois, uma mesma classe de negócio pode ser utilizada com objetivos
+     * distintos. Assim ao se verificar que Como o controle de acesso é realizado com base neste identificador,
+     */
+    public void setIdEntidade(String idEntidade);
+
+	void incluirReferenciaBibliograficas(PlanoEnsinoVO planoEnsinoVO, UsuarioVO usuario) throws Exception;
+
+	void alterarReferenciaBibliograficas(PlanoEnsinoVO planoEnsinoVO, UsuarioVO usuario) throws Exception;
+
+	List<ReferenciaBibliograficaVO> consultarReferenciaBibliograficaPorPlanoEnsino(Integer planoEnsino, boolean controlarAcesso, UsuarioVO usuario) throws Exception;
+
+	void excluirReferenciaBibliograficaVOs(PlanoEnsinoVO planoEnsinoVO, UsuarioVO usuario) throws Exception;
+}

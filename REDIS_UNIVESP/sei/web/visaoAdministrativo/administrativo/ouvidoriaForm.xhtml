@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+	<script>
+		window.onload = function() {
+			document.getElementById("form:CPF").focus();
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Ouvidoria_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<style>
+.rf-dg {
+	background: none !important;
+	border: none !important;
+	empty-cells: none !important;
+}
+
+.rf-dg-c {
+	border: none !important;
+	color: none !important;
+	font: inherit;
+	padding: 0 !important;
+}
+</style>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelMensagemErro" autosized="true" shadowOpacity="true" width="550" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg.msg_RichMensagemErro}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkMensagemErro">
+						<rich:componentControl target="panelMensagemErro" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMensagemErro" onkeydown="fecharModal('panelMensagemErro',event);">
+				<h:panelGroup layout="block" styleClass="row">
+					<otm:mensagem id="listaMensagemErro" bean="#{OuvidoriaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelConsulta">
+			<f:facet name="header">
+				<h:outputText value="Consultar Pessoa" />
+			</f:facet>
+			<f:facet name="controls">
+				<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkPanelConsulta">
+					<rich:componentControl target="panelConsulta" operation="hide" event="click" />
+				</h:graphicImage>
+			</f:facet>
+			<h:form id="formPanelConsulta">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="Consultar Por" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu id="listaCamposConsulta" styleClass="form-control campos" value="#{OuvidoriaControle.consultarPessoa}">
+						<f:selectItems value="#{OuvidoriaControle.listaTipoPessoa}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="camposConsulta" styleClass="form-control campos" value="#{OuvidoriaControle.camposConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="consultarPessoa" value="Consultar" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" render="formPanelConsulta" action="#{OuvidoriaControle.realizarConsultaPessoa}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="itemsPessoa" width="100%" columnHeaderClass="headerTable" columnClasses="columTable" value="#{OuvidoriaControle.listaPessoa}" rows="10" var="pessoaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="CPF" />
+						</f:facet>
+						<h:outputText value="#{pessoaItem.CPF}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:outputText value="#{pessoaItem.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="E-mail" />
+						</f:facet>
+						<h:outputText value="#{pessoaItem.email}" rendered="#{!empty pessoaItem.email}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Telefone" />
+						</f:facet>
+<!-- 						<h:outputText id="telefoneComer" value="#{pessoaItem.telefoneComer}" rendered="#{!empty pessoaItem.telefoneComer}" /> -->
+						<h:outputText id="telefoneRes" value="#{pessoaItem.telefoneRes}" rendered="#{!empty pessoaItem.telefoneRes}" />
+<!-- 						<h:outputText id="telefoneRecado" value="#{pessoaItem.telefoneRecado}" rendered="#{!empty pessoaItem.telefoneRecado}" /> -->
+<!-- 						<h:outputText id="celular" value="#{pessoaItem.celular}" rendered="#{!empty pessoaItem.celular}" /> -->
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Opções" />
+						</f:facet>
+						<otm:commandIcon action="#{OuvidoriaControle.selecionarPessoa}" render="form" oncomplete="#{rich:component('panelConsulta')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller for="formPanelConsulta:itemsPessoa" render="formPanelConsulta" />
+					</f:facet>
+				</rich:dataTable>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form>
+			<a4j:jsFunction name="limparConsultaRichModal" action="#{OuvidoriaControle.limparConsultaRichModal}" />
+		</h:form>
+
+		<h:form id="form">
+			<h:commandLink action="#{OuvidoriaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGroupForm">
+				<h:panelGroup id="panelGridTopo" layout="block" styleClass="row" style="height:25px; background-image:url(#{resource['imagens/fundoBarraTopo.png']});background-repeat: repeat-x;" rendered="#{OuvidoriaControle.apresentarBotaoVerTodos}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<otm:commandButton icon="#{msg_botoes.btn_icon_fechar_embutido}" value="#{msg_botoes.btn_VerTodos}" tooltip="#{OuvidoriaControle.titleBotaoVerTodos}" accesskey="5" rendered="#{OuvidoriaControle.apresentarBotaoVerTodos}" oncomplete="#{rich:component('panelMensagemErro')}.show();" render="formMensagemErro" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:tabPanel switchType="ajax">
+					<rich:tab id="abaBasico" header="Ouvidoria">
+						<h:panelGroup id="panelGroupDadosBasicos" layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-1">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_codigo}" />
+								<h:inputText id="codigo" size="14" maxlength="14" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{OuvidoriaControle.atendimentoVO.codigo}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-5">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_Ouvidor}" />
+								<h:inputText id="ouvidor" size="93" maxlength="100" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{OuvidoriaControle.atendimentoVO.responsavelAtendimento.pessoa.nome}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<otm:outputHelp tooltip="#{msg.help_Ouvidoria_situacao}" id="helpsituacao" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_situacaoOuvidoriaEnum}" />
+								<h:inputText id="situacao" readonly="true" size="56" styleClass="form-control camposSomenteLeitura" value="#{OuvidoriaControle.atendimentoVO.situacaoAtendimentoEnum}" converter="EnumConverter" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6 pn">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_CPF}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:inputText id="CPF" maxlength="14" minlength="14" styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" readonly="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }" onkeypress="return mascara(this.form, 'form:CPF', '999.999.999-99', event);" value="#{OuvidoriaControle.atendimentoVO.CPF}">
+										<f:ajax event="change" oncomplete="document.getElementById('form:nome').focus();" listener="#{OuvidoriaControle.realizarConsultarPessoaExistePorCPF}" render="form" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-8">
+									<h:inputText id="nome" maxlength="100" styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" readonly="true" value="#{OuvidoriaControle.atendimentoVO.nome}" />
+									<span class="append-icon right"> <otm:commandIcon icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelConsulta')}.show();" render="formPanelConsulta" action="#{OuvidoriaControle.limparCampoPessoa}" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_remover2_embutido}" render="form, formPanelConsulta" action="#{OuvidoriaControle.limparPessoa}" />
+									</span>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_email}" />
+								<h:inputText id="email" size="53" maxlength="100" styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" readonly="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }" value="#{OuvidoriaControle.atendimentoVO.email}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_telefone}" />
+								<h:inputText id="telefone" onkeypress="return mascara(this.form, 'form:telefone', '(99)9999-9999', event);" size="15" maxlength="15" minlength="15" styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" readonly="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }" value="#{OuvidoriaControle.atendimentoVO.telefone}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" id="panekGroupMatricula" rendered="#{OuvidoriaControle.atendimentoVO.existePessoa and OuvidoriaControle.apresentarCampoMatricula}">
+								<h:outputText id="textoMatriculaAluno" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_matriculaAluno}" />
+								<h:selectOneMenu styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" disabled="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }" id="matriculaAluno" value="#{OuvidoriaControle.atendimentoVO.matriculaAluno}">
+									<f:selectItems value="#{OuvidoriaControle.listaSelectItemMatriculaAluno}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<!-- <h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_celular}" />
+									<h:inputText id="celular" onkeypress="return mascara(this.form, 'form:celular', '(99)9999-9999', event);" size="14" maxlength="14" minlength="14"  styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" readonly="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }" value="#{OuvidoriaControle.atendimentoVO.celular}" />
+								</h:panelGroup> -->
+
+							<!-- Unidade Ensino Abertura !-->
+
+							<h:panelGroup layout="block" styleClass="#{OuvidoriaControle.atendimentoVO.existePessoa and OuvidoriaControle.apresentarCampoMatricula ? 'col-md-4' : 'col-md-8'}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConfiguracaoAtendimento_Ouvidoria_UnidadeEnsino}" />
+								<h:selectOneMenu styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" disabled="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }" id="unidadeEnsinoOuvidora" value="#{OuvidoriaControle.atendimentoVO.unidadeEnsino}">
+									<f:selectItems value="#{OuvidoriaControle.listaSelectItemUnidadeEnsino}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_tipagemOuvidoria}" />
+								<h:selectOneMenu styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" disabled="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }" id="tipagemOuvidoria" value="#{OuvidoriaControle.atendimentoVO.tipagemOuvidoriaVO.codigo}">
+									<f:selectItems value="#{OuvidoriaControle.listaSelectItemtipagemOuvidoriaVO}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_tipoOrigemOuvidoriaEnum}" />
+								<h:selectOneMenu styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" disabled="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }" id="tipoOrigemOuvidoria" value="#{OuvidoriaControle.atendimentoVO.tipoOrigemOuvidoriaEnum}">
+									<f:selectItems value="#{EnumControle.comboboxTipoOrigemOuvidoriaEnum}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6" id="panelUserName" rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+								<h:inputText id="username" readonly="true" maxlength="30" styleClass="form-control camposSomenteLeitura" value="#{OuvidoriaControle.atendimentoVO.username}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6" id="panelSenha" rendered="#{OuvidoriaControle.apresentarUsuarioParaSolicitante}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_senha}" />
+								<h:inputSecret id="senha" readonly="true" redisplay="true" maxlength="64" styleClass="form-control camposSomenteLeitura" value="#{OuvidoriaControle.atendimentoVO.senha}" />
+								<h:outputText styleClass="field-control tituloCampos" value="Senha para acompanhar ouvidoria(s)" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_assunto}" />
+								<h:inputText id="assunto" maxlength="100" styleClass="form-control #{OuvidoriaControle.css_LeituraOrObrigatorio }" readonly="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }" value="#{OuvidoriaControle.atendimentoVO.assunto}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_descricao}" />
+								<otm:editor id="descricao" width="590" height="150" value="#{OuvidoriaControle.atendimentoVO.descricao}" readonly="#{!OuvidoriaControle.naoPermitirAlteracaoCampo }">
+								</otm:editor>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_dataRegistro}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+									<otm:calendar disabled="true" readonly="true" id="dataRegistro" value="#{OuvidoriaControle.atendimentoVO.dataRegistro}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_responsavelCadastro}" />
+								<h:inputText id="responsavelCadastro" size="36" maxlength="100" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{OuvidoriaControle.atendimentoVO.responsavelCadastro.nome}" />
+							</h:panelGroup>
+							<h:panelGroup rendered="#{OuvidoriaControle.atendimentoVO.isFinalizada}">
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_dataFechamento}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+										<otm:calendar readonly="true" id="dataFechamento" value="#{OuvidoriaControle.atendimentoVO.dataFechamento}" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_responsavelFechamento}" />
+									<h:inputText id="responsavelFechamento" size="36" maxlength="100" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{OuvidoriaControle.atendimentoVO.responsavelFechamento.nome}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+
+					<rich:tab id="abaInteracaoSolicitante" header="Interação com Solicitante" rendered="#{OuvidoriaControle.isUsuarioLogadoAndOuvidor and !OuvidoriaControle.atendimentoVO.novoObj}">
+						<h:panelGroup id="panelGridInteracaoSolicitante" layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="row" rendered="#{!OuvidoriaControle.atendimentoVO.isFinalizada}">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="Interação" />
+									<rich:editor id="questionamentoOuvidor" width="590" height="150" value="#{OuvidoriaControle.atendimentoInteracaoSolicitanteVO.questionamentoOuvidor}">
+										<f:facet name="config">
+											#{OuvidoriaControle.configuracaoEditorBasica}
+										</f:facet>
+									</rich:editor>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Ouvidoria_dataInteracaoSolicitante}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+										<otm:calendar readonly="true" id="dataRegistroInteracaoSolicitante" value="#{OuvidoriaControle.atendimentoInteracaoSolicitanteVO.dataRegistro}" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-10">
+									<h:outputText styleClass="field control-label tituloCampos" value="Anexar arquivo" />
+									<rich:fileUpload listHeight="0" listWidth="140" noDuplicate="true" fileUploadListener="#{OuvidoriaControle.upLoadArquivo}" maxFilesQuantity="1" addLabel="Selecionar Arquivo" doneLabel="Pronto" onupload="return validarTamanhoUploadArquivo(event,'form:uploadSolicitante', #{OuvidoriaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload});" uploadLabel="Enviar" clearAllLabel="Limpar lista" serverErrorLabel="Falha de Transmissão" immediateUpload="true" id="uploadSolicitante" oncomplete="alert('Enviado!')" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{OuvidoriaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." ontyperejected="Arquivo não Enviado. Formato inválido do arquivo" clearLabel="Limpar">
+										<!-- 									<a4j:ajax event="onsizerejected" oncomplete="alert('Arquivo não Enviado. Tamanho Máximo Permitido #{OuvidoriaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB.');" render="form:panelGridInteracaoSolicitante, form:panelGridMensagens " /> -->
+										<!-- 									<a4j:ajax event="ontyperejected" oncomplete="alert('Arquivo não Enviado. Formato inválido do arquivo');" render="form:panelGridInteracaoSolicitante, form:panelGridMensagens " /> -->
+										<!-- 									<a4j:ajax event="onclear" render="form:panelGridInteracaoSolicitante,form:panelGridMensagens" /> -->
+										<!-- 									 <a4j:ajax event="onuploadcanceled" render="form:panelGridInteracaoSolicitante, form:panelGridMensagens " /> -->
+										<!-- 									 <a4j:ajax event="onuploadcomplete" render="form:panelGridInteracaoSolicitante, form:panelGridMensagens "/> -->
+									</rich:fileUpload>
+									<h:outputText styleClass="field control-label tituloCampos" value="#{OuvidoriaControle.arquivoVO.nome}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+									<otm:commandButton id="adicionarInteracaoSolicitante" action="#{OuvidoriaControle.realizarAdicaoAtendimentoInteracaoSolicitante}" value="Adicionar Interação" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" title="Adicionar Interação" render="form:panelGridMensagens, form:panelGridInteracaoSolicitante" />
+									<otm:commandButton style="margin-left: 5px" id="adicionarFinalizarInteracaoSolicitante" action="#{OuvidoriaControle.realizarFinalizacaoOuvidoria}" icon="#{msg_botoes.btn_icon_adicionar2_embutido}" styleClass="btn btn-warning" value="Adicionar Interação e Finalizar" render="form:panelGridMensagens, form:panelGridInteracaoSolicitante" />
+								</h:panelGroup>
+							</h:panelGroup>
+
+							<h:panelGroup layout="block" styleClass="row mn">
+
+								<rich:dataGrid rowKeyVar="row" styleClass="col-md-12" id="listaInteracaoSolicitante" value="#{OuvidoriaControle.atendimentoVO.listaAtendimentoInteracaoSolicitanteVO}" rendered="#{not empty OuvidoriaControle.atendimentoVO.listaAtendimentoInteracaoSolicitanteVO}" rows="5" var="atendimentoInteracaoSolicitanteItens">
+									<otm2:panel name="panelInteracaoSoli_#{row+1}" styleClassFooter="dn" styleClassBody="mn p5" styleClassHeader="mn bg-white rounded-top p5" stylePanel="margin-bottom: 10px !important; background: white; border: solid 1px #cacaca !important; padding: 5px;" stylePanelHeader="padding:10px !important;" renderedControl="false">
+										<ui:define name="header">
+											<h:panelGroup layout="block" styleClass="row mn border rounded pb10">
+												<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-100 p5">
+													<h:panelGroup layout="block" styleClass="#{atendimentoInteracaoSolicitanteItens.novoObj ? 'col-md-11' : 'col-md-12'} pn">
+														<h:outputText styleClass="tituloCampos font-weight-bold" value="#{atendimentoInteracaoSolicitanteItens.usuarioQuestionamento.nome}" />
+														<h:panelGroup styleClass="float-right">
+															<h:outputText styleClass="tituloCampos mr5" value="#{msg_aplic.prt_Ouvidoria_dataInteracaoSolicitante}" />
+															<h:outputText styleClass="tituloCampos" value="#{atendimentoInteracaoSolicitanteItens.dataRegistroApresentar}" />
+														</h:panelGroup>
+													</h:panelGroup>
+													<h:panelGroup styleClass="col-md-1 text-right" rendered="#{atendimentoInteracaoSolicitanteItens.novoObj}">
+														<otm:commandIcon id="editarQuestionamento" action="#{OuvidoriaControle.realizarEdicaoAtendimentoInteracaoSolicitante}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar_embutido} iconePequeno" title="#{msg.msg_editar_dados}" render="form:panelGridMensagens, form:panelGridInteracaoSolicitante" />
+														<otm:commandIcon id="removerQuestionamento" immediate="true" action="#{OuvidoriaControle.realizarRemocaoAtendimentoInteracaoSolicitante}" tooltip="#{msg_botoes.btn_excluir} " icon="#{msg_botoes.btn_icon_limpar_embutido} iconePequeno" title="Remover Interação" render="form:panelGridMensagens, form:panelGridInteracaoSolicitante" />
+														<otm:commandIcon id="salvarInteracaoSolicitante" action="#{OuvidoriaControle.realizarRegistroInteracaoSolicitante}" tooltip="Registar Interação" icon="#{msg_botoes.btn_icon_interacao_embutido} iconePequeno" title="Registar Interação" render="form:panelGridMensagens, form:panelGridInteracaoSolicitante" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 text-left pt5">
+													<h:outputText styleClass="tituloCampos" escape="false" value="#{atendimentoInteracaoSolicitanteItens.questionamentoOuvidor}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</ui:define>
+										<ui:define name="body">
+											<h:panelGroup layout="block" styleClass="row mn border rounded bg-white pb10" rendered="#{atendimentoInteracaoSolicitanteItens.apresentarQuestionamentoSolicitante}">
+												<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-100 p5">
+													<h:outputText styleClass="tituloCampos font-weight-bold" value="#{atendimentoInteracaoSolicitanteItens.usuarioRespostaQuestionamento.nome}" />
+													<h:panelGroup styleClass="float-right">
+														<h:outputText styleClass="tituloCampos mr5" value="#{msg_aplic.prt_Ouvidoria_dataInteracaoSolicitante} " />
+														<h:outputText styleClass="tituloCampos" value="#{atendimentoInteracaoSolicitanteItens.registroRespostaQuestionamentoApresentar}" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 text-left pt5">
+													<h:outputText styleClass="tituloCampos" escape="false" value="#{atendimentoInteracaoSolicitanteItens.questionamentoSolicitante}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</ui:define>
+									</otm2:panel>
+								</rich:dataGrid>
+								<div style="text-align: center !important" class="col-md-12">
+									<rich:dataScroller align="center" for="form:listaInteracaoSolicitante" id="scResultadoConsultaInteracaoSolicitante" rendered="#{not empty OuvidoriaControle.atendimentoVO.listaAtendimentoInteracaoSolicitanteVO}" />
+								</div>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+
+					<rich:tab id="abaInteracaoDepartamento" header="Interação entre Departamento" rendered="#{(OuvidoriaControle.isUsuarioLogadoAndOuvidor or OuvidoriaControle.isUsuarioLogadoAndFuncionarioDepartamento) and !OuvidoriaControle.atendimentoVO.novoObj}">
+						<h:panelGroup layout="block" styleClass="row" id="panelGridInteracaoDepartamento">
+							<h:panelGroup rendered="#{!OuvidoriaControle.atendimentoVO.isFinalizada}">
+								<!--Inicio Ouvidor Departamento -->
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{OuvidoriaControle.isUsuarioLogadoAndOuvidor}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_Departamento}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:selectOneMenu styleClass="form-control camposObrigatorios" id="departamento" value="#{OuvidoriaControle.atendimentoInteracaoDepartamentoVO.departamento.codigo}">
+											<f:selectItems value="#{OuvidoriaControle.listaSelectItemDepartameto}" />
+											<a4j:ajax event="change" listener="#{OuvidoriaControle.montarListaSelectItemFuncionario}" render="form:panelGridInteracaoDepartamento" />
+										</h:selectOneMenu>
+										<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_departamento" action="#{OuvidoriaControle.montarListaSelectItemDepartamento}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="form:panelGridInteracaoDepartamento" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{OuvidoriaControle.isUsuarioLogadoAndOuvidor}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_EncaminharPara}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:selectOneMenu styleClass="form-control camposObrigatorios" id="funcionario" value="#{OuvidoriaControle.atendimentoInteracaoDepartamentoVO.funcionarioVO.codigo}">
+											<f:selectItems value="#{OuvidoriaControle.listaSelectItemFuncionario}" />
+										</h:selectOneMenu>
+										<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_funcionario" action="#{OuvidoriaControle.montarListaSelectItemFuncionario}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="form:panelGridInteracaoDepartamento" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{OuvidoriaControle.isUsuarioLogadoAndOuvidor}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_Interacao}" rendered="#{OuvidoriaControle.isUsuarioLogadoAndOuvidor}" />
+									<otm:editor id="questionamentoOuvidorDepartamento" value="#{OuvidoriaControle.atendimentoInteracaoDepartamentoVO.questionamento}" rendered="#{OuvidoriaControle.isUsuarioLogadoAndOuvidor}">
+									</otm:editor>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{OuvidoriaControle.isUsuarioLogadoAndOuvidor}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_dataInteracaoSolicitante}" rendered="#{OuvidoriaControle.isUsuarioLogadoAndOuvidor}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+										<otm:calendar id="dataRegistroInteracaoDepartamento" showApplyButton="false" readonly="true" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" datePattern="dd/MM/yyyy - HH:mm" inputClass="form-control camposSomenteLeitura" inputSize="18" value="#{OuvidoriaControle.atendimentoInteracaoDepartamentoVO.dataRegistro}" rendered="#{OuvidoriaControle.isUsuarioLogadoAndOuvidor}" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12" />
+								<!--Fim Ouvidor Departamento -->
+
+								<!--Inicio reposta Departamento -->
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{OuvidoriaControle.isUsuarioLogadoAndFuncionarioDepartamento}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_RespotaDepartamento}" rendered="#{OuvidoriaControle.isUsuarioLogadoAndFuncionarioDepartamento}" />
+									<otm:editor id="respostaDepartamento" width="590" height="150" value="#{OuvidoriaControle.atendimentoInteracaoDepartamentoVO.resposta}" rendered="#{OuvidoriaControle.isUsuarioLogadoAndFuncionarioDepartamento}">
+									</otm:editor>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{OuvidoriaControle.isUsuarioLogadoAndFuncionarioDepartamento}">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Ouvidoria_DataRespotaDepartamento}" rendered="#{OuvidoriaControle.isUsuarioLogadoAndFuncionarioDepartamento}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+										<otm:calendar id="dataRespostaDepartamento" showApplyButton="false" readonly="true" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" datePattern="dd/MM/yyyy - HH:mm" inputClass="form-control camposSomenteLeitura" inputSize="18" value="#{OuvidoriaControle.atendimentoInteracaoDepartamentoVO.dataRegistroResposta}" rendered="#{OuvidoriaControle.isUsuarioLogadoAndFuncionarioDepartamento}" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12" />
+								<!--Fim reposta Departamento -->
+
+								<!--Inicio Upload -->
+								<h:panelGroup layout="block" styleClass="col-md-10">
+									<h:outputText styleClass="tituloCampos" value="Anexar arquivo" />
+									<rich:fileUpload listHeight="0" listWidth="140" noDuplicate="true" fileUploadListener="#{OuvidoriaControle.upLoadArquivo}" maxFilesQuantity="1" addLabel="Selecionar Arquivo" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{OuvidoriaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." sonupload="return validarTamanhoUploadArquivo(event, 'form:uploadDepartamento', #{OuvidoriaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload});" uploadLabel="Enviar" clearAllLabel="Limpar lista" serverErrorLabel="Falha de Transmissão" immediateUpload="true" id="uploadDepartamento" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{OuvidoriaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." ontyperejected="Arquivo não Enviado. Formato inválido do arquivo" clearLabel="Limpar" oncomplete="alert('Enviado!')">
+										<!-- 									<a4j:ajax event="onsizerejected" oncomplete="alert('Arquivo não Enviado. Tamanho Máximo Permitido #{OuvidoriaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB.');" render="form:panelGridInteracaoDepartamento, form:panelGridMensagens " /> -->
+										<!-- 									<a4j:ajax event="ontyperejected" oncomplete="alert('Arquivo não Enviado. Formato inválido do arquivo');" render="form:panelGridInteracaoDepartamento, form:panelGridMensagens " /> -->
+										<!-- 									<a4j:ajax event="onclear" render="form:panelGridInteracaoDepartamento,form:panelGridMensagens" /> -->
+										<!-- 									<a4j:ajax event="onuploadcanceled" render="form:panelGridInteracaoDepartamento, form:panelGridMensagens " /> -->
+										<!-- 									 <a4j:ajax event="onuploadcomplete" render="form:panelGridInteracaoDepartamento, form:panelGridMensagens "/> -->
+									</rich:fileUpload>
+									<h:outputText styleClass="tituloCampos" value="#{OuvidoriaControle.arquivoVO.nome}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<otm:spacer width="100%"></otm:spacer>
+									<otm:commandButton id="adicionarInteracaoDepartamento" action="#{OuvidoriaControle.realizarAdicaoAtendimentoInteracaoDepartamento}" value="Adicionar Interação" tooltip="Adicionar Interação" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_adicionar_embutido}" render="form" rendered="#{!OuvidoriaControle.atendimentoVO.isFinalizada }" />
+								</h:panelGroup>
+							</h:panelGroup>
+
+							<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+
+							
+							<h:panelGroup layout="block" styleClass="row mn">
+								<rich:dataGrid styleClass="col-md-12" rowKeyVar="row" id="listaInteracaoDepartamento" value="#{OuvidoriaControle.atendimentoVO.listaAtendimentoInteracaoDepartamentoVOs}" rendered="#{not empty OuvidoriaControle.atendimentoVO.listaAtendimentoInteracaoDepartamentoVOs}" rows="5" var="atendimentoInteracaoDepartamentoItens">
+									<otm2:panel name="panel_#{row+1}" styleClassFooter="dn" styleClassBody="mn p5" styleClassHeader="mn bg-white rounded-top p5" stylePanel="margin-bottom: 10px !important; background: white; border: solid 1px #cacaca !important; padding: 5px;" stylePanelHeader="padding:10px !important;" renderedControl="false">
+										<ui:define name="header">
+											<h:panelGroup layout="block" styleClass="row mn border rounded pb10">
+												<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-100 p5">
+													<h:panelGroup layout="block" styleClass="#{atendimentoInteracaoDepartamentoItens.novoObj ? 'col-md-11' : 'col-md-12'} pn">
+														<h:panelGroup layout="block" styleClass="col-md-6 pn">
+															<h:outputText styleClass="tituloCampos font-weight-bold" value="#{atendimentoInteracaoDepartamentoItens.usuarioquestionamento.nome}" />
+														</h:panelGroup>
+														<h:panelGroup layout="block" styleClass="col-md-6 text-right">
+															<h:outputText styleClass="tituloCampos mr5" value="#{msg_aplic.prt_Ouvidoria_Interacao} encaminhada para" />
+															<h:outputText styleClass="tituloCampos mr10" value="#{atendimentoInteracaoDepartamentoItens.funcionarioVO.pessoa.nome}" />
+															<h:outputText styleClass="tituloCampos mr5" value="#{msg_aplic.prt_Ouvidoria_dataInteracaoSolicitante}" />
+															<h:outputText styleClass="tituloCampos" value="#{atendimentoInteracaoDepartamentoItens.dataRegistroApresentar}" />
+														</h:panelGroup>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-1 float-right" rendered="#{atendimentoInteracaoDepartamentoItens.novoObj}">
+														<otm:commandIcon action="#{OuvidoriaControle.realizarEdicaoAtendimentoInteracaoDepartamento}" icon="#{msg_botoes.btn_icon_editar_embutido} iconePequeno" tooltip="#{msg.msg_editar_dados}" render="form:panelGridMensagens, form:panelGridInteracaoDepartamento" />
+														<otm:commandIcon id="removerQuestionamento" immediate="true" action="#{OuvidoriaControle.realizarRemocaoAtendimentoInteracaoDepartamento}" tooltip="Remover" icon="#{msg_botoes.btn_icon_fechar_embutido} iconePequeno" render="form:panelGridMensagens, form:panelGridInteracaoDepartamento" />
+														<otm:commandIcon id="salvarInteracaoDepartamento" action="#{OuvidoriaControle.realizarRegistroInteracaoDepartamento}" icon="#{msg_botoes.btn_icon_interacao_embutido} iconePequeno" tooltip="Registar Interação" render="form:panelGridMensagens, form:panelGridInteracaoDepartamento" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 text-left pt5">
+													<h:outputText styleClass="tituloCampos" escape="false" value="#{atendimentoInteracaoDepartamentoItens.questionamento}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</ui:define>
+										<ui:define name="body">
+											<h:panelGroup styleClass="row mn border rounded bg-white pb10" rendered="#{atendimentoInteracaoDepartamentoItens.existeDataRegistroRespostaTem and atendimentoInteracaoDepartamentoItens.resposta != ''}">
+												<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-100 p5">
+													<h:panelGroup layout="block" styleClass="#{!atendimentoInteracaoDepartamentoItens.existeDataRegistroResposta ? 'col-md-11' : 'col-md-12'} pn">
+														<h:outputText styleClass="tituloCampos font-weight-bold" value="#{atendimentoInteracaoDepartamentoItens.usuariorespostaquestionamento.nome}" />
+														<h:panelGroup styleClass="float-right">
+															<h:outputText styleClass="tituloCampos mr5" value="#{msg_aplic.prt_Ouvidoria_dataInteracaoSolicitante}: " />
+															<h:outputText styleClass="tituloCampos" value="#{atendimentoInteracaoDepartamentoItens.dataRegistroRespostaApresentar}" />
+														</h:panelGroup>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-1 text-right" rendered="#{!atendimentoInteracaoDepartamentoItens.existeDataRegistroResposta}">
+														<otm:commandIcon action="#{OuvidoriaControle.realizarEdicaoAtendimentoInteracaoDepartamento}" icon="#{msg_botoes.btn_icon_editar_embutido} iconePequeno" title="#{msg.msg_editar_dados}" render="form:panelGridMensagens, form:panelGridInteracaoDepartamento" />
+														<otm:commandIcon id="removerResposta" immediate="true" action="#{OuvidoriaControle.realizarRemocaoRespostaAtendimentoInteracaoDepartamento}" icon="#{msg_botoes.btn_icon_fechar_embutido} iconePequeno" image="#{resource['imagens/botaoRemover.png']}" render="form:panelGridMensagens, form:panelGridInteracaoDepartamento" />
+														<otm:commandIcon id="salvarInteracaoDepartamentoResposta" action="#{OuvidoriaControle.realizarRegistroRespostaInteracaoDepartamento}" tooltip="Registar Interação" title="Registar Interação" icon="#{msg_botoes.btn_icon_navegar_para_embutido} iconePequeno" render="form:panelGridMensagens, form:panelGridInteracaoDepartamento" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 text-left pt5">
+													<h:outputText styleClass="tituloCampos" escape="false" value="#{atendimentoInteracaoDepartamentoItens.resposta}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</ui:define>
+									</otm2:panel>
+								</rich:dataGrid>
+								<div class="col-md-12 text-center">
+									<rich:dataScroller align="center" for="form:listaInteracaoDepartamento" id="scResultadoConsultaInteracaoDepartamento" rendered="#{not empty OuvidoriaControle.atendimentoVO.listaAtendimentoInteracaoDepartamentoVOs}" />
+								</div>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+
+					<rich:tab id="abaAnexos" header="Anexos">
+						<h:panelGroup id="panelArquivo" layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UploadArquivos_descricao}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-10">
+								<h:inputTextarea id="descricaoArquivo" cols="60" rows="2" styleClass="form-control camposObrigatorios" value="#{OuvidoriaControle.arquivoVO.descricao}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<rich:fileUpload listWidth="10" listHeight="10" noDuplicate="true" fileUploadListener="#{OuvidoriaControle.upLoadArquivo}" maxFilesQuantity="1" addLabel="Selecionar Arquivo" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo 2MB" uploadLabel="Enviar" serverErrorLabel="Tamanho Máximo Permitido 2MB" id="uploadArquivo" immediateUpload="true">
+									<a4j:ajax listener="#{OuvidoriaControle.adicionarArquivoLista}" event="uploadcomplete" render="form:panelArquivo, form:panelGridMensagens" />
+								</rich:fileUpload>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+							<rich:dataTable id="arquivos" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{OuvidoriaControle.atendimentoVO.listaAnexos}" rendered="#{not empty OuvidoriaControle.atendimentoVO.listaAnexos}" rows="10" var="arquivoItens">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Origem" style="campos" />
+									</f:facet>
+									<h:outputText value="#{arquivoItens.origem}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Descrição" style="campos" />
+									</f:facet>
+									<h:outputText value="#{arquivoItens.descricao}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Data Upload" style="campos" />
+									</f:facet>
+									<h:outputText value="#{arquivoItens.dataUpload_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Responsável Upload" style="campos" />
+									</f:facet>
+									<h:outputText value="#{arquivoItens.responsavelUpload.nome}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									</f:facet>
+									<h:panelGroup>
+										<otm:commandIcon oncomplete="location.href='../../DownloadSV'" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download} iconePequeno" action="#{OuvidoriaControle.caminhoServidorDownload}" />
+										<otm:commandIcon id="removerItemArquivo" action="#{OuvidoriaControle.removerArquivoLista}" tooltip="#{msg_botoes.btn_excluir}" icon="#{msg_botoes.btn_icon_limpar} iconePequeno" render="form:panelArquivo,form:panelGridMensagens" rendered="#{!OuvidoriaControle.atendimentoVO.isFinalizada }" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="arquivos" limitRender="10" align="center" rendered="#{not empty OuvidoriaControle.atendimentoVO.listaAnexos}" />
+							</rich:dataTable>
+						</h:panelGroup>
+					</rich:tab>
+				</rich:tabPanel>
+				<h:panelGroup id="panelGridMensagens" layout="block" styleClass="row">
+					<otm:mensagem bean="#{OuvidoriaControle}"></otm:mensagem>
+				</h:panelGroup>
+
+				<h:panelGroup styleClass="barraFlutuanteInferior " layout="block">
+					<h:panelGroup styleClass="btn-group btn-group-lg col-xs-12" layout="block">
+						<otm:commandButton id="novo" action="#{OuvidoriaControle.novo}" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" tooltip="#{msg.msg_novo_dados}" accesskey="1" render="form" />
+						<otm:commandButton style="margin-left: 10px" id="salvar" action="#{OuvidoriaControle.persistirPorVisaoAdminstrariva}" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" tooltip="#{msg.msg_gravar_dados}" accesskey="2" render="form ,form:panelGridMensagens" rendered="#{!OuvidoriaControle.atendimentoVO.isFinalizada }" />
+						<otm:commandButton style="margin-left: 10px" id="excluir" styleClass="btn btn-danger btn-excluir" action="#{OuvidoriaControle.excluir}" value="#{msg_botoes.btn_excluir}" accesskey="3" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+						<otm:commandButton style="margin-left: 10px" id="consultar" immediate="true" action="#{OuvidoriaControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" tooltip="#{msg.msg_consultar_dados}" accesskey="4" render="form, formMensagemErro" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,1 @@
+alter table inscricao rename codigoAutenticacaoProvaNavegador to codigoAutenticacaoNavegador;

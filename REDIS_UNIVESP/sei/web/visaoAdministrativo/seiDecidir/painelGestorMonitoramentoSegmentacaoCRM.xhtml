@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+
+	<ui:define name="tituloPagina">
+		<h:outputText value="Filtros Painel Gestor" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:panelGroup layout="block" styleClass="row">
+				<rich:panel id="ies">
+					<f:facet name="header">
+						<h:panelGroup layout="block" styleClass="p5">
+							<i class="fas fa-filter mr5"></i>
+							<h:outputText rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="Ocultar Unidade Ensino" />
+							<h:outputText rendered="#{!PainelGestorControle.filtrarUnidadeEnsino}" styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="Filtrar Unidade Ensino" />
+							<otm:commandIcon rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" action="#{PainelGestorControle.setFiltrarUnidadeEnsino(false)}" styleClass="float-right mr10" render="ies" icon="fas fa-expand-alt fs14">
+							</otm:commandIcon>
+							<otm:commandIcon rendered="#{!PainelGestorControle.filtrarUnidadeEnsino}" action="#{PainelGestorControle.setFiltrarUnidadeEnsino(true)}" styleClass="float-right mr10" render="ies" icon="fas fa-compress-alt fs14">
+							</otm:commandIcon>
+						</h:panelGroup>
+					</f:facet>
+					<h:panelGroup layout="block" rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" styleClass="fields tituloCampos btn-block" value="Selecionar Todas as Unidades de Ensino" />
+							<otm:selectBooleanCheckbox rendered="#{PainelGestorControle.filtrarUnidadeEnsino}" value="#{PainelGestorControle.marcarTodasUnidadeEnsino}">
+								<a4j:ajax event="click" listener="#{PainelGestorControle.marcarTodasUnidadesEnsinoAction}" render="form" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+						<a4j:repeat id="filtros" var="unidadeEnsinoItens" value="#{PainelGestorControle.unidadeEnsinoVOs}" rendered="#{PainelGestorControle.filtrarUnidadeEnsino}">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText value="#{unidadeEnsinoItens.nome}" styleClass="fields tituloCampos btn-block" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox value="#{unidadeEnsinoItens.filtrarUnidadeEnsino}"></otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px" id="graficos">
+							<otm:commandButton styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_gerar_relatorio}" value="Gerar Relatorio" render="form" action="#{PainelGestorControle.consultarDadosPainelGestorMonitoramentoPorSegmentacao}" />
+							<otm:spacer width="5px" />
+							<otm:commandButton icon="#{msg_botoes.btn_icon_voltar}" immediate="true" action="#{PainelGestorControle.consultarDadosIniciaisPainelGestorMonitoramentoCRM}" value="Voltar" styleClass="btn btn-info" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:panel>
+			</h:panelGroup>
+
+			<a4j:jsFunction name="selecionarLegendaPorSegmentacao" action="#{PainelGestorControle.detalharSegmentacao}">
+				<a4j:param assignTo="#{PainelGestorControle.codigoSegmentacao}" name="param1"></a4j:param>
+			</a4j:jsFunction>
+
+			<h:panelGroup layout="block" styleClass="col-md-12  text-center mt50" rendered="#{empty PainelGestorControle.segmentacaoProspectVOs}">
+				<h:outputText value="#{msg.msg_relatorio_sem_dados}" styleClass="fs20 "></h:outputText>
+			</h:panelGroup>
+
+
+			<h:panelGroup layout="block" rendered="#{!empty PainelGestorControle.segmentacaoProspectVOs}" id="segmentacaoDados" styleClass="row mt20">
+				<a4j:repeat id="listaSegmentacaoDados" rowKeyVar="row" var="segmentacao" value="#{PainelGestorControle.segmentacaoProspectVOs}">
+
+					<otm2:dashpanel id="panelSeg_#{row}" cols="6">
+						<ui:define name="header">
+							<i class="fas fa-user-tag  mr-2 fs12"></i>
+							<h:outputText styleClass="fs12 fonteHeaderDashboard" value="#{segmentacao.descricao}"></h:outputText>
+							<a4j:commandLink rendered="#{segmentacao.tipoLayoutApresentacaoResultadoSegmentacaoEnum ne 'GRAFICO_PIZZA'}" styleClass="border-0 bg-transparent float-right p-0" title="Apresentar Gráfico Pizza" render="segmentacaoDados">
+								<i class="fas fa-chart-pie text-center fonteHeaderDashboard mr-2 fs12" />
+								<f:setPropertyActionListener value="GRAFICO_PIZZA" target="#{segmentacao.tipoLayoutApresentacaoResultadoSegmentacaoEnum}" />
+							</a4j:commandLink>
+							<a4j:commandLink rendered="#{segmentacao.tipoLayoutApresentacaoResultadoSegmentacaoEnum ne 'GRAFICO_COLUNA'}" styleClass="border-0 bg-transparent float-right p-0" title="Apresentar Gráfico Coluna" render="segmentacaoDados">
+								<i class="fas fa-chart-bar rotate-n-270 text-center fonteHeaderDashboard mr-2 fs12" />
+								<f:setPropertyActionListener value="GRAFICO_COLUNA" target="#{segmentacao.tipoLayoutApresentacaoResultadoSegmentacaoEnum}" />
+							</a4j:commandLink>
+							<a4j:commandLink rendered="#{segmentacao.tipoLayoutApresentacaoResultadoSegmentacaoEnum ne 'GRAFICO_BARRA'}" styleClass="border-0 bg-transparent float-right p-0" title="Apresentar Gráfico Barra" render="segmentacaoDados">
+								<i class="fas fa-chart-bar text-center fonteHeaderDashboard mr-2 fs12" />
+								<f:setPropertyActionListener value="GRAFICO_BARRA" target="#{segmentacao.tipoLayoutApresentacaoResultadoSegmentacaoEnum}" />
+							</a4j:commandLink>
+							<a4j:commandLink rendered="#{segmentacao.tipoLayoutApresentacaoResultadoSegmentacaoEnum ne 'LISTA'}" styleClass="border-0 bg-transparent float-right p-0" title="Apresentar Lista" render="segmentacaoDados">
+								<i class="fas fa-list text-center fonteHeaderDashboard mr-2 fs12" />
+								<f:setPropertyActionListener value="LISTA" target="#{segmentacao.tipoLayoutApresentacaoResultadoSegmentacaoEnum}" />
+							</a4j:commandLink>
+
+						</ui:define>
+						<ui:define name="body">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup rendered="#{segmentacao.isApresentarGraficoPizza}" layout="block" styleClass="row">
+									<h:outputText escape="false" value="#{segmentacao.graficoPizza}" />
+								</h:panelGroup>
+								<h:panelGroup rendered="#{segmentacao.isApresentarGraficoColuna}" layout="block" styleClass="row">
+									<h:outputText escape="false" value="#{segmentacao.graficoColuna}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" rendered="#{segmentacao.isApresentarGraficoBarra}" styleClass="row">
+									<h:outputText rendered="#{segmentacao.isApresentarGraficoBarra}" escape="false" value="#{segmentacao.graficoBarra}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" rendered="#{segmentacao.isApresentarLista}" styleClass="row">
+									<a4j:repeat id="listaSegmentacao" width="100%" rendered="#{segmentacao.isApresentarLista}" rowKeyVar="rows" value="#{segmentacao.segmentacaoOpcaoVOs}" var="segmentacaoItens">
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<otm2:panel name="listSeg_#{rows}" renderedControl="false" styleClassFooter="dn">
+												<ui:define name="header">
+													<a4j:commandLink action="#{PainelGestorControle.detalharSegmentacao(segmentacaoItens.codigo)}">
+														<h:outputText styleClass="text-success " value="#{segmentacaoItens.descricao}" />
+													</a4j:commandLink>
+												</ui:define>
+												<ui:define name="body">
+
+													<a4j:commandLink style="display:block" action="#{PainelGestorControle.detalharSegmentacao(segmentacaoItens.codigo)}">
+														<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+															<h:outputText styleClass="text-success fs20" value="#{segmentacaoItens.quantidade}" />
+															<h:outputText styleClass="text-success fs20" value=" Prospects - " />
+															<h:outputText styleClass="text-success fs20" value="#{segmentacaoItens.percentual}">
+																<f:convertNumber pattern="##0.##" />
+															</h:outputText>
+															<h:outputText styleClass="text-success fs20" value="%">
+															</h:outputText>
+														</h:panelGroup>
+													</a4j:commandLink>
+
+												</ui:define>
+											</otm2:panel>
+										</h:panelGroup>
+									</a4j:repeat>
+								</h:panelGroup>
+							</h:panelGroup>
+						</ui:define>
+					</otm2:dashpanel>
+
+				</a4j:repeat>
+			</h:panelGroup>
+		</h:form>
+
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,1 @@
+alter table if exists programacaoformatura add column if not exists dataLimiteAssinaturaAta timestamp null;

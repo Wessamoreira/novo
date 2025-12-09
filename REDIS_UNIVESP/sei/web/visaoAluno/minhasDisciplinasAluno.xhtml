@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAluno/template/visaoAluno.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Minhas Disciplinas" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<h:outputScript name="highcharts.js" library="script/highcharts" />
+		<h:outputScript name="exporting.js" library="script/highcharts/modules" />
+
+		<style>
+.panelConteudo {
+	text-decoration: none;
+	text-align: left;
+	line-height: normal;
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial,
+		Helvetica, sans-serif;
+	font-size: 12px;
+	color: #424242;
+	min-height: 90px;
+	border: 1px solid gray;
+	background-color: #F4F4F4;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	width: 100%;
+	margin-top: 5px;
+}
+</style>
+		<h:form id="form">
+			<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{!DisciplinaControle.isApresentarDadosDisciplina}">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Filtrar Período" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{DisciplinaControle.tabActive}">
+						<f:selectItems value="#{DisciplinaControle.listaSelectItemPeriodosLetivos}" />
+						<a4j:ajax event="change" execute="@this" listener="#{DisciplinaControle.limparMensagem}" render="disciplinaGeral, titulo" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton id="cmdB02" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_imprimir_embutido}" value="Imprimir Documento Integração Curricular" render="form:gridTotal, panelGridMensagens" title="Gerar Documento" action="#{VisaoAlunoControle.imprimirDocumentoIntegracaoCurricular}" oncomplete="#{VisaoAlunoControle.download};" rendered="#{VisaoAlunoControle.loginControle.permissaoAcessoMenuVO.permitirGerarRelatorioDocumentoIntegralizacaoCurricular}" />
+					<otm:commandButton id="imprimirMatrizCurricular" styleClass="btn btn-default" style="margin-left: 5px" action="#{VisaoAlunoControle.imprimirMatrizCurricularAluno}" title="Imprimir Matriz Curricular" icon="#{msg_botoes.btn_icon_imprimir_embutido}" value="Imprimir Matriz Curricular" oncomplete="#{VisaoAlunoControle.download}" rendered="#{VisaoAlunoControle.loginControle.permissaoAcessoMenuVO.permitirImprimirMatrizCurricularAluno}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="disciplinaGeral" style="margin-top: 20px">
+				<h:panelGroup id="disciplinaDadosBasicos" rendered="#{!DisciplinaControle.isApresentarDadosDisciplina}">
+					<h:panelGroup layout="block" styleClass="row" id="panelGraficos">
+						<h:panelGroup layout="block" styleClass=" col-md-6 text-center" rendered="#{!empty DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoSituacaoAcademicaAluno and DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.inicializado}">
+							<h:outputText id="graficoSituacaoAcademicaAluno" escape="false" value="#{DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoSituacaoAcademicaAluno}"></h:outputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6 text-center" rendered="#{!empty DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoAtividadeComplementar and DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.inicializado}">
+							<h:outputText id="graficoAtividadeComplementar" escape="false" value="#{DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoAtividadeComplementar}"></h:outputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6 text-center" rendered="#{!empty DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoEstagio and DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.inicializado}">
+							<h:outputText id="graficoEstagio" escape="false" value="#{DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.graficoEstagio}"></h:outputText>
+						</h:panelGroup>
+					</h:panelGroup>
+					<rich:list type="definitions" value="#{DisciplinaControle.visaoAlunoControle.matricula.matriculaComHistoricoAlunoVO.gradeCurricularComHistoricoAlunoVO.periodoLetivoComHistoricoAlunoVOs}" var="periodoLetivoItem">
+						<h:panelGroup layout="block" styleClass="row" rendered="#{(DisciplinaControle.tabActive eq 'TODOS') or (DisciplinaControle.tabActive eq periodoLetivoItem.periodoLetivoVO.descricao)}">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCamposNegrito" value="#{periodoLetivoItem.periodoLetivoVO.descricao}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<rich:list type="definitions" value="#{periodoLetivoItem.gradeDisciplinaComHistoricoAlunoVOs}" var="gradeDisciplinaItem" style="width:100%">
+								<h:panelGroup layout="block" styleClass="row" style="margin-top: 10px" rendered="#{(!gradeDisciplinaItem.gradeDisciplinaVO.tipoDisciplina eq 'LO' or !gradeDisciplinaItem.gradeDisciplinaVO.tipoDisciplina eq 'PO') and (gradeDisciplinaItem.historicoAtualAluno.cursando and gradeDisciplinaItem.historicoAtualAluno.aprovado) or (gradeDisciplinaItem.historicoAtualAluno.codigo ne 0)}">
+									<h:panelGroup layout="block" styleClass="col-xs-4 col-md-4">
+										<a4j:commandLink styleClass="#{gradeDisciplinaItem.gradeDisciplinaVO.selecionado ? '' : 'linkdisabled'}" disabled="#{!gradeDisciplinaItem.gradeDisciplinaVO.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+											<f:setPropertyActionListener value="#{gradeDisciplinaItem.gradeDisciplinaVO.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+											<f:setPropertyActionListener value="#{gradeDisciplinaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+											<h:outputText style="color:#000000" rendered="#{empty gradeDisciplinaItem.historicoAtualAluno.nomeProfessor}" value="#{gradeDisciplinaItem.gradeDisciplinaVO.disciplina.abreviatura} - #{gradeDisciplinaItem.gradeDisciplinaVO.disciplina.nome}" />
+											<h:outputText style="color:#000000" rendered="#{!empty gradeDisciplinaItem.historicoAtualAluno.nomeProfessor}" value="#{gradeDisciplinaItem.gradeDisciplinaVO.disciplina.abreviatura} - #{gradeDisciplinaItem.gradeDisciplinaVO.disciplina.nome} - Professor(a): #{gradeDisciplinaItem.historicoAtualAluno.nomeProfessor}" />
+										</a4j:commandLink>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-xs-8 col-md-3 text-left">
+										<a4j:commandLink styleClass="#{gradeDisciplinaItem.gradeDisciplinaVO.selecionado ? '' : 'linkdisabled'}" disabled="#{!gradeDisciplinaItem.gradeDisciplinaVO.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+											<f:setPropertyActionListener value="#{gradeDisciplinaItem.gradeDisciplinaVO.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+											<f:setPropertyActionListener value="#{gradeDisciplinaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+											<h:outputText style="color:#000000" value="CH: " />
+											<h:outputText style="color:#000000" value="#{gradeDisciplinaItem.gradeDisciplinaVO.cargaHoraria}" />
+											<otm:spacer width="5px" />
+											<h:outputText style="color:#000000" rendered="#{gradeDisciplinaItem.historicoAtualAluno.aprovado}" value="Situação: Aprovado" />
+											<h:outputText style="color:#000000" rendered="#{gradeDisciplinaItem.historicoAtualAluno.cursando}" value="Situação: Cursando" />
+											<h:outputText style="color:#000000" rendered="#{(!gradeDisciplinaItem.historicoAtualAluno.cursando and !gradeDisciplinaItem.historicoAtualAluno.aprovado) or (gradeDisciplinaItem.historicoAtualAluno.codigo eq 0)}" value="Situação: A Cursar" />
+										</a4j:commandLink>
+										<a4j:commandLink id="btnVisualizarPlanoEnsino" style="margin-left: 10px;" tooltip="Visualizar Plano Ensino" render="disciplinaGeral, titulo" rendered="#{gradeDisciplinaItem.gradeDisciplinaVO.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}">
+											<i class="#{msg_botoes.btn_icon_lista_embutido}"></i>
+											<h:outputText style="margin-left: 10px;" styleClass="field control-label tituloCampos" value="Plano Ensino" />
+											<f:setPropertyActionListener value="#{gradeDisciplinaItem.gradeDisciplinaVO.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+											<f:setPropertyActionListener value="#{gradeDisciplinaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+										</a4j:commandLink>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="row" style="margin-left:5px" rendered="#{!empty gradeDisciplinaItem.gradeDisciplinaVO.gradeDisciplinaCompostaVOs}">
+									<rich:list type="definitions" value="#{gradeDisciplinaItem.gradeDisciplinaVO.gradeDisciplinaCompostaVOs}" var="gradeDisciplinaCompostaItem" style="width:100%">
+										<h:panelGroup layout="block" styleClass="row" style="margin-top: 10px">
+											<h:panelGroup layout="block" styleClass="col-xs-4 col-md-4">
+												<a4j:commandLink styleClass="#{gradeDisciplinaCompostaItem.selecionado ? '' : 'linkdisabled'}" disabled="#{!gradeDisciplinaCompostaItem.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+													<f:setPropertyActionListener value="#{gradeDisciplinaCompostaItem.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+													<f:setPropertyActionListener value="#{gradeDisciplinaCompostaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+													<h:outputText style="color:#000000" rendered="#{empty gradeDisciplinaCompostaItem.historicoAtualAluno.nomeProfessor}" value="#{gradeDisciplinaCompostaItem.disciplina.abreviatura} - #{gradeDisciplinaCompostaItem.disciplina.nome}" />
+													<h:outputText style="color:#000000" rendered="#{!empty gradeDisciplinaCompostaItem.historicoAtualAluno.nomeProfessor}" value="#{gradeDisciplinaCompostaItem.disciplina.abreviatura} - #{gradeDisciplinaCompostaItem.disciplina.nome} - Professor(a) #{gradeDisciplinaCompostaItem.historicoAtualAluno.nomeProfessor}" />
+												</a4j:commandLink>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-xs-8 col-md-3 text-left">
+												<a4j:commandLink styleClass="#{gradeDisciplinaCompostaItem.selecionado ? '' : 'linkdisabled'}" disabled="#{!gradeDisciplinaCompostaItem.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+													<f:setPropertyActionListener value="#{gradeDisciplinaCompostaItem.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+													<f:setPropertyActionListener value="#{gradeDisciplinaCompostaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+													<h:outputText style="color:#000000" value="CH: " />
+													<h:outputText style="color:#000000" value="#{gradeDisciplinaCompostaItem.cargaHoraria}" />
+													<otm:spacer width="5px" />
+													<h:outputText style="color:#000000" rendered="#{gradeDisciplinaCompostaItem.historicoAtualAluno.aprovado and (gradeDisciplinaItem.historicoAtualAluno.aprovado or gradeDisciplinaItem.historicoAtualAluno.cursando)}" value="Situação: Aprovado" />
+													<h:outputText style="color:#000000" rendered="#{gradeDisciplinaCompostaItem.historicoAtualAluno.cursando and (gradeDisciplinaItem.historicoAtualAluno.aprovado or gradeDisciplinaItem.historicoAtualAluno.cursando)}" value="Situação: Cursando" />
+												</a4j:commandLink>
+												<a4j:commandLink id="btnVisualizarPlanoEnsino2" style="margin-left: 5px;" rendered="#{gradeDisciplinaCompostaItem.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+													<i class="#{msg_botoes.btn_icon_lista_embutido}"></i>
+													<h:outputText style="margin-left: 10px;" styleClass="field control-label tituloCampos" value="Plano Ensino" />
+													<f:setPropertyActionListener for="1" value="#{gradeDisciplinaCompostaItem.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+													<f:setPropertyActionListener for="1" value="#{gradeDisciplinaCompostaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+												</a4j:commandLink>
+											</h:panelGroup>
+										</h:panelGroup>
+									</rich:list>
+								</h:panelGroup>
+							</rich:list>
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-xs-8 col-md-5 text-right">
+									<h:outputText styleClass="field control-label tituloCamposNegrito" value="Total CH.: " />
+									<h:outputText styleClass="field control-label tituloCamposNegrito" value="#{periodoLetivoItem.periodoLetivoVO.totalCargaHoraria}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<hr />
+						</h:panelGroup>
+					</rich:list>
+					<rich:list type="definitions" style="width:100%" rendered="#{!empty DisciplinaControle.visaoAlunoControle.matricula.gradeCurricularAtual.gradeCurricularGrupoOptativaVOs}" value="#{DisciplinaControle.visaoAlunoControle.matricula.gradeCurricularAtual.gradeCurricularGrupoOptativaVOs}" var="grupoOptativaItem">
+						<h:panelGroup layout="block" styleClass="row" rendered="#{(DisciplinaControle.tabActive eq 'TODOS') or (DisciplinaControle.tabActive eq grupoOptativaItem.descricao)}">
+							<h:panelGroup layout="block" styleClass="title1">
+								<h:outputText styleClass="field control-label tituloCamposNegrito" value="#{grupoOptativaItem.descricao}" />
+							</h:panelGroup>
+							<rich:list type="definitions" value="#{grupoOptativaItem.gradeCurricularGrupoOptativaDisciplinaVOs}" var="grupoOptativaDisciplinaItem" style="width:100%">
+								<h:panelGroup layout="block" styleClass="row" style="margin-top: 10px">
+									<h:panelGroup layout="block" styleClass="col-xs-4 col-md-4">
+										<a4j:commandLink styleClass="#{grupoOptativaDisciplinaItem.selecionado ? '' : 'linkdisabled'}" disabled="#{!grupoOptativaDisciplinaItem.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+											<f:setPropertyActionListener for="1" value="#{grupoOptativaDisciplinaItem.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+											<f:setPropertyActionListener for="1" value="#{grupoOptativaDisciplinaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+											<h:outputText style="color:#000000" rendered="#{empty grupoOptativaDisciplinaItem.historicoAtualAluno.nomeProfessor}" value="#{grupoOptativaDisciplinaItem.disciplina.abreviatura} - #{grupoOptativaDisciplinaItem.disciplina.nome}" />
+											<h:outputText style="color:#000000" rendered="#{!empty grupoOptativaDisciplinaItem.historicoAtualAluno.nomeProfessor}" value="#{grupoOptativaDisciplinaItem.disciplina.abreviatura} - #{grupoOptativaDisciplinaItem.disciplina.nome} - Professor(a) #{grupoOptativaDisciplinaItem.historicoAtualAluno.nomeProfessor}" />
+										</a4j:commandLink>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-xs-8 col-md-3 text-left">
+										<a4j:commandLink styleClass="#{grupoOptativaDisciplinaItem.selecionado ? '' : 'linkdisabled'}" disabled="#{!grupoOptativaDisciplinaItem.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+											<f:setPropertyActionListener for="1" value="#{grupoOptativaDisciplinaItem.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+											<f:setPropertyActionListener for="1" value="#{grupoOptativaDisciplinaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+											<h:outputText style="color:#000000" value="CH: #{grupoOptativaDisciplinaItem.cargaHoraria}" />
+											<otm:spacer width="5px" />
+											<h:outputText style="color:#000000" rendered="#{grupoOptativaDisciplinaItem.historicoAtualAluno.aprovado}" value="Situação: Aprovado" />
+											<h:outputText style="color:#000000" rendered="#{grupoOptativaDisciplinaItem.historicoAtualAluno.cursando}" value="Situação: Cursando" />
+											<h:outputText style="color:#000000" rendered="#{(!grupoOptativaDisciplinaItem.historicoAtualAluno.cursando and !grupoOptativaDisciplinaItem.historicoAtualAluno.aprovado) or (grupoOptativaDisciplinaItem.historicoAtualAluno.codigo eq 0)}" value="Situação: A Cursar" />
+										</a4j:commandLink>
+
+										<a4j:commandLink id="btnVisualizarPlanoEnsino4" style="margin-left: 5px;" rendered="#{grupoOptativaDisciplinaItem.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+											<i class="#{msg_botoes.btn_icon_lista_embutido}"></i>
+											<h:outputText style="margin-left: 10px;" styleClass="field control-label tituloCampos" value="Plano Ensino" />
+											<f:setPropertyActionListener for="1" value="#{grupoOptativaDisciplinaItem.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+											<f:setPropertyActionListener for="1" value="#{grupoOptativaDisciplinaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+										</a4j:commandLink>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" rendered="#{!empty grupoOptativaDisciplinaItem.gradeDisciplinaCompostaVOs}" style="margin-left:5px;width:100%">
+									<rich:list type="definitions" value="#{grupoOptativaDisciplinaItem.gradeDisciplinaCompostaVOs}" var="gradeDisciplinaCompostaItem" style="width:100%">
+										<h:panelGroup layout="block" style="width:100%;text-align:right">
+											<h:panelGroup layout="block" styleClass="col-xs-4 col-md-4">
+												<a4j:commandLink styleClass="#{gradeDisciplinaCompostaItem.selecionado ? '' : 'linkdisabled'}" disabled="#{!gradeDisciplinaCompostaItem.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+													<f:setPropertyActionListener value="#{gradeDisciplinaCompostaItem.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+													<f:setPropertyActionListener value="#{gradeDisciplinaCompostaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+													<h:outputText style="color:#000000" rendered="#{empty gradeDisciplinaCompostaItem.historicoAtualAluno.nomeProfessor}" value="#{gradeDisciplinaCompostaItem.disciplina.abreviatura} - #{gradeDisciplinaCompostaItem.disciplina.nome}" />
+													<h:outputText style="color:#000000" rendered="#{!empty gradeDisciplinaCompostaItem.historicoAtualAluno.nomeProfessor}" value="#{gradeDisciplinaCompostaItem.disciplina.nome} - Professor(a) #{gradeDisciplinaCompostaItem.historicoAtualAluno.nomeProfessor}" />
+												</a4j:commandLink>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-xs-8 col-md-3 text-left">
+												<a4j:commandLink styleClass="#{gradeDisciplinaCompostaItem.selecionado ? '' : 'linkdisabled'}" disabled="#{!gradeDisciplinaCompostaItem.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+													<f:setPropertyActionListener value="#{gradeDisciplinaCompostaItem.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+													<f:setPropertyActionListener value="#{gradeDisciplinaCompostaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+													<h:outputText style="color:#000000" value="CH: " />
+													<h:outputText style="color:#000000" value="#{gradeDisciplinaCompostaItem.cargaHoraria}" />
+													<otm:spacer width="5px" />
+													<h:outputText style="color:#000000" rendered="#{gradeDisciplinaCompostaItem.historicoAtualAluno.aprovado and (grupoOptativaDisciplinaItem.historicoAtualAluno.aprovado or grupoOptativaDisciplinaItem.historicoAtualAluno.cursando)}" value="Situação: Aprovado" />
+													<h:outputText style="color:#000000" rendered="#{gradeDisciplinaCompostaItem.historicoAtualAluno.cursando and (grupoOptativaDisciplinaItem.historicoAtualAluno.aprovado or grupoOptativaDisciplinaItem.historicoAtualAluno.cursando)}" value="Situação: Cursando" />
+												</a4j:commandLink>
+												<a4j:commandLink id="btnVisualizarPlanoEnsino3" style="margin-left: 10px;" rendered="#{gradeDisciplinaCompostaItem.selecionado}" action="#{DisciplinaControle.consultarDisciplinaAluno}" render="disciplinaGeral, titulo">
+													<i class="#{msg_botoes.btn_icon_lista_embutido}"></i>
+													<h:outputText style="margin-left: 10px;" styleClass="field control-label tituloCampos" value="Plano Ensino" />
+													<f:setPropertyActionListener for="1" value="#{gradeDisciplinaCompostaItem.disciplina.codigo}" target="#{DisciplinaControle.disciplina}" />
+													<f:setPropertyActionListener for="1" value="#{gradeDisciplinaCompostaItem.historicoAtualAluno}" target="#{DisciplinaControle.historicoVO}" />
+												</a4j:commandLink>
+											</h:panelGroup>
+										</h:panelGroup>
+									</rich:list>
+								</h:panelGroup>
+							</rich:list>
+							<hr />
+						</h:panelGroup>
+					</rich:list>
+					<h:panelGroup id="mensamemDisciplinas" layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<otm:commandIcon id="imgIcone" icon="#{DisciplinaControle.iconeMensagem}" rendered="#{DisciplinaControle.sucesso and !empty DisciplinaControle.mensagemDetalhada}" />
+							<h:outputText style="margin-left: 10px" styleClass="field control-label mensagemDetalhada col-md-12" id="mensagemDetalhadaDocumentacao" value="#{DisciplinaControle.mensagemDetalhada}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row" rendered="#{DisciplinaControle.isApresentarDadosDisciplina}" id="mdDisciplinaCurso">
+					<rich:tabPanel activeTabClass="true" disabledTabClass="aba2" inactiveTabClass="aba2" tabClass="aba" switchType="client" style="background-color: transparent;">
+						<rich:tab id="abaPlanoEnsino" style="background-color: transparent;" header="Plano de Ensino">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_disciplina}" />
+									<h:inputText id="disc" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{DisciplinaControle.planoEnsinoVO.disciplina.nome}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty DisciplinaControle.planoEnsinoVO.turno.nome}">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_turno}" />
+									<h:inputText id="turno" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{DisciplinaControle.planoEnsinoVO.turno.nome}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty DisciplinaControle.planoEnsinoVO.professorResponsavel.nome}">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_professorResponsavel}" />
+									<h:inputText id="profResp" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{DisciplinaControle.planoEnsinoVO.professorResponsavel.nome}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty DisciplinaControle.planoEnsinoVO.professor}">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_professor}" />
+									<h:inputText id="professor" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{DisciplinaControle.planoEnsinoVO.professor}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{DisciplinaControle.planoEnsinoVO.questionarioRespostaOrigemVO.questionarioVO.codigo eq 0}"  styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_ementa}" />
+									<h:inputTextarea id="ementa" rows="5" readonly="true" styleClass="form-control camposSomenteLeituraTextArea" value="#{DisciplinaControle.planoEnsinoVO.ementa}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_objetivoGeral}" />
+									<h:inputTextarea id="objetivoGeral" rows="5" readonly="true" styleClass="form-control camposSomenteLeituraTextArea" value="#{DisciplinaControle.planoEnsinoVO.objetivoGeral}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{DisciplinaControle.planoEnsinoVO.questionarioRespostaOrigemVO.questionarioVO.codigo eq 0}" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_objetivoEspecifico}" />
+									<h:inputTextarea id="objetivoEspecifico" rows="5" readonly="true" styleClass="form-control camposSomenteLeituraTextArea" value="#{DisciplinaControle.planoEnsinoVO.objetivoEspecifico}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_perfilEgresso}" />
+									<h:inputTextarea id="habilidadeCompetencia" rows="5" readonly="true" styleClass="form-control camposSomenteLeituraTextArea" value="#{DisciplinaControle.planoEnsinoVO.perfilEgresso}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block"  rendered="#{DisciplinaControle.planoEnsinoVO.questionarioRespostaOrigemVO.questionarioVO.codigo eq 0}" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_estrategiaAvaliacao}" />
+									<h:inputTextarea id="estrategiaAvaliacao" rows="5" readonly="true" styleClass="form-control camposSomenteLeituraTextArea" value="#{DisciplinaControle.planoEnsinoVO.estrategiaAvaliacao}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PlanoEnsino_procedimentoDidatico}" />
+									<h:inputTextarea id="procedimentoDidatico" rows="5" readonly="true" styleClass="form-control camposSomenteLeituraTextArea" value="#{DisciplinaControle.planoEnsinoVO.procedimentoDidatico}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+						<rich:tab switchType="client" header="Conteúdo Plano de Ensino" rendered="#{DisciplinaControle.planoEnsinoVO.questionarioRespostaOrigemVO.questionarioVO.codigo ne 0}" >
+							<otm2:questionarioResposta bean="#{DisciplinaControle}" rendered="true" renderedPrefixo="true" disabled="true" objetoOrigem="#{DisciplinaControle.planoEnsinoVO.questionarioRespostaOrigemVO}" />
+						</rich:tab>
+						<rich:tab id="abaConteudoPlanejamento" style="background-color: transparent;" rendered="#{!empty DisciplinaControle.planoEnsinoVO.conteudoPlanejamentoVOs and DisciplinaControle.planoEnsinoVO.questionarioRespostaOrigemVO.questionarioVO.codigo eq 0}" header="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_tituloForm}">
+							<rich:list type="definitions" id="dtConteudoPlanejamento" rows="10" style="background-color: transparent;width:100%" value="#{DisciplinaControle.planoEnsinoVO.conteudoPlanejamentoVOs}" var="planejamento" rowKeyVar="row">
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_Conteudo}" />
+										<h:inputTextarea id="conteudo2" rows="5" styleClass="form-control camposObrigatorios" value="#{planejamento.conteudo}" readonly="true" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_Habilidade}" />
+										<h:inputTextarea id="habilidade2" rows="5" styleClass="form-control campos" value="#{planejamento.habilidade}" readonly="true" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_Competencia}" />
+										<h:inputTextarea id="atitude2" rows="5" styleClass="form-control campos" value="#{planejamento.atitude}" readonly="true" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_Metodologia}" />
+										<h:inputTextarea id="metodologia2" rows="5" styleClass="form-control campos" value="#{planejamento.metodologia}" readonly="true" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{not empty planejamento.praticaSupervisionada}">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_PraticaSupervisionada}" />
+										<h:inputTextarea id="praticaSupervisionada2" rows="5" styleClass="form-control campos" value="#{planejamento.praticaSupervisionada}" readonly="true" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_CargaHoraria}" />
+										<h:inputText size="5" maxlength="5" styleClass="form-control campos" value="#{planejamento.cargahoraria}" readonly="true" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisciplinaConteudoPlanejamento_Classificacao}" />
+										<h:selectOneMenu id="Classificacao_conteudoPlanejamento2" styleClass="form-control camposObrigatorios" value="#{planejamento.classificacao}" disabled="true">
+											<f:selectItems value="#{DisciplinaControle.listaSelectItemClassificacaoConteudoPlanejamento}" />
+										</h:selectOneMenu>
+									</h:panelGroup>
+								</h:panelGroup>
+								<hr />
+							</rich:list>
+							<rich:dataScroller boundaryControls="auto" execute="dtConteudoPlanejamento" render="dtConteudoPlanejamento" fastControls="hide" stepControls="auto" for="dtConteudoPlanejamento" id="scdtConteudoPlanejamento"></rich:dataScroller>
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{DisciplinaControle.planoEnsinoVO.totalCargaHoraria > 0}">
+									<h:outputText value="Total Carga Horária: " styleClass="field control-label tituloCampos" />
+									<h:inputText size="5" value="#{DisciplinaControle.planoEnsinoVO.totalCargaHoraria}" styleClass="form-control camposSomenteLeitura" readonly="true" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+						<rich:tab id="abaReferenciaBibliografica" style="background-color: transparent;" rendered="#{!empty DisciplinaControle.planoEnsinoVO.referenciaBibliograficaVOs}" header="#{msg_aplic.prt_Disciplina_tabReferenciaBibliografica}">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<rich:dataTable id="referenciaBibliograficaVO" rows="20" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{DisciplinaControle.planoEnsinoVO.referenciaBibliograficaVOs}" var="referenciaBibliograficaItens">
+										<rich:column style="text-align: left !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_ReferenciaBibliografica_titulo}" />
+											</f:facet>
+											<h:outputText rendered="#{referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.catalogo.titulo}" />
+											<h:outputText rendered="#{!referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.titulo}" />
+										</rich:column>
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_Catalogo_subtitulo}" />
+											</f:facet>
+											<h:outputText rendered="#{referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.catalogo.subtitulo}" />
+											<h:outputText rendered="#{!referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.subtitulo}" />
+										</rich:column>
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_ReferenciaBibliografica_autores}" />
+											</f:facet>
+											<h:outputText rendered="#{referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.catalogo.apresentarListaConcatenadaAutores}" />
+											<h:outputText rendered="#{!referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.autores}" />
+										</rich:column>
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_ReferenciaBibliografica_anoPublicacao}" />
+											</f:facet>
+											<h:outputText rendered="#{referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.catalogo.anoPublicacao}" />
+											<h:outputText rendered="#{!referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.anoPublicacao}" />
+										</rich:column>
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_ReferenciaBibliografica_tipoReferencia}" />
+											</f:facet>
+											<h:outputText value="#{referenciaBibliograficaItens.tipoReferencia_Apresentar}" />
+										</rich:column>
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_ReferenciaBibliografica_edicao}" />
+											</f:facet>
+											<h:outputText rendered="#{referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.catalogo.edicao}" />
+											<h:outputText rendered="#{!referenciaBibliograficaItens.publicacaoExistenteBiblioteca}" value="#{referenciaBibliograficaItens.edicao}" />
+										</rich:column>
+										<f:facet name="footer">
+											<div style="text-align: center !important">
+												<rich:dataScroller stepControls="auto" fastControls="hide" boundaryControls="auto" for="form:referenciaBibliograficaVO" />
+											</div>
+										</f:facet>
+									</rich:dataTable>
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+						<rich:tab id="abaPlanoEnsinoHorarioAula" rendered="#{!empty DisciplinaControle.planoEnsinoVO.planoEnsinoHorarioAulaVOs}" header="#{msg_aplic.prt_PlanoEnsinoHorarioAula_tituloForm}">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<rich:dataTable width="100%" id="itensHorario" headerClass="consulta" rowKeyVar="row" value="#{DisciplinaControle.planoEnsinoVO.planoEnsinoHorarioAulaVOs}" var="planoEnsinoHorarioAulaItem">
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_PlanoEnsinoHorarioAula_diaSemana}"></h:outputText>
+											</f:facet>
+											<h:outputText styleClass="field control-label tituloCampos" value="#{planoEnsinoHorarioAulaItem.diaSemana.descricao}" />
+										</rich:column>
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_PlanoEnsinoHorarioAula_inicioAula}"></h:outputText>
+											</f:facet>
+											<h:outputText styleClass="field control-label tituloCampos" value="#{planoEnsinoHorarioAulaItem.inicioAula}"></h:outputText>
+										</rich:column>
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_PlanoEnsinoHorarioAula_terminoAula}"></h:outputText>
+											</f:facet>
+											<h:outputText styleClass="field control-label tituloCampos" value="#{planoEnsinoHorarioAulaItem.terminoAula}"></h:outputText>
+										</rich:column>
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_PlanoEnsinoHorarioAula_turma}"></h:outputText>
+											</f:facet>
+											<h:panelGroup>
+												<h:outputText styleClass="field control-label tituloCampos" value="#{planoEnsinoHorarioAulaItem.turmaVO.identificadorTurma}" />
+											</h:panelGroup>
+										</rich:column>
+									</rich:dataTable>
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+						<rich:tab id="abaDisciplinaEquivalente" style="background-color: transparent;" rendered="#{!empty DisciplinaControle.planoEnsinoVO.disciplina.disciplinaEquivalenteVOs}" header="#{msg_aplic.prt_Disciplina_tabDisciplinaEquivalente}">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<rich:dataTable id="disciplinaEquivalenteVO" width="100%" headerClass="consultar" rows="20" style="background-color: transparent;" value="#{DisciplinaControle.planoEnsinoVO.disciplina.disciplinaEquivalenteVOs}" var="disciplinaEquivalenteItem">
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_DisciplinaEquivalente_equivalente}" />
+											</f:facet>
+											<h:outputText value="#{disciplinaEquivalenteItem.equivalente.nome}" />
+										</rich:column>
+										<rich:column style="text-align: center !important">
+											<f:facet name="header">
+												<h:outputText value="Área de Conhecimento" />
+											</f:facet>
+											<h:outputText value="#{disciplinaEquivalenteItem.equivalente.areaConhecimento.nome}" />
+										</rich:column>
+										<f:facet name="footer">
+											<div style="text-align: center !important">
+												<rich:dataScroller boundaryControls="auto" for="form:disciplinaEquivalenteVO" stepControls="auto" fastControls="hide" />
+											</div>
+										</f:facet>
+									</rich:dataTable>
+								</h:panelGroup>
+							</h:panelGroup>
+						</rich:tab>
+					</rich:tabPanel>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<a4j:commandButton id="voltar" render="disciplinaGeral, titulo" value="Voltar" accesskey="1" styleClass="btn btn-danger">
+							<i class="#{msg_botoes.btn_icon_voltar}"></i>
+							<f:setPropertyActionListener value="0" target="#{DisciplinaControle.disciplina}" />
+						</a4j:commandButton>
+						<otm:commandButton style="margin-left:10px; " id="imprimirPDF" rendered="#{!DisciplinaControle.planoEnsinoVO.novoObj}" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_pdf_embutido}" oncomplete="#{DisciplinaControle.download}" action="#{DisciplinaControle.realizarImpressaoPlanoEnsinoAluno}" value="Gerar Relatório (PDF)" accesskey="2" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

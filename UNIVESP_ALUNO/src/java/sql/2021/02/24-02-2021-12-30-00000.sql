@@ -1,0 +1,3 @@
+INSERT INTO permissao (valorfinal, valorinicial, valorespecifico, tipopermissao, tituloapresentacao, permissoes, nomeentidade, codperfilacesso, responsavel)
+(SELECT valorfinal, valorinicial, valorespecifico, tipopermissao, 'Permitir Geração Manual de Eventos On-line no Classroom', permissoes, 'PermitirGeracaoEventoOnlineClassroom', codperfilacesso, responsavel
+from permissao where nomeEntidade ilike ('PermitirGeracaoEventoOnlineGoogleMeet'));

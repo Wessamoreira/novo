@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<h:head>
+	<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Gerar Parcelas por Unidade" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<script>
+			window.onload = function() {
+				document.getElementById("form:alunoMatricula").focus();
+			}
+		</script>
+	
+		<rich:popupPanel styleClass="modalMaximizado" id="panelGeracaoManualEmProcessamento" show="#{GeracaoManualParcelasControle.apresentarProgressBar}" shadowOpacity="true" width="600" height="400">
+			<h:form id="formGeracaoManualEmProcessamento">
+				<a4j:poll id="poolFechar" interval="5000" rendered="#{GeracaoManualParcelasControle.apresentarProgressBar}" enabled="#{GeracaoManualParcelasControle.apresentarProgressBar}" action="#{GeracaoManualParcelasControle.realizarFinalizacaoLista}" render="form, formGeracaoManualEmProcessamento" oncomplete="#{GeracaoManualParcelasControle.oncompleteModal}" />
+				<rich:dataTable id="items" rowKeyVar="row" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GeracaoManualParcelasControle.geracaoManualParcelaEmProcessamentoVOs}" rows="10" var="geracaoManualParcelaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ControleCobranca_unidadeEnsino}" />
+						</f:facet>
+						<h:outputText id="nomeUnidade" value="#{geracaoManualParcelaItem.unidadeEnsino.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_GeracaoManualParcela_dataInicioProcessamento}" />
+						</f:facet>
+						<h:outputText id="dataInicioProcessamento" value="#{geracaoManualParcelaItem.dataInicioProcessamento}">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+						</h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_GeracaoManualParcela_statusProcessamento}" />
+						</f:facet>
+						<otm2:progressBar id="progress#{row}" bean="#{GeracaoManualParcelasControle}" item="#{geracaoManualParcelaItem}" modal="false" action="consultarGeracaoManualParcelasEmProcessamentoCons" interval="5000" render="formGeracaoManualEmProcessamento">
+						</otm2:progressBar>
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton render="form" rendered="#{!GeracaoManualParcelasControle.apresentarProgressBar}" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" oncomplete="#{rich:component('panelGeracaoManualEmProcessamento')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" shadowOpacity="true" width="750" height="400" onshow="document.getElementById('formCurso:valorConsultaCurso').focus()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaPagar_consultarCurso}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkCurso">
+						<rich:componentControl target="panelCurso" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup id="dadosConsultas">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{GeracaoManualParcelasControle.campoConsultaCurso}">
+							<a4j:ajax event="change" execute="@this" render="formCursoTurno:dadosConsultas" />
+							<f:selectItems value="#{GeracaoManualParcelasControle.tipoConsultaComboCurso}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="valorConsultaCurso" styleClass="form-control campos" value="#{GeracaoManualParcelasControle.valorConsultaCurso}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="consultar" type="submit" value="#{msg_botoes.btn_consultar}" action="#{GeracaoManualParcelasControle.consultarCurso}" render="formCurso" accesskey="2" styleClass="btn btn-default btn-consultar" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataTable id="items" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GeracaoManualParcelasControle.listaConsultaCurso}" rows="5" var="cursoItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_codigo}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{GeracaoManualParcelasControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{cursoItem.codigo}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{GeracaoManualParcelasControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{cursoItem.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{GeracaoManualParcelasControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();document.getElementById('nomeCurso').focus();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="items" limitRender="10" align="center" />
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup styleClass="colunaCentralizada">
+					</h:panelGroup>
+					<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{GeracaoManualParcelasControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="590" height="430" onshow="document.getElementById('formTurma:valorConsultaTurma').focus()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_DiarioRel_consultarTurma}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink14">
+						<rich:componentControl target="panelTurma" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{GeracaoManualParcelasControle.campoConsultaTurma}">
+							<f:selectItems value="#{GeracaoManualParcelasControle.tipoConsultaComboTurma}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="valorConsultaTurma" size="10" styleClass="form-control campos" value="#{GeracaoManualParcelasControle.valorConsultaTurma}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{GeracaoManualParcelasControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GeracaoManualParcelasControle.listaConsultaTurma}" rows="5" var="turmaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_DiarioRel_identificador}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GeracaoManualParcelasControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GeracaoManualParcelasControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Turno" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GeracaoManualParcelasControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{GeracaoManualParcelasControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" maxPages="10" id="scResultadoTurma" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTurma" layout="block" styleClass="row">
+					<otm:mensagem bean="#{GeracaoManualParcelasControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	
+		<h:form id="form">
+			<h:commandLink action="#{GeracaoManualParcelasControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="dadosConsultaAlunos">
+				<h:panelGroup id="buscaUnidade">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_responsavel}" />
+						<h:inputText id="user" size="50" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.usuario.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_unidadeEnsino}" />
+						<h:selectOneMenu id="unidadeEnsino" disabled="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" readonly="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" styleClass="form-control camposObrigatorios" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.unidadeEnsino.codigo}">
+							<a4j:ajax event="change" render="form" execute="form" listener="#{GeracaoManualParcelasControle.atualizarPermissaoGerarParcelaAlutnoPreMatricula}" />
+							<f:selectItems value="#{GeracaoManualParcelasControle.listaSelectItemUnidadeEnsino}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EnvelopeRel_curso}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="curso" size="50" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.curso.nome}" />
+							<span class="append-icon right"> <otm:commandIcon rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo eq 0}" id="consultaDadosCurso" tooltip="Localizar Curso" render="form, formCurso" oncomplete="#{rich:component('panelCurso')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo eq 0}" id="limparDadosCurso" tooltip="Limpas Dados" action="#{GeracaoManualParcelasControle.limparDadosCurso}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EnvelopeRel_turma}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="turma" size="50" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.turma.identificadorTurma}" />
+							<span class="append-icon right"> <otm:commandIcon rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo eq 0}" id="consultaDadosTurma" focus="nomeTurma" tooltip="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo eq 0}" id="limparDadosTurma" tooltip="Limpas Dados" action="#{GeracaoManualParcelasControle.limparIdentificador}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{!GeracaoManualParcelasControle.geracaoManualParcelaVO.gerarTodasParcelas}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Mês" rendered="#{!GeracaoManualParcelasControle.geracaoManualParcelaVO.gerarTodasParcelas}" />
+						<h:inputText disabled="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" readonly="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" size="2" maxlength="2" styleClass="form-control camposObrigatorios" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.mesReferencia}" id="inputMes" onkeypress="aceitarSomenteValorNumerico(this)" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{!GeracaoManualParcelasControle.geracaoManualParcelaVO.gerarTodasParcelas}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Ano" />
+						<h:inputText disabled="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" readonly="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" size="4" maxlength="4" styleClass="form-control camposObrigatorios" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.anoReferencia}" id="inputAno" onkeypress="aceitarSomenteValorNumerico(this)" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<otm:outputHelp tooltip="#{msg.msg_helpTrazerMatriculasComCanceladoFinanceiro}" id="Trancamento" styleClass="field control-label tituloCampos" value="Trazer Matrículas com Liberação Financeira Cancelamento/Trancamento" />
+						<otm:selectBooleanCheckbox value="#{GeracaoManualParcelasAlunoControle.trazerMatriculasComCanceladoFinanceiro}">
+							<a4j:ajax event="click" listener="#{GeracaoManualParcelasAlunoControle.limparDadosAluno}" render="form" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="Permitir Gerar Parcela Aluno Pré-Matrícula" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox disabled="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" readonly="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.permitirGerarParcelaAlunoPreMatricula}">
+								<a4j:ajax event="click" execute="@this" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{GeracaoManualParcelasControle.apresentarGerarTodasParcelas}">
+						<h:outputText rendered="#{GeracaoManualParcelasControle.apresentarGerarTodasParcelas}" styleClass="field control-label tituloCampos" value="Gerar Todas Parcelas" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox rendered="#{GeracaoManualParcelasControle.apresentarGerarTodasParcelas}" disabled="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" readonly="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.gerarTodasParcelas}">
+								<a4j:ajax event="change" render="form" listener="#{GeracaoManualParcelasControle.limparAnoMes}" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!GeracaoManualParcelasControle.geracaoManualParcelaVO.gerarTodasParcelas}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_utilizarDataCompetencia}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="utilizarDataCompetencia" disabled="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" readonly="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo ne 0}" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.utilizarDataCompetencia}">
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}">
+						<h:outputText rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_situacao}" />
+						<h:inputText rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}" size="50" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.situacaoProcessamentoGeracaoManualParcela.valorApresentar}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.situacaoProcessamentoGeracaoManualParcela eq 'ERRO_PROCESSAMENTO'}">
+						<h:outputText rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.situacaoProcessamentoGeracaoManualParcela eq 'ERRO_PROCESSAMENTO'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_mensagemErro}" />
+						<h:inputTextarea rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.situacaoProcessamentoGeracaoManualParcela eq 'ERRO_PROCESSAMENTO'}" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.mensagemErro}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}">
+						<h:outputText rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_qtdeParcelaGerar}" />
+						<h:inputText size="5" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_valorTotalParcelasGerar}" />
+						<h:inputText size="15" maxlength="15" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.valorTotalParcelasGerar}">
+							<f:converter converterId="FormatadorNumerico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}">
+						<h:outputText rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_qtdeParcelaGerada}" />
+						<h:inputText size="5" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerada}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_valorTotalParcelasGerada}" />
+						<h:inputText size="15" maxlength="15" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.valorTotalParcelasGerada}">
+							<f:converter converterId="FormatadorNumerico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}">
+						<h:outputText rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_qtdeParcelaComErro}" />
+						<h:inputText size="5" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaComErro}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.qtdeParcelaGerar gt 0}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_valorTotalParcelasNaoGerada}" />
+						<h:inputText size="15" maxlength="15" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.valorTotalParcelasNaoGerada}">
+							<f:converter converterId="FormatadorNumerico" />
+						</h:inputText>
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:tabPanel switchType="ajax" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.situacaoProcessamentoGeracaoManualParcela eq 'PROCESSAMENTO_CONCLUIDO' or GeracaoManualParcelasControle.geracaoManualParcelaVO.situacaoProcessamentoGeracaoManualParcela eq 'ERRO_PROCESSAMENTO'}">
+					<rich:tab switchType="ajax" header="Realizados Com Sucesso">
+						<h:panelGroup id="resultado" columns="1" style="background-color: transparent;" width="100%">
+							<rich:dataTable id="itemsSucesso" width="100%" render="scroolSucesso" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GeracaoManualParcelasControle.controleConsultaMatriculaPeriodoVencimentoSucesso}" rows="10" var="vcto">
+								<rich:column>
+									<f:facet name="header">
+										<h:panelGroup columnClasses="colunaCentralizada" columns="1">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_matricula}" />
+											<h:inputText style="margin:0px;" size="20" styleClass="form-control campos" value="#{GeracaoManualParcelasControle.matricula}">
+												<a4j:ajax event="change" render="resultado" listener="#{GeracaoManualParcelasControle.consultarMatriculaPeriodoVencimentoSucesso}">
+												</a4j:ajax>
+											</h:inputText>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{vcto.matriculaPeriodoVO.matricula}" />
+								</rich:column>
+								<rich:column width="150px">
+									<f:facet name="header">
+										<h:panelGroup columnClasses="colunaCentralizada" columns="1">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_nomeAluno}" />
+											<h:inputText style="margin:0px;" size="20" styleClass="form-control campos" value="#{GeracaoManualParcelasControle.aluno}">
+												<a4j:ajax event="change" render="resultado" listener="#{GeracaoManualParcelasControle.consultarMatriculaPeriodoVencimentoSucesso}">
+												</a4j:ajax>
+											</h:inputText>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{vcto.matriculaPeriodoVO.matriculaVO.aluno.nome}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:panelGroup columnClasses="colunaCentralizada" columns="1">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_curso}" />
+											<h:inputText style="margin:0px;" size="20" styleClass="form-control campos" value="#{GeracaoManualParcelasControle.curso}">
+												<a4j:ajax event="change" render="resultado" listener="#{GeracaoManualParcelasControle.consultarMatriculaPeriodoVencimentoSucesso}">
+												</a4j:ajax>
+											</h:inputText>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{vcto.matriculaPeriodoVO.matriculaVO.curso.nome}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:panelGroup columnClasses="colunaCentralizada" columns="1">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaReceber_dataVencimento}" />
+											<rich:calendar style="margin:0px;" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="campos" styleClass="form-control campos" inputSize="10" value="#{GeracaoManualParcelasControle.dataVencimento}">
+												<!-- 													<a4j:ajax event="collapse" render="resultado" listener="#{GeracaoManualParcelasControle.consultarMatriculaPeriodoVencimentoSucesso}"/>													 -->
+												<a4j:ajax event="change" render="resultado" listener="#{GeracaoManualParcelasControle.consultarMatriculaPeriodoVencimentoSucesso}" />
+											</rich:calendar>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{vcto.dataVencimento_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:panelGroup columnClasses="colunaCentralizada" columns="1">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaReceber_parcela}" />
+											<h:inputText style="margin:0px;" size="4" styleClass="form-control campos" value="#{GeracaoManualParcelasControle.parcela}">
+												<a4j:ajax event="change" render="resultado" listener="#{GeracaoManualParcelasControle.consultarMatriculaPeriodoVencimentoSucesso}">
+												</a4j:ajax>
+											</h:inputText>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{vcto.parcela} - #{vcto.tipoOrigemMatriculaPeriodoVencimento.descricao}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Valor" />
+									</f:facet>
+									<h:outputText value="#{vcto.valor}">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:outputText>
+								</rich:column>
+							</rich:dataTable>
+							<h:panelGroup styleClass="colunaCentralizada">
+								<rich:dataScroller boundaryControls="auto" scrollListener="#{GeracaoManualParcelasControle.paginarMatriculaPeriodoVencimentoSucesso}" id="scroolSucesso" stepControls="auto" fastControls="hide" for="itemsSucesso" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+					<rich:tab switchType="ajax" header="Não Realizados">
+						<rich:dataScroller boundaryControls="auto" id="scroolErro" scrollListener="#{GeracaoManualParcelasControle.paginarMatriculaPeriodoVencimentoErro}" stepControls="auto" fastControls="hide" for="itemsErro" />
+						<rich:dataTable id="itemsErro" width="100%" render="scroolErro" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GeracaoManualParcelasControle.controleConsultaMatriculaPeriodoVencimentoErro}" rows="10" var="vcto">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+								</f:facet>
+								<h:outputText value="#{vcto.matriculaPeriodoVO.matricula}" />
+							</rich:column>
+							<rich:column width="150px">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Matricula_nomeAluno}" />
+								</f:facet>
+								<h:outputText value="#{vcto.matriculaPeriodoVO.matriculaVO.aluno.nome}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Matricula_curso}" />
+								</f:facet>
+								<h:outputText value="#{vcto.matriculaPeriodoVO.matriculaVO.curso.nome}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Data Vencimento" />
+								</f:facet>
+								<h:outputText value="#{vcto.dataVencimento_Apresentar}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Parcela" />
+								</f:facet>
+								<h:outputText value="#{vcto.parcela}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Valor" />
+								</f:facet>
+								<h:outputText value="#{vcto.valor}">
+									<f:converter converterId="FormatadorNumerico" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Erro" />
+								</f:facet>
+								<h:outputText value="#{vcto.mensagemErroGeracaoParcela}" />
+							</rich:column>
+						</rich:dataTable>
+					</rich:tab>
+				</rich:tabPanel>
+			</h:panelGroup>
+			<h:panelGroup id="panelGridMensagens" layout="block" styleClass="row">
+				<otm:mensagem bean="#{GeracaoManualParcelasControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior" id="btns">
+				<h:panelGroup>
+					<otm:commandButton id="novo" render="form, panelGridMensagens, panelGeracaoManualEmProcessamento" immediate="true" action="#{GeracaoManualParcelasControle.novo}" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+					<otm:spacer width="5px" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo eq 0 or GeracaoManualParcelasControle.geracaoManualParcelaVO.situacaoProcessamentoGeracaoManualParcela eq 'ERRO_PROCESSAMENTO'}" />
+					<otm:commandButton id="consultaParcelasGeradas" rendered="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.codigo eq 0 or GeracaoManualParcelasControle.geracaoManualParcelaVO.situacaoProcessamentoGeracaoManualParcela eq 'ERRO_PROCESSAMENTO' }" onclick="this.disabled=true" oncomplete="this.disabled=false" value="Localizar Parcelas para Geração" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" render="form" image="#{resource['imagens/botaoConsultarParcelasGeracao.png']}" action="#{GeracaoManualParcelasControle.localizarParcelasParaGeracaoPorUnidade}" />
+					<otm:spacer width="5px" rendered="#{GeracaoManualParcelasControle.apresentarBotaoGerarParcelas}" />
+					<otm:commandButton id="gerarParcela" rendered="#{GeracaoManualParcelasControle.apresentarBotaoGerarParcelas}" action="#{GeracaoManualParcelasControle.gerarParcelas}" value="#{msg_botoes.btn_gerarParcelas}" icon="#{msg_botoes.btn_icon_gerar_relatorio}" styleClass="btn btn-default" accesskey="1" render="form, formGeracaoManualEmProcessamento" oncomplete="#{rich:component('panelGeracaoManualEmProcessamento')}.show()" />
+					<otm:spacer width="5px" />
+					<otm:commandButton id="consultar" immediate="true" action="#{GeracaoManualParcelasControle.irPaginaConsulta}" value="#{msg_botoes.btn_consultar}" accesskey="4" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

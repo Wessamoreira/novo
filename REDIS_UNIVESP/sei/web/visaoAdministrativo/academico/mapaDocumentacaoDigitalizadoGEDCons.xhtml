@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="formCadastro">
+			<h:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelOpcaoConsulta">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{MapaDocumentacaoDigitalizadoGEDControle.controleConsulta.campoConsulta}">
+						<f:selectItems value="#{MapaDocumentacaoDigitalizadoGEDControle.tipoConsultaCombo}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4 mt5">
+					<otm:spacer width="100%" />
+					<h:inputText id="valorConsulta" style="position: relative; top: -2px;" styleClass="form-control campos" value="#{MapaDocumentacaoDigitalizadoGEDControle.controleConsulta.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_situacao}" />
+					<h:selectOneMenu styleClass="form-control campos" id="consultaSituacao" required="true" value="#{MapaDocumentacaoDigitalizadoGEDControle.valorConsultaSituacao}">
+						<f:selectItems value="#{MapaDocumentacaoDigitalizadoGEDControle.comboSituacaoDocumentoGED}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<a4j:commandLink id="consultar" type="submit" value="#{msg_botoes.btn_consultar}" action="#{MapaDocumentacaoDigitalizadoGEDControle.consultar()}"  render="formCadastro" accesskey="2" styleClass="btn btn-default btn-consultar">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{CategoriaGEDControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{CategoriaGEDControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+					<otm:commandButton style="margin-left:5px" id="atualizar" action="#{MapaDocumentacaoDigitalizadoGEDControle.realizarAtualizacaoMapa}" render="formCadastro" icon="#{msg_botoes.btn_icon_atualizar_embutido}" value="Carregar Arquivo Digitalizados" styleClass="btn btn-primary" image="#{resource['imagens/botaoAtualizar.png']}" title="#{msg_botoes.btn_atualizar}" />
+				</h:panelGroup>
+				<h:outputText styleClass="field control-label tituloCampos" value="Data última execução Job - (#{AplicacaoControle.dataExecucaoJobDocumentacaoGED_Apresentar})" />
+			</h:panelGroup>
+			<rich:dataTable id="items" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{MapaDocumentacaoDigitalizadoGEDControle.controleConsultaOtimizado}" rendered="#{MapaDocumentacaoDigitalizadoGEDControle.controleConsultaOtimizado.apresentarListaConsulta}" rows="10" var="mapaDocumentoGED">
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_codigo}" />
+					</f:facet>
+					<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="codigo" value="#{mapaDocumentoGED.codigo}" immediate="true" render="formTipoDocumento" style="color: red" rendered="#{mapaDocumentoGED.situacao == 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+					<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="codigoSucesso" value="#{mapaDocumentoGED.codigo}" immediate="true" render="formTipoDocumento" rendered="#{mapaDocumentoGED.situacao != 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_matricula}" />
+					</f:facet>
+					<a4j:commandLink immediate="true" render="formTipoDocumento " action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="matricula" value="#{mapaDocumentoGED.matricula.matricula}" style="color: red" rendered="#{mapaDocumentoGED.situacao == 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="matriculaSucesso" value="#{mapaDocumentoGED.matricula.matricula}" rendered="#{mapaDocumentoGED.situacao != 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_registroAcademico}" />
+					</f:facet>
+					<a4j:commandLink immediate="true" render="formTipoDocumento " action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="registroAcademico" value="#{mapaDocumentoGED.pessoa.registroAcademico}" style="color: red" rendered="#{mapaDocumentoGED.situacao == 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="registroAcademicoSucesso" value="#{mapaDocumentoGED.pessoa.registroAcademico}" rendered="#{mapaDocumentoGED.situacao != 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_nome}" />
+					</f:facet>
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="nome" value="#{mapaDocumentoGED.pessoa.nome}" style="color: red" rendered="#{mapaDocumentoGED.situacao == 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="nomeSucesso" value="#{mapaDocumentoGED.pessoa.nome}" rendered="#{mapaDocumentoGED.situacao != 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_arquivo}" />
+					</f:facet>
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="arquivo" value="#{mapaDocumentoGED.arquivo.descricao}" style="color: red" rendered="#{mapaDocumentoGED.situacao == 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="arquivoSucesso" value="#{mapaDocumentoGED.arquivo.descricao}" rendered="#{mapaDocumentoGED.situacao != 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="Data" />
+					</f:facet>
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="arquivoData" style="#{mapaDocumentoGED.situacao eq 'Erro' ?  'color: red' : '' }" oncomplete="#{rich:component('panelCategoriaGED')}.show()">
+						<h:outputText value="#{mapaDocumentoGED.data}">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+						</h:outputText>
+					</a4j:commandLink>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_categoriaGED}" />
+					</f:facet>
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="categoriaGED" value="#{mapaDocumentoGED.categoriaGED.descricao}" style="color: red" rendered="#{mapaDocumentoGED.situacao == 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="categoriaGEDSucesso" value="#{mapaDocumentoGED.categoriaGED.descricao}" rendered="#{mapaDocumentoGED.situacao != 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_situacao}" />
+					</f:facet>
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="situacao" value="#{mapaDocumentoGED.situacao}" style="color: red" rendered="#{mapaDocumentoGED.situacao == 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+					<a4j:commandLink immediate="true" render="formTipoDocumento" action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" id="situacaoSucesso" value="#{mapaDocumentoGED.situacao}" rendered="#{mapaDocumentoGED.situacao != 'Erro'}" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn mb5">
+						<otm:commandIcon id="visualizarPdf" render="form, formVisualizarPdf" action="#{MapaDocumentacaoDigitalizadoGEDControle.realizarVisualizacaoPdf}" oncomplete="#{rich:component('panelVisualizarPdf')}.show()" tooltip="Visualizar PDF" icon="#{msg_botoes.btn_icon_lupa} iconePequeno"  />
+						<otm:commandIcon oncomplete="#{MapaDocumentacaoDigitalizadoGEDControle.urlDonloadSV}" tooltip="Download Documento" rendered="#{mapaDocumentoGED.arquivo.nome != ''}" action="#{MapaDocumentacaoDigitalizadoGEDControle.realizarDownloadArquivo(mapaDocumentoGED.arquivo)}" icon="#{msg_botoes.btn_icon_download} iconePequeno" />
+						<otm:commandIcon tooltip="Responsável Recebimento Documento GED: #{mapaDocumentoGED.usuario.nome} em #{mapaDocumentoGED.arquivo.dataUpload}" icon="#{msg_botoes.btn_icon_usuario_embutido} iconePequeno" id="helpResponsavelRecebimento" rendered="#{mapaDocumentoGED.usuario.nome != ''}" />
+					</h:panelGroup>
+					<otm:commandIcon action="#{MapaDocumentacaoDigitalizadoGEDControle.editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" immediate="true" render="formTipoDocumento" tooltip="Editar" oncomplete="#{rich:component('panelCategoriaGED')}.show()" />
+					<otm:commandIcon id="excluir" onclick="return confirm('#{msg.msg_ConfirmaExclusao}');" action="#{MapaDocumentacaoDigitalizadoGEDControle.excluir(mapaDocumentoGED)}" render="formCadastro" tooltip="#{msg.msg_remover_dados}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" />
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller align="center" for="formCadastro:items" maxPages="10" stepControls="auto" fastControls="hide" boundaryControls="auto" scrollListener="#{MapaDocumentacaoDigitalizadoGEDControle.scrollerListener}" id="scResultado" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{MapaDocumentacaoDigitalizadoGEDControle}"></otm:mensagem>
+			</h:panelGroup>
+		</h:form>
+		
+		<rich:popupPanel styleClass="modalMaximizado" id="panelVisualizarPdf" shadowOpacity="true" top="0">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Visualização (PDF)" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelPDFPAnel" />
+					<rich:componentControl target="panelVisualizarPdf" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formVisualizarPdf">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<object type="application/pdf" data="#{MapaDocumentacaoDigitalizadoGEDControle.caminhoPreview}" width="950" height="600"> </object>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<otm:mensagem bean="#{MapaDocumentacaoDigitalizadoGEDControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		<!-- Modal Tipo Documento GED -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCategoriaGED" overlapEmbedObjects="true" shadowOpacity="false">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_tipoDocumentoGED}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelCategoriaGED" />
+					<rich:componentControl target="panelCategoriaGED" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTipoDocumento">
+				<h:panelGroup id="alunoMatricula">
+					<h:panelGroup layout="block" styleClass="col-md-6 pn">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MediaDescontoAluno_matricula}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:inputText size="20" disabled="#{!MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.pessoaNaoEncontrada}" styleClass="form-control camposObrigatorios" value="#{MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.matricula.matricula}">
+								<a4j:ajax event="blur" listener="#{MapaDocumentacaoDigitalizadoGEDControle.consultarAlunoPorMatricula}" render="formTipoDocumento" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-8">
+							<h:inputText id="alunoNome" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.pessoa.nome}" />
+							<span class="append-icon right"> <otm:commandIcon rendered="#{MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.pessoaNaoEncontrada}" id="consultaDadosAluno" accesskey="2" tooltip="Localizar Aluno" render="formAluno" oncomplete="#{rich:component('panelAluno')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon rendered="#{MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.pessoaNaoEncontrada}" id="limparDadosAluno" tooltip="Limpas Dados" action="#{MapaDocumentacaoDigitalizadoGEDControle.limparDadosMatricula}" render="formTipoDocumento" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UploadArquivos_escolherArquivo}" />
+					<rich:fileUpload listHeight="100" listWidth="300" render="formTipoDocumento" allowFlash="false" noDuplicate="true" fileUploadListener="#{MapaDocumentacaoDigitalizadoGEDControle.upLoadArquivo}" addLabel="Selecionar Arquivo" acceptedTypes="PDF, pdf" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{MapaDocumentacaoDigitalizadoGEDControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" id="upload" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+						<a4j:ajax event="uploadcomplete" render="formTipoDocumento" />
+					</rich:fileUpload>
+					<h:outputText styleClass="field control-label tituloCampos" value="#{MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.arquivo.descricao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_categoriaGED}" />
+					<h:selectOneMenu disabled="#{!MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.categoriaGedNaoEncontrada}" styleClass="form-control camposObrigatorios" value="#{MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.categoriaGED.codigo}">
+						<a4j:ajax event="change" render="formTipoDocumento" execute="formTipoDocumento" listener="#{MapaDocumentacaoDigitalizadoGEDControle.realizarLocalizacaoDocumentacaoMatriculaVincularDocumentoGED}"></a4j:ajax>
+						<f:selectItems value="#{MapaDocumentacaoDigitalizadoGEDControle.listaSelectItemCategoriaGED}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<h:panelGroup>
+						<otm:commandButton id="consultaDadosTipoDocumento" accesskey="1" action="#{MapaDocumentacaoDigitalizadoGEDControle.limparMensagem}" alt="Localizar Tipo Documento" render="formTipoDocumentoCons" oncomplete="#{rich:component('panelTipoDocumento')}.show();" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" value="Adicionar Tipo Documento" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="tipoDocumentoGED" width="100%" headerClass="consulta" rendered="#{!empty MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.listaTipoDocumentoGED}" columnClasses="colunaAlinhamento" value="#{MapaDocumentacaoDigitalizadoGEDControle.documentacaoGED.listaTipoDocumentoGED}" var="tipoDocumentacaoGED" style="margin-top: 15px">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_tipoDocumento}" />
+						</f:facet>
+						<h:outputText value="#{tipoDocumentacaoGED.tipoDocumento.nome}" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome != ''}" />
+						<h:outputText value="#{tipoDocumentacaoGED.tipoDocumento.nome}" style="color:red" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome == ''}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_identificadorGED}" />
+						</f:facet>
+						<h:outputText value="#{tipoDocumentacaoGED.identificadorGed}" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome != ''}" />
+						<h:outputText value="#{tipoDocumentacaoGED.identificadorGed}" style="color:red" rendered="#{tipoDocumentacaoGED.tipoDocumento.nome == ''}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_situacao}" />
+						</f:facet>
+						<h:outputText value="#{msg.msg_erro_DocumentacaoGED_tipoDocumentoNaoEncontrado}" style="color:red" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo eq 0}" />
+						<h:outputText value="#{msg.msg_erro_DocumentacaoGED_tipoDocumentoReconhecido}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo ne 0 and  tipoDocumentacaoGED.tipoDocumento.nome != ''}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_entregue}" />
+						</f:facet>
+						<h:outputText value="#{msg.msg_erro_DocumentacaoGED_documentoEntregue}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo != 0  and  tipoDocumentacaoGED.documetacaoMatricula.codigo ne 0 and tipoDocumentacaoGED.documetacaoMatricula.entregue}" />
+						<h:outputText value="Não #{msg.msg_erro_DocumentacaoGED_documentoEntregue}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo != 0  and  tipoDocumentacaoGED.documetacaoMatricula.codigo ne 0 and !tipoDocumentacaoGED.documetacaoMatricula.entregue}" />
+						<h:outputText value="#{msg.msg_erro_DocumentacaoGED_documentoNaoEntregue}" rendered="#{tipoDocumentacaoGED.tipoDocumento.codigo != 0  and  tipoDocumentacaoGED.documetacaoMatricula.codigo eq 0}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon id="remover" onclick="return confirm('#{msg.msg_ConfirmaExclusao}');" action="#{MapaDocumentacaoDigitalizadoGEDControle.remover(tipoDocumentacaoGED)}" render="formTipoDocumento" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="#{msg.msg_remover_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup id="panelGridMensagens">
+					<otm:mensagem bean="#{MapaDocumentacaoDigitalizadoGEDControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<h:panelGroup>
+						<otm:commandButton id="salvar" action="#{MapaDocumentacaoDigitalizadoGEDControle.persistir}" render="formTipoDocumento formCadastro" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" title="#{msg.msg_gravar_dados}" oncomplete="#{MapaDocumentacaoDigitalizadoGEDControle.oncompleteModal}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Popup Pesquisa Matricula é aluno -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" onshow="document.getElementById('formAluno:valorConsultaAluno').focus()" overlapEmbedObjects="true" shadowOpacity="false" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarAluno}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3" />
+					<rich:componentControl target="panelAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{MapaDocumentacaoDigitalizadoGEDControle.campoConsultaAluno}">
+						<f:selectItems value="#{MapaDocumentacaoDigitalizadoGEDControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaAluno" size="30" styleClass="form-control campos" value="#{MapaDocumentacaoDigitalizadoGEDControle.valorConsultaAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar3" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno, formAluno:scResultadoAluno" action="#{MapaDocumentacaoDigitalizadoGEDControle.consultarAluno}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MapaDocumentacaoDigitalizadoGEDControle.listaConsultaAluno}" rows="5" var="matriculaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Matricula" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarAluno}" render="formTipoDocumento" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarAluno}" render="formTipoDocumento" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarAluno}" render="formTipoDocumento" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.aluno.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_curso}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarAluno}" render="formTipoDocumento" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação Matrícula" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarAluno}" render="formTipoDocumento" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.situacao_Apresentar}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarAluno}" render="formTipoDocumento" oncomplete="#{rich:component('panelAluno')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MapaDocumentacaoDigitalizadoGEDControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Popup Pesquisa Tipo de documento-->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTipoDocumento" onshow="document.getElementById('formAluno:valorConsultaAluno').focus()" overlapEmbedObjects="true" shadowOpacity="false" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_MapaDocumentacaoDigitalizadoGED_tipoDocumento}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink4" />
+					<rich:componentControl target="panelTipoDocumento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTipoDocumentoCons">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTipoDocumento" value="#{MapaDocumentacaoDigitalizadoGEDControle.campoConsultaTipoDocumento}">
+						<f:selectItems value="#{MapaDocumentacaoDigitalizadoGEDControle.tipoConsultaComboTipoDocumento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaTipoDocumento" size="30" styleClass="form-control campos" value="#{MapaDocumentacaoDigitalizadoGEDControle.valorConsultaTipoDocumento}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar3" render="formTipoDocumentoCons:mensagemConsultaTipoDocumento, formTipoDocumentoCons:resultadoConsultaTipoDocumento, formTipoDocumentoCons:scResultadoTipoDocumento, formTipoDocumentoCons" action="#{MapaDocumentacaoDigitalizadoGEDControle.consultarTipoDocumento}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaTipoDocumento" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MapaDocumentacaoDigitalizadoGEDControle.listaConsultaTipoDocumento}" rows="5" var="tipoDocumentoItens" rendered="#{fn:length(MapaDocumentacaoDigitalizadoGEDControle.listaConsultaTipoDocumento) > 0}">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoDocumento_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarTipoDocumento}" render="formTipoDocumentoCons, formTipoDocumento" value="#{tipoDocumentoItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoDocumento_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarTipoDocumento}" render="formTipoDocumentoCons, formTipoDocumento" value="#{tipoDocumentoItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoDocumento_identificadorGED}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarTipoDocumento}" render="formTipoDocumentoCons, formTipoDocumento" value="#{tipoDocumentoItens.identificadorGED}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MapaDocumentacaoDigitalizadoGEDControle.selecionarTipoDocumento}" render="formTipoDocumentoCons, formTipoDocumento" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTipoDocumentoCons:resultadoConsultaTipoDocumento" maxPages="10" id="scResultadoTipoDocumento" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTipoDocumento" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MapaDocumentacaoDigitalizadoGEDControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

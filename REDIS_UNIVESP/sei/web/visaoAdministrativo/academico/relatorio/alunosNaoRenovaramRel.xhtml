@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_AlunoNaoRenovaramMatricula_tituloForm}  Comparado com o Período Anterior" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{AlunosNaoRenovaramRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="filtrosBusca">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AlunosMatriculadosGeralRel_analiticoSintetico}" />
+					<h:selectOneMenu id="analiticoSintetico" styleClass="form-control camposObrigatorios" value="#{AlunosNaoRenovaramRelControle.tipoRelatorio}">
+						<f:selectItems value="#{AlunosNaoRenovaramRelControle.listaSelectItemTipoRelatorio}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_unidadeEnsino}" />
+					<h:selectOneMenu id="unidadeEnsinos" styleClass="form-control camposObrigatorios" value="#{AlunosNaoRenovaramRelControle.unidadeEnsinoVO.codigo}">
+						<a4j:ajax event="change" execute="@this" listener="#{AlunosNaoRenovaramRelControle.inicializarListaCursoETurno}" render="form:nomeCurso, form:turnos, form:turma" />
+						<f:selectItems value="#{AlunosNaoRenovaramRelControle.listaSelectItemUnidadeEnsino}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup id="panelperiodicidade">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_periodicidade}" />
+						<h:selectOneMenu id="periodicidade" styleClass="form-control camposObrigatorios" value="#{AlunosNaoRenovaramRelControle.periodicidade}">
+							<a4j:ajax event="change" execute="@this" render="form:panelperiodicidade" />
+							<f:selectItems value="#{AlunosNaoRenovaramRelControle.listaSelectItemPeriodicidade}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_ano}" />
+						<h:inputText id="ano" styleClass="form-control camposObrigatorios" size="4" maxlength="4" value="#{AlunosNaoRenovaramRelControle.ano}">
+							<a4j:ajax event="change" execute="@this" render="form:ano" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{AlunosNaoRenovaramRelControle.isApresentarSemestre}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_semestre}" rendered="#{AlunosNaoRenovaramRelControle.isApresentarSemestre}" />
+						<h:selectOneMenu id="semestre" styleClass="form-control camposObrigatorios" value="#{AlunosNaoRenovaramRelControle.semestre}" rendered="#{AlunosNaoRenovaramRelControle.isApresentarSemestre}">
+							<f:selectItems value="#{AlunosNaoRenovaramRelControle.listaSelectItemSemestre}" />
+							<a4j:ajax event="change" execute="@this" render="form:semestre" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AlunosNaoRenovaramRelControle.turmaVO.codigo eq 0}">
+					<h:outputText rendered="#{AlunosNaoRenovaramRelControle.turmaVO.codigo eq 0}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PossiveisFormandosRel_curso}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="nomeCurso" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{AlunosNaoRenovaramRelControle.cursosApresentar}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosCurso" tooltip="Filtrar Curso" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show()" icon="#{msg_botoes.btn_icon_adicionar_embutido}" /> <otm:commandIcon id="limparDadosCurso" tooltip="Limpas Dados" action="#{AlunosNaoRenovaramRelControle.limparCursos}" render="form:nomeCurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AlunosNaoRenovaramRelControle.turmaVO.codigo eq 0}">
+					<h:outputText rendered="#{AlunosNaoRenovaramRelControle.turmaVO.codigo eq 0}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PossiveisFormandosRel_turno}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="turnos" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{AlunosNaoRenovaramRelControle.turnosApresentar}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurno" tooltip="Filtrar Turno" render="formTurno" oncomplete="#{rich:component('panelTurno')}.show()" icon="#{msg_botoes.btn_icon_adicionar_embutido}" /> <otm:commandIcon id="limparDadosTurno" tooltip="Limpas Dados" action="#{AlunosNaoRenovaramRelControle.limparTurnos}" render="form:turnos" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_turma}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="turma" styleClass="form-control campos" value="#{AlunosNaoRenovaramRelControle.turmaVO.identificadorTurma}">
+							<a4j:ajax event="change" listener="#{AlunosNaoRenovaramRelControle.consultarTurmaPorIdentificador}" execute="@this" render="form:msg, form:filtrosBusca" />
+						</h:inputText>
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" focus="nomeTurma" tooltip="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" tooltip="Limpas Dados" action="#{AlunosNaoRenovaramRelControle.limparTurma}" render="form:msg, form:filtrosBusca" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Desconsiderar Aluno(s) Pré-Matriculado(s)" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox value="#{AlunosNaoRenovaramRelControle.desconsiderarAlunoPreMatriculado}">
+							<a4j:ajax event="change" render="filtrosBusca"/>
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Desconsiderar Possível Formando" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox value="#{AlunosNaoRenovaramRelControle.desconsiderarPossivelFormando}" >
+							<a4j:ajax event="change" render="filtrosBusca"/>
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{AlunosNaoRenovaramRelControle}"></otm:mensagem>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton id="imprimirPDF" render="form" action="#{AlunosNaoRenovaramRelControle.imprimirPDF}" oncomplete="#{AlunosNaoRenovaramRelControle.download}" value="Gerar Relatório (PDF)" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger dark btn-imprimir" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" autosized="false" shadowOpacity="true" onshow="document.getElementById('formCurso:filtrosCurso:filterCurso').focus();" width="800" height="610">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtrar Curso"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink19" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup id="cursos" style="height:485px;width:99%">
+						<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+							<rich:dataTable align="left" id="filtrosCurso" width="100%" var="cursoItens" value="#{AlunosNaoRenovaramRelControle.cursoVOs}">
+								<rich:column filterType="custom" style="text-align:left" filterValue="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO').filtro}" filter="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" id="filterCurso" size="20" value="#{FilterFactory.filter('filtrosCurso', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="cursos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="cursos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosCurso')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{cursoItens.codigo} - #{cursoItens.nome}" />
+								</rich:column>
+								<rich:column filterType="custom" style="text-align:center" filterExpression="#{!cursoItens.filtrarCursoVO}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formCurso, form:nomeCurso" action="#{AlunosNaoRenovaramRelControle.realizarMarcacaoCursos}">
+											<f:setPropertyActionListener value="true" target="#{AlunosNaoRenovaramRelControle.marcarTodosCursos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="form:nomeCurso, cursos" action="#{AlunosNaoRenovaramRelControle.verificarTodosCursosSelecionados}">
+										<f:setPropertyActionListener value="true" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+							<rich:dataTable align="left" id="filtrosCurso2" width="100%" var="cursoItens" value="#{AlunosNaoRenovaramRelControle.cursoVOs}">
+								<rich:column filterType="custom" style="text-align:center" filterExpression="#{cursoItens.filtrarCursoVO}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formCurso, form:nomeCurso" action="#{AlunosNaoRenovaramRelControle.realizarMarcacaoCursos}">
+											<f:setPropertyActionListener value="false" target="#{AlunosNaoRenovaramRelControle.marcarTodosCursos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="form:nomeCurso, cursos" action="#{AlunosNaoRenovaramRelControle.verificarTodosCursosSelecionados}">
+										<f:setPropertyActionListener value="false" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+								<rich:column filterType="custom" style="text-align:left" filterValue="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO').filtro}" filter="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosCurso2', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="cursos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="cursos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosCurso2')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{cursoItens.codigo} - #{cursoItens.nome}" />
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+					<otm:spacer height="20" />
+					<h:panelGroup layout="block" styleClass="row text-center mt10">
+						<otm:commandButton render="form" oncomplete="#{rich:component('panelCurso')}.hide();" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="Fechar" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurno" autosized="false" shadowOpacity="true" onshow="document.getElementById('formTurno:filtrosturno:filterTurno').focus();" width="800" height="610">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Filtrar Turno"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink20" />
+					<rich:componentControl target="panelTurno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurno">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup id="turnos" style="height:485px;width:99%">
+						<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+							<rich:dataTable align="left" id="filtrosturno" width="100%" var="turnoItens" value="#{AlunosNaoRenovaramRelControle.turnoVOs}">
+								<rich:column filterType="custom" style="text-align:left" filter="#{FilterFactory.filter('filtrosturno', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" id="filterTurno" value="#{FilterFactory.filter('filtrosturno', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="turnos" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="turnos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosturno')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{turnoItens.nome}" />
+								</rich:column>
+								<rich:column filterType="custom" style="text-align:center" filterExpression="#{!turnoItens.filtrarTurnoVO}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formTurno, form:turnos" action="#{AlunosNaoRenovaramRelControle.realizarMarcacaoTurnos}">
+											<f:setPropertyActionListener value="true" target="#{AlunosNaoRenovaramRelControle.marcarTodosTurnos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="formTurno, form:turnos" action="#{AlunosNaoRenovaramRelControle.verificarTodosTurnosSelecionados}">
+										<f:setPropertyActionListener value="true" target="#{turnoItens.filtrarTurnoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+							<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+							<rich:dataTable align="left" id="filtrosturno2" width="100%" var="turnoItens" value="#{AlunosNaoRenovaramRelControle.turnoVOs}">
+								<rich:column filterType="custom" style="text-align:center" filterExpression="#{turnoItens.filtrarTurnoVO}">
+									<f:facet name="header">
+										<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formTurno, form:turnos" action="#{AlunosNaoRenovaramRelControle.realizarMarcacaoTurnos}">
+											<f:setPropertyActionListener value="false" target="#{AlunosNaoRenovaramRelControle.marcarTodosTurnos}" />
+										</a4j:commandButton>
+									</f:facet>
+									<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="formTurno, form:turnos" action="#{AlunosNaoRenovaramRelControle.verificarTodosTurnosSelecionados}">
+										<f:setPropertyActionListener value="false" target="#{turnoItens.filtrarTurnoVO}" />
+									</a4j:commandButton>
+								</rich:column>
+								<rich:column filterType="custom" style="text-align:left" filter="#{FilterFactory.filter('filtrosturno2', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('filtrosturno2', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="filtrosturno2" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="turnos" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('filtrosturno2')}" tooltip="Limpar" />
+											</span>
+										</h:panelGroup>
+									</f:facet>
+									<h:panelGroup style="vertical-align:middle">
+										<h:outputText value="#{turnoItens.nome}" />
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+					<otm:spacer height="20" />
+					<h:panelGroup layout="block" styleClass="row text-center mt10">
+						<otm:commandButton render="form" oncomplete="#{rich:component('panelTurno')}.hide();" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="Fechar" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formTurma:valorConsultaTurma').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_HistoricoTurmaRel_consultarTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{AlunosNaoRenovaramRelControle.campoConsultaTurma}">
+						<f:selectItems value="#{AlunosNaoRenovaramRelControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaTurma" size="10" styleClass="form-control campos" value="#{AlunosNaoRenovaramRelControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{AlunosNaoRenovaramRelControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AlunosNaoRenovaramRelControle.listaConsultaTurma}" rows="5" var="turmaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_HistoricoTurmaRel_identificador}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AlunosNaoRenovaramRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AlunosNaoRenovaramRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Turno" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AlunosNaoRenovaramRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AlunosNaoRenovaramRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AlunosNaoRenovaramRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<script>
+			document.getElementById("form:analiticoSintetico").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

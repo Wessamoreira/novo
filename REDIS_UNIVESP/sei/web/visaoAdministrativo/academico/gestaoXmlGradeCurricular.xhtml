@@ -1,0 +1,970 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br"> <h:head>
+</h:head> <ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_GestaoXmlGradeCurricular_tituloForm}" />
+	</ui:define>
+	<ui:define name="modal">
+		<style>
+			.titulo_Campos {
+				line-height: 23px !important;
+				font-weight: 700 !important;
+			}
+			.font_emoji {
+				font-family: emoji;
+			}
+			.bg-gray_white {
+				background: #f3f3f3 !important;
+			}
+			.fs15 {
+				font-size: 15px !important
+			}
+			.panelAssinatura:hover {
+				background: #f3f3f3 !important;
+				padding: 5px !important;
+    			transition: 0.1s;
+			}
+			.p5 {
+				padding-bottom: 5px !important;
+			}
+		</style>
+
+		<otm2:modalUnidadeEnsino id="panelUnidadeEnsino" bean="#{GestaoXmlGradeCurricularControle}" render="form" />
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" shadowOpacity="true" width="600" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaReceberRel_selecionarUnidadeEnsino}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hideCurso">
+						<rich:componentControl target="panelCurso" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="row mn">
+					<h:panelGroup id="cursos">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+							<rich:dataTable align="left" id="cursosNaoSelecionados" width="100%" var="cursoItens" value="#{GestaoXmlGradeCurricularControle.cursoVOs}">
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('cursosNaoSelecionados', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('cursosNaoSelecionados', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="formCurso, form" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="formCurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('cursosNaoSelecionados')}" tooltip="Limpar" /> </span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{cursoItens.nome}" />
+								</rich:column>
+								<rich:column filterType="custom" filterExpression="#{!cursoItens.filtrarCursoVO}">
+									<f:facet name="header">
+										<a4j:commandLink render="formCurso, form" action="#{GestaoXmlGradeCurricularControle.marcarTodosCursoAction}">
+											<span class="#{msg_botoes.btn_icon_setaRightDupla_embutido}"></span>
+											<f:setPropertyActionListener value="true" target="#{GestaoXmlGradeCurricularControle.marcarTodosCursos}" />
+										</a4j:commandLink>
+									</f:facet>
+									<a4j:commandLink style="border:none;margin:0px" render="formCurso, form" action="#{GestaoXmlGradeCurricularControle.verificarTodosCursosSelecionados}">
+										<span class="#{msg_botoes.btn_icon_setaRight_embutido}"></span>
+										<f:setPropertyActionListener value="true" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandLink>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+							<rich:dataTable align="left" id="cursosSelecionados" width="100%" var="cursoItens" value="#{GestaoXmlGradeCurricularControle.cursoVOs}">
+								<rich:column filterType="custom" filterExpression="#{cursoItens.filtrarCursoVO}">
+									<f:facet name="header">
+										<a4j:commandLink render="formCurso, form" action="#{GestaoXmlGradeCurricularControle.marcarTodosCursoAction}">
+											<span class="#{msg_botoes.btn_icon_setaLeftDupla_embutido}"></span>
+											<f:setPropertyActionListener value="false" target="#{GestaoXmlGradeCurricularControle.marcarTodosCursos}" />
+										</a4j:commandLink>
+									</f:facet>
+									<a4j:commandLink render="formCurso, form" action="#{GestaoXmlGradeCurricularControle.verificarTodosCursosSelecionados}">
+										<span class="#{msg_botoes.btn_icon_setaLeft_embutido}"></span>
+										<f:setPropertyActionListener value="false" target="#{cursoItens.filtrarCursoVO}" />
+									</a4j:commandLink>
+								</rich:column>
+								<rich:column filterType="custom" filter="#{FilterFactory.filter('cursosSelecionados', 'nome', 'TEXTO')}">
+									<f:facet name="header">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('cursosSelecionados', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="formCurso, form" />
+											</h:inputText>
+											<span class="append-icon right"> <otm:commandIcon render="formCurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('cursosSelecionados')}" tooltip="Limpar" /> </span>
+										</h:panelGroup>
+									</f:facet>
+									<h:outputText value="#{cursoItens.nome}" />
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelListaErroGeracaoCurriculo" shadowOpacity="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="AVISO" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkListaErroGeracaoCurriculo" />
+					<rich:componentControl target="panelListaErroGeracaoCurriculo" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formListaErroGeracaoCurriculo">
+				<rich:dataTable rowKeyVar="row" id="listaErroGeracaoCurriculo" value="#{GestaoXmlGradeCurricularControle.listaMensagensErro}" var="erroItem" headerClass="consulta" style="width:100%" rows="10">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Erros Localizados ao Gerar Arquivo XML" />
+						</f:facet>
+						<h:outputText value="#{row + 1}. #{erroItem}" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller for="listaErroGeracaoCurriculo" id="scrollListaErroGeracaoCurriculo" align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelListaErroGeracaoCurriculoLote" shadowOpacity="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="AVISO" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkListaErroGeracaoCurriculoLote" />
+					<rich:componentControl target="panelListaErroGeracaoCurriculoLote" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formListaErroGeracaoCurriculoLote">
+				<rich:dataTable id="listaErroGeracaoCurriculoLote" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.listaGestaoXmlGradeCurricularErro}" var="gestaoErro" headerClass="consulta" style="width:100%" rows="10">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Unidade de Ensino" />
+						</f:facet>
+						<h:outputText value="#{gestaoErro.unidadeEnsinoVO.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:outputText value="#{gestaoErro.cursoVO.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Matriz Curricular" />
+						</f:facet>
+						<h:outputText value="#{gestaoErro.gradeCurricularVO.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Erros" />
+						</f:facet>
+						<a4j:repeat rowKeyVar="row" value="#{gestaoErro.consistirException.listaMensagemErro}" var="erroLote">
+							<h:panelGroup layout="block" styleClass="col-md-12 mb5 pb5">
+								<h:outputText value="#{row+1} - #{erroLote}" />
+							</h:panelGroup>
+						</a4j:repeat>
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller for="listaErroGeracaoCurriculoLote" id="scrollListaErroGeracaoCurriculoLote" align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionarioIesEmissora">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Funcionário" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkFuncionarioIesEmissora" />
+					<rich:componentControl target="panelFuncionarioIesEmissora" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionarioIesEmissora">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionario" value="#{GestaoXmlGradeCurricularControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{GestaoXmlGradeCurricularControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaFuncionario" styleClass="form-control campos" value="#{GestaoXmlGradeCurricularControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formFuncionarioIesEmissora" action="#{GestaoXmlGradeCurricularControle.consultarFuncionario}" styleClass="btn btn-default btn-consultar" value="#{msg_botoes.btn_consultar}" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFuncionarioIes" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GestaoXmlGradeCurricularControle.listaConsultaFuncionario}" rows="5" var="iesEmissoraFuncionarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionarioIesEmissora(false)}" oncomplete="#{rich:component('panelFuncionarioIesEmissora')}.hide();" render="formAviso, formFuncionarioIesEmissora, formAvisoLote" value="#{iesEmissoraFuncionarioItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionarioIesEmissora(false)}" oncomplete="#{rich:component('panelFuncionarioIesEmissora')}.hide();" render="formAviso, formFuncionarioIesEmissora, formAvisoLote" value="#{iesEmissoraFuncionarioItens.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionarioIesEmissora(false)}" oncomplete="#{rich:component('panelFuncionarioIesEmissora')}.hide();" render="formAviso, formFuncionarioIesEmissora, formAvisoLote" value="#{iesEmissoraFuncionarioItens.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{GestaoXmlGradeCurricularControle.selecionarFuncionarioIesEmissora(false)}" oncomplete="#{rich:component('panelFuncionarioIesEmissora')}.hide();" render="formAviso, formFuncionarioIesEmissora, formAvisoLote" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="resultadoConsultaFuncionarioIes" maxPages="10" id="scResultadoFuncionarioIes" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionarioIesEmissoraLote">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Funcionário" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkFuncionarioIesEmissoraLote" />
+					<rich:componentControl target="panelFuncionarioIesEmissoraLote" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionarioIesEmissoraLote">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionarioLote" value="#{GestaoXmlGradeCurricularControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{GestaoXmlGradeCurricularControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaFuncionarioLote" styleClass="form-control campos" value="#{GestaoXmlGradeCurricularControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarLote" render="formFuncionarioIesEmissoraLote" action="#{GestaoXmlGradeCurricularControle.consultarFuncionario}" styleClass="btn btn-default btn-consultar" value="#{msg_botoes.btn_consultar}" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFuncionarioIesLote" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GestaoXmlGradeCurricularControle.listaConsultaFuncionario}" rows="5" var="iesEmissoraFuncionarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionarioIesEmissora(true)}" oncomplete="#{rich:component('panelFuncionarioIesEmissoraLote')}.hide();" render="formAviso, formFuncionarioIesEmissoraLote, formAvisoLote" value="#{iesEmissoraFuncionarioItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionarioIesEmissora(true)}" oncomplete="#{rich:component('panelFuncionarioIesEmissoraLote')}.hide();" render="formAviso, formFuncionarioIesEmissoraLote, formAvisoLote" value="#{iesEmissoraFuncionarioItens.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionarioIesEmissora(true)}" oncomplete="#{rich:component('panelFuncionarioIesEmissoraLote')}.hide();" render="formAviso, formFuncionarioIesEmissoraLote, formAvisoLote" value="#{iesEmissoraFuncionarioItens.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{GestaoXmlGradeCurricularControle.selecionarFuncionarioIesEmissora(true)}" oncomplete="#{rich:component('panelFuncionarioIesEmissoraLote')}.hide();" render="formAviso, formFuncionarioIesEmissoraLote, formAvisoLote" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="resultadoConsultaFuncionarioIesLote" maxPages="10" id="scResultadoFuncionarioIesLote" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAviso">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="AVISO" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hideLinkPanelAviso" />
+					<rich:componentControl target="panelAviso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAviso">
+				<h:panelGroup layout="block" styleClass="row mn p5 border rounded bg-gray-100" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.documentoAssinadoVO.codigo ne 0}">
+					<h:panelGroup layout="block" styleClass="col-md-12 mb5 p5 border-bottom">
+						<h:outputText styleClass="tituloCampos font-weight-bold" value="Motivo da Rejeição para a Geração de um Novo Documento Assinado" />
+						<h:inputTextarea styleClass="form-control camposObrigatorios" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.motivoRejeicao}">
+							<a4j:ajax event="change" execute="@this" />
+						</h:inputTextarea>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn p5 border rounded bg-gray-100">
+					<h:panelGroup layout="block" styleClass="col-md-12 mb5 p5 border-bottom">
+						<h:outputText styleClass="tituloCampos font-weight-bold" value="Selecionar Assinante E-CPF" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos btn-block" value="Consultar Funcionário" />
+						<otm:selectBooleanCheckbox value="#{GestaoXmlGradeCurricularControle.buscarFuncionario}">
+							<a4j:ajax event="change" render="formAviso" listener="#{GestaoXmlGradeCurricularControle.limparDadosConsultaFuncionario(false)}" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{GestaoXmlGradeCurricularControle.buscarFuncionario}">
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.funcionarioPrimario.codigo > 0}">
+							<h:outputText styleClass="tituloCampos" value="Funcionário" />
+							<h:inputText readonly="true" styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.funcionarioPrimario.pessoa.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.funcionarioPrimario.codigo > 0}">
+							<h:outputText styleClass="tituloCampos" value="Cargo" />
+							<h:selectOneMenu id="cargoFuncionario" styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.cargoPrimario.codigo}">
+								<f:selectItems value="#{GestaoXmlGradeCurricularControle.listaSelectItemCargoFuncionarioPrimario}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.funcionarioPrimario.codigo > 0}">
+							<h:outputText styleClass="tituloCampos" value="Título" />
+							<h:inputText styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.tituloFuncionarioPrimario}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center m5" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.funcionarioPrimario.codigo > 0}">
+							<otm:commandButton value="consultar" tooltip="Consultar por um outro funcionário" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default pr20 pl20" action="#{GestaoXmlGradeCurricularControle.limparDadosConsultaFuncionario(false)}" render="formAviso" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mn" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.funcionarioPrimario.codigo eq 0}">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:selectOneMenu styleClass="form-control campos" value="#{GestaoXmlGradeCurricularControle.campoConsultaFuncionario}">
+									<f:selectItems value="#{GestaoXmlGradeCurricularControle.tipoConsultaComboFuncionario}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText styleClass="form-control campos" value="#{GestaoXmlGradeCurricularControle.valorConsultaFuncionario}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<otm:commandButton render="formAviso" action="#{GestaoXmlGradeCurricularControle.consultarFuncionario}" styleClass="btn btn-default btn-consultar" value="#{msg_botoes.btn_consultar}" alt="#{msg.msg_consultar_dados}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+							<rich:dataTable id="resultadoConsultaFuncionario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GestaoXmlGradeCurricularControle.listaConsultaFuncionario}" rows="5" var="funcionarioItens">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+									</f:facet>
+									<h:panelGroup>
+										<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionario(false)}" render="formAviso" value="#{funcionarioItens.matricula}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+									</f:facet>
+									<h:panelGroup>
+										<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionario(false)}" render="formAviso" value="#{funcionarioItens.pessoa.nome}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+									</f:facet>
+									<h:panelGroup>
+										<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionario(false)}" render="formAviso" value="#{funcionarioItens.pessoa.CPF}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_bt.btn_opcoes}" />
+									</f:facet>
+									<otm:commandIcon action="#{GestaoXmlGradeCurricularControle.selecionarFuncionario(false)}" render="formAviso" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" image="#{resource['/imagens/botaoSelecionar.png']}" tooltip="#{msg.msg_selecionar_dados}" />
+								</rich:column>
+								<f:facet name="footer">
+									<div style="text-align: center !important"> <rich:dataScroller align="center" for="resultadoConsultaFuncionario" maxPages="10" id="scResultadoFuncionario" boundaryControls="auto" stepControls="auto" fastControls="hide" /> </div>
+								</f:facet>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{!GestaoXmlGradeCurricularControle.buscarFuncionario}">
+						<h:panelGroup rendered="#{!empty GestaoXmlGradeCurricularControle.listaSelectItemFuncionario}">
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="tituloCampos" value="Coordenador Curso" />
+								<h:selectOneMenu styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.funcionarioPrimario.codigo}">
+									<a4j:ajax event="change" render="formAviso" listener="#{GestaoXmlGradeCurricularControle.montarListaSelectItemCargoFuncionarioPrimario}" />
+									<f:selectItems value="#{GestaoXmlGradeCurricularControle.listaSelectItemFuncionario}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="tituloCampos" value="Cargo" />
+								<h:selectOneMenu styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.cargoPrimario.codigo}">
+									<f:selectItems value="#{GestaoXmlGradeCurricularControle.listaSelectItemCargoFuncionarioPrimario}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="tituloCampos" value="Título" />
+								<h:inputText styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.tituloFuncionarioPrimario}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center m10" rendered="#{empty GestaoXmlGradeCurricularControle.listaSelectItemFuncionario}">
+							<h:outputText styleClass="mensagemDetalhada" value="Não foi encontrados coordenadores no curso de #{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.cursoVO.nome} para a geração do xml." />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<hr class="col-md-12" />
+				<h:panelGroup layout="block" styleClass="row mn p5 border rounded bg-gray-100">
+					<h:panelGroup layout="block" styleClass="col-md-12 mb5 p5 border-bottom">
+						<h:outputText styleClass="tituloCampos font-weight-bold" value="Selecionar Assinante E-CNPJ" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="tituloCampos" value="Funcionário" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:inputText styleClass="form-control camposObrigatorios" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.funcionarioSecundario.matricula}">
+								<a4j:ajax event="change" render="formAviso" listener="#{GestaoXmlGradeCurricularControle.consultarFuncionarioIesEmissoraPorMatricula(false)}" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-8">
+							<h:inputText styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.funcionarioSecundario.pessoa.nome}" readonly="true" />
+							<span class="append-icon right"> <otm:commandIcon icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="Consultar" oncomplete="#{rich:component('panelFuncionarioIesEmissora')}.show();" render="formFuncionarioIesEmissora, formAviso" action="#{GestaoXmlGradeCurricularControle.limparDadosConsultaFuncionarioIesEmissora}" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="Limpar" render="formAviso" action="#{GestaoXmlGradeCurricularControle.limparDadosFuncionarioIesEmissora(false)}" /> </span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="tituloCampos" value="Cargo" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.cargoSecundario.codigo}">
+							<a4j:ajax event="change" execute="@this" />
+							<f:selectItems value="#{GestaoXmlGradeCurricularControle.listaSelectItemCargoFuncionarioIesEmissora}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="tituloCampos" value="Título" />
+						<h:inputText styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularSelecionado.tituloFuncionarioSecundario}">
+							<a4j:ajax event="change" execute="@this" />
+						</h:inputText>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton value="gerar currículo escolar digital" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_xml_embutido}" render="form, formListaErroGeracaoCurriculo" oncomplete="#{GestaoXmlGradeCurricularControle.oncompleteModal}" action="#{GestaoXmlGradeCurricularControle.realizarGeracaoCurriculoEscolarDigital}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAvisoLote">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="AVISO" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hideLinkPanelAvisoLote" />
+					<rich:componentControl target="panelAvisoLote" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAvisoLote">
+				<h:panelGroup layout="block" styleClass="row mn p5 border rounded bg-gray-100" rendered="#{GestaoXmlGradeCurricularControle.apresentarMotivoRejeicaoLote}">
+					<h:panelGroup layout="block" styleClass="col-md-12 mb5 p5 border-bottom">
+						<h:outputText styleClass="tituloCampos font-weight-bold" value="Motivo da Rejeição para a Geração de um Novo Documento Assinado" />
+						<h:inputTextarea styleClass="form-control camposObrigatorios" value="#{GestaoXmlGradeCurricularControle.motivoRejeicao}">
+							<a4j:ajax event="change" execute="@this" />
+						</h:inputTextarea>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn p5 border rounded bg-gray-100">
+					<h:panelGroup layout="block" styleClass="col-md-12 mb5 p5 border-bottom">
+						<h:outputText styleClass="tituloCampos font-weight-bold" value="Selecionar Assinante E-CPF" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="Utilizar Coordenador de Curso como Assinante" />
+						<otm:selectBooleanCheckbox value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.coordenadorCursoAssinateEcpfLote}">
+							<a4j:ajax event="click" render="formAvisoLote" listener="#{GestaoXmlGradeCurricularControle.limparDadosConsultaFuncionario(true)}" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{!GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.coordenadorCursoAssinateEcpfLote}" styleClass="row mn border-top pt5 mt5">
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.funcionarioPrimario.codigo > 0}">
+							<h:outputText styleClass="tituloCampos" value="Funcionário" />
+							<h:inputText readonly="true" styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.funcionarioPrimario.pessoa.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.funcionarioPrimario.codigo > 0}">
+							<h:outputText styleClass="tituloCampos" value="Cargo" />
+							<h:selectOneMenu id="cargoFuncionario" styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.cargoPrimario.codigo}">
+								<f:selectItems value="#{GestaoXmlGradeCurricularControle.listaSelectItemCargoFuncionarioPrimario}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.funcionarioPrimario.codigo > 0}">
+							<h:outputText styleClass="tituloCampos" value="Título" />
+							<h:inputText styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.tituloFuncionarioPrimario}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center m5" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.funcionarioPrimario.codigo > 0}">
+							<otm:commandButton value="consultar" tooltip="Consultar por um outro funcionário" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default pr20 pl20" action="#{GestaoXmlGradeCurricularControle.limparDadosConsultaFuncionarioLote(true)}" render="formAvisoLote" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mn" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.funcionarioPrimario.codigo eq 0}">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:selectOneMenu styleClass="form-control campos" value="#{GestaoXmlGradeCurricularControle.campoConsultaFuncionario}">
+									<f:selectItems value="#{GestaoXmlGradeCurricularControle.tipoConsultaComboFuncionario}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText styleClass="form-control campos" value="#{GestaoXmlGradeCurricularControle.valorConsultaFuncionario}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<otm:commandButton render="formAvisoLote" action="#{GestaoXmlGradeCurricularControle.consultarFuncionario}" styleClass="btn btn-default btn-consultar" value="#{msg_botoes.btn_consultar}" alt="#{msg.msg_consultar_dados}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+							<rich:dataTable id="resultadoConsultaFuncionarioLote" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GestaoXmlGradeCurricularControle.listaConsultaFuncionario}" rows="5" var="funcionarioItens">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+									</f:facet>
+									<h:panelGroup>
+										<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionario(true)}" render="formAvisoLote" value="#{funcionarioItens.matricula}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+									</f:facet>
+									<h:panelGroup>
+										<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionario(true)}" render="formAvisoLote" value="#{funcionarioItens.pessoa.nome}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+									</f:facet>
+									<h:panelGroup>
+										<a4j:commandLink action="#{GestaoXmlGradeCurricularControle.selecionarFuncionario(true)}" render="formAvisoLote" value="#{funcionarioItens.pessoa.CPF}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_bt.btn_opcoes}" />
+									</f:facet>
+									<otm:commandIcon action="#{GestaoXmlGradeCurricularControle.selecionarFuncionario(true)}" render="formAvisoLote" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+								</rich:column>
+								<f:facet name="footer">
+									<div style="text-align: center !important"> <rich:dataScroller align="center" for="resultadoConsultaFuncionarioLote" maxPages="10" id="scResultadoFuncionarioLote" boundaryControls="auto" stepControls="auto" fastControls="hide" /> </div>
+								</f:facet>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<hr class="col-md-12" />
+				<h:panelGroup layout="block" styleClass="row mn p5 border rounded bg-gray-100">
+					<h:panelGroup layout="block" styleClass="col-md-12 mb5 p5 border-bottom">
+						<h:outputText styleClass="tituloCampos font-weight-bold" value="Selecionar Assinante E-CNPJ" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="tituloCampos" value="Funcionário" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:inputText styleClass="form-control camposObrigatorios" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.funcionarioSecundario.matricula}">
+								<a4j:ajax event="change" render="formAvisoLote" listener="#{GestaoXmlGradeCurricularControle.consultarFuncionarioIesEmissoraPorMatricula(true)}" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-8">
+							<h:inputText styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.funcionarioSecundario.pessoa.nome}" readonly="true" />
+							<span class="append-icon right"> <otm:commandIcon icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="Consultar" oncomplete="#{rich:component('panelFuncionarioIesEmissoraLote')}.show();" render="formFuncionarioIesEmissora, formAvisoLote" action="#{GestaoXmlGradeCurricularControle.limparDadosConsultaFuncionarioIesEmissora}" /> <otm:commandIcon icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="Limpar" render="formAvisoLote" action="#{GestaoXmlGradeCurricularControle.limparDadosFuncionarioIesEmissora(true)}" /> </span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="tituloCampos" value="Cargo" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.cargoSecundario.codigo}">
+							<a4j:ajax event="change" execute="@this" />
+							<f:selectItems value="#{GestaoXmlGradeCurricularControle.listaSelectItemCargoFuncionarioIesEmissora}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="tituloCampos" value="Título" />
+						<h:inputText styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.tituloFuncionarioSecundario}">
+							<a4j:ajax event="change" execute="@this" />
+						</h:inputText>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton value="gerar currículo escolar digital (lote)" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_xml_embutido}" render="form, formListaErroGeracaoCurriculoLote, panelProgressBar" oncomplete="#{GestaoXmlGradeCurricularControle.oncompleteModal}" action="#{GestaoXmlGradeCurricularControle.executarInicioProgressBarGeracaoCurriculoEscolarDigitalLote}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelPreviewPdf" shadowOpacity="true" width="760" height="550">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Preview PDF" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPreviewPdf">
+				<h:panelGroup layout="block" styleClass="row mn" rendered="#{GestaoXmlGradeCurricularControle.caminhoPreview != ''}">
+					<otm2:pdfView2 bean="#{GestaoXmlGradeCurricularControle}" height="calc(100vh - 100px)" data="#{GestaoXmlGradeCurricularControle.caminhoPreview}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn">
+					<otm:mensagem bean="#{GestaoXmlGradeCurricularControle}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+					<otm:commandButton value="fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelPreviewPdf')}.hide()" styleClass="btn btn-danger" render="formPreviewPdf, formDocumentoAssinado" action="#{GestaoXmlGradeCurricularControle.fecharPanelPreview}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDocumentoAssinado" shadowOpacity="true" width="760" height="550">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Documento Assinado" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDocumentoAssinado">
+				<h:panelGroup layout="block" styleClass="row mn bg-gray pn mb5 p5 border-bottom">
+					<a4j:commandLink render="formDocumentoAssinado" action="#{GestaoXmlGradeCurricularControle.persistirLayoutListaPadrao}" value="#{GestaoXmlGradeCurricularControle.versaoLayoutListaNovo ? 'Alterar para o layout 1' : 'Alterar para o layout 2'}" styleClass="btn btn-primary2 pr20 pl20 float-right mt5 mr5" rendered="#{GestaoXmlGradeCurricularControle.versaoLayoutListaNovo}">
+						<span class="far fa-newspaper fs16 mr5 pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						<f:setPropertyActionListener value="false" target="#{GestaoXmlGradeCurricularControle.versaoLayoutListaNovo}" />
+					</a4j:commandLink>
+					<a4j:commandLink render="formDocumentoAssinado" action="#{GestaoXmlGradeCurricularControle.persistirLayoutListaPadrao}" value="#{GestaoXmlGradeCurricularControle.versaoLayoutListaNovo ? 'Alterar para o layout 1' : 'Alterar para o layout 2'}" styleClass="btn btn-primary pr20 pl20 float-right mt5 mr5" rendered="#{!GestaoXmlGradeCurricularControle.versaoLayoutListaNovo}">
+						<span class="fas fa-newspaper fs16 mr5 pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						<f:setPropertyActionListener value="true" target="#{GestaoXmlGradeCurricularControle.versaoLayoutListaNovo}" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn border rounded" rendered="#{!GestaoXmlGradeCurricularControle.versaoLayoutListaNovo}">
+					<table class="rf-dt"> 
+						<thead class="rf-dt-thd"> 
+							<tr class="rf-dt-shdr"> 
+								<th class="rf-dt-shdr-c"> 
+									<h:outputText value="CÓDIGO" /> 
+								</th> 
+								<th class="rf-dt-shdr-c"> 
+									<h:outputText value="TIPO DOCUMENTO" /> 
+								</th> 
+								<th class="rf-dt-shdr-c">
+									 <h:outputText value="UNIDADE ENSINO" />
+							 	</th> 
+							 	<th class="rf-dt-shdr-c"> 
+							 		<h:outputText value="DATA REGISTRO" /> 
+							 	</th> 
+							 	<th class="rf-dt-shdr-c"> 
+							 		<h:outputText value="DESCRIÇÃO" /> 
+						 		</th> 
+						 		<h:panelGroup rendered="#{!empty GestaoXmlGradeCurricularControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}">
+									<th class="rf-dt-shdr-c"> 
+										<div class="col-md-12 text-center mb10"> 
+											<h:outputText value="ASSINATURAS" /> 
+										</div> 
+										<div class="col-md-4 text-center"> 
+											<h:outputText value="RESPONSÁVEL" /> 
+										</div> 
+										<div class="col-md-4 text-center"> 
+											<h:outputText value="SITUAÇÃO" /> 
+										</div> 
+										<div class="col-md-4 text-center"> 
+											<h:outputText value="DATA" /> 
+										</div> 
+									</th>
+								</h:panelGroup> 
+								<th class="rf-dt-shdr-c"> 
+									<h:outputText value="OPÇÃO" /> 
+								</th> 
+							</tr> 
+						</thead> 
+						<tbody class="rf-dt-b"> 
+							<tr class="rf-dt-r rf-dt-fst-r"> 
+								<td class="rf-dt-c"> 
+									<h:outputText value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.codigo}" /> 
+								</td> 
+								<td class="rf-dt-c"> 
+									<h:outputText value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum.descricao}" /> 
+								</td> 
+								<td class="rf-dt-c"> 
+									<h:outputText value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.unidadeEnsinoVO.nome}" /> 
+								</td> 
+								<td class="rf-dt-c"> 
+									<h:outputText value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.dataRegistro}" /> 
+								</td> 
+								<td class="rf-dt-c"> 
+									<h:outputText value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.descricaoPersonalizada}" /> 
+								</td> 
+								<h:panelGroup rendered="#{!empty GestaoXmlGradeCurricularControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}">
+									<td class="rf-dt-c"> 
+										<rich:list type="definitions" rowKeyVar="row2" style="width:100%; padding:0px !important; margin:0px !important" value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}" var="pessoaItem">
+											<h:panelGrid cellpadding="0" cellspacing="0" columns="4" columnClasses="bordaDireita,bordaDireita, semBorda" style="width:100%;#{row2 ne 0 ? 'border-top:1px solid #C4C0C9;' : '' }">
+												<h:panelGroup layout="block" style="width:200px; text-align:left;min-height:20px">
+													<h:outputText value="#{(GestaoXmlGradeCurricularControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' or GestaoXmlGradeCurricularControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'HISTORICO_DIGITAL' or GestaoXmlGradeCurricularControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DOCUMENTACAO_ACADEMICA_REGISTRO_DIPLOMA_DIGITAL') ? pessoaItem.nomeAssinanteApresentar : pessoaItem.pessoaVO.nome}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" style="width:80px; text-align:center;min-height:20px;">
+													<h:outputText value="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum.descricao}">
+													</h:outputText>
+												</h:panelGroup>
+												<h:panelGroup layout="block" style="width:120px;text-align:center;min-height:20px;">
+													<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'ASSINADO'}" value="#{pessoaItem.dataAssinatura}">
+														<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+													</h:outputText>
+													<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO'}" value="#{pessoaItem.dataRejeicao}">
+														<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+													</h:outputText>
+													<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'PENDENTE'}" value="#{pessoaItem.dataSolicitacao}">
+														<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+													</h:outputText>
+												</h:panelGroup>
+											</h:panelGrid>
+										</rich:list>
+						 			</td>
+								</h:panelGroup> 
+								<td class="rf-dt-c"> 
+									<otm:commandIcon action="#{GestaoXmlGradeCurricularControle.realizarDownloadDocumentoAssinado}" render="formDocumentoAssinado, formPreviewPdf" oncomplete="#{GestaoXmlGradeCurricularControle.oncompleteModal}" tooltip="Download xml do currículo escolar" icon="#{msg_botoes.btn_icon_download} iconePequeno" /> 
+									<otm:commandIcon action="#{GestaoXmlGradeCurricularControle.realizarDownloadRepresentacaoVisual}" render="formDocumentoAssinado, formPreviewPdf" oncomplete="#{GestaoXmlGradeCurricularControle.oncompleteModal}" tooltip="Download representação visual do currículo escolar" icon="#{msg_botoes.btn_icon_pdf} iconePequeno" /> 
+								</td> 
+							</tr> 
+						</tbody> 
+					</table>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn border rounded" rendered="#{GestaoXmlGradeCurricularControle.versaoLayoutListaNovo}">
+					<h:panelGroup layout="block" styleClass="row mn border-bottom bg-gray_white p10">
+						<h:outputText styleClass="tituloCampos fs15" style="font-weight: bold !important; font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum.descricao} - #{GestaoXmlGradeCurricularControle.documentoAssinadoVO.codigo}" />
+						<h:panelGroup styleClass="float-right">
+							<h:outputText styleClass="tituloCampos fs15 mr5" style="font-weight: bold !important; font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.situacaoDocumentoApresentar eq 1 ? 'Documento Assinado' : GestaoXmlGradeCurricularControle.documentoAssinadoVO.situacaoDocumentoApresentar eq 2 ? 'Documento Pendente Assinatura' : 'Documento Inválido'}" />
+							<span class="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.situacaoDocumentoApresentar eq 1 ? 'far fa-thumbs-up' : GestaoXmlGradeCurricularControle.documentoAssinadoVO.situacaoDocumentoApresentar eq 2 ? 'fas fa-minus-circle' : 'far fa-thumbs-down'} tituloCampos fs15" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6 pn">
+						<h:panelGroup layout="block" styleClass="row mn mb10">
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Curso').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.cursoVO.nome.toUpperCase()}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Matriz Curricular').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.gradeCurricular.nome.toUpperCase()}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mn">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Unidade Ensino').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.unidadeEnsinoVO.nome.toUpperCase()}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Data Registro').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.dataRegistro}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+								</h:outputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos fs15 btn-block" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="#{('Responsável Criação').toUpperCase()}" />
+								<h:outputText styleClass="titulo_Campos fs12 text-secondary" value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.usuario.nome.toUpperCase()}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{!empty GestaoXmlGradeCurricularControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}">
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+							<h:outputText styleClass="tituloCampos fs15" style="font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;" value="Assinaturas" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mn p5 border rounded">
+							<a4j:repeat value="#{GestaoXmlGradeCurricularControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa}" var="pessoaItem" rowKeyVar="row">
+								<h:panelGroup layout="block" styleClass="row mn panelAssinatura #{GestaoXmlGradeCurricularControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa.get(row).codigo eq GestaoXmlGradeCurricularControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa.get(GestaoXmlGradeCurricularControle.documentoAssinadoVO.listaDocumentoAssinadoPessoa.size() -1).codigo ? '' : 'border-bottom pb5 mb5'}">
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="titulo_Campos font_emoji fs15 #{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'ASSINADO' ? 'text-success' : pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO' ? 'text-danger' : 'text-secondary'}" value="#{(GestaoXmlGradeCurricularControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DIPLOMA_DIGITAL' or GestaoXmlGradeCurricularControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'HISTORICO_DIGITAL' or GestaoXmlGradeCurricularControle.documentoAssinadoVO.tipoOrigemDocumentoAssinadoEnum eq 'DOCUMENTACAO_ACADEMICA_REGISTRO_DIPLOMA_DIGITAL') ? pessoaItem.nomeAssinanteApresentar : pessoaItem.pessoaVO.nome}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:panelGroup styleClass="float-right">
+											<h:outputText value="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum.descricao} " styleClass="titulo_Campos font_emoji fs15 #{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'ASSINADO' ? 'text-success' : pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO' ? 'text-danger' : 'text-secondary'}" />
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:panelGroup styleClass="float-right">
+											<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'ASSINADO'}" value="#{pessoaItem.dataAssinatura}" styleClass="titulo_Campos font_emoji fs15 text-success">
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+											</h:outputText>
+											<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO'}" value="#{pessoaItem.dataRejeicao}" styleClass="titulo_Campos font_emoji fs15 text-danger">
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+											</h:outputText>
+											<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'PENDENTE'}" value="#{pessoaItem.dataSolicitacao}" styleClass="titulo_Campos font_emoji fs15 text-secondary">
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+											</h:outputText>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</a4j:repeat>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row mn border-top bg-gray_white p5 mt5 text-center">
+						<otm:commandButton action="#{GestaoXmlGradeCurricularControle.realizarDownloadDocumentoAssinado}" render="formDocumentoAssinado, formPreviewPdf" oncomplete="#{GestaoXmlGradeCurricularControle.oncompleteModal}" value="download xml do currículo escolar" icon="#{msg_botoes.btn_icon_download_embutido}" styleClass="btn btn-primary2 pr20 pl20" />
+						<otm:commandButton action="#{GestaoXmlGradeCurricularControle.realizarDownloadRepresentacaoVisual}" render="formDocumentoAssinado, formPreviewPdf" oncomplete="#{GestaoXmlGradeCurricularControle.oncompleteModal}" value="download representação visual do currículo escolar" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger2 pr20 pl20 ml5" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn" id="mensagemDocumentoAssinado">
+					<otm:mensagem bean="#{GestaoXmlGradeCurricularControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton value="fechar" styleClass="btn btn-danger pr20 pl20" icon="#{msg_botoes.btn_icon_fechar_embutido}" render="formDocumentoAssinado" action="#{GestaoXmlGradeCurricularControle.setDocumentoAssinadoVO(null)}" oncomplete="#{rich:component('panelDocumentoAssinado')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+	<ui:define name="conteudo">
+		<style>
+			.position-button {
+				margin-right: 0.8em;
+				position: relative;
+				top: 3px;
+				font-size: 12px;
+			}
+		</style>
+		<h:form id="form">
+			<h:commandLink action="#{GestaoXmlGradeCurricularControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="tituloCampos" value="Unidade Ensino" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.unidadeEnsinosApresentar}" readonly="true" />
+					<span class="append-icon right"> <otm:commandIcon tooltip="Selecionar Unidades de Ensino" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelUnidadeEnsino')}.show();" render="formpanelUnidadeEnsino" /> </span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="tituloCampos" value="Curso" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText id="cursoApresentar" styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.cursosApresentar}" readonly="true" />
+					<span class="append-icon right"> <otm:commandIcon tooltip="Selecionar Unidades de Ensino" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelCurso')}.show();" render="formCurso" /> </span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4">
+				<h:outputText styleClass="tituloCampos" value="Situação Matriz Curricular" />
+				<h:selectOneMenu styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.situacaoGradeFiltrar}">
+					<f:selectItems value="#{GestaoXmlGradeCurricularControle.listaSelectItemSituacaoMatrizCurricular}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4">
+				<h:outputText styleClass="tituloCampos" value="Situação do XML" />
+				<h:selectOneMenu styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.situacaoXmlFiltrar}">
+					<f:selectItems value="#{GestaoXmlGradeCurricularControle.listaSelectItemSituacaoXml}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4">
+				<h:outputText styleClass="tituloCampos" value="Limite por Página" />
+				<h:selectOneMenu styleClass="form-control" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.controleConsultaOtimizado.limitePorPagina}">
+					<f:selectItems value="#{GestaoXmlGradeCurricularControle.listaSelectItemLimitePagina}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+				<a4j:commandLink value="consultar" styleClass="btn btn-default" action="#{GestaoXmlGradeCurricularControle.consultar}" render="form">
+					<span class="#{msg_botoes.btn_icon_lupa_embutido} pull-left position-button" />
+					<f:setPropertyActionListener for="btnConsultarMatricula" target="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.controleConsultaOtimizado.paginaAtual}" value="1" />
+					<f:setPropertyActionListener for="btnConsultarMatricula" target="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.controleConsultaOtimizado.page}" value="1" />
+				</a4j:commandLink>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row mn" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.controleConsultaOtimizado.apresentarPaginador}">
+				<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.controleConsultaOtimizado}" rows="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.controleConsultaOtimizado.limitePorPagina}" var="gestaoItens">
+					<rich:column>
+						<f:facet name="header">
+							<otm:outputHelp styleClass=" " id="selecionarTodos" tooltip="Ao marcar para selecionar todos, vai ser selecionado todas os itens da página atual da lista, caso queira selecionar mais casos, deve-se aumentar o limite de resultados na página" value="Selecionar TODOS" />
+							<otm:selectBooleanCheckbox value="#{GestaoXmlGradeCurricularControle.selecionarTodos}">
+								<a4j:ajax event="click" render="form:items, form:panelBotoes" listener="#{GestaoXmlGradeCurricularControle.marcarTodos}" />
+							</otm:selectBooleanCheckbox>
+						</f:facet>
+						<otm:selectBooleanCheckbox value="#{gestaoItens.selecionado}">
+							<a4j:ajax event="click" render="form:items, form:panelBotoes" />
+						</otm:selectBooleanCheckbox>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Unidade de Ensino" />
+						</f:facet>
+						<h:outputText value="#{gestaoItens.unidadeEnsinoVO.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:outputText value="#{gestaoItens.cursoVO.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Matriz Curricular" />
+						</f:facet>
+						<h:outputText value="#{gestaoItens.gradeCurricularVO.codigo} - #{gestaoItens.gradeCurricularVO.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação Matriz" />
+						</f:facet>
+						<h:outputText value="#{gestaoItens.gradeCurricularVO.situacao_Apresentar}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data Geração do XML" />
+						</f:facet>
+						<h:outputText value="#{gestaoItens.documentoAssinadoVO.dataRegistroApresentar}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação do Documento" />
+						</f:facet>
+						<h:outputText value="#{gestaoItens.situacaoDocumento}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Opções" />
+						</f:facet>
+						<otm:commandIcon tooltip="Gerar Currículo Escolar Digital" icon="#{msg_botoes.btn_icon_xml} iconePequeno" oncomplete="#{rich:component('panelAviso')}.show();" action="#{GestaoXmlGradeCurricularControle.selecionarMatrizCurricular}" render="formAviso" />
+						<otm:commandIcon tooltip="Download" icon="#{msg_botoes.btn_icon_download} iconePequeno" rendered="#{gestaoItens.documentoAssinadoVO.codigo ne 0}" oncomplete="#{rich:component('panelDocumentoAssinado')}.show();" action="#{GestaoXmlGradeCurricularControle.realizarMontagemCurriculoEscolarDigital}" render="formDocumentoAssinado" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="form:items" id="scResultadoConsulta" page="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.controleConsultaOtimizado.page}" scrollListener="#{GestaoXmlGradeCurricularControle.scrollerListener}" rendered="#{GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" render="form:panelBotoes" />
+					</f:facet>
+				</rich:dataTable>
+			</h:panelGroup>
+			<h:panelGroup id="panelBotoes">
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton value="gerar currículo escolar digital (lote)" styleClass="btn btn-primary pr20 pl20" icon="#{msg_botoes.btn_icon_xml_embutido}" oncomplete="#{rich:component('panelAvisoLote')}.show();" render="formAvisoLote" action="#{GestaoXmlGradeCurricularControle.limparDadosGeracaoCurriculoEscolarLote}" rendered="#{GestaoXmlGradeCurricularControle.apresentarBotaoLote}" marginButton="2px" />
+					<otm:commandButton value="lista erros" styleClass="btn btn-danger pr20 pl20" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelListaErroGeracaoCurriculo')}.show();" render="formListaErroGeracaoCurriculo" rendered="#{!empty GestaoXmlGradeCurricularControle.listaMensagensErro}" marginButton="2px" />
+					<otm:commandButton value="lista erros (lote)" styleClass="btn btn-danger pr20 pl20" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelListaErroGeracaoCurriculoLote')}.show();" render="formListaErroGeracaoCurriculoLote" rendered="#{!empty GestaoXmlGradeCurricularControle.gestaoXmlGradeCurricularVO.listaGestaoXmlGradeCurricularErro}" marginButton="2px" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row mn">
+				<otm:mensagem bean="#{GestaoXmlGradeCurricularControle}" />
+			</h:panelGroup>
+		</h:form>
+		<otm2:progressBar id="panelProgressBar" bean="#{GestaoXmlGradeCurricularControle}" oncomplete="#{GestaoXmlGradeCurricularControle.oncompleteModal}" render="panelProgressBar, msgFlutuante, form, formListaErroGeracaoCurriculoLote" modal="true" bar="progressBarVO">
+			<ui:define name="botoesADDProgressBar">
+				<h:panelGroup layout="block" styleClass="row mt40 text-center">
+					<a4j:commandLink id="forcarEncerramentoProgressBar" render="form, panelProgressBar" action="#{GestaoXmlGradeCurricularControle.progressBarVO.encerrar}" value="Parar Processamento" accesskey="1" styleClass="btn btn-danger btn-excluir">
+						<f:setPropertyActionListener value="true" target="#{GestaoXmlGradeCurricularControle.progressBarVO.forcarEncerramento}"></f:setPropertyActionListener>
+					</a4j:commandLink>
+				</h:panelGroup>
+			</ui:define>
+		</otm2:progressBar>
+	</ui:define>
+</ui:composition> </html>

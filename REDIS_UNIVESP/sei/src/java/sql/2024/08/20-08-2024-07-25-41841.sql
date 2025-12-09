@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS estagio ADD COLUMN IF NOT EXISTS datalimiteanalisenotificacao date

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_MovimentacaoFinanceira_tituloForm}" />
+	</ui:define>
+	
+	<ui:define name="conteudo">
+		<title><h:outputText value="#{msg_aplic.prt_MovimentacaoFinanceira_tituloForm}" /></title>
+		<h:form id="form">
+			<h:commandLink action="#{MovimentacaoFinanceiraControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-4">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				<h:selectOneMenu styleClass="form-control campos" id="consulta" value="#{MovimentacaoFinanceiraControle.controleConsulta.campoConsulta}">
+					<a4j:ajax event="change" render="form" execute="@this" />
+					<f:selectItems value="#{MovimentacaoFinanceiraControle.tipoConsultaCombo}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6 pt4" rendered="#{MovimentacaoFinanceiraControle.campoDiferenteDataSituacao}">
+				<otm:spacer width="100%" />
+				<h:inputText id="valorConsulta" size="100" rendered="#{MovimentacaoFinanceiraControle.campoDiferenteDataSituacao}" styleClass="form-control campos" value="#{MovimentacaoFinanceiraControle.controleConsulta.valorConsulta}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{MovimentacaoFinanceiraControle.campoSituacao}">
+				<h:outputText value="Situação" styleClass="field control-label tituloCampos"></h:outputText>
+				<h:selectOneMenu styleClass="form-control campos" id="consultaSituacao" value="#{MovimentacaoFinanceiraControle.controleConsulta.valorConsulta}">
+					<a4j:ajax event="change" render="form" execute="@this" />
+					<f:selectItems value="#{MovimentacaoFinanceiraControle.listaSituacaoMovimentacaoFinanceira}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{MovimentacaoFinanceiraControle.campoData}">
+				<h:outputText styleClass="field control-label tituloCampos" value="Valor da Consulta" rendered="#{MovimentacaoFinanceiraControle.campoData}" />
+				<otm:calendar id="valorConsultaData" value="#{MovimentacaoFinanceiraControle.controleConsulta.dataIni}" rendered="#{MovimentacaoFinanceiraControle.campoData}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{MovimentacaoFinanceiraControle.consultaPorCheque}">
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{MovimentacaoFinanceiraControle.consultaPorCheque}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaLancamentoFuturo_numeroCheque}" />
+					<h:inputText id="numeroConsultaPorCheque" maxlength="20" styleClass="form-control campos" size="30" value="#{MovimentacaoFinanceiraControle.numeroConsultaPorCheque}" onkeypress="aceitarSomenteValorNumerico(this)" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Cheque_sacado}" />
+					<h:inputText id="nomeSacadoConsultaPorCheque" maxlength="255" styleClass="form-control campos" size="30" value="#{MovimentacaoFinanceiraControle.nomeSacadoConsultaPorCheque}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2 pt4">
+				<otm:spacer width="100%"></otm:spacer>
+				<a4j:commandLink render="form" id="consultar" type="submit" value="#{msg_botoes.btn_consultar}" action="#{MovimentacaoFinanceiraControle.irPaginaInicial}" accesskey="2" styleClass="btn btn-default">
+					<i class="fas fa-search pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"> </i>
+					<f:setPropertyActionListener target="#{MovimentacaoFinanceiraControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+					<f:setPropertyActionListener target="#{MovimentacaoFinanceiraControle.controleConsultaOtimizado.page}" value="1" />
+					<f:setPropertyActionListener target="#{MovimentacaoFinanceiraControle.consultaDataScroller}" value="false" />
+				</a4j:commandLink>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+			<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MovimentacaoFinanceiraControle.controleConsultaOtimizado}" rendered="#{MovimentacaoFinanceiraControle.controleConsultaOtimizado.apresentarPaginador}" rows="10" var="movimentacaoFinanceiraItens">
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MovimentacaoFinanceira_codigo}" />
+					</f:facet>
+					<h:commandLink action="#{MovimentacaoFinanceiraControle.editar}" id="codigo" value="#{movimentacaoFinanceiraItens.codigo}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MovimentacaoFinanceira_data}" />
+					</f:facet>
+					<h:commandLink action="#{MovimentacaoFinanceiraControle.editar}" id="data" value="#{movimentacaoFinanceiraItens.data_Apresentar}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MovimentacaoFinanceira_responsavel}" />
+					</f:facet>
+					<h:commandLink action="#{MovimentacaoFinanceiraControle.editar}" id="responsavel" value="#{movimentacaoFinanceiraItens.responsavel.nome}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MovimentacaoFinanceira_contaCorrenteOrigem}" />
+					</f:facet>
+					<h:commandLink action="#{MovimentacaoFinanceiraControle.editar}" id="contaCorrenteOrigem" value="#{movimentacaoFinanceiraItens.contaCorrenteOrigem.numero}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MovimentacaoFinanceira_contaCorrenteDestino}" />
+					</f:facet>
+					<h:commandLink action="#{MovimentacaoFinanceiraControle.editar}" id="contaCorrenteDestino" value="#{movimentacaoFinanceiraItens.contaCorrenteDestino.numero}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MovimentacaoFinanceira_valor}" />
+					</f:facet>
+					<h:commandLink action="#{MovimentacaoFinanceiraControle.editar}" id="valor">
+						<h:outputText value="#{movimentacaoFinanceiraItens.valor}">
+							<f:converter converterId="FormatadorNumerico" />
+						</h:outputText>
+					</h:commandLink>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MovimentacaoFinanceira_situacao}" />
+					</f:facet>
+					<h:commandLink action="#{MovimentacaoFinanceiraControle.editar}" id="situacao" value="#{movimentacaoFinanceiraItens.situacao_Apresentar}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<otm:commandIcon render="form" action="#{MovimentacaoFinanceiraControle.editar}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+				</rich:column>
+
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller align="center" for="items" id="paginador" page="#{MovimentacaoFinanceiraControle.controleConsultaOtimizado.page}" scrollListener="#{MovimentacaoFinanceiraControle.scrollerListener}" rendered="#{MovimentacaoFinanceiraControle.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup layout="block" id="panelGridMensagens" styleClass="row">
+				<otm:mensagem bean="#{MovimentacaoFinanceiraControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton id="novo" action="#{MovimentacaoFinanceiraControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" tooltip="#{msg.msg_novo_dados}" accesskey="1" />
+			</h:panelGroup>
+		</h:form>
+		<script>
+			document.getElementById("form:valorConsulta").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

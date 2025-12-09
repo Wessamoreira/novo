@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets" xmlns="http://www.w3.org/1999/xhtml" xmlns:p="http://primefaces.org/ui" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:composite="http://java.sun.com/jsf/composite" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<composite:interface>
+    <composite:attribute name="id" required="true"/>
+    <composite:attribute name="convenioVO" required="false"/>
+    <composite:attribute name="parceiroVO" required="false"/>
+    <composite:attribute name="persistir" method-signature="void action()"/>
+    <composite:attribute name="manterModalConvenioAberto" required="false"/>
+    <composite:attribute name="bean" required="false"/>
+</composite:interface>
+
+<composite:implementation>
+    <p:dialog modal="true" hideEffect="fade" closeOnEscape="true" showEffect="fade" id="panel" widgetVar="#{panel}" onhide="fechar#{cc.attrs.id}()" onshow="document.getElementById('#{cc.clientId}:form:descricaoConvenio').focus();" styleClass="modalMaximizado" shadowOpacity="true" width="1024" height="600">
+        <f:facet name="header">
+            <h:outputText value="Criar Novo Convênio"/>
+        </f:facet>
+        <h:form id="form" prependId="false">
+            <h:panelGroup styleClass="row" layout="block">
+                <h:panelGroup styleClass="col-md-6" layout="block">
+                    <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_parceiro}"/>
+                    <h:selectOneMenu id="parceiro" styleClass="form-control camposObrigatorios" value="#{cc.attrs.parceiroVO.codigo}" disabled="true">
+                        <f:selectItems value="#{ConvenioControle.listaSelectItemParceiro}"/>
+                    </h:selectOneMenu>
+                </h:panelGroup>
+                <h:panelGroup styleClass="col-md-6" layout="block">
+                    <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_descricao}"/>
+                    <h:inputText id="descricaoConvenio" maxlength="100" styleClass="form-control camposObrigatorios" value="#{cc.attrs.convenioVO.descricao}"/>
+                </h:panelGroup>
+            </h:panelGroup>
+            <h:panelGroup styleClass="row" layout="block">
+                <h:panelGroup styleClass="col-md-3" layout="block" rendered="#{cc.attrs.convenioVO.tipoBolsaCusteadaParceiroParcela eq 'PE'}">
+                    <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_bolsaCusteadaParceiroParcela}"/>
+                    <h:inputText id="bolsaCusteadaParceiroParcelaPE" size="12" maxlength="12" styleClass="form-control campos" value="#{cc.attrs.convenioVO.bolsaCusteadaParceiroParcela}">
+                        <p:ajax event="change" listener="#{ConvenioControle.atualizarDescontoConvenio(cc.attrs.convenioVO)}" update="#{cc.clientId}:form"/>
+                        <f:converter converterId="FormatadorNumerico4Casas"/>
+                    </h:inputText>
+                </h:panelGroup>
+                <h:panelGroup styleClass="col-md-3" layout="block" rendered="#{cc.attrs.convenioVO.tipoBolsaCusteadaParceiroParcela ne 'PE'}">
+                    <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_bolsaCusteadaParceiroParcela}"/>
+                    <h:inputText id="bolsaCusteadaParceiroParcelaVL" size="12" maxlength="12" styleClass="form-control campos" value="#{cc.attrs.convenioVO.bolsaCusteadaParceiroParcela}">
+                        <p:ajax event="change" listener="#{ConvenioControle.atualizarDescontoConvenio(cc.attrs.convenioVO)}" update="#{cc.clientId}:form"/>
+                        <f:converter converterId="FormatadorNumerico2Casas"/>
+                    </h:inputText>
+                </h:panelGroup>
+                <h:panelGroup styleClass="col-md-3" layout="block">
+                    <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_tipoBolsaCusteadaParceiroParcela}"/>
+                    <h:selectOneMenu id="tipoBolsaCusteadaParceiroParcela" styleClass="form-control campos" value="#{cc.attrs.convenioVO.tipoBolsaCusteadaParceiroParcela}">
+                        <f:selectItems value="#{ConvenioControle.listaSelectItemTipoDescontoMatriculaConvenio}"/>
+                        <p:ajax event="change" listener="#{ConvenioControle.atualizarDescontoConvenio(cc.attrs.convenioVO)}" update="#{cc.clientId}:form"/>
+                    </h:selectOneMenu>
+                </h:panelGroup>
+                <h:panelGroup styleClass="col-md-6" layout="block">
+                    <h:panelGroup styleClass="col-md-12 pn" layout="block">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_abaterDescontoNoValorParcela}"/>
+                        <h:panelGroup styleClass="ml5">
+                            <otm:commandIcon id="helpAbaterDescontoNoValorParcela" tooltip="#{msg.help_abaterDescontoNoValorParcela}" icon="#{msg_botoes.btn_icon_info_embutido}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <otm:selectBooleanCheckbox id="abaterDescontoNoValorParcela" value="#{cc.attrs.convenioVO.abaterDescontoNoValorParcela}"/>
+                </h:panelGroup>
+            </h:panelGroup>
+            <h:panelGroup styleClass="row" layout="block">
+                <h:panelGroup styleClass="col-md-3" layout="block" rendered="#{cc.attrs.convenioVO.tipoBolsaCusteadaParceiroMatricula eq 'PE'}">
+                    <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_bolsaCusteadaParceiroMatricula}"/>
+                    <h:inputText id="bolsaCusteadaParceiroMatriculaPE" size="12" maxlength="12" styleClass="form-control campos" value="#{cc.attrs.convenioVO.bolsaCusteadaParceiroMatricula}">
+                        <p:ajax event="change" listener="#{ConvenioControle.atualizarDescontoConvenio(cc.attrs.convenioVO)}" update="#{cc.clientId}:form"/>
+                        <f:converter converterId="FormatadorNumerico4Casas"/>
+                    </h:inputText>
+                </h:panelGroup>
+                <h:panelGroup styleClass="col-md-3" layout="block" rendered="#{cc.attrs.convenioVO.tipoBolsaCusteadaParceiroMatricula ne 'PE'}">
+                    <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_bolsaCusteadaParceiroMatricula}"/>
+                    <h:inputText id="bolsaCusteadaParceiroMatriculaVL" size="12" maxlength="12" styleClass="form-control campos" value="#{cc.attrs.convenioVO.bolsaCusteadaParceiroMatricula}">
+                        <p:ajax event="change" listener="#{ConvenioControle.atualizarDescontoConvenio(cc.attrs.convenioVO)}" update="#{cc.clientId}:form"/>
+                        <f:converter converterId="FormatadorNumerico2Casas"/>
+                    </h:inputText>
+                </h:panelGroup>
+                <h:panelGroup styleClass="col-md-3" layout="block">
+                    <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_tipoBolsaCusteadaParceiroMatricula}"/>
+                    <h:selectOneMenu id="tipoBolsaCusteadaParceiroMatricula" styleClass="form-control campos" value="#{cc.attrs.convenioVO.tipoBolsaCusteadaParceiroMatricula}">
+                        <f:selectItems value="#{ConvenioControle.listaSelectItemTipoBolsaCusteadaParceiroParcelaConvenio}"/>
+                        <p:ajax event="change" listener="#{ConvenioControle.atualizarDescontoConvenio(cc.attrs.convenioVO)}" update="#{cc.clientId}:form"/>
+                    </h:selectOneMenu>
+                </h:panelGroup>
+                <h:panelGroup styleClass="col-md-6" layout="block">
+                    <h:panelGroup styleClass="col-md-12 pn" layout="block">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_abaterDescontoNoValorMatricula}"/>
+                        <h:panelGroup styleClass="ml5">
+                            <otm:commandIcon id="helpAbaterDescontoNoValorMatricula" tooltip="#{msg.help_abaterDescontoNoValorParcela}" icon="#{msg_botoes.btn_icon_info_embutido}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <otm:selectBooleanCheckbox id="abaterDescontoNoValorMatricula" value="#{cc.attrs.convenioVO.abaterDescontoNoValorMatricula}"/>
+                </h:panelGroup>
+            </h:panelGroup>
+            <h:panelGroup id="panelInformacoesAdicionalConvenio" styleClass="row" layout="block">
+                <h:panelGroup layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-3">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_tipoConvenio}"/>
+                        <h:selectOneMenu id="tipoFinanciamentoEstudantil" styleClass="form-control #{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio  ?  'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{cc.attrs.convenioVO.tipoFinanciamentoEstudantil}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:selectItems value="#{ConvenioControle.listaSelectItemTipoFinanciamentoEstudantil}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-3">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_cobertura}"/>
+                        <h:selectOneMenu id="cobertura" styleClass="form-control #{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio  ?  'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{cc.attrs.convenioVO.cobertura}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:selectItems value="#{ConvenioControle.listaSelectItemCoberturaConvenio}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:outputText styleClass="field control-label tituloCampos pn col-md-12" value="#{msg_aplic.prt_Convenio_requisitante}"/>
+                        <h:panelGroup layout="block" styleClass="col-md-4 pn">
+                            <h:inputText id="requisitante" readonly="true" size="10" maxlength="10" styleClass="form-control #{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio  ?  'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{cc.attrs.convenioVO.requisitante.matricula}"/>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="col-md-8 pn pl5">
+                            <h:inputText id="requisitante_nomePessoa" styleClass="form-control camposSomenteLeitura" readonly="true" size="30" value="#{cc.attrs.convenioVO.requisitante.pessoa.nome}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-3">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_dataRequisicao}"/>
+                        <otm:calendar id="dataRequisicao" value="#{cc.attrs.convenioVO.dataRequisicao}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-3">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_dataAssinatura}"/>
+                        <otm:calendar id="dataAssinatura" value="#{cc.attrs.convenioVO.dataAssinatura}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="#{cc.attrs.convenioVO.periodoIndeterminado  ? 'col-md-6' : 'col-md-3'}">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_periodoVigencia}"/>
+                        <h:selectOneMenu styleClass="form-control #{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio  ?  'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{cc.attrs.convenioVO.periodoIndeterminado}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <p:ajax render="#{cc.clientId}:form:panelInformacoesAdicionalConvenio" execute="formAdicionarConvenio:panelInformacoesAdicionalConvenio" event="change"/>
+                            <f:selectItem itemValue="false" itemLabel="Determinado"/>
+                            <f:selectItem itemValue="true" itemLabel="Indeterminado"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" rendered="#{!cc.attrs.convenioVO.periodoIndeterminado}" styleClass="col-md-3">
+                        <h:panelGroup layout="block" styleClass="pn col-md-12">
+                            <otm:spacer width="10px"/>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="pn col-md-5">
+                            <otm:calendar id="dataInicioVigencia" inputClass="form-control camposObrigatorios" value="#{cc.attrs.convenioVO.dataInicioVigencia}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="col-md-2 pt10 text-center">
+                            <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_a_periodoVigencia}"/>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="pn col-md-5">
+                            <otm:calendar id="dataFinalVigencia" inputClass="form-control camposObrigatorios" value="#{cc.attrs.convenioVO.dataFinalVigencia}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <h:panelGroup id="pgDescontoMatricula" layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-3"  rendered="${cc.attrs.convenioVO.tipoDescontoParcela eq 'PE'}">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_descontoParcela}"/>
+                        <h:inputText id="descontoParcelaPE" size="12" maxlength="12" styleClass="form-control campos" value="#{cc.attrs.convenioVO.descontoParcela}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:converter converterId="FormatadorNumerico4Casas"/>
+                        </h:inputText>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-3"  rendered="${cc.attrs.convenioVO.tipoDescontoParcela ne 'PE'}">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_descontoParcela}"/>
+                        <h:inputText id="descontoParcelaVL" size="12" maxlength="12" styleClass="form-control campos" value="#{cc.attrs.convenioVO.descontoParcela}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:converter converterId="FormatadorNumerico2Casas"/>
+                        </h:inputText>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-3">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_tipoDescontoParcela}"/>
+                        <h:selectOneMenu id="tipoDescontoParcela" styleClass="form-control campos" value="#{cc.attrs.convenioVO.tipoDescontoParcela}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:selectItems value="#{ConvenioControle.listaSelectItemTipoBolsaCusteadaParceiroParcelaConvenio}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" styleClass="col-md-3" rendered="${cc.attrs.convenioVO.tipoDescontoMatricula eq 'PE'}">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_descontoMatricula}"/>
+                        <h:inputText id="descontoMatriculaPE" size="12" maxlength="12" styleClass="form-control campos" value="#{cc.attrs.convenioVO.descontoMatricula}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:converter converterId="FormatadorNumerico4Casas"/>
+                        </h:inputText>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-3" rendered="${cc.attrs.convenioVO.tipoDescontoMatricula ne 'PE'}">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_descontoMatricula}"/>
+                        <h:inputText id="descontoMatriculaVL" size="12" maxlength="12" styleClass="form-control campos" value="#{cc.attrs.convenioVO.descontoMatricula}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:converter converterId="FormatadorNumerico2Casas"/>
+                        </h:inputText>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-3">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_tipoDescontoMatricula}"/>
+                        <h:selectOneMenu id="tipoDescontoMatricula" styleClass="form-control campos" value="#{cc.attrs.convenioVO.tipoDescontoMatricula}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:selectItems value="#{ConvenioControle.listaSelectItemTipoBolsaCusteadaParceiroParcelaConvenio}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_centroReceitaMatricula}"/>
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:selectOneMenu styleClass="form-control campos" id="centroReceitaMatriculaPar" value="#{cc.attrs.convenioVO.centroReceitaMatricula.codigo}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                                <f:selectItems value="#{ConvenioControle.listaSelectItemCentroReceita}"/>
+                            </h:selectOneMenu>
+                            <h:panelGroup styleClass="append-icon right mr10">
+                                <otm:commandIcon update="#{cc.clientId}:form:centroReceitaMatriculaPar" icon="#{msg_botoes.btn_icon_atualizar_embutido}" tooltip="Atualizar Lista Centro Receita" action="#{ConvenioControle.montarListaSelectItemCentroReceita}"/>
+                                <otm:commandIcon id="help_centroReceitaMatricula" icon="#{msg_botoes.btn_icon_info_embutido} ml5" tooltip="#{msg.msg_Convenio_centroReceitaMatricula}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_centroReceitaMensalidade}"/>
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:selectOneMenu styleClass="form-control campos" value="#{cc.attrs.convenioVO.centroReceitaMensalidade.codigo}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                                <f:selectItems value="#{ConvenioControle.listaSelectItemCentroReceita}"/>
+                            </h:selectOneMenu>
+                            <h:panelGroup styleClass="append-icon right mr10">
+                                <otm:commandIcon update="#{cc.clientId}:form" icon="#{msg_botoes.btn_icon_atualizar_embutido}" tooltip="Atualizar Lista Centro Receita" action="#{ConvenioControle.montarListaSelectItemCentroReceita}"/>
+                                <otm:commandIcon id="help_centroReceitaMensalidade" icon="#{msg_botoes.btn_icon_info_embutido} ml5" tooltip="#{msg.msg_Convenio_centroReceitaMensalidade}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-12">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_preRequisitos}"/>
+                        <h:inputTextarea id="preRequisitos" rows="2" cols="62" styleClass="form-control #{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio} ? 'camposSomenteLeitura' : 'camposObrigatoriosTextArea'" value="#{cc.attrs.convenioVO.preRequisitos}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_formaRecebimentoParceiro}"/>
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:selectOneMenu id="formaRecebimentoParceiro" styleClass="form-control #{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio  ?  'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{cc.attrs.convenioVO.formaRecebimentoParceiro.codigo}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                                <f:selectItems value="#{ConvenioControle.listaSelectItemFormaPagamento}"/>
+                            </h:selectOneMenu>
+                            <h:panelGroup styleClass="append-icon right mr10">
+                                <otm:commandIcon id="atualizar_formaPagamento" action="#{ConvenioControle.montarListaSelectItemFormaPagamento}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" update="#{cc.clientId}:form:formaRecebimentoParceiro"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-3">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_diaBaseRecebimentoParceiro}"/>
+                        <h:inputText id="diaBaseRecebimentoParceiro" size="1" maxlength="10" styleClass="form-control campos" value="#{cc.attrs.convenioVO.diaBaseRecebimentoParceiro}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-3">
+                        <h:outputText styleClass="field control-label tituloCampos col-md-12 pn" value="#{msg_aplic.prt_Convenio_possuiDescontoAntecipacao}"/>
+                        <otm:selectBooleanCheckbox id="possuiDescontoAntecipacao" value="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <p:ajax event="change" listener="#{ConvenioControle.montarListasDescontosProgressivos}" update="#{cc.clientId}:form"/>
+                        </otm:selectBooleanCheckbox>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row" rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}">
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_descontoProgressivoParceiro}"/>
+                        <h:selectOneMenu rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" id="listaDescontoProgressivoParceiro" styleClass="form-control campos" value="#{cc.attrs.convenioVO.descontoProgressivoParceiro.codigo}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:selectItems value="#{ConvenioControle.listaSelectItemDescontoProgressivoParceiro}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" styleClass="col-md-6">
+                        <h:outputText rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_descontoProgressivoAluno}"/>
+                        <h:selectOneMenu rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" id="listaDescontoProgressivoAluno" styleClass="form-control campos" value="#{cc.attrs.convenioVO.descontoProgressivoAluno.codigo}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <f:selectItems value="#{ConvenioControle.listaSelectItemDescontoProgressivoAluno}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row" rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}">
+                    <h:panelGroup layout="block" rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" styleClass="col-md-6">
+                        <h:outputText styleClass="field control-label tituloCampos col-md-12 pn" value="#{msg_aplic.prt_Convenio_aplicarDescontoProgressivoMatriculaParceiro}"/>
+                        <otm:selectBooleanCheckbox id="aplicarDescontoProgressivoMatriculaParceiro" rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" value="#{cc.attrs.convenioVO.aplicarDescontoProgressivoMatriculaParceiro}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" styleClass="col-md-6">
+                        <h:outputText styleClass="field control-label tituloCampos  col-md-12 pn" rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" value="#{msg_aplic.prt_Convenio_aplicarDescontoProgressivoMatricula}"/>
+                        <otm:selectBooleanCheckbox id="aplicarDescontoProgressivoMatricula" rendered="#{cc.attrs.convenioVO.possuiDescontoAntecipacao}" value="#{cc.attrs.convenioVO.aplicarDescontoProgressivoMatricula}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_aplicarSobreValorBaseReduzidoIncrementalmenteOutrosConvenios}"/>
+                            <h:panelGroup styleClass="ml5">
+                                <otm:commandIcon id="help_aplicarSobreValorBaseReduzidoIncrementalmenteOutrosConvenios" tooltip="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConvenios}" icon="#{msg_botoes.btn_icon_info_embutido}"/>
+                                <p:commandLink id="help_aplicarSobreValorBaseReduzidoIncrementalmenteOutrosConveniosExA" disabled="true">
+                                    <i class="#{msg_botoes.btn_icon_info_embutido} fs12 ml5"/>
+                                    <otm:tooltip followMouse="false" direction="topLeft" styleClass="tooltipRich" target="help_aplicarSobreValorBaseReduzidoIncrementalmenteOutrosConveniosExA" showDelay="500">
+                                        <h:panelGroup layout="block" styleClass="row">
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA01}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA02}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA03}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA04}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA05}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA06}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA07}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA08}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA09}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA10}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA11}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA12}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA13}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExA14}"/>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </otm:tooltip>
+                                </p:commandLink>
+                                <p:commandLink id="help_aplicarSobreValorBaseReduzidoIncrementalmenteOutrosConveniosExB" disabled="true">
+                                    <i class="#{msg_botoes.btn_icon_info_embutido} fs12 ml5"/>
+                                    <otm:tooltip followMouse="false" direction="topLeft" styleClass="tooltipRich" target="help_aplicarSobreValorBaseReduzidoIncrementalmenteOutrosConveniosExB" showDelay="500">
+                                        <h:panelGroup layout="block" styleClass="row">
+                                            <h:panelGroup layout="block" styleClass="col-md-12">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB01}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB02}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB03}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB04}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB05}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB06}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB07}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB08}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB09}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB10}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB11}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB12}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB13}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB14}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB15}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExB16}"/>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </otm:tooltip>
+                                </p:commandLink>
+
+                                <p:commandLink id="help_aplicarSobreValorBaseReduzidoIncrementalmenteOutrosConveniosExC" disabled="true">
+                                    <i class="#{msg_botoes.btn_icon_info_embutido} fs12 ml5"/>
+                                    <otm:tooltip followMouse="false" direction="topLeft" styleClass="tooltipRich" target="help_aplicarSobreValorBaseReduzidoIncrementalmenteOutrosConveniosExC" showDelay="500">
+                                        <h:panelGroup layout="block" styleClass="row">
+                                            <h:panelGroup layout="block" styleClass="col-md-12">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC01}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC02}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC03}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC04}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC05}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC06}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC07}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC08}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC09}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC10}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC11}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC12}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC13}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC14}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC15}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC16}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="col-md-12 ml20">
+                                                <h:outputText styleClass="field control-label tituloCampos fs10" value="#{msg.help_convenio_aplicarSobreValorBaseDeduzidoValorOutrosConveniosExC17}"/>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </otm:tooltip>
+                                </p:commandLink>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <otm:selectBooleanCheckbox disabled="#{!cc.attrs.convenioVO.calculadoEmCimaValorLiquido or !LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}" id="aplicarSobreValorBaseDeduzidoValorOutrosConvenios" value="#{cc.attrs.convenioVO.aplicarSobreValorBaseDeduzidoValorOutrosConvenios}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_ordemPrioridadeParaCalculo}"/>
+                            <h:panelGroup styleClass="ml5">
+                                <otm:commandIcon id="help_ordemPrioridadeParaCalculo" icon="#{msg_botoes.btn_icon_info_embutido}" tooltip="#{msg.help_Convenio_ordemPrioridadeParaCalculo}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <h:inputText id="ordemPrioridadeParaCalculo" value="#{cc.attrs.convenioVO.ordemPrioridadeParaCalculo}" disabled="#{!cc.attrs.convenioVO.calculadoEmCimaValorLiquido or !LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}" styleClass="form-control campos" size="2" maxlength="2"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_calcularConvenioEmCimaValorLiquido}"/>
+                            <h:panelGroup styleClass="ml4">
+                                <otm:commandIcon id="help_aplicarSobreValorLiquido" tooltip="#{msg.help_Convenio_aplicarSobreValorLiquido}" icon="#{msg_botoes.btn_icon_info_embutido}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <otm:selectBooleanCheckbox id="calcularEmCimaValorLiquido" value="#{cc.attrs.convenioVO.calculadoEmCimaValorLiquido}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                                <p:ajax event="change" listener="#{ConvenioControle.atualizarAplicarSobreValorBaseDeduzidoValorOutrosConvenios(cc.attrs.convenioVO)}" render="#{cc.clientId}:form:ordemPrioridadeParaCalculo, #{cc.clientId}:form:aplicarSobreValorBaseDeduzidoValorOutrosConvenios"/>
+                            </otm:selectBooleanCheckbox>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_removerDescontoRenovacao}"/>
+                            <h:panelGroup styleClass="ml5">
+                                <otm:commandIcon id="helpRemoverDescontoInstituicao" icon="#{msg_botoes.btn_icon_info_embutido}" tooltip="#{msg.msg_Convenio_removerDescontoRenovacao}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <otm:selectBooleanCheckbox id="removerDescontoRenovacao" value="#{cc.attrs.convenioVO.removerDescontoRenovacao}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <p:ajax event="change" update="#{cc.clientId}:form"/>
+                        </otm:selectBooleanCheckbox>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_convenioInadimplenteBloqueaMatricula}"/>
+                            <h:panelGroup styleClass="ml5">
+                                <otm:commandIcon id="help_convenioInadimplenteBloqueaMatricula" icon="#{msg_botoes.btn_icon_info_embutido}" tooltip="#{msg.help_Convenio_convenioInadimplenteBloqueaMatricula}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <otm:selectBooleanCheckbox id="convenioInadimplenteBloqueaMatricula" value="#{cc.attrs.convenioVO.convenioInadimplenteBloqueaMatricula}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_gerarParcelasConvenioVencidasComDataAtaulizadaParaMesAtual}"/>
+                            <h:panelGroup styleClass="ml5">
+                                <otm:commandIcon id="helpgerarParcelasConvenioVencidasComDataAtaulizadaParaMesAtual" icon="#{msg_botoes.btn_icon_info_embutido}" tooltip="#{msg.msg_Convenio_gerarParcelasConvenioVencidasComDataAtaulizadaParaMesAtual}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <otm:selectBooleanCheckbox value="#{cc.attrs.convenioVO.gerarParcelasConvenioVencidasComDataAtaulizadaParaMesAtual}" id="gerarParcelasConvenioVencidasComDataAtaulizadaParaMesAtual" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="row">
+                    <h:panelGroup layout="block" styleClass="col-md-6">
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_gerarRestituicaoAlunoValorJaPagoRelativoAoConvenio}"/>
+                            <h:panelGroup styleClass="ml5">
+                                <otm:commandIcon id="helpgerarRestituicaoAlunoValorJaPagoRelativoAoConvenio" icon="#{msg_botoes.btn_icon_info_embutido}" tooltip="#{msg.msg_Convenio_gerarRestituicaoAlunoValorJaPagoRelativoAoConvenio}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <otm:selectBooleanCheckbox id="gerarRestituicaoAlunoValorJaPagoRelativoAoConvenio" value="#{cc.attrs.convenioVO.gerarRestituicaoAlunoValorJaPagoRelativoAoConvenio}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}">
+                            <p:ajax event="change" execute="@form" update="#{cc.clientId}:form"/>
+                        </otm:selectBooleanCheckbox>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="col-md-6" id="pgNomeCentroDespesa" rendered="#{cc.attrs.convenioVO.gerarRestituicaoAlunoValorJaPagoRelativoAoConvenio}">
+                        <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Convenio_categoriaDespesaRestituicaoConvenio}"/>
+                        <h:panelGroup layout="block" styleClass="col-md-12 pn">
+                            <h:inputText id="nomeCentroDespesa" size="40" maxlength="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{cc.attrs.convenioVO.categoriaDespesaRestituicaoConvenio.descricao}" disabled="#{!LoginControle.permissaoAcessoMenuVO.permiteAlterarInformacoesAdicionaisConvenio}"/>
+                            <h:panelGroup styleClass="append-icon right">
+                                <otm:commandIcon tooltip="Consultar Categoria Despesa" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="PF('panelCentroDespesa').show();" update="formCentroDespesa"/>
+                                <otm:spacer width="4px"/>
+                                <otm:commandIcon action="#{ConvenioControle.limparDadoscategoriaDespesaRestituicaoConvenio(cc.attrs.convenioVO)}" tooltip="Limpar Categoria Despesa" update="#{cc.clientId}:form:pgNomeCentroDespesa" icon="#{msg_botoes.btn_icon_limpar_embutido}"/>
+                                <otm:spacer width="4px"/>
+                                <otm:commandIcon id="help_categoriaDespesaRestituicaoConvenio" icon="#{msg_botoes.btn_icon_info_embutido}" tooltip="#{msg.msg_Convenio_categoriaDespesaRestituicaoConvenio}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:panelGroup>
+            <otm:mensagem bean="#{cc.attrs.bean}"/>
+            <h:panelGroup layout="block" styleClass="back-gray group-btn-modal-flutuante">
+                <otm:commandButton action="#{cc.attrs.persistir}" update="#{cc.clientId}:form" value="#{msg_bt.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" oncomplete="#{cc.attrs.manterModalConvenioAberto}"/>
+                <otm:spacer width="10px"/>
+                <otm:commandButton alt="Cancelar" title="Cancelar" value="Cancelar" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" oncomplete="RichFaces.$('#{cc.clientId}:panel').hide();"/>
+            </h:panelGroup>
+        </h:form>
+    </p:dialog>
+</composite:implementation>
+</html>

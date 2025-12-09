@@ -1,0 +1,1 @@
+alter table if exists configuracaoacademico add column if not exists habilitarinclusaodisciplinadependenciaprimeirodepoisregulares boolean default false;

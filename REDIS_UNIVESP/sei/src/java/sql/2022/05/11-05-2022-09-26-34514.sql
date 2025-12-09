@@ -1,0 +1,1 @@
+alter table if exists configuracaonotafiscal alter column nomenaturezaoperacaointerestadual type text;

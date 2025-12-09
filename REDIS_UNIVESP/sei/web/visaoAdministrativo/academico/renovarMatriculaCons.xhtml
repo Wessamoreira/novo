@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_RenovarMatricula_tituloForm}" />
+	</ui:define>
+	
+	<ui:define name="conteudo">
+		<h:form id="formCadastro">
+			<h:panelGroup layout="block" id="dadosConsulta" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					<h:selectOneMenu styleClass="form-control campos" id="consulta" value="#{RenovarMatriculaControle.controleConsulta.campoConsulta}">
+						<a4j:ajax event="change" listener="#{RenovarMatriculaControle.limparCamposBusca}" oncomplete="#{!RenovarMatriculaControle.apresentarCampoData} ? focus('formCadastro:valorConsulta') : focus('formCadastro:valorConsultaData:valorConsultaDataInputDate')" render="formCadastro:dadosConsulta, formCadastro:dadosConsultaAdicional" />
+						<f:selectItems value="#{RenovarMatriculaControle.tipoConsultaCombo}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" rendered="#{!RenovarMatriculaControle.apresentarCampoData}" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{empty RenovarMatriculaControle.controleConsulta.campoConsulta or RenovarMatriculaControle.controleConsulta.campoConsulta eq 'nomePessoa'}" value="Nome Aluno" />
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenovarMatriculaControle.controleConsulta.campoConsulta eq 'nomeCurso'}" value="Nome Curso" />
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenovarMatriculaControle.controleConsulta.campoConsulta eq 'matricula'}" value="Número Matrícula" />
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenovarMatriculaControle.controleConsulta.campoConsulta eq 'registroAcademico'}" value="Número Registro Acadêmico" />
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenovarMatriculaControle.controleConsulta.campoConsulta eq 'cpf'}" value="Número CPF" />
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{RenovarMatriculaControle.apresentarCampoTurma}" value="Turma" />
+					<h:panelGroup layout="block" styleClass="pn col-md-12">
+						<h:inputText id="valorConsulta" size="50" maxlength="#{RenovarMatriculaControle.controleConsulta.campoConsulta eq 'cpf' ? 14 : 255}" onkeyup="#{RenovarMatriculaControle.mascaraConsulta}" disabled="#{RenovarMatriculaControle.disabilitarCampoTurma}" styleClass="form-control #{RenovarMatriculaControle.validarDadosStyleClassCampo}" value="#{RenovarMatriculaControle.controleConsulta.valorConsulta}" />
+						<h:panelGroup rendered="#{RenovarMatriculaControle.apresentarCampoTurma}" styleClass="append-icon right">
+							<otm:commandIcon id="consultaDadosTurma" tooltip="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" action="#{RenovarMatriculaControle.limparConsultaTurma}" icon="#{msg_botoes.btn_icon_lupa_embutido}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" rendered="#{RenovarMatriculaControle.apresentarComboBoxFiltroTurno}" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Turno" />
+					<h:selectOneMenu styleClass="form-control campos" id="valorConsultaTurno" value="#{RenovarMatriculaControle.filtroTurno}">
+						<f:selectItems value="#{RenovarMatriculaControle.listaSelectItemTurno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" rendered="#{RenovarMatriculaControle.apresentarCampoData}" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Data Matrícula" />
+					<otm:calendar id="valorConsultaData" rendered="#{RenovarMatriculaControle.apresentarCampoData}" value="#{RenovarMatriculaControle.valorConsultaData}" inputClass="form-control camposObrigatorios" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RenovarMatriculaControle.apresentarComboBoxSituacao}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Situação" />
+					<h:selectOneMenu styleClass="form-control campos" id="valorConsultaSituacao" rendered="#{RenovarMatriculaControle.apresentarComboBoxSituacao}" value="#{RenovarMatriculaControle.filtroSituacaoMatriculaPeriodo}">
+						<f:selectItems value="#{RenovarMatriculaControle.listaSelectItemSituacaoMatriculaPeriodoFiltro}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{RenovarMatriculaControle.apresentarCampoTurma}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Situação" />
+					<h:selectOneMenu styleClass="form-control campos" id="valorConsultaSituacaoTurma" rendered="#{RenovarMatriculaControle.apresentarCampoTurma}" value="#{RenovarMatriculaControle.situacaoFiltroTurma}">
+						<f:selectItems value="#{RenovarMatriculaControle.listaSelectItemSituacaoFiltroTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" rendered="#{RenovarMatriculaControle.isApresentarAno}" styleClass="col-md-1">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_ano}" />
+					<h:inputText id="anoAluno" styleClass="form-control campos" size="4" maxlength="4" value="#{RenovarMatriculaControle.ano}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" rendered="#{RenovarMatriculaControle.isApresentarSemestre}" styleClass="col-md-1">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoNota_semestre}" />
+					<h:selectOneMenu id="semestreAluno" styleClass="form-control campos" value="#{RenovarMatriculaControle.semestre}">
+						<f:selectItems value="#{RenovarMatriculaControle.listaSelectItemSemestre}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 m5">
+					<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{RenovarMatriculaControle.controleConsultaOtimizado.apresentarPaginador}" />
+					<h:panelGroup layout="block" styleClass="#{RenovarMatriculaControle.controleConsultaOtimizado.apresentarPaginador ? 'col-md-4' : 'col-md-12'} text-center">
+						<a4j:commandLink id="consultar" type="submit" styleClass="botoes btn btn-default btn-consultar" value="#{msg_bt.btn_consultar}" render="items, scrollerItems" action="#{RenovarMatriculaControle.consultar}" accesskey="2">
+							<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+							<f:setPropertyActionListener target="#{RenovarMatriculaControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+							<f:setPropertyActionListener target="#{RenovarMatriculaControle.controleConsultaOtimizado.page}" value="1" />
+						</a4j:commandLink>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4 float-right" rendered="#{RenovarMatriculaControle.controleConsultaOtimizado.apresentarPaginador}">
+						<h:panelGroup layout="block" styleClass="col-md-5"></h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-5"></h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 border rounded p5 text-center">
+							<a4j:commandLink render="formCadastro" action="#{RenovarMatriculaControle.mudarLayoutConsulta}">
+								<h:panelGroup style="color: black;" styleClass="#{RenovarMatriculaControle.versaoAntiga ? 'fas fa-check-square fs16 mr5 ': 'fas fa-table fs16 mr5'}"></h:panelGroup>
+							</a4j:commandLink>
+							<a4j:commandLink render="formCadastro" action="#{RenovarMatriculaControle.mudarLayoutConsulta2}">
+								<h:panelGroup style="color: black;" styleClass="#{RenovarMatriculaControle.versaoNova ? 'fas fa-check-square fs16 ': 'fas fa-th-list fs16'}"></h:panelGroup>
+							</a4j:commandLink>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+
+			<style>
+.scroll::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #9e9a9a !important;
+	scrollbar-color: #9e9a9a transparent !important;
+	height: 30px !important;
+}
+
+.border-bottom-list {
+	border-bottom: solid 2px #cacaca !important;
+}
+
+.tituloCampos2 {
+	color: #343a38 !important;
+	font-size: 12px;
+	font-weight: 510;
+	line-height: 23px !important;
+}
+</style>
+
+			<h:panelGroup id="listaConsulta">
+
+				<h:panelGroup layout="block" styleClass="row scroll" style="overflow: scroll;" rendered="#{RenovarMatriculaControle.controleConsultaOtimizado.apresentarPaginador and RenovarMatriculaControle.versaoAntiga}">
+					<rich:dataTable id="items" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" rowKeyVar="row" value="#{RenovarMatriculaControle.controleConsultaOtimizado}" rows="8" var="matriculaPeriodoItens" rendered="#{RenovarMatriculaControle.controleConsultaOtimizado.apresentarPaginador}">
+						<rich:column style="width: 115px;">
+							<f:facet name="header">
+								<h:outputText style="font-size:11px" value="#{msg_aplic.prt_Matricula_matricula}" />
+							</f:facet>
+							<h:outputText style="font-size:11px" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" value="#{matriculaPeriodoItens.matriculaVO.matricula}" />
+							<h:commandLink style="font-size:11px" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" id="matricula" value="#{matriculaPeriodoItens.matriculaVO.matricula}" />
+						</rich:column>
+						<rich:column style="width: 115px;">
+							<f:facet name="header">
+								<h:outputText style="font-size:11px" value="#{msg_aplic.prt_Matricula_nomeAluno}" />
+							</f:facet>
+							<h:outputText style="font-size:11px" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" value="#{matriculaPeriodoItens.matriculaVO.aluno.nome}" />
+							<h:commandLink style="font-size:11px" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" id="nomeAluno" value="#{matriculaPeriodoItens.matriculaVO.aluno.nome}" />
+						</rich:column>
+						<rich:column style="width: 115px;">
+							<f:facet name="header">
+								<h:outputText style="font-size:11px" value="#{msg_aplic.prt_Pessoa_registroAcademico}" />
+							</f:facet>
+							<h:outputText style="font-size:11px" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" value="#{matriculaPeriodoItens.matriculaVO.aluno.registroAcademico}" />
+							<h:commandLink style="font-size:11px" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" id="registroAcademico" value="#{matriculaPeriodoItens.matriculaVO.aluno.registroAcademico}" />
+						</rich:column>
+						<rich:column style="width: 200px;">
+							<f:facet name="header">
+								<h:outputText style="font-size:11px" value="#{msg_aplic.prt_Matricula_curso}" />
+							</f:facet>
+							<h:outputText style="font-size:11px" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" value="#{matriculaPeriodoItens.matriculaVO.curso.nome} - #{matriculaPeriodoItens.unidadeEnsinoCursoVO.turno.nome}" />
+							<h:commandLink style="font-size:11px" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" title="#{matriculaPeriodoItens.matriculaVO.unidadeEnsino.nome}" id="nomeCurso" value="#{matriculaPeriodoItens.matriculaVO.curso.nome} - #{matriculaPeriodoItens.unidadeEnsinoCursoVO.turno.nome}" />
+						</rich:column>
+						<rich:column style="width: 143px;">
+							<f:facet name="header">
+								<h:outputText style="font-size:11px" value="#{msg_aplic.prt_MatriculaPeriodo_turma}" />
+							</f:facet>
+							<h:outputText style="font-size:11px" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" value="#{matriculaPeriodoItens.turma.identificadorTurma}" />
+							<h:commandLink style="font-size:11px" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" id="nomeTurma" value="#{matriculaPeriodoItens.turma.identificadorTurma}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText style="font-size:11px" value="#{msg_aplic.prt_MatriculaPeriodo_periodoLetivoMatricula}" />
+							</f:facet>
+							<h:outputText style="font-size:11px" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" value="#{matriculaPeriodoItens.obterDescricaoPeriodoLetivo}" />
+							<h:commandLink style="font-size:11px" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" id="periodo" value="#{matriculaPeriodoItens.obterDescricaoPeriodoLetivo}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText style="font-size:11px" value="Situação Atual Matrícula" />
+							</f:facet>
+							<h:outputText style="font-size:11px" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" value="#{matriculaPeriodoItens.matriculaVO.situacao_Apresentar}" />
+							<a4j:commandLink style="font-size:11px" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" render="form" action="#{RenovarMatriculaControle.editar}" id="situacaoAtual" value="#{matriculaPeriodoItens.matriculaVO.situacao_Apresentar}" />
+						</rich:column>
+						<rich:column style="vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText style="font-size:11px" value="Situação Período" />
+							</f:facet>
+							<h:outputText style="font-size:11px" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" value="#{matriculaPeriodoItens.situacaoMatriculaPeriodo_Apresentar}" />
+							<h:commandLink style="font-size:11px" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" id="semestreAno" value="#{matriculaPeriodoItens.situacaoMatriculaPeriodo_Apresentar}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:commandIcon id="liberarAtivacaoUltimaMatriculaPeriodoAluno" style="color:#5252ce" tooltip="Ativar Situação Período do Aluno" action="#{RenovarMatriculaControle.carregarDadosMatriculaPeriodoAlterarUltimaSituacao}" rendered="#{RenovarMatriculaControle.liberarAtivacaoUltimaMatriculaPeriodo and (matriculaPeriodoItens.permitirAtivarUltimaMatriculaPeriodoSituacaoFormada || matriculaPeriodoItens.permitirAtivarUltimaMatriculaPeriodoSituacaoFinalizada)}" icon="#{msg_botoes.btn_icon_ativar_embutido} iconePequeno" onclick="#{rich:component('liberarAtivacaoMatriculaPeriodo')}.show()" />
+							</h:panelGroup>
+						</rich:column>
+<!-- 						<rich:column> -->
+<!-- 							<f:facet name="header"> -->
+<!-- 								<h:outputText style="font-size:11px" value="#{msg_aplic.prt_MatriculaPeriodo_situacaoPeriodo}" /> -->
+<!-- 							</f:facet> -->
+<!-- 							<h:outputText style="font-size:11px" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" value="#{matriculaPeriodoItens.situacao_Apresentar}" /> -->
+<!-- 							<a4j:commandLink style="font-size:11px" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" render="form" action="#{RenovarMatriculaControle.editar}" id="situacao" value="#{matriculaPeriodoItens.situacao_Apresentar}" /> -->
+<!-- 						</rich:column> -->
+						<rich:column style="width: 147px;">
+							<f:facet name="header">
+								<h:outputText style="font-size:11px" value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<h:panelGroup id="iconaviso" rendered="#{matriculaPeriodoItens.matriculaVO.alunoConcluiuDisciplinasRegulares}">
+								<span class="#{msg_botoes.btn_icon_aviso} iconePequeno border-radius-all" style="position: relative; bottom: 10px;" />
+							</h:panelGroup>
+							<rich:tooltip target="iconaviso" rendered="#{matriculaPeriodoItens.matriculaVO.alunoConcluiuDisciplinasRegulares}">
+								<h:panelGroup>
+									<h:outputText value="Este Aluno Concluíu Todas as Disciplinas Regulares da Matrícula !" />
+								</h:panelGroup>
+							</rich:tooltip>
+							<otm:commandIcon action="#{RenovarMatriculaControle.editar}" rendered="#{matriculaPeriodoItens.permiteAlteracaoPeloUsuario and !matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" tooltip="Alterar Dados da Matrícula" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+							<otm:commandIcon action="#{RenovarMatriculaControle.acessarMatriculaParaImpressaoAcompanhamento}" tooltip="Visualizar Matrícula" icon="fas fa-eye  btn-white btn-primary light iconePequeno" />
+							<h:panelGroup id="panel_info">
+								<i class="#{msg_botoes.btn_icon_lupa} border-radius-all iconePequeno"> </i>
+								<rich:tooltip followMouse="false" horizontalOffset="0" verticalOffset="0" direction="auto" style="width:70%; height: 400px;z-index:3000" target="panel_info">
+									<h:panelGroup styleClass="row border rounded bg-gray-100" layout="block">
+										<h:panelGroup styleClass="col-md-4 text-center" layout="block">
+											<h:outputText styleClass="font-weight-bold btn-block fs13" value="Unidade Ensino" />
+											<h:outputText styleClass="tituloCampos" value="#{matriculaPeriodoItens.matriculaVO.unidadeEnsino.nome}" />
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-4 text-center" layout="block">
+											<h:outputText styleClass="font-weight-bold btn-block fs13" value="Grade Curricular Atual" />
+											<h:outputText styleClass="tituloCampos" value="#{matriculaPeriodoItens.matriculaVO.gradeCurricularAtual.nome}" />
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-4 text-center" layout="block" rendered="#{matriculaPeriodoItens.matriculaVO.gradeCurricularAtual.codigo ne matriculaPeriodoItens.gradeCurricular.codigo}">
+											<h:outputText styleClass="font-weight-bold btn-block fs13" value="Grade Curricular No Período" />
+											<h:outputText styleClass="tituloCampos" rendered="#{matriculaPeriodoItens.matriculaVO.gradeCurricularAtual.codigo ne matriculaPeriodoItens.gradeCurricular.codigo}" value="#{matriculaPeriodoItens.gradeCurricular.nome}" />
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-4 text-center mt5" layout="block" rendered="#{!empty matriculaPeriodoItens.processoMatriculaVO.descricao}">
+											<h:outputText styleClass="font-weight-bold btn-block fs13" value="#{msg_aplic.prt_ProcessoMatricula_tituloForm}" />
+											<h:outputText styleClass="tituloCampos" value="#{matriculaPeriodoItens.processoMatriculaVO.descricao}" />
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-4 text-center mt5" layout="block" rendered="#{!empty matriculaPeriodoItens.planoFinanceiroCurso.descricao}">
+											<h:outputText styleClass="font-weight-bold btn-block fs13" value="#{msg_aplic.prt_PlanoFinanceiroCurso_tituloForm}" />
+											<h:outputText styleClass="tituloCampos" value="#{matriculaPeriodoItens.planoFinanceiroCurso.descricao}" />
+										</h:panelGroup>
+										<h:panelGroup styleClass="col-md-4 text-center mt5" layout="block" rendered="#{!empty matriculaPeriodoItens.condicaoPagamentoPlanoFinanceiroCurso.descricao}">
+											<h:outputText styleClass="font-weight-bold btn-block fs13" value="#{msg_aplic.prt_CondicaoPagamento_tituloForm}" />
+											<h:outputText styleClass="tituloCampos" value="#{matriculaPeriodoItens.condicaoPagamentoPlanoFinanceiroCurso.descricao}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</rich:tooltip>
+							</h:panelGroup>
+							<otm:commandIcon tooltip="Follow-UP Prospect" icon="#{msg_botoes.btn_icon_followup} iconePequeno" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" oncomplete="window.open('../../ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigoPessoa&amp;valor=#{matriculaPeriodoItens.matriculaVO.aluno.codigo}','FollowUP','resizable=yes,maximize=yes,fullscreen=yes,scrollbars=yes');" rendered="#{LoginControle.permissaoAcessoMenuVO.followUpProspect}" />
+							<otm:commandIcon rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula and matriculaPeriodoItens.matriculaVO.matriculaSuspensa and matriculaPeriodoItens.situacaoMatriculaPeriodo eq 'PR' and matriculaPeriodoItens.matriculaVO.situacao eq 'AT'}" action="#{RenovarMatriculaControle.inicializarDadosNavegacaoTelaMapaSuspensaoMatricula}" icon="#{msg_botoes.btn_icon_bloqueado} iconePequeno" tooltip="Ir para o mapa de suspensão de matrícula" oncomplete="abrirPopup('mapaSuspensaoMatriculaForm.xhtml', 780, 590);" />
+							<otm:commandIcon rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula and RenovarMatriculaControle.permitirReconsideracaoSolicitacao and matriculaPeriodoItens.situacaoMatriculaPeriodo eq 'CA' and matriculaPeriodoItens.matriculaVO.situacao eq 'CA'}" action="#{RenovarMatriculaControle.inicializarDadosMatriculaSolicitarReconsideracao}" oncomplete="#{rich:component('panelAvisoSolicitarReconsideracao')}.show()" icon="#{msg_botoes.btn_icon_desbloqueado} iconePequeno" tooltip="Reconsiderar Solicitação Aprovação Matrícula" />
+							<otm:commandIcon action="#{RenovarMatriculaControle.inicializarDadosMatriculaCancelamentoBloqueioMatricula}" tooltip="Matrícula Suspensa" icon="#{msg_botoes.btn_icon_desbloqueado} iconePequeno" rendered="#{matriculaPeriodoItens.matriculaVO.matriculaSuspensa and !matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" render="formCancelarBloquearMatricula" oncomplete="#{rich:component('panelCancelarBloquearMatricula')}.show()" />
+							<otm:commandIcon execute="@this" tooltip="#{msg_aplic.prt_FichaAluno_fichaAluno}" oncomplete="abrirPopup('fichaAlunoForm.xhtml?aluno=#{matriculaPeriodoItens.matriculaVO.aluno.codigo}&amp;idControlador=RenovarMatriculaControle_#{matriculaPeriodoItens.matriculaVO.aluno.codigo}', 'fichaAlunoForm_RenovarMatriculaControle_#{matriculaPeriodoItens.matriculaVO.aluno.codigo}', 780, 590);" icon="#{msg_botoes.btn_icon_ficha_aluno} iconePequeno" id="btnFichaALunoForm" />
+							<otm:commandIcon action="#{RenovarMatriculaControle.loginComSimulacaoAcessoVisaoAluno }" tooltip="Simular Acesso Aluno" render="panelGridMensagem, script" icon="fas fa-user-graduate btn-default btn-black iconePequeno" rendered="#{LoginControle.permissaoAcessoMenuVO.permitirSimularAcessoVisaoAluno}" />
+							<otm:commandIcon action="#{RenovarMatriculaControle.editarMatriculaPeriodoParaExclusao}" oncomplete="#{RenovarMatriculaControle.oncompleteModal}" tooltip="Excluir Matrícula Período" render="panelGridMensagem, formConfirmarExclusao" icon="#{msg_botoes.btn_icon_remover} iconePequeno" />
+							<otm:commandIcon tooltip="Alterar Situação Matrícula/Período" rendered="#{RenovarMatriculaControle.permitirAlterarSituacaoMatriculaManual}" action="#{RenovarMatriculaControle.inicializarMatriculaPeriodoAlteracaoSituacaoManual}" icon="#{msg_botoes.btn_icon_atualizar} iconePequeno" title="Alterar Situação Matrícula/Período" oncomplete="#{rich:component('panelSituacaoMatricula')}.show()" render="formSituacaoMatricula" />
+
+							<otm:commandIcon value="Estágio" tooltip="Liberar Modulo Estágio" rendered="#{RenovarMatriculaControle.usuarioLogadoOtimize}" action="#{RenovarMatriculaControle.realizarLiberacaoModuloEstagioAluno}" title="Liberar Modulo Estagio" render="form:panelGridMensagem" />
+							<otm:commandIcon value="TCC" tooltip="Liberar Modulo TCC" rendered="#{RenovarMatriculaControle.usuarioLogadoOtimize}" action="#{RenovarMatriculaControle.realizarLiberacaoModuloTCCAluno}" title="Liberar Modulo TCC" render="form:panelGridMensagem" />
+
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller align="center" for="items" id="scrollerItems" page="#{RenovarMatriculaControle.controleConsultaOtimizado.page}" scrollListener="#{RenovarMatriculaControle.scrollerListener}" rendered="#{RenovarMatriculaControle.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+
+				<a4j:repeat id="itemsApre" rowKeyVar="row" value="#{RenovarMatriculaControle.controleConsultaOtimizado}" rows="8" var="matriculaPeriodoItens" rendered="#{RenovarMatriculaControle.controleConsultaOtimizado.apresentarPaginador and !RenovarMatriculaControle.versaoAntiga}">
+					<h:panelGroup layout="block" styleClass="row mr-2 ml-2 mt-2 mb-2">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:panelGroup layout="block" styleClass="row rounded-top bg-gray-300 pb5 #{!matriculaPeriodoItens.minimizarLista ? 'border-bottom-list rounded-bottom' : ''}">
+								<h:panelGroup layout="block" styleClass="col-md-10 pt-2" style="display: flex">
+									<div style="width: 13%">
+										<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="#{msg_aplic.prt_Matricula_matricula}" />
+										<h:outputText value="#{matriculaPeriodoItens.matriculaVO.matricula}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" />
+										<h:commandLink value="#{matriculaPeriodoItens.matriculaVO.matricula}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" />
+									</div>
+									<div style="width: 21%">
+										<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="#{msg_aplic.prt_Matricula_nomeAluno}" />
+										<h:outputText styleClass="col-md-12 pn" value="#{matriculaPeriodoItens.matriculaVO.aluno.nome}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" />
+										<h:commandLink styleClass="col-md-12 pn" value="#{matriculaPeriodoItens.matriculaVO.aluno.nome}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" />
+									</div>
+									<div style="width: 15%">
+										<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="#{msg_aplic.prt_MatriculaPeriodo_periodoLetivoMatricula}" />
+										<h:outputText value="#{matriculaPeriodoItens.obterDescricaoPeriodoLetivo}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" />
+										<h:commandLink value="#{matriculaPeriodoItens.obterDescricaoPeriodoLetivo}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" />
+									</div>
+									<div style="width: 20%">
+										<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="Situação Atual Matrícula" />
+										<h:outputText value="#{matriculaPeriodoItens.matriculaVO.situacao_Apresentar}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" />
+										<h:commandLink value="#{matriculaPeriodoItens.matriculaVO.situacao_Apresentar}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" />
+									</div>
+<!-- 									<div style="width: 19%"> -->
+<!-- 										<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="#{msg_aplic.prt_MatriculaPeriodo_situacaoPeriodo}" /> -->
+<!-- 										<h:outputText value="#{matriculaPeriodoItens.situacao_Apresentar}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" /> -->
+<!-- 										<h:commandLink value="#{matriculaPeriodoItens.situacao_Apresentar}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" /> -->
+<!-- 									</div> -->
+									<div style="width: 20%">
+										<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="Situação Período" />
+										<h:outputText value="#{matriculaPeriodoItens.situacaoMatriculaPeriodo_Apresentar}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" />
+										<h:commandLink value="#{matriculaPeriodoItens.situacaoMatriculaPeriodo_Apresentar}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" />
+									</div>
+									<div style="width: 9%">
+										<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="Data" />
+										<h:outputText value="#{matriculaPeriodoItens.data_Apresentar}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" />
+										<h:commandLink value="#{matriculaPeriodoItens.data_Apresentar}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" />
+									</div>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2 text-center pt-2">
+									<h:panelGroup>
+										<h:panelGroup id="iconaviso2" rendered="#{matriculaPeriodoItens.matriculaVO.alunoConcluiuDisciplinasRegulares}">
+											<span class="#{msg_botoes.btn_icon_aviso_embutido} fs13 ml5" />
+										</h:panelGroup>
+										<rich:tooltip target="iconaviso2" rendered="#{matriculaPeriodoItens.matriculaVO.alunoConcluiuDisciplinasRegulares}">
+											<h:panelGroup>
+												<h:outputText value="Este Aluno Concluíu Todas as Disciplinas Regulares da Matrícula !" />
+											</h:panelGroup>
+										</rich:tooltip>
+										<otm:commandIcon action="#{RenovarMatriculaControle.editar}" rendered="#{matriculaPeriodoItens.permiteAlteracaoPeloUsuario and !matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" tooltip="Alterar Dados da Matrícula" icon="#{msg_botoes.btn_icon_editar_embutido} text-dark" styleClass="ml5" styleIcon="fs13" />
+										<otm:commandIcon action="#{RenovarMatriculaControle.acessarMatriculaParaImpressaoAcompanhamento}" tooltip="Visualizar Matrícula" icon="#{msg_botoes.btn_icon_verificar_embutido} text-dark" styleClass="ml5" styleIcon="fs13" />
+										<otm:commandIcon tooltip="Follow-UP Prospect" icon="#{msg_botoes.btn_icon_followup_embutido} text-dark" styleClass="ml5" styleIcon="fs13" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" oncomplete="window.open('../../ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigoPessoa&amp;valor=#{matriculaPeriodoItens.matriculaVO.aluno.codigo}','FollowUP','resizable=yes,maximize=yes,fullscreen=yes,scrollbars=yes');" rendered="#{LoginControle.permissaoAcessoMenuVO.followUpProspect}" />
+										<otm:commandIcon rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula and matriculaPeriodoItens.matriculaVO.matriculaSuspensa and matriculaPeriodoItens.situacaoMatriculaPeriodo eq 'PR' and matriculaPeriodoItens.matriculaVO.situacao eq 'AT'}" action="#{RenovarMatriculaControle.inicializarDadosNavegacaoTelaMapaSuspensaoMatricula}" icon="#{msg_botoes.btn_icon_bloqueado_embutido} text-dark" styleClass="ml5" styleIcon="fs13" tooltip="Ir para o mapa de suspensão de matrícula" oncomplete="abrirPopup('mapaSuspensaoMatriculaForm.xhtml', 780, 590);" />
+										<otm:commandIcon rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula and RenovarMatriculaControle.permitirReconsideracaoSolicitacao and matriculaPeriodoItens.situacaoMatriculaPeriodo eq 'CA' and matriculaPeriodoItens.matriculaVO.situacao eq 'CA'}" action="#{RenovarMatriculaControle.inicializarDadosMatriculaSolicitarReconsideracao}" oncomplete="#{rich:component('panelAvisoSolicitarReconsideracao')}.show()" icon="#{msg_botoes.btn_icon_desbloqueado_embutido} text-dark" styleClass="ml5" styleIcon="fs13" tooltip="Reconsiderar Solicitação Aprovação Matrícula" />
+										<otm:commandIcon action="#{RenovarMatriculaControle.inicializarDadosMatriculaCancelamentoBloqueioMatricula}" tooltip="Matrícula Suspensa" icon="#{msg_botoes.btn_icon_desbloqueado_embutido} text-dark" styleClass="ml5" styleIcon="fs13" rendered="#{matriculaPeriodoItens.matriculaVO.matriculaSuspensa and !matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" render="formCancelarBloquearMatricula" oncomplete="#{rich:component('panelCancelarBloquearMatricula')}.show()" />
+										<otm:commandIcon execute="@this" tooltip="#{msg_aplic.prt_FichaAluno_fichaAluno}" oncomplete="abrirPopup('fichaAlunoForm.xhtml?aluno=#{matriculaPeriodoItens.matriculaVO.aluno.codigo}&amp;idControlador=RenovarMatriculaControle_#{matriculaPeriodoItens.matriculaVO.aluno.codigo}', 'fichaAlunoForm_RenovarMatriculaControle_#{matriculaPeriodoItens.matriculaVO.aluno.codigo}', 780, 590);" icon="#{msg_botoes.btn_icon_ficha_aluno_embutido} text-dark" styleClass="ml5" styleIcon="fs13" id="btnFichaALunoForm" />
+										<otm:commandIcon action="#{RenovarMatriculaControle.loginComSimulacaoAcessoVisaoAluno }" tooltip="Simular Acesso Aluno" render="panelGridMensagem, script" icon="#{msg_botoes.btn_icon_aluno_embutido} text-dark" styleClass="ml5" styleIcon="fs13" rendered="#{LoginControle.permissaoAcessoMenuVO.permitirSimularAcessoVisaoAluno}" />
+										<otm:commandIcon action="#{RenovarMatriculaControle.editarMatriculaPeriodoParaExclusao}" oncomplete="#{RenovarMatriculaControle.oncompleteModal}" tooltip="Excluir Matrícula Período" render="panelGridMensagem, formConfirmarExclusao" icon="#{msg_botoes.btn_icon_remover_embutido} text-dark" styleClass="ml5" styleIcon="fs13" />
+										<otm:commandIcon tooltip="Alterar Situação Matrícula/Período" rendered="#{RenovarMatriculaControle.permitirAlterarSituacaoMatriculaManual}" action="#{RenovarMatriculaControle.inicializarMatriculaPeriodoAlteracaoSituacaoManual}" icon="#{msg_botoes.btn_icon_atualizar_embutido} text-dark" styleClass="ml5" styleIcon="fs13" title="Alterar Situação Matrícula/Período" oncomplete="#{rich:component('panelSituacaoMatricula')}.show()" render="formSituacaoMatricula" />
+										<!-- 					<otm:commandIcon  value = "Estagio" tooltip="Liberar Modulo Estágio" rendered="#{RenovarMatriculaControle.usuarioLogadoOtimize}" action="#{RenovarMatriculaControle.realizarLiberacaoModuloEstagioAluno}"  title="Liberar Modulo Estagio"  render="form:panelGridMensagem" /> -->
+										<!-- 					<otm:commandIcon  value = "TCC" tooltip="Liberar Modulo TCC" rendered="#{RenovarMatriculaControle.usuarioLogadoOtimize}" action="#{RenovarMatriculaControle.realizarLiberacaoModuloTCCAluno}"  title="Liberar Modulo TCC"  render="form:panelGridMensagem" /> -->
+									</h:panelGroup>
+									<a4j:commandLink rendered="#{matriculaPeriodoItens.minimizarLista}" render="formCadastro:listaConsulta">
+										<f:setPropertyActionListener value="false" target="#{matriculaPeriodoItens.minimizarLista}"></f:setPropertyActionListener>
+										<i class="fas fa-chevron-down text-blue-dark font-weight-bold ml5" style="font-size: 18px"></i>
+									</a4j:commandLink>
+									<a4j:commandLink rendered="#{!matriculaPeriodoItens.minimizarLista}" render="formCadastro:listaConsulta">
+										<f:setPropertyActionListener value="true" target="#{matriculaPeriodoItens.minimizarLista}"></f:setPropertyActionListener>
+										<i class="fas fa-chevron-up text-blue-dark font-weight-bold ml5" style="font-size: 18px"></i>
+									</a4j:commandLink>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mt5 mb5">
+									<h:outputText styleClass="tituloCampos2 font-weight-bold" value="#{matriculaPeriodoItens.matriculaVO.curso.nome} - #{matriculaPeriodoItens.unidadeEnsinoCursoVO.turno.nome}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" />
+									<h:commandLink styleClass="tituloCampos2 font-weight-bold" value="#{matriculaPeriodoItens.matriculaVO.curso.nome} - #{matriculaPeriodoItens.unidadeEnsinoCursoVO.turno.nome}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{matriculaPeriodoItens.minimizarLista}" styleClass="row border-left border-right border-bottom rounded-bottom mr-2 pb-2" style="position: relative; top: -6px;">
+								<h:panelGroup layout="block" styleClass="col-md-12 pn mb10" style="display: flex">
+									<div style="width: 25%">
+										<h:outputText styleClass="tituloCampos text-gray-500 btn-block" value="Grade Curricular Atual" />
+										<h:outputText value="#{matriculaPeriodoItens.matriculaVO.gradeCurricularAtual.nome}" />
+									</div>
+									<div style="width: 25%">
+										<h:outputText styleClass="tituloCampos text-gray-500 btn-block" value="#{msg_aplic.prt_MatriculaPeriodo_turma}" />
+										<h:outputText value="#{matriculaPeriodoItens.turma.identificadorTurma}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" />
+										<h:commandLink value="#{matriculaPeriodoItens.turma.identificadorTurma}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" />
+									</div>
+									<div style="width: 25%">
+										<h:outputText styleClass="tituloCampos text-gray-500 btn-block" value="Unidade Ensino" />
+										<h:outputText value="#{matriculaPeriodoItens.matriculaVO.unidadeEnsino.nome}" />
+									</div>
+									<div style="width: 25%">
+										<h:outputText styleClass="tituloCampos text-gray-500 btn-block" value="#{msg_aplic.prt_ProcessoMatricula_tituloForm}" />
+										<h:outputText value="#{matriculaPeriodoItens.processoMatriculaVO.descricao}" rendered="#{!empty matriculaPeriodoItens.processoMatriculaVO.descricao}" />
+										<otm:spacer width="100%" rendered="#{empty matriculaPeriodoItens.processoMatriculaVO.descricao}" />
+									</div>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 pn" style="display: flex">
+									<h:panelGroup rendered="#{matriculaPeriodoItens.matriculaVO.gradeCurricularAtual.codigo ne matriculaPeriodoItens.gradeCurricular.codigo}">
+										<div style="width: 33.33%">
+											<h:outputText styleClass="tituloCampos text-gray-500 btn-block" value="Grade Curricular No Período" />
+											<h:outputText value="#{matriculaPeriodoItens.gradeCurricular.nome}" />
+										</div>
+									</h:panelGroup>
+									<div style="width: 33.33%">
+										<h:outputText styleClass="tituloCampos text-gray-500 btn-block" value="#{msg_aplic.prt_PlanoFinanceiroCurso_tituloForm}" />
+										<h:outputText value="#{matriculaPeriodoItens.planoFinanceiroCurso.descricao}" rendered="#{!empty matriculaPeriodoItens.planoFinanceiroCurso.descricao}" />
+										<otm:spacer width="100%" rendered="#{empty matriculaPeriodoItens.planoFinanceiroCurso.descricao}" />
+									</div>
+									<div style="width: 33.33%">
+										<h:outputText styleClass="tituloCampos text-gray-500 btn-block" value="#{msg_aplic.prt_CondicaoPagamento_tituloForm}" />
+										<h:outputText value="#{matriculaPeriodoItens.condicaoPagamentoPlanoFinanceiroCurso.descricao}" rendered="#{!empty matriculaPeriodoItens.condicaoPagamentoPlanoFinanceiroCurso.descricao}" />
+										<otm:spacer width="100%" rendered="#{empty matriculaPeriodoItens.condicaoPagamentoPlanoFinanceiroCurso.descricao}" />
+									</div>
+									<div style="width: 17%">
+										<h:outputText styleClass="tituloCampos text-gray-500 btn-block" value="#{msg_aplic.prt_Pessoa_registroAcademico}" />
+										<h:outputText value="#{matriculaPeriodoItens.matriculaVO.aluno.registroAcademico}" rendered="#{matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" />
+										<h:commandLink value="#{matriculaPeriodoItens.matriculaVO.aluno.registroAcademico}" rendered="#{!matriculaPeriodoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" action="#{RenovarMatriculaControle.editar}" />
+									</div>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</a4j:repeat>
+				<h:panelGroup layout="block" styleClass="row mn text-center border rounded bg-gray p10" rendered="#{RenovarMatriculaControle.controleConsultaOtimizado.apresentarPaginador and !RenovarMatriculaControle.versaoAntiga}">
+					<rich:dataScroller render="formCadastro" align="center" for="items" id="scrollerItems" page="#{RenovarMatriculaControle.controleConsultaOtimizado.page}" scrollListener="#{RenovarMatriculaControle.scrollerListener}" rendered="#{RenovarMatriculaControle.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</h:panelGroup>
+
+
+			</h:panelGroup>
+			<h:panelGroup layout="block" id="script" styleClass="row">
+				<h:outputScript rendered="#{not empty RenovarMatriculaControle.executarNavegacaoSimulacaoVisaoAluno}">#{RenovarMatriculaControle.executarNavegacaoSimulacaoVisaoAluno}</h:outputScript>
+			</h:panelGroup>
+			<h:panelGroup id="panelGridMensagem" layout="block" styleClass="row">
+				<otm:mensagem bean="#{RenovarMatriculaControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<h:panelGroup>
+					<otm:commandButton id="novaMatricula" action="#{RenovarMatriculaControle.selecionarAlunoNovaMatricula}" value="Nova Matrícula" accesskey="1" styleClass="btn btn-info btn-novo" />
+					<otm:spacer width="5px" />
+					<otm:commandButton id="novaRenovacao" action="#{RenovarMatriculaControle.novoRenovacao}" render="form" value="Renovar Matrícula" accesskey="1" icon="fas fa-user-graduate" styleClass="btn btn-success" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" onshow="document.getElementById('formTurma:valorConsultarTurma').focus()" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_consultaTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkTurma" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{RenovarMatriculaControle.campoConsultaTurma}">
+							<f:selectItems value="#{RenovarMatriculaControle.tipoConsultaComboTurma}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="valorConsultarTurma" size="20" styleClass="form-control campos" value="#{RenovarMatriculaControle.valorConsultaTurma}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultarTurma, formTurma:resultadoConsultarTurma, formTurma:scResultadoTurma" action="#{RenovarMatriculaControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultarTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RenovarMatriculaControle.listaConsultaTurma}" rows="5" var="turmaItens">
+					<rich:column sortBy="#{turmaItens.identificadorTurma}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_identificadorTurma}" />
+						</f:facet>
+						<a4j:commandLink action="#{RenovarMatriculaControle.selecionarTurma}" oncomplete="#{rich:component('panelTurma')}.hide()" render="dadosConsulta, formCadastro" id="identificadorTurma" value="#{turmaItens.identificadorTurma}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItens.curso.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_curso}" />
+						</f:facet>
+						<a4j:commandLink action="#{RenovarMatriculaControle.selecionarTurma}" id="cursoTurma" oncomplete="#{rich:component('panelTurma')}.hide()" render="dadosConsulta, formCadastro" value="#{turmaItens.curso.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RenovarMatriculaControle.selecionarTurma}" render="dadosConsulta, formCadastro" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultarTurma" maxPages="10" id="scResultadoTurma" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultarTurma" layout="block">
+					<otm:mensagem bean="#{RenovarMatriculaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado50" id="liberarAtivacaoMatriculaPeriodo" shadowOpacity="true" width="330" height="100" onshow="document.getElementById('formLiberarAtivacaoMatriculaPeriodo:usernameAtivarSituacaoMatriculaPeriodo').focus()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Liberar Ativação Situação Período" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkLiberarAtivacaoMatriculaPeriodo" />
+					<rich:componentControl target="liberarAtivacaoMatriculaPeriodo" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLiberarAtivacaoMatriculaPeriodo">
+				<h:panelGroup layout="block" styleClass="row mt10">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+						<h:inputText id="usernameAtivarSituacaoMatriculaPeriodo" size="15" styleClass="form-control camposObrigatorios" value="#{RenovarMatriculaControle.usernameAtivarUltimaMatriculaPeriodo}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_msg_senha}" />
+						<h:inputSecret id="senhaAtivarSituacaoMatriculaPeriodo" size="15" styleClass="form-control camposObrigatorios" value="#{RenovarMatriculaControle.senhaAtivarUltimaMatriculaPeriodo}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mt10 text-center">
+					<otm:commandButton render="formCadastro:items,formCadastro:panelGridMensagem,formLiberarAtivacaoMatriculaPeriodo" oncomplete="#{rich:component('liberarAtivacaoMatriculaPeriodo')}.hide()" action="#{RenovarMatriculaControle.realizarVerificacaoUsuarioAtivarUltimaMatriculaPeriodo}" value="Confirmar Ativação" styleClass="btn btn-dark btn-confirmar" icon="#{msg_botoes.btn_icon_selecionar_embutido}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel id="panelConfirmarExclusao" styleClass="modalMaximizado50" autosized="true" shadowOpacity="true" width="500" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Confirmar Exclusão Matrícula Período" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConfirmarExclusao">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<rich:list type="definitions" value="#{RenovarMatriculaControle.matriculaPeriodoVO.mensagemAvisoUsuario.listaMensagemErro}" var="mensagem" rendered="#{!empty RenovarMatriculaControle.matriculaPeriodoVO.mensagemAvisoUsuario.listaMensagemErro}">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{mensagem}" />
+						</h:panelGroup>
+					</rich:list>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="Deseja Confirmar a Exclusão Desta Matrícula Neste Período?" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton action="#{RenovarMatriculaControle.excluir}" alt="Excluir" tooltip="Excluir" value="Sim" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" oncomplete="#{rich:component('panelConfirmarExclusao')}.hide()" />
+					<otm:spacer width="5px" />
+					<otm:commandButton alt="Não Excluir" tooltip="Não Excluir" value="Não" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" oncomplete="#{rich:component('panelConfirmarExclusao')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCancelarBloquearMatricula" autosized="true" shadowOpacity="true" width="650" minHeight="300" minWidth="650">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Motivo Cancelamento Bloqueio"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkCancelarBloqueioMatricula" />
+					<rich:componentControl target="panelCancelarBloquearMatricula" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCancelarBloquearMatricula">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="Motivo Bloqueio" />
+					<h:inputText readonly="true" value="#{RenovarMatriculaControle.matriculaVO.motivoMatriculaBloqueada}" styleClass="form-control camposSomenteLeitura" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{!RenovarMatriculaControle.realizarAdiamentoSuspensaoMatricula  and RenovarMatriculaControle.matriculaVO.matriculaSuspensa}" layout="block" styleClass="row mn">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="Data Cancelamento Bloqueio" />
+						<h:inputText size="10" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{RenovarMatriculaControle.matriculaVO.dataCancelamentoSuspensaoMatricula}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-9" rendered="#{!RenovarMatriculaControle.realizarAdiamentoSuspensaoMatricula  and RenovarMatriculaControle.matriculaVO.matriculaSuspensa}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Responsável Cancelamento Bloqueio" />
+						<h:inputText value="#{RenovarMatriculaControle.matriculaVO.responsavelCancelamentoSuspensaoMatricula.nome}" styleClass="form-control camposSomenteLeitura" readonly="true" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{RenovarMatriculaControle.realizarAdiamentoSuspensaoMatricula  and RenovarMatriculaControle.matriculaVO.matriculaSuspensa}" layout="block" styleClass="row mn">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="Data Adiamento Bloqueio" />
+						<h:inputText size="10" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{RenovarMatriculaControle.matriculaVO.dataAdiamentoSuspensaoMatricula}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-9">
+						<h:outputText styleClass="field control-label tituloCampos" value="Responsável Adiamento Bloqueio" />
+						<h:inputText value="#{RenovarMatriculaControle.matriculaVO.responsavelAdiamentoSuspensaoMatricula.nome}" styleClass="form-control camposSomenteLeitura" readonly="true" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{RenovarMatriculaControle.matriculaVO.matriculaSuspensa}" layout="block" styleClass="row mn">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos pn col-md-12" value="Adiar Bloqueio Matrícula" />
+						<otm:selectBooleanCheckbox value="#{RenovarMatriculaControle.realizarAdiamentoSuspensaoMatricula}" styleClass="form-control campos">
+							<a4j:ajax event="click" render="formCancelarBloquearMatricula" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{RenovarMatriculaControle.realizarAdiamentoSuspensaoMatricula}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Quantidade Dias Adiar" />
+						<h:inputText value="#{RenovarMatriculaControle.matriculaVO.qtdDiasAdiarBloqueio}" styleClass="form-control camposObrigatorios" size="10" maxlength="10" onkeypress="aceitarSomenteValorNumerico(this)" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RenovarMatriculaControle.realizarAdiamentoSuspensaoMatricula and RenovarMatriculaControle.matriculaVO.matriculaSuspensa}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Motivo Adiamento Bloqueio" />
+					<h:inputTextarea value="#{RenovarMatriculaControle.matriculaVO.motivoAdiamentoSuspensaoMatricula}" styleClass="form-control camposObrigatorios" rows="3" cols="40" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{!RenovarMatriculaControle.realizarAdiamentoSuspensaoMatricula and RenovarMatriculaControle.matriculaVO.matriculaSuspensa}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Motivo Cancelamento Bloqueio" />
+					<h:inputTextarea value="#{RenovarMatriculaControle.matriculaVO.motivoCancelamentoSuspensaoMatricula}" styleClass="form-control camposObrigatorios" rows="3" cols="40" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemCancelarBloquearMatricula" layout="block" styleClass="row mn">
+					<otm:mensagem bean="#{RenovarMatriculaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton rendered="#{!RenovarMatriculaControle.realizarAdiamentoSuspensaoMatricula}" render="formCancelarBloquearMatricula, formCadastro" id="btnCancelarBloquearMatricula" oncomplete="#{rich:component('panelCancelarBloquearMatricula')}.hide()" action="#{RenovarMatriculaControle.cancelarSuspensao}" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar Bloqueio" styleClass="btn btn-danger" />
+					<otm:commandButton rendered="#{RenovarMatriculaControle.realizarAdiamentoSuspensaoMatricula}" render="formCancelarBloquearMatricula, formCadastro" id="btnAdiarBloquearMatricula" oncomplete="#{rich:component('panelCancelarBloquearMatricula')}.hide()" action="#{RenovarMatriculaControle.realizarAdiamentoBloqueioMatricula}" icon="far fa-clock" value="Adiar Bloqueio" styleClass="btn btn-primary" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAvisoSolicitarReconsideracao" shadowOpacity="true" width="300" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Aviso" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAvisoSolicitarReconsideracao">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:outputText styleClass="tituloCamposReduzidos" value="#{msg.msg_RenovarMatricula_avisoSolicitarReconsideracao}" escape="false" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row text-center mt10 mb10">
+					<otm:commandButton render="formCadastro" action="#{RenovarMatriculaControle.solicitarReconsideracaoSolicitacao}" oncomplete="#{rich:component('panelAvisoSolicitarReconsideracao')}.hide()" value="Solicitar Reconsideração" styleClass="btn btn-dark btn-confirmar" />
+					<otm:commandButton value="Cancelar Solicitação de Reconsideração" icon="#{msg_botoes.btn_icon_fechar_embutido} " styleClass="btn btn-default ml5" oncomplete="#{rich:component('panelAvisoSolicitarReconsideracao')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMinimizado1" id="panelAvisoAlteracaoSituacaoManual" shadowOpacity="true" width="600" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Aviso" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAvisoAlteracaoSituacaoManual">
+				<h:panelGroup width="100%" columns="2" styleClass="tabFormRichPanelBorder" footerClass="colunaCentralizada">
+					<span class="#{msg_botoes.btn_icon_aviso_embutido} text-warning mr5 fs14"></span>
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_RenovarMatricula_avisoAlteracaoSituacaoManual}" escape="false" />
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-30">
+						<otm:commandButton render="formCadastro" action="#{RenovarMatriculaControle.realizarAlteracaoSituacaoMatriculaManual}" oncomplete="#{rich:component('panelAvisoAlteracaoSituacaoManual')}.hide(); #{rich:component('panelSituacaoMatricula')}.hide()" styleClass="btn btn-info mr5" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Realizar Alteração" />
+						<otm:commandButton styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" oncomplete="#{rich:component('panelAvisoAlteracaoSituacaoManual')}.hide()" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<style>
+.modalAlteracaoSituacao {
+	width: 80% !important;
+	height: 53% !important;
+	left: 10% !important;
+	top: 14% !important;
+}
+
+.barra-btn-flutuante-modal-alteracao {
+	position: fixed;
+	width: 80%;
+	background-color: #dedede;
+	padding: 10px 5px 5px 5px;
+	left: 10%;
+	border-radius: 0px 0px 10px 10px;
+	margin: 0 auto;
+	bottom: 29%;
+	z-index: 1;
+	text-align: center;
+	min-height: 35px;
+}
+</style>
+
+		<rich:popupPanel styleClass="modalAlteracaoSituacao" id="panelSituacaoMatricula" shadowOpacity="true" width="750" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Alteração de Situação Manual" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formSituacaoMatricula">
+				<h:panelGroup layout="block" styleClass="col-md-6 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Matricula_matricula}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText value="#{RenovarMatriculaControle.matriculaPeriodoAlteracaoSituacaoManualVO.matriculaVO.matricula}" styleClass="form-control camposSomenteLeitura" readonly="true" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText value="#{RenovarMatriculaControle.matriculaPeriodoAlteracaoSituacaoManualVO.matriculaVO.aluno.nome}" styleClass="form-control camposSomenteLeitura" readonly="true" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="tituloCampos" value="Situação Atual Matrícula" />
+					<h:inputText value="#{RenovarMatriculaControle.matriculaPeriodoAlteracaoSituacaoManualVO.matriculaVO.situacao_Apresentar}" styleClass="form-control camposSomenteLeitura" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="tituloCampos" value="Situação Atual Matrícula Período" />
+					<h:inputText value="#{RenovarMatriculaControle.matriculaPeriodoAlteracaoSituacaoManualVO.situacaoMatriculaPeriodo_Apresentar}" styleClass="form-control camposSomenteLeitura" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos btn-block" value="Alterar Situação Matrícula" />
+					<otm:selectBooleanCheckbox id="situacaoMatricula" value="#{RenovarMatriculaControle.alterarSituacaoManualMatricula}" styleClass="campos">
+						<a4j:ajax event="click" render="formSituacaoMatricula"></a4j:ajax>
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos btn-block" value="Alterar Situação Matrícula Período" />
+					<otm:selectBooleanCheckbox id="situacaoMatriculaPeriodo" value="#{RenovarMatriculaControle.alterarSituacaoManualMatriculaPeriodo}" styleClass="form-control  campos">
+						<a4j:ajax event="click" render="formSituacaoMatricula"></a4j:ajax>
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos" value="Situação Matrícula Alterar" rendered="#{RenovarMatriculaControle.alterarSituacaoManualMatricula}" />
+					<h:selectOneMenu value="#{RenovarMatriculaControle.situacaoVinculoMatricula}" styleClass="form-control camposObrigatorios" rendered="#{RenovarMatriculaControle.alterarSituacaoManualMatricula}">
+						<f:selectItems value="#{RenovarMatriculaControle.listaSelectItemSituacaoVinculoMatriculaEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="tituloCampos" value="Situação Matrícula Período Alterar" rendered="#{RenovarMatriculaControle.alterarSituacaoManualMatriculaPeriodo}" />
+					<h:selectOneMenu value="#{RenovarMatriculaControle.situacaoMatriculaPeriodo}" styleClass="form-control camposObrigatorios" rendered="#{RenovarMatriculaControle.alterarSituacaoManualMatriculaPeriodo}">
+						<f:selectItems value="#{RenovarMatriculaControle.listaSelectItemSituacaoMatriculaPeriodoEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-alteracao">
+					<otm:commandButton oncomplete="#{rich:component('panelAvisoAlteracaoSituacaoManual')}.show()" value="Alterar" render="formAvisoAlteracaoSituacaoManual" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_ok_embutido}" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_cancelar_embutido}" style="margin-left: 5px;" value="Cancelar" styleClass="btn btn-danger" oncomplete="#{rich:component('panelSituacaoMatricula')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<script>
+			#{!RenovarMatriculaControle.apresentarCampoData} ? focus('formCadastro:valorConsulta') : focus('formCadastro:valorConsultaData:valorConsultaDataInputDate')    
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

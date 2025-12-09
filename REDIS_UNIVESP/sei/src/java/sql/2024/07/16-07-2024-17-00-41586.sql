@@ -1,0 +1,1 @@
+ALTER TABLE public.prospects ALTER COLUMN orgaoemissor TYPE varchar(150);

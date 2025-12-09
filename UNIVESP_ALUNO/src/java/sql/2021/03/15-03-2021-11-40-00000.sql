@@ -1,0 +1,1 @@
+create index if not exists idx_catalogocurso_catalogo on catalogocurso(catalogo);

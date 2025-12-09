@@ -1,0 +1,1 @@
+alter table matricula alter column programareservavaga type varchar(10);

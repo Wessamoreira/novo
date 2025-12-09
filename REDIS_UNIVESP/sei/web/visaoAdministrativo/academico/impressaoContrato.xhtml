@@ -1,0 +1,872 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br"> <h:head>
+</h:head> <ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ImpressaoContrato_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<rich:popupPanel id="panelImpressaoLote" shadowOpacity="true" width="450" height="220">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Imprimir Contratos Em Lote" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" id="hiperPanelImpressaoLote" />
+					<rich:componentControl target="panelImpressaoLote" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImpressaoLote">
+				<h:panelGroup layout="block" style="width:100%;font-size: 14px;">
+					<h:outputText value="Este recurso irá enviar todos os contratos localizados para o provedor de assinatura, os arquivos não serão baixados. Este modelo de contrato está habilitado para assinatura eletrônica, Escolha um provedor de assinatura." />
+				</h:panelGroup>
+				<h:panelGroup layout="block" style="width:100%;" rendered="#{not empty ImpressaoContratoControle.comboboxProvedorAssinaturaPadrao}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProvedorAssinatura}" />
+					<h:selectOneMenu id="provedorPadrao" styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.provedorDeAssinaturaLoteEnum}">
+						<a4j:ajax event="change" render="formImpressaoLote" execute="formImpressaoLote" />
+						<f:selectItems value="#{ImpressaoContratoControle.comboboxProvedorAssinaturaPadrao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" style="width:100%;text-align:center;position: absolute;top: 82%;">
+					<otm:commandButton render="modalProgressBar, form" oncomplete="#{rich:component('panelImpressaoLote')}.hide()" action="#{ImpressaoContratoControle.realizarInicioProgressBarImpressaoLote}" value="Confirmar" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="liberarOperacaoFuncionalidade" zindex="3000" shadowOpacity="true" autosized="true" onshow="document.getElementById('formLiberarOperacaoFuncionalidade:usernameLiberar').focus()">
+			<f:facet name="header">
+				<h:outputText value="#{ImpressaoContratoControle.tipoOperacaoFuncionalidadeLiberar eq '' ? 'Liberar Operação Funcionalidade' : ImpressaoContratoControle.tipoOperacaoFuncionalidadeLiberar}" />
+			</f:facet>
+			<h:form id="formLiberarOperacaoFuncionalidade">
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+					<h:inputText id="usernameLiberar" size="20" styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.usernameLiberarOperacaoFuncionalidade}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_msg_senha}" />
+					<h:inputSecret id="senhaLiberar" styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.senhaLiberarOperacaoFuncionalidade}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton style="margin-right:5px" render="formSelecionarContrato" oncomplete="#{ImpressaoContratoControle.oncompleteOperacaoFuncionalidade}" action="#{ImpressaoContratoControle.validarLiberarOperacaoFuncionalidade}" value="Confirmar Liberação" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" tooltip="Confirmar Liberação" />
+					<otm:commandButton oncomplete="#{rich:component('liberarOperacaoFuncionalidade')}.hide()" value="#{msg_botoes.btn_fechar}" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mt5">
+					<otm:mensagem bean="#{ImpressaoContratoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelSelecionarContrato" shadowOpacity="true" width="600" height="200" zindex="10000">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Selecione Um Modelo de Contrato Para Impressão" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperpanelSelecionarContrato" />
+					<rich:componentControl target="panelSelecionarContrato" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formSelecionarContrato">
+				<h:panelGroup width="100%" columns="2" styleClass="tabFormRichPanelBorder" footerClass="colunaCentralizada">
+					<h:panelGroup layout="block" styleClass="col-md-10">
+						<h:outputText styleClass="tituloCamposReduzidos" value="Modelo Contrato #{ImpressaoContratoControle.tipoContratoMatricula.descricao}" />
+						<h:selectOneMenu disabled="#{!ImpressaoContratoControle.permitirAlterarContratoMatricula}" rendered="#{ImpressaoContratoControle.tipoContratoMatricula eq 'NORMAL'}" value="#{ImpressaoContratoControle.impressaoContratoVO.matriculaPeriodoVO.contratoMatricula.codigo}" styleClass="form-control camposObrigatorios">
+							<f:selectItems value="#{ImpressaoContratoControle.listaSelectItemContrato}"></f:selectItems>
+						</h:selectOneMenu>
+						<h:selectOneMenu disabled="#{!ImpressaoContratoControle.permitirAlterarContratoMatricula}" rendered="#{ImpressaoContratoControle.tipoContratoMatricula eq 'FIADOR'}" value="#{ImpressaoContratoControle.impressaoContratoVO.matriculaPeriodoVO.contratoFiador.codigo}" styleClass="form-control camposObrigatorios">
+							<f:selectItems value="#{ImpressaoContratoControle.listaSelectItemContrato}"></f:selectItems>
+						</h:selectOneMenu>
+						<h:selectOneMenu disabled="#{!ImpressaoContratoControle.permitirAlterarContratoMatricula}" rendered="#{ImpressaoContratoControle.tipoContratoMatricula eq 'EXTENSAO'}" value="#{ImpressaoContratoControle.impressaoContratoVO.matriculaPeriodoVO.contratoExtensao.codigo}" styleClass="form-control camposObrigatorios">
+							<f:selectItems value="#{ImpressaoContratoControle.listaSelectItemContrato}"></f:selectItems>
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{!ImpressaoContratoControle.permitirAlterarContratoMatricula}">
+						<a4j:commandLink oncomplete="#{rich:component('panelSelecionarContrato')}.hide();#{rich:component('liberarOperacaoFuncionalidade')}.show()" render="formLiberarOperacaoFuncionalidade" title="Liberar Alteração Contrato">
+							<i class="#{msg_botoes.btn_icon_cadeadoFechado_embutido} pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+							<f:setPropertyActionListener target="#{ImpressaoContratoControle.tipoOperacaoFuncionalidadeLiberar}" value="#{per.per_ImpressaoContrato_PermitirAlterarContratoMatricula_titulo}" />
+						</a4j:commandLink>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="form" action="#{ImpressaoContratoControle.selecionarContratoParaImpressao}" onclick="this.disabled=true" oncomplete="this.disabled=false;#{rich:component('panelSelecionarContrato')}.hide(); #{ImpressaoContratoControle.contrato}" value="Imprimir Contrato" accesskey="2" styleClass="btn btn-default dark btn-imprimir" />
+					<otm:spacer width="10px" />
+					<a4j:commandLink oncomplete="#{rich:component('panelSelecionarContrato')}.hide()" value="Fechar" styleClass="btn btn-primary dark btn-fechar" title="Fechar">
+						<f:setPropertyActionListener value="#{ImpressaoContratoControle.permitirAlterarContratoMatricula}" target="false"></f:setPropertyActionListener>
+					</a4j:commandLink>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAvisoTextoPadrao" shadowOpacity="true" width="450" autosized="true" minHeight="250">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Aviso" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAvisoTextoPadrao">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<h:graphicImage value="#{resource['/imagens/aviso.png']}" />
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_ImpressaoContrato_avisoTextoPadrao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_tituloForm}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.inclusaoHistoricoForaPrazoVO.textoPadraoContrato.codigo}" style="width:300px;">
+						<f:selectItems value="#{ImpressaoContratoControle.listaSelectItemTextoPadrao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton id="emitirContrato" render="formInclusaoReposicao" action="#{ImpressaoContratoControle.imprimirContratoInclusaoReposicaoSelecionandoTextoPadrao}" value="#{msg_aplic.prt_Matricula_emitirContrato}" oncomplete="#{ImpressaoContratoControle.contratoInclusaoReposicao}; #{rich:component('panelAvisoTextoPadrao')}.hide()" image="#{resource['/imagens/imprimirContrato.png']}" />
+					<otm:commandButton action="#{ImpressaoContratoControle.limparDadosAoFecharModalAvisoTextoPadrao}" oncomplete="#{rich:component('panelAvisoTextoPadrao')}.hide()" render="form" accesskey="2" styleClass="btn btn-primary dark btn-fechar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelLog" shadowOpacity="true" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Últimos Contratos Impressos"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkLog" />
+					<rich:componentControl target="panelLog" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLog">
+				<h:panelGroup columns="1" width="100%" styleClass="tabForm">
+					<rich:dataTable id="logImpressoes" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ImpressaoContratoControle.impressaoContratoVO.listaLogImpressaoContratoVO}" rows="7" var="logImpressaoContratoItens">
+						<rich:column width="15%">
+							<f:facet name="header">
+								<h:outputText value="Data Geração" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{logImpressaoContratoItens.dataGeracao}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="date" />
+								</h:outputText>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column width="15%">
+							<f:facet name="header">
+								<h:outputText value="Matrícula" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{logImpressaoContratoItens.matricula.matricula}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_InclusaoExclusaoDisciplinaMatricula_responsavel}" />
+							</f:facet>
+							<h:outputText id="responsavel" value="#{logImpressaoContratoItens.usuarioRespImpressao.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Tipo de Contrato" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{logImpressaoContratoItens.tipoContrato_Apresentar}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Texto Padrão" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{logImpressaoContratoItens.textoPadrao.descricao}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Assinado" />
+							</f:facet>
+							<h:panelGroup>
+								<otm:selectBooleanCheckbox value="#{logImpressaoContratoItens.assinado}">
+									<a4j:ajax event="click" render="formlog:logImpressoes" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column rendered="#{logImpressaoContratoItens.existeDocumentoAssinado}">
+							<f:facet name="header">
+								<h:outputText value="Visualizar" />
+							</f:facet>
+							<h:panelGroup>
+								<otm:commandIcon id="emitirVisualizarContrato" rendered="#{logImpressaoContratoItens.existeDocumentoAssinado}" render="formInclusaoReposicao" action="#{ImpressaoContratoControle.impressaoContratoJaGerada}" icon="#{msg_botoes.btn_icon_download} iconePequeno" oncomplete="#{ImpressaoContratoControle.contrato}; " tooltip="Realizar dowload do contrato." />
+							</h:panelGroup>
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important"> <rich:dataScroller align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" for="formLog:logImpressoes" maxPages="10" id="scLogImpressoes" /> </div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup id="mensagensLog" layout="block" styleClass="">
+						<otm:mensagem bean="#{ImpressaoContratoControle}"></otm:mensagem>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<otm:commandButton id="gravarLog" render="mensagensLog" action="#{ImpressaoContratoControle.gravarLogImpressaoContrato}" styleClass="btn btn-dark btn-gravar" value="#{msg_botoes.btn_gravar}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" onshow="document.getElementById('formTurma:valorConsultarTurma').focus()" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_consultaTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkTurma" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{ImpressaoContratoControle.campoConsultaTurma}">
+						<f:selectItem itemLabel="Identificador Turma" itemValue="identificadorTurma" />
+						<f:selectItem itemLabel="Nome do Curso" itemValue="nomeCurso" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultarTurma" size="20" styleClass="form-control campos" value="#{ImpressaoContratoControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultarTurma, formTurma:resultadoConsultarTurma, formTurma:scResultadoTurma" action="#{ImpressaoContratoControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultarTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ImpressaoContratoControle.listaConsultaTurma}" rows="5" var="turmaItens">
+					<rich:column sortBy="#{turmaItens.identificadorTurma}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_identificadorTurma}" />
+						</f:facet>
+						<a4j:commandLink action="#{ImpressaoContratoControle.selecionarTurma}" oncomplete="#{rich:component('panelTurma')}.hide()" render="form" id="identificadorTurma" value="#{turmaItens.identificadorTurma}" />
+					</rich:column>
+					<rich:column sortBy="#{turmaItens.curso.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Turma_curso}" />
+						</f:facet>
+						<a4j:commandLink action="#{ImpressaoContratoControle.selecionarTurma}" id="cursoTurma" oncomplete="#{rich:component('panelTurma')}.hide()" render="form" value="#{turmaItens.curso.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ImpressaoContratoControle.selecionarTurma}" focus="turma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important"> <rich:dataScroller align="center" for="formTurma:resultadoConsultarTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" fastControls="hide" stepControls="auto" /> </div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultarTurma" layout="block" styleClass="row">
+					<otm:mensagem bean="#{ImpressaoContratoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formAluno:valorConsultaAluno').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_HistoricoAlunoRel_consultarAluno}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink1" />
+					<rich:componentControl target="panelAluno" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAluno" value="#{ImpressaoContratoControle.campoConsultaAluno}">
+						<f:selectItems value="#{ImpressaoContratoControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaAluno" size="30" styleClass="form-control campos" value="#{ImpressaoContratoControle.valorConsultaAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno, formAluno:scResultadoAluno" action="#{ImpressaoContratoControle.consultarAluno}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAluno" styleClass="mt10" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ImpressaoContratoControle.listaConsultaAluno}" rows="7" var="matriculaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Registro Acadêmico" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ImpressaoContratoControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.aluno.registroAcademico}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Matricula" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ImpressaoContratoControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ImpressaoContratoControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ImpressaoContratoControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Situação Atual Matrícula" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ImpressaoContratoControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" value="#{matriculaItens.situacao_Apresentar}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ImpressaoContratoControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important"> <rich:dataScroller align="center" for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" /> </div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAluno" layout="block" styleClass="row">
+					<otm:mensagem bean="#{ImpressaoContratoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelInclusaoReposicao" shadowOpacity="true" width="750" height="500" domElementAttachment="parent" show="#{ImpressaoContratoControle.abrirPanelInclusaoHistoricoForaPrazo}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_InclusaoExclusaoDisciplina_tituloForm}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkInclusaoReposicao" />
+					<rich:componentControl target="panelInclusaoReposicao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formInclusaoReposicao">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="resultadoConsultaAluno" styleClass="mt10" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ImpressaoContratoControle.inclusaoHistoricoForaPrazoVOs}" rows="10" var="inclusaoHistoricoForaPrazoItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_InclusaoExclusaoDisciplinaMatricula_codigo}" />
+							</f:facet>
+							<h:outputText id="codigo" value="#{inclusaoHistoricoForaPrazoItens.codigo}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_InclusaoExclusaoDisciplinaMatricula_matricula}" />
+							</f:facet>
+							<h:outputText id="matricula" value="#{inclusaoHistoricoForaPrazoItens.matriculaPeriodoVO.matriculaVO.matricula}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_InclusaoExclusaoDisciplinaMatricula_aluno}" />
+							</f:facet>
+							<h:outputText id="aluno" value="#{inclusaoHistoricoForaPrazoItens.matriculaPeriodoVO.matriculaVO.aluno.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_InclusaoExclusaoDisciplinaMatricula_tipo}" />
+							</f:facet>
+							<h:outputText id="tipo" value="#{inclusaoHistoricoForaPrazoItens.tipo_Apresentar}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_InclusaoExclusaoDisciplinaMatricula_dataInclusao}" />
+							</f:facet>
+							<h:outputText id="dataInclusao" value="#{inclusaoHistoricoForaPrazoItens.dataInclusao_Apresentar}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_InclusaoExclusaoDisciplinaMatricula_responsavel}" />
+							</f:facet>
+							<h:outputText id="responsavel" value="#{inclusaoHistoricoForaPrazoItens.responsavel.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandButton id="emitirContrato" render="formInclusaoReposicao, formAvisoTextoPadrao" action="#{ImpressaoContratoControle.imprimirContratoInclusaoReposicao}" value="#{msg_aplic.prt_Matricula_emitirContrato}" oncomplete="#{ImpressaoContratoControle.contratoInclusaoReposicao};" image="#{resource['/imagens/imprimirContrato.png']}" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important"> <rich:dataScroller align="center" for="formInclusaoReposicao:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" /> </div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+						<h:panelGroup columns="1" width="100%">
+							<h:outputText styleClass="field control-label mensagem col-md-12" value="#{ImpressaoContratoControle.mensagem}" />
+							<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{ImpressaoContratoControle.mensagemDetalhada}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAlertaExclusao" shadowOpacity="true" width="400" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Alerta Exclusão"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" id="hidelinkAlertaExclusao" />
+					<rich:componentControl target="panelAlertaExclusao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAlertaExclusao">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<h:outputText value="Deseja Realmente Excluir o Documento Assinado?" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="formAlertaExclusao,formDocumentoAssinado,form ,mensagensLog" styleClass="btn btn-success" value="Sim" accesskey="2" icon="#{msg_botoes.btn_icon_editar_embutido}" action="#{ImpressaoContratoControle.excluirDocumentoAssinado}" oncomplete="#{ImpressaoContratoControle.oncompleteModal};#{rich:component('panelAlertaExclusao')}.hide()" />
+					<otm:spacer width="5px" />
+					<otm:commandButton styleClass="btn btn-danger" value="Não" icon="#{msg_botoes.btn_icon_cancelar_embutido}" title="Não" render="formAlertaExclusao" oncomplete="#{rich:component('panelAlertaExclusao')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDocumentoAssinado" shadowOpacity="true" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Contratos Assinados"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" id="hidelinkDocumentoAssinado" />
+					<rich:componentControl target="panelDocumentoAssinado" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDocumentoAssinado">
+				<a4j:repeat id="documentoAssinado" value="#{ImpressaoContratoControle.impressaoContratoVO.matriculaPeriodoVO.listaDocumentoAssinadoVO}" rows="10" var="documentoAssinadoItens">
+					<otm2:panel name="panelDocumentoAssinado_#{row+1}" styleClassHeader="row mn rounded-top bg-gray p10" styleClassBody="mn p5" stylePanelHeader="border-bottom: 2px solid #cccccc; padding: 0px 0px 0px 0px" stylePanel="margin-top:5px" styleBody="margin: 0px !important; padding: 0px !important; padding-bottom: 4px !important" styleClassFooter="dn" opened="true">
+						<ui:define name="header">
+							<h:outputText styleClass="font-weight-bold mr20" value="Documento: #{documentoAssinadoItens.codigo}" />
+							<h:outputText styleClass="font-weight-bold" value="#{documentoAssinadoItens.dataRegistro}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="date" />
+							</h:outputText>
+						</ui:define>
+						<ui:define name="control">
+							<a4j:commandLink id="downloadContrato" styleClass="ml5" oncomplete="location.href='../../DownloadSV'" action="#{ImpressaoContratoControle.realizarDownloadContrato}">
+								<span class="#{msg_botoes.btn_icon_download_embutido} text-success fs16 mr5" />
+								<rich:tooltip value="Download Contrato" zindex="10000" />
+							</a4j:commandLink>
+							<a4j:commandLink id="excluirContrato" render="formDocumentoAssinado , form ,mensagensLog" action="#{ImpressaoContratoControle.documentoAssinadoExcluir}" oncomplete="#{rich:component('panelAlertaExclusao')}.show()">
+								<span class="#{msg_botoes.btn_icon_excluir_embutido} text-danger fs16 mr10" />
+								<rich:tooltip value="Excluir Contrato Assinado" zindex="10000" />
+							</a4j:commandLink>
+						</ui:define>
+						<ui:define name="body">
+							<rich:dataTable var="listaDocumentoPessoa" value="#{documentoAssinadoItens.listaDocumentoAssinadoPessoa}">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Assinaturas" />
+									</f:facet>
+									<h:panelGroup>
+										<h:outputText value="#{listaDocumentoPessoa.pessoaVO.nome}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Situação" />
+									</f:facet>
+									<h:panelGroup layout="block" style="padding: 6px;">
+										<h:outputText value="#{listaDocumentoPessoa.situacaoDocumentoAssinadoPessoaEnum}" style="#{listaDocumentoPessoa.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO' ? 'padding-left: 15px;' : ''}" />
+										<h:graphicImage rendered="#{listaDocumentoPessoa.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO'}" id="motivoRejeicao" value="#{resource['/imagens/biblioteca/lupa2.png']}" style="width: 14px;top: -1px;position: relative;left: 8px;" />
+										<rich:tooltip followMouse="true" direction="auto" style="z-index: 8000;" target="motivoRejeicao" showDelay="500">
+											<h:outputText value="#{listaDocumentoPessoa.motivoRejeicao}" style="color:rgb(0, 0, 0)" />
+										</rich:tooltip>
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Data" />
+									</f:facet>
+									<h:panelGroup>
+										<h:outputText value="#{listaDocumentoPessoa.dataSolicitacao eq 'REJEITADO' ? listaDocumentoPessoa.dataRejeicao : listaDocumentoPessoa.dataAssinatura}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="date" />
+										</h:outputText>
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Opções" />
+									</f:facet>
+									<h:panelGroup>
+										<a4j:commandLink rendered="#{listaDocumentoPessoa.situacaoDocumentoAssinadoPessoaEnum eq 'PENDENTE'}" id="enviarNotificacaoPendencia" title="Enviar Notificação Pendencia Contrato Assinado" action="#{ImpressaoContratoControle.notificacaoPendenciaContratoAssinado}" styleClass="botoes" style="border: none;">
+											<i class="fas fa-envelope" style="font-size: 13px;"></i>
+										</a4j:commandLink>
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+						</ui:define>
+					</otm2:panel>
+				</a4j:repeat>
+				<h:panelGroup id="mensagensLog" layout="block" styleClass="row">
+					<otm:mensagem bean="#{ImpressaoContratoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAssinarDocumento" shadowOpacity="true" width="450" height="220">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Assinar Digitalmente Documento" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" id="hiperPanelAssinarDocumento" />
+					<rich:componentControl target="panelAssinarDocumento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAssinarDocumento">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<h:outputText value="Este modelo de contrato está habilitado para assinatura eletrônica, gostaria de realizar a impressão já solicitando a assinatura eletrônica?" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{not empty ImpressaoContratoControle.comboboxProvedorAssinaturaPadrao}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProvedorAssinatura}" />
+					<h:selectOneMenu id="provedorPadrao" styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.provedorDeAssinaturaEnum}">
+						<f:selectItems value="#{ImpressaoContratoControle.comboboxProvedorAssinaturaPadrao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="form ,formAlertaDocumentoAssinado" oncomplete="#{ImpressaoContratoControle.contrato};#{ImpressaoContratoControle.oncompleteOperacaoFuncionalidade}" action="#{ImpressaoContratoControle.imprimirContratoAssinaturaDigital(true)}" styleClass="btn btn-success" value="Imprimir Contrato" accesskey="2" icon="#{msg_botoes.btn_icon_editar_embutido}" />
+					<otm:spacer width="5px" />
+					<otm:commandButton styleClass="btn btn-danger" value="Não" icon="#{msg_botoes.btn_icon_fechar_embutido}" title="Não" action="#{ImpressaoContratoControle.imprimirContratoAssinaturaDigital(false)}" render="form, formAssinarDocumento" oncomplete="#{ImpressaoContratoControle.contrato};#{ImpressaoContratoControle.oncompleteOperacaoFuncionalidade};" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAlertaDocumentoAssinado" shadowOpacity="true" width="450" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Alerta Documento Assinado" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" id="hiperPanelAlertaDocumentoAssinado" />
+					<rich:componentControl target="panelAlertaDocumentoAssinado" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAlertaDocumentoAssinado">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<h:outputText value="Existe(m) #{ImpressaoContratoControle.quantidadeDocumentoAssinadoMatriculaPeriodo} contratos eletrônicos já gerado para esta matrícula periodo , deseja rejeitar este(s) contrato(s) pendente(s) emitido(s) anteriormente que estão aguardando assinatura?" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="form" action="#{ImpressaoContratoControle.rejeitarContratosAssinaturaDigital(true)}" styleClass="btn btn-success" value="Imprimir Contrato" accesskey="2" icon="#{msg_botoes.btn_icon_editar_embutido}" oncomplete="#{ImpressaoContratoControle.contrato};#{rich:component('panelAlertaDocumentoAssinado')}.hide()" />
+					<otm:spacer width="5px" />
+					<otm:commandButton styleClass="btn btn-danger" value="Não" icon="#{msg_botoes.btn_icon_fechar_embutido}" title="Não" action="#{ImpressaoContratoControle.rejeitarContratosAssinaturaDigital(false)}" render="form, formAssinarDocumento" oncomplete="#{ImpressaoContratoControle.contrato};#{rich:component('panelAlertaDocumentoAssinado')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" onshow="document.getElementById('formCurso:valorConsultarCurso').focus()" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Curso"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkCurso" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{ImpressaoContratoControle.campoConsultaCurso}">
+						<f:selectItem itemLabel="Nome" itemValue="nome" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultarCurso" size="20" styleClass="form-control campos" value="#{ImpressaoContratoControle.valorConsultaCurso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCurso:mensagemConsultarCurso, formCurso:resultadoConsultarCurso, formCurso:scResultadoCurso" action="#{ImpressaoContratoControle.consultarCurso}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultarCurso" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ImpressaoContratoControle.listaConsultaCurso}" rows="5" var="cursoItens">
+					<rich:column sortBy="#{cursoItens.nome}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<a4j:commandLink action="#{ImpressaoContratoControle.selecionarCurso}" oncomplete="#{rich:component('panelCurso')}.hide()" render="form" id="nome" value="#{cursoItens.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ImpressaoContratoControle.selecionarCurso}" focus="curso" render="form" oncomplete="#{rich:component('panelCurso')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important"> <rich:dataScroller align="center" for="formCurso:resultadoConsultarCurso" maxPages="10" id="scResultadoCurso" boundaryControls="auto" fastControls="hide" stepControls="auto" /> </div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultarCurso" layout="block" styleClass="row">
+					<otm:mensagem bean="#{ImpressaoContratoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelErroEnvioLote" shadowOpacity="true" width="750" height="500" domElementAttachment="parent">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Impressão de contrato em lote " />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkErroEnvioLote" />
+					<rich:componentControl target="panelErroEnvioLote" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formErroEnvioLote">
+				<h:panelGroup layout="block" style="width:100%;font-size: 14px;">
+					<h:outputText value="Os contratos abaixo não foram enviadas para o provedor de assinatura" />
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="resultadoErroEnvioLote" styleClass="mt10" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ImpressaoContratoControle.listaErroEnvioLote}" rows="10" var="impressaoContratoVOItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Matrícula" />
+							</f:facet>
+							<h:outputText id="matricula" value="#{impressaoContratoVOItens.matriculaVO.matricula}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Nome" />
+							</f:facet>
+							<h:outputText id="nome" value="#{impressaoContratoVOItens.matriculaVO.aluno.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Motivo Rejeição" />
+							</f:facet>
+							<h:outputText id="motivoRejeicao" value="#{impressaoContratoVOItens.motivoRejeicao}" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important"> <rich:dataScroller align="center" for="formErroEnvioLote:resultadoErroEnvioLote" maxPages="10" id="scResultadoErroEnvioLote" boundaryControls="auto" stepControls="auto" fastControls="hide" /> </div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup layout="block" style="width:100%;text-align:center;">
+						<otm:commandButton id="fechar" value="Fechar" oncomplete="#{rich:component('panelErroEnvioLote')}.hide()" render="form" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_fechar_embutido}" />
+					</h:panelGroup>
+					<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+						<h:panelGroup columns="1" width="100%">
+							<h:outputText styleClass="field control-label mensagem col-md-12" value="#{ImpressaoContratoControle.mensagem}" />
+							<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{ImpressaoContratoControle.mensagemDetalhada}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{ImpressaoContratoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridDadosAluno">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Filtrar Por" />
+					<h:selectOneMenu id="filtrarPor" styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.campoFiltroPor}">
+						<a4j:ajax event="change" listener="#{ImpressaoContratoControle.inicializarDados}" render="form" execute="form" />
+						<f:selectItems value="#{ImpressaoContratoControle.tipoConsultaFiltroPor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<!-- <h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ImpressaoContratoControle.campoFiltroPor eq 'matricula'}">
+						<h:outputText rendered="#{ImpressaoContratoControle.campoFiltroPor eq 'matricula'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_matricula}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="matricula" size="30" maxlength="30" styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.impressaoContratoVO.matriculaVO.matricula}">
+								<a4j:ajax event="change" focus="matricula" listener="#{ImpressaoContratoControle.consultarAlunoPorMatricula}" execute="form" render="form" />
+							</h:inputText>
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosAluno" alt="Localizar Aluno" render="formAluno" oncomplete="#{rich:component('panelAluno')}.show()" action="#{ImpressaoContratoControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAluno" alt="Limpar Dados" action="#{ImpressaoContratoControle.limparDadosAluno}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup> -->
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ImpressaoContratoControle.campoFiltroPor eq 'matricula' }">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_matricula}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:sugestionBox id="sugestionRAMAtricula" bean="#{ImpressaoContratoControle}" autoCompleteMatricula="true" value="#{ImpressaoContratoControle.impressaoContratoVO.matriculaVO.matricula}" action="#{ImpressaoContratoControle.consultarAlunoPorMatricula}"></otm:sugestionBox>
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosAlunoMatricula" alt="Localizar Aluno" render="formAluno" oncomplete="#{rich:component('panelAluno')}.show()" action="#{ImpressaoContratoControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAlunoMatricula" alt="Limpar Dados" action="#{ImpressaoContratoControle.limparDadosAluno}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" /> </span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ImpressaoContratoControle.campoFiltroPor eq 'registroAcademico'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_registroAcademico}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:sugestionBox id="sugestionRAMAtriculaRegistroAcademico" bean="#{ImpressaoContratoControle}" autoCompleteMatricula="false" value="#{ImpressaoContratoControle.impressaoContratoVO.matriculaVO.aluno.registroAcademico}" action="#{ImpressaoContratoControle.consultarAlunoPorRegistroAcademico}"></otm:sugestionBox>
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosAlunoRegistroAcademico" alt="Localizar Aluno" render="formAluno" oncomplete="#{rich:component('panelAluno')}.show()" action="#{ImpressaoContratoControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAlunoRegistroAcademico" alt="Limpar Dados" action="#{ImpressaoContratoControle.limparDadosAluno}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" /> </span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<!-- 					<br></br> -->
+				<h:panelGroup layout="block" styleClass="#{ImpressaoContratoControle.campoFiltroPor eq 'turma' and ImpressaoContratoControle.apresentarSemestre ? 'col-md-4' : 'col-md-6'}" rendered="#{ImpressaoContratoControle.campoFiltroPor eq 'turma'}">
+					<h:outputText rendered="#{ImpressaoContratoControle.campoFiltroPor eq 'turma'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_turma}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="turma" size="30" maxlength="250" styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.turma.identificadorTurma}">
+							<a4j:ajax event="change" focus="turma" listener="#{ImpressaoContratoControle.consultarTurmaPorIdentificador}" render="form" execute="form" />
+						</h:inputText>
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" alt="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" action="#{ImpressaoContratoControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" alt="Limpar Dados" action="#{ImpressaoContratoControle.limparDadosTurma}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" /> </span>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="#{ImpressaoContratoControle.campoFiltroPor eq 'curso' and ImpressaoContratoControle.apresentarSemestre ? 'col-md-4' : 'col-md-6'}" rendered="#{ImpressaoContratoControle.campoFiltroPor eq 'curso'}">
+					<h:outputText rendered="#{ImpressaoContratoControle.campoFiltroPor eq 'curso'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_curso}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="curso" size="30" maxlength="30" styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.curso.nome}">
+							<a4j:ajax event="change" focus="curso" listener="#{ImpressaoContratoControle.consultarCursoPorNome}" render="form" execute="form" />
+						</h:inputText>
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosCurso" alt="Localizar Curso" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show()" action="#{ImpressaoContratoControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosCurso" alt="Limpar Dados" action="#{ImpressaoContratoControle.limparDadosCurso}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" /> </span>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{(ImpressaoContratoControle.campoFiltroPor eq 'turma' or ImpressaoContratoControle.campoFiltroPor eq 'curso') and ImpressaoContratoControle.apresentarAno}">
+					<h:outputText rendered="#{(ImpressaoContratoControle.campoFiltroPor eq 'turma' or ImpressaoContratoControle.campoFiltroPor eq 'curso') and ImpressaoContratoControle.apresentarAno}" styleClass="field control-label tituloCampos" value="Ano" />
+					<h:inputText id="ano" styleClass="form-control camposObrigatorios" maxlength="4" size="4" value="#{ImpressaoContratoControle.ano}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{(ImpressaoContratoControle.campoFiltroPor eq 'turma' or ImpressaoContratoControle.campoFiltroPor eq 'curso') and ImpressaoContratoControle.apresentarAno}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Semestre" rendered="#{ImpressaoContratoControle.apresentarSemestre}" />
+					<h:selectOneMenu id="semestre" styleClass="form-control campos" value="#{ImpressaoContratoControle.semestre}" rendered="#{ImpressaoContratoControle.apresentarSemestre}">
+						<f:selectItems value="#{EnumControle.comboboxSemestreEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{(ImpressaoContratoControle.campoFiltroPor eq 'turma' or ImpressaoContratoControle.campoFiltroPor eq 'curso') and ImpressaoContratoControle.apresentarIntervaloDatasParaTurmaIntegral}">
+					<h:outputText rendered="#{(ImpressaoContratoControle.campoFiltroPor eq 'turma' or ImpressaoContratoControle.campoFiltroPor eq 'curso') and ImpressaoContratoControle.apresentarIntervaloDatasParaTurmaIntegral}" styleClass="field control-label tituloCampos" value="Período" />
+					<otm:calendar id="dataInicio" value="#{ImpressaoContratoControle.dataInicio}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{(ImpressaoContratoControle.campoFiltroPor eq 'turma' or ImpressaoContratoControle.campoFiltroPor eq 'curso') and ImpressaoContratoControle.apresentarIntervaloDatasParaTurmaIntegral}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ate}" />
+					<otm:calendar id="dataFim" value="#{ImpressaoContratoControle.dataFim}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Tipo Contrato" />
+					<h:selectOneMenu id="tipo" styleClass="form-control camposObrigatorios" value="#{ImpressaoContratoControle.tipoContrato}">
+						<f:selectItems value="#{ImpressaoContratoControle.listaSelectItemTipoTextoPadrao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ImpressaoContratoControle.campoFiltroPor ne 'matricula' and ImpressaoContratoControle.campoFiltroPor ne 'registroAcademico'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Tipo Aluno" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" id="tipoAluno" value="#{ImpressaoContratoControle.tipoAluno}">
+						<f:selectItems value="#{ImpressaoContratoControle.tipoAlunoComboBox}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{(ImpressaoContratoControle.campoFiltroPor eq 'turma' or ImpressaoContratoControle.campoFiltroPor eq 'curso')}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Situação Contrato Digital" />
+					<h:selectOneMenu styleClass="form-control campos" id="situacaoContratoDigital" value="#{ImpressaoContratoControle.situacaoContratoDigital}">
+						<f:selectItems value="#{ImpressaoContratoControle.situacaoContratoDigitalComboBox}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup rendered="#{(ImpressaoContratoControle.campoFiltroPor eq 'turma' and ImpressaoContratoControle.turma.codigo > 0) or (ImpressaoContratoControle.campoFiltroPor eq 'curso' and ImpressaoContratoControle.curso.codigo > 0)}" layout="block" styleClass="col-md-12 text-center m10">
+				<otm:commandButton id="consultarAlunos" value="Consultar" action="#{ImpressaoContratoControle.consultarDadosGeracaoRelatorio}" render="form" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" />
+			</h:panelGroup>
+			<h:panelGroup rendered="#{ImpressaoContratoControle.tipoContrato eq 'MA' and !empty ImpressaoContratoControle.impressaoContratoVOs and ((ImpressaoContratoControle.campoFiltroPor eq 'turma' and ImpressaoContratoControle.turma.codigo > 0) or (ImpressaoContratoControle.campoFiltroPor eq 'curso' and ImpressaoContratoControle.curso.codigo > 0))}" layout="block" styleClass="col-md-12 text-center m10">
+				<otm:commandButton id="imprimirPorLote" value="Imprimir Todos Contratos" action="#{ImpressaoContratoControle.prepararImpressaoLote}" render="form, formImpressaoLote" oncomplete="#{ImpressaoContratoControle.contrato};" styleClass="btn btn-default" icon="fas fa-file-contract" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+			<rich:dataTable id="impressoesContrato" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" rendered="#{!empty ImpressaoContratoControle.impressaoContratoVOs}" value="#{ImpressaoContratoControle.impressaoContratoVOs}" rows="10" var="impressaoContratoItens">
+				<rich:column filterExpression="#{!impressaoContratoItens.matriculaVO.bloqueioPorSolicitacaoLiberacaoMatricula}" filterType="custom">
+					<f:facet name="header">
+						<h:outputText value="Matrícula" />
+					</f:facet>
+					<h:panelGroup>
+						<h:outputText value="#{impressaoContratoItens.matriculaVO.matricula}" />
+					</h:panelGroup>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="Aluno" />
+					</f:facet>
+					<h:panelGroup>
+						<h:outputText value="#{impressaoContratoItens.matriculaVO.aluno.nome}" />
+					</h:panelGroup>
+				</rich:column>
+				<rich:column rendered="#{ImpressaoContratoControle.apresentarSemestreLista or ImpressaoContratoControle.apresentarAnoLista}">
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText rendered="#{!ImpressaoContratoControle.apresentarSemestreLista}" value="Ano" />
+							<h:outputText rendered="#{ImpressaoContratoControle.apresentarSemestreLista}" value="Ano/Semestre" />
+						</h:panelGroup>
+					</f:facet>
+					<h:panelGroup>
+						<h:outputText rendered="#{!ImpressaoContratoControle.apresentarSemestreLista}" value="#{impressaoContratoItens.matriculaPeriodoVO.ano}" />
+						<h:outputText rendered="#{ImpressaoContratoControle.apresentarSemestreLista}" value="#{impressaoContratoItens.matriculaPeriodoVO.ano}/#{impressaoContratoItens.matriculaPeriodoVO.semestre}" />
+					</h:panelGroup>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="Turma" />
+					</f:facet>
+					<h:panelGroup>
+						<h:outputText value="#{impressaoContratoItens.matriculaPeriodoVO.turma.identificadorTurma}" />
+					</h:panelGroup>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="Situação Matricula" />
+					</f:facet>
+					<h:panelGroup>
+						<h:outputText value="#{impressaoContratoItens.matriculaPeriodoVO.situacaoMatriculaPeriodo_Apresentar}" />
+					</h:panelGroup>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_MatriculaPeriodo_situacaoPeriodo}" />
+					</f:facet>
+					<h:panelGroup>
+						<h:outputText value="#{impressaoContratoItens.matriculaPeriodoVO.situacao_Apresentar}" />
+					</h:panelGroup>
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<h:panelGroup>
+						<otm:commandIcon id="emitirContrato" render="form, formInclusaoReposicao, formSelecionarContrato, formAssinarDocumento" action="#{ImpressaoContratoControle.imprimirContrato}" tooltip="Imprimir Contrato" icon="#{msg_botoes.btn_icon_contrato} iconePequeno" oncomplete="#{ImpressaoContratoControle.contrato};" />
+						<otm:commandIcon id="visualizarContrato" render="formLog" action="#{ImpressaoContratoControle.visualizarContratoImpresso}" rendered="#{!empty impressaoContratoItens.matriculaPeriodoVO.listaDocumentoAssinadoVO and (!empty ImpressaoContratoControle.impressaoContratoVO.listaLogImpressaoContratoVO  or   ImpressaoContratoControle.campoFiltroPor eq 'curso' or  ImpressaoContratoControle.campoFiltroPor eq 'turma' ) }" icon="#{msg_botoes.btn_icon_verificar} iconePequeno" tooltip="Visualizar Contratos Impressos" oncomplete="#{rich:component('panelLog')}.show()" />
+						<otm:commandIcon id="contratosAssinado" render="formDocumentoAssinado" action="#{ImpressaoContratoControle.visualizarContratoAssinado}" rendered="#{!empty impressaoContratoItens.matriculaPeriodoVO.listaDocumentoAssinadoVO}" tooltip="Visualizar Contratos Assinados" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" oncomplete="#{rich:component('panelDocumentoAssinado')}.show()" />
+					</h:panelGroup>
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important"> <otm:commandButton id="visualizarContratoMat" render="formLog" action="#{ImpressaoContratoControle.visualizarContratoImpresso}" rendered="#{!empty impressaoContratoItens.listaLogImpressaoContratoVO and (ImpressaoContratoControle.campoFiltroPor eq 'turma' or ImpressaoContratoControle.campoFiltroPor eq 'curso')}" value="Visualizar Contratos Impressos" oncomplete="#{rich:component('panelLog')}.show()" image="#{resource['/imagens/botaoUltimoContratoImpresso.png']}" /> <rich:dataScroller align="center" for="form:impressoesContrato" stepControls="auto" fastControls="hide" boundaryControls="auto" maxPages="10" id="scimpressoesContrato" /> </div>
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup id="mensagens" columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{ImpressaoContratoControle}"></otm:mensagem>
+			</h:panelGroup>
+		</h:form>
+		<otm2:progressBar bean="#{ImpressaoContratoControle}" bar="progressBarVO" id="modalProgressBar" render="modalProgressBar, form, formErroEnvioLote" oncomplete="#{ImpressaoContratoControle.oncompleteModal}" />
+		<script>
+			document.getElementById("form:matricula").focus();
+		</script>
+	</ui:define>
+</ui:composition> </html>

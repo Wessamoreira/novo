@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+	<script>
+		window.onload = function() {
+			document.getElementById("form:valorConsulta").focus();
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_tituloForm}" />
+	</ui:define>
+	<ui:define name="ajuda">
+		<a4j:region>
+			<a4j:commandLink id="ajuda" type="submit" title="Ajuda" style="float:right;border:none" action="#{AjudaControle.executarConsulta}" oncomplete="abrirPopup('../../ajudaCons.xhtml', 'Ajuda', 945, 490);">
+				<h:graphicImage value="#{resource['/imagens/209.png']}" />
+				<f:setPropertyActionListener target="#{AjudaControle.moduloConsulta}" value="ADMINISTRATIVO/ADMINISTRATIVO/UNIDADEENSINO" />
+			</a4j:commandLink>
+		</a4j:region>
+	</ui:define>
+	<ui:define name="modal">
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelImportarPlanilhaVagaOfertada">
+			<f:facet name="header">
+				<h:outputText value="#{msg_botoes.btn_importarVagasOfertadas}" />
+			</f:facet>
+			<h:form id="formImportarPlanilha">
+				<h:panelGroup layout="block" styleClass="col-md-12"   style="margin-bottom:10px">
+					<rich:fileUpload fileUploadListener="#{UnidadeEnsinoControle.importarExcelVagaOfertada}" render="formImportarPlanilha listaUnidadesEnsino" execute="form" listHeight="60" listWidth="390" acceptedTypes="xlsx, XLSX" allowFlash="false" noDuplicate="true" addLabel="Selecionar Arquivo" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" id="upload" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+						<a4j:ajax event="uploadcomplete" render="formCadastro mensagemStatusImportacaoVagaOfertada" execute="formCadastro" />
+					</rich:fileUpload>
+				</h:panelGroup>
+				<h:panelGroup styleClass="barra-btn-flutuante-modal-80" layout="block">
+					<otm:commandButton id="exportarVagaOfertada" render="formCadastro mensagemStatusImportacaoVagaOfertada" oncomplete="#{UnidadeEnsinoControle.urlDownloadSV}"  styleClass="btn btn-info" value="#{msg_botoes.btn_exportarVagasOfertadas}" icon="#{msg_botoes.btn_icon_upload_embutido}" action="#{UnidadeEnsinoControle.exportarExcelVagaOfertada}" />
+					<otm:commandButton id="gravarImportacao" render="formCadastro mensagemStatusImportacaoVagaOfertada" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_gravarVagas}" style="margin-left: 5px"  oncomplete="#{UnidadeEnsinoControle.oncompleteModal}" action="#{UnidadeEnsinoControle.gravarImportacaoExcelVagaOfertada}" />
+					<otm:commandButton id="fecharPanel" render="formCadastro mensagemStatusImportacaoVagaOfertada" oncomplete="#{rich:component('panelImportarPlanilhaVagaOfertada')}.hide()" style="margin-left: 5px" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" action="#{UnidadeEnsinoControle.limparListaUnidadeEnsinoVagaOfertada}" />
+				</h:panelGroup>
+			</h:form>
+			<rich:dataTable value="#{UnidadeEnsinoControle.listaUnidadeEnsinoVagaOfertada}" var="unidade" rowKeyVar="row" rows="10" id="listaUnidadesEnsino">
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="Unidade de Ensino" />
+					</f:facet>
+					<h:outputText value="#{unidade.nome}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="Vagas Ofertadas" />
+					</f:facet>
+					<h:outputText value="#{unidade.numeroVagaOfertada}" />
+				</rich:column>
+				<f:facet name="footer">
+					<rich:dataScroller for="listaUnidadesEnsino" maxPages="5" />
+				</f:facet>
+			</rich:dataTable>
+			
+			<h:panelGroup id="mensagemStatusImportacaoVagaOfertada" layout="block" styleClass="row" >
+				<otm:mensagem bean="#{UnidadeEnsinoControle}" />
+			</h:panelGroup>
+		</rich:popupPanel>
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<h:form id="formCadastro">
+			<h:panelGroup layout="block" styleClass="col-md-12">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{UnidadeEnsinoControle.controleConsulta.campoConsulta}">
+					<a4j:ajax event="change" render="formCadastro:valorConsulta" execute="@this" />
+					<f:selectItems value="#{UnidadeEnsinoControle.tipoConsultaCombo}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-7">
+				<h:inputText onkeypress="#{UnidadeEnsinoControle.mascaraConsulta}" id="valorConsulta" styleClass="form-control campos" value="#{UnidadeEnsinoControle.controleConsulta.valorConsulta}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<otm:commandButton id="consultar" type="submit" render="formCadastro" value="#{msg_botoes.btn_consultar}" action="#{UnidadeEnsinoControle.irPaginaInicial}" styleClass="btn btn-default btn-consultar" accesskey="2" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+			<rich:dataTable id="items" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{UnidadeEnsinoControle.listaConsulta}" rendered="#{UnidadeEnsinoControle.apresentarResultadoConsulta}" rows="10" var="unidadeEnsinoItem">
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_codigo}" />
+					</f:facet>
+					<a4j:commandLink id="codigo" action="#{UnidadeEnsinoControle.editar}" value="#{unidadeEnsinoItem.codigo}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_nome}" />
+					</f:facet>
+					<a4j:commandLink id="nome" action="#{UnidadeEnsinoControle.editar}" value="#{unidadeEnsinoItem.nome}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_cidade}" />
+					</f:facet>
+					<a4j:commandLink id="cidade" action="#{UnidadeEnsinoControle.editar}" value="#{unidadeEnsinoItem.cidade.nome} - #{unidadeEnsinoItem.cidade.estado.sigla}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_CNPJ}" />
+					</f:facet>
+					<a4j:commandLink id="CNPJ" action="#{UnidadeEnsinoControle.editar}" value="#{unidadeEnsinoItem.CNPJ}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_inscEstadual}" />
+					</f:facet>
+					<a4j:commandLink id="inscEstadual" action="#{UnidadeEnsinoControle.editar}" value="#{unidadeEnsinoItem.inscEstadual}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_matriz}" />
+					</f:facet>
+					<a4j:commandLink id="matriz" action="#{UnidadeEnsinoControle.editar}" value="#{unidadeEnsinoItem.unidadeMatriz}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<otm:commandIcon action="#{UnidadeEnsinoControle.editar}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+				</rich:column>
+				<f:facet name="footer">
+					<rich:dataScroller rendered="#{UnidadeEnsinoControle.listaConsulta.size() gt 10}" boundaryControls="auto" stepControls="auto" fastControls="hide" for="items" limitRender="10" align="center" />
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup layout="block" styleClass="row">
+				<otm:mensagem bean="#{UnidadeEnsinoControle}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton id="importarVagasOfertadas" action="#{UnidadeEnsinoControle.limparListaUnidadeEnsinoVagaOfertada}" styleClass="btn btn-danger" value="#{msg_botoes.btn_importarVagasOfertadas}" icon="#{msg_botoes.btn_icon_download_embutido}" oncomplete="#{rich:component('panelImportarPlanilhaVagaOfertada')}.show()" render="formImportarPlanilha listaUnidadesEnsino" />
+				<otm:commandButton id="novo" action="#{UnidadeEnsinoControle.novo}" value="#{msg_botoes.btn_novo}" style="margin-left: 5px" styleClass="btn btn-info btn-novo" />
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

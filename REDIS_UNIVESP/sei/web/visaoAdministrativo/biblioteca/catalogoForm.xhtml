@@ -1,0 +1,2330 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:fa="http://java.sun.com/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:ha="http://java.sun.com/jsf/html" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Catalogo_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:outputScript src="resource:///jquery.js" />
+		<h:outputScript name="jquery.color.js" library="script/crop" />
+		<h:outputScript name="jquery.Jcrop.js" library="script/crop" />
+		<h:outputStylesheet name="jquery.Jcrop.css" library="script/crop" />
+		<h:outputScript name="webcam.js" library="script/webcam" />
+
+		<!-- UPLOAD -->
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="painelConfirmarExclusaoArquivo" width="450" height="150" style="border-radius: 12px;">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Exclusão Arquivo" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConfirmarExclusaoArquivo">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+					<h:outputText value="Deseja Realmente Excluir o arquivo?" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton action="#{CatalogoControle.removerArquivo}" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info mr5" oncomplete="#{rich:component('painelConfirmarExclusaoArquivo')}.hide();" render="form, formImagem" value="Sim" />
+					<otm:commandButton image="#{resource['/imagens/tcc/reprovado.png']}" value="não" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" oncomplete="#{rich:component('painelConfirmarExclusaoArquivo')}.hide();" render="panelGridUploadCatalogo, formImagem , SemDownload" title="Não" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado80" id="painelImagemBiblioteca" width="350" height="450" style="border-radius: 12px;">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{CatalogoControle.arquivoVO.agrupador}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkImagemBiblioteca" />
+					<rich:componentControl target="painelImagemBiblioteca" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagemBiblioteca">
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" value="Cancelar" oncomplete="#{rich:component('painelImagemBiblioteca')}.hide();" render="formImagemBiblioteca, form" title="Sair" />
+				</h:panelGroup>
+				<h:panelGroup columns="1" id="tipoImagem" style="width:200px; height:300px; border: 2px solid #CCC;">
+					<h:graphicImage value="#{CatalogoControle.urlLogoIndexApresentar}" style="width:200px;" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<style>
+.barra-btn-flutuante-modal-80-panel {
+	position: fixed;
+	width: 80%;
+	background-color: #dedede;
+	padding: 10px 5px 5px 5px;
+	left: 10%;
+	border-radius: 0px 0px 10px 10px;
+	margin: 0 auto;
+	bottom: 4%;
+	z-index: 1;
+	text-align: center;
+	min-height: 35px;
+}
+</style>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="painelImagem" zindex="2000" shadowOpacity="false">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Upload Arquivo" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkImagem" />
+					<rich:componentControl target="painelImagem" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagem">
+				<script type="text/javascript">
+					jQuery(function($) {
+						$(document).ready(function() {
+							$("#formImagem\\:foto2").Jcrop({
+								onSelect : showCoords,
+								onChange : showCoords,
+								bgColor : 'black',
+								bgOpacity : .3,
+								setSelect : [ 1, 1, 100, 150 ],																
+								aspectRatio:20/29
+							});
+						});
+					});
+					function showCoords(c) {
+						var valorX = document.getElementById('formImagem:x');
+						valorX.value = c.x;
+
+						var valorY = document.getElementById('formImagem:y');
+						valorY.value = c.y;
+
+						var valorW = document.getElementById('formImagem:w');
+						valorW.value = c.w;
+
+						var valorH = document.getElementById('formImagem:h');
+						valorH.value = c.h;
+
+					};
+				</script>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80-panel">
+					<otm:commandButton value="Cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" oncomplete="#{rich:component('painelImagem')}.hide();" render="panelGridUploadCatalogo, formImagem , SemDownload" title="Cancelar" action="#{CatalogoControle.limparDadosArquivos}" />
+				</h:panelGroup>
+				<h:panelGroup style="display:none" layout="block">
+					<h:panelGroup style="display:none" columns="6">
+						<h:panelGroup>
+							<h:outputText value="X" />
+							<h:inputText size="4" id="x" value="#{CatalogoControle.x}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="Y" />
+							<h:inputText size="4" id="y" value="#{CatalogoControle.y}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="largura" />
+							<h:inputText size="4" id="w" value="#{CatalogoControle.largura}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="altura" />
+							<h:inputText size="4" id="h" value="#{CatalogoControle.altura}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:graphicImage rendered="#{CatalogoControle.arquivoVO.isWord}" url="#{resource['/imagens/iconeArquivo/wordGrande.png']}" style="top: 162px;position: absolute;left: 26%;" />
+				<h:graphicImage rendered="#{CatalogoControle.arquivoVO.isExcel}" url="#{resource['/imagens/iconeArquivo/excelGrande.png']}" style="top: 162px;position: absolute;left: 26%;" />
+				<h:graphicImage rendered="#{CatalogoControle.arquivoVO.isPdF}" url="#{resource['/imagens/iconeArquivo/pdfGrande.png']}" style="top: 162px;position: absolute;left: 26%;" />
+				<h:graphicImage rendered="#{CatalogoControle.arquivoVO.isTxt}" url="#{resource['/imagens/iconeArquivo/txtGrande.png']}" style="top: 162px;position: absolute;left: 26%;" />
+				<h:graphicImage rendered="#{CatalogoControle.arquivoVO.isOutros}" url="#{resource['/imagens/iconeArquivo/outrosGrande.png']}" style="top: 162px;position: absolute;left: 26%;" />
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<rich:fileUpload rendered="#{CatalogoControle.apresentarAnexoCapaContraCapa}" styleClass="rich-fileupload-list-decor-aluno" addLabel="Anexar Arquivo" listHeight="35" listWidth="600" noDuplicate="true" fileUploadListener="#{CatalogoControle.upLoadArquivoBibliotecaExterna}" maxFilesQuantity="1" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo 2MB" uploadLabel="Enviar" acceptedTypes=".jpg, .gif, .png, .bmp" ontyperejected="alert('Capa e Contra-Capa só poderá ser anexado no formato  JPG, GIF, PNG and BMP');" serverErrorLabel="Tamanho Máximo Permitido 2MB" id="uploadImagemBanner" immediateUpload="true">
+							<a4j:ajax listener="#{CatalogoControle.renderizarUpload}" event="uploadcomplete" render="formImagem, form:imagem" />
+						</rich:fileUpload>
+						<rich:fileUpload rendered="#{!CatalogoControle.apresentarAnexoCapaContraCapa}" styleClass="rich-fileupload-list-decor-aluno" addLabel="Anexar Arquivo" listHeight="35" listWidth="600" noDuplicate="true" fileUploadListener="#{CatalogoControle.upLoadArquivoBibliotecaExterna}" maxFilesQuantity="1" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo 2MB" uploadLabel="Enviar" serverErrorLabel="Tamanho Máximo Permitido 2MB" id="uploadImagemBanner2" immediateUpload="true">
+							<a4j:ajax listener="#{CatalogoControle.renderizarUpload}" event="uploadcomplete" render="formImagem, form:imagem" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+						<h:panelGroup rendered="#{CatalogoControle.exibirBotao}">
+							<otm:commandButton image="#{resource['/imagens/minhaBiblioteca/Recortar_Imagem.png']}" icon="#{msg_botoes.btn_icon_recortar_embutido}" styleClass="btn btn-primary" action="#{CatalogoControle.recortarFoto}" focus="tipoUploadApresentar" render="form, formImagem" value="Recorte a foto" title="Recorte a foto" oncomplete="#{rich:component('painelImagem')}.hide();" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{CatalogoControle.exibirBotaoConfirmaArquivo}">
+							<otm:commandButton image="#{resource['/imagens/biblioteca/adicionarReserva.png']}" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info ml5" value="Confirmar Arquivo" oncomplete="#{rich:component('painelImagem')}.hide();" action="#{CatalogoControle.confirmarArquivoAnexado}" focus="tipoUploadApresentar" render="form, formImagem" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="TesteFundo" layout="block" styleClass="row">
+					<h:panelGroup id="panelFoto" rendered="#{CatalogoControle.exibirBotao}">
+						<h:graphicImage url="#{CatalogoControle.showFotoCrop}" id="foto2" style="max-width:300px; max-height:405px;" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- UPLOAD -->
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelExcluirExemplar" shadowOpacity="true" width="550" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Excluir Exemplar" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkExcluirExemplar" />
+					<rich:componentControl target="panelExcluirExemplar" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluirExemplar">
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual eq 'EM'}">
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual eq 'EM'}" value="#{msg.msg_Exemplar_excluirExemplarEmprestado}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual ne 'EM' and !empty CatalogoControle.mensagemEntidadeReferenciadaExemplarExcluir}">
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual ne 'EM' and !empty CatalogoControle.mensagemEntidadeReferenciadaExemplarExcluir}" value="#{msg.msg_Exemplar_excluirExemplarArquivoReferenciado}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual ne 'EM' and !empty CatalogoControle.mensagemEntidadeReferenciadaExemplarExcluir}">
+					<rich:list rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual ne 'EM' and !empty CatalogoControle.mensagemEntidadeReferenciadaExemplarExcluir}" value="#{CatalogoControle.mensagemEntidadeReferenciadaExemplarExcluir}" var="entidade">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{entidade}" />
+					</rich:list>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center mt10" rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual ne 'EM'}">
+					<h:outputText styleClass="field control-label tituloCampos" rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual ne 'EM'}" value="#{msg.msg_Exemplar_confirmarExclusaoExemplar}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<h:panelGroup rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual ne 'EM'}">
+						<otm:commandButton id="confirmarExclusaoExemplar" oncomplete="#{rich:component('panelExcluirExemplar')}.hide();" action="#{CatalogoControle.removerExemplarLista}" render="form, formExcluirExemplar" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info mr5" value="Confirmar Exclusão" />
+						<otm:commandButton id="naoConfirmarExclusaoExemplar" oncomplete="#{rich:component('panelExcluirExemplar')}.hide();" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" value="Cancelar Exclusão" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{CatalogoControle.exemplarExcluir.situacaoAtual eq 'EM'}">
+						<otm:commandButton id="fecharExclusaoExemplar" oncomplete="#{rich:component('panelExcluirExemplar')}.hide();" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="#{msg.msg_fechar}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelExibirExemplar" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Dados do Exemplar" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+			</f:facet>
+			<h:form id="formExibirExemplar">
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_isbn}" />
+					<h:inputText size="35" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.isbn}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_issn}" />
+					<h:inputText size="35" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.issn}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Número Páginas" />
+					<h:inputText size="35" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.nrPaginas}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_link}" />
+					<h:inputText size="35" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.link}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_fasciculos}" />
+					<h:inputText size="35" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.fasciculos}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MovimentacaoCaixa_fornecedor}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="fornecedor" size="30" maxlength="100" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.exemplarVO.fornecedorVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon oncomplete="#{rich:component('panelFornecedor')}.show()" render="fornecedor, panelFornecedor" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_Catalogo_consultarEditora}" /> <otm:commandIcon id="limparFornecedor" action="#{CatalogoControle.limparCampoFornecedor}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="fornecedor" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_formaEntrada}" />
+					<h:selectOneMenu id="tipoEntrada" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.tipoEntrada}">
+						<a4j:ajax execute="formExibirExemplar" render="formExibirExemplar" status="ajax" />
+						<f:selectItems value="#{CatalogoControle.listaSelectItemTipoEntrada}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Valor da Compra" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}" />
+					<h:inputText id="valorCompra" size="20" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.valorCompra}" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}">
+						<f:converter converterId="FormatadorNumerico" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2 h36">
+					<h:outputText styleClass="field control-label tituloCampos" value="Data da Compra" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}" />
+					<otm:calendar id="dataCompra" inputSize="10" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" value="#{CatalogoControle.exemplarVO.dataCompra}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_nrNotaFiscal}" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}" />
+					<h:inputText id="nrNotaFiscal" size="35" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.nrNotaFiscal}" onkeypress="aceitarSomenteValorNumerico(this)" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="salvarExemplar" oncomplete="#{rich:component('panelExibirExemplar')}.hide();" action="#{CatalogoControle.salvarExemplarSelecionado}" render="form, formExibirExemplar" styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" image="#{resource['/imagens/botaoOK.png']}" value="Gravar Exemplares" accesskey="2" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelNovoAutor" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formNovoAutor:nomeNovoAutor').focus();" onhide="document.getElementById('form:nomeAutor').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Catalogo_autores}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkNovoAutor" />
+					<rich:componentControl target="panelNovoAutor" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNovoAutor">
+				<rich:tabPanel switchType="client">
+					<rich:tab header="Autor">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Autor_nome}" />
+								<h:inputText id="nomeNovoAutor" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.novoAutorVO.nome}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Autor_telefone}" />
+								<h:inputText id="telefoneNovoAutor" onchange="return mascara(this.formNovoAutor, 'formNovoAutor:telefoneNovoAutor', '(99)9999-9999', event);" size="14" maxlength="14" styleClass="form-control campos" value="#{CatalogoControle.novoAutorVO.telefone}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Autor_email}" />
+								<h:inputText id="emailNovoAutor" styleClass="form-control campos" value="#{CatalogoControle.novoAutorVO.email}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+					<rich:tab header="Variações do Nome">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Autor_variacaoNome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-10">
+							<h:inputText id="variacaoNomeNovoAutor" size="70" maxlength="100" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.novoAutorVariacaoNomeVO.variacaoNome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3 text-center" id="btnAdicionarVariacaoNome">
+							<otm:commandButton action="#{CatalogoControle.adicionarVariacaoNome}" value="#{msg_botoes.btn_adicionar}" accesskey="6" render="formNovoAutor" styleClass="btn btn-primary dark btn-adicionar" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+						<h:panelGroup columns="1" width="100%" styleClass="tabFormSubordinada">
+							<rich:dataTable id="dtAutorVariacaoNome" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{CatalogoControle.novoAutorVO.listaAutorVariacaoNome}" rowKeyVar="row" var="autorVariacaoNomeItens">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Número" />
+									</f:facet>
+									<h:outputText value="#{row}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="Variação do Nome" />
+									</f:facet>
+									<h:outputText value="#{autorVariacaoNomeItens.variacaoNome}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									</f:facet>
+									<h:panelGroup>
+										<otm:commandIcon id="removerAutorVariacaoNome" action="#{CatalogoControle.removerAutorVariacaoNome}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" accesskey="7" render="formNovoAutor" />
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</rich:tab>
+				</rich:tabPanel>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{CatalogoControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton id="salvarNovoAutor" action="#{CatalogoControle.persistirNovoAutor}" oncomplete="#{rich:component('panelNovoAutor')}.hide()" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" title="#{msg.msg_gravar_dados}" accesskey="2" render="panelDtAutor, formAutor, dtAutorVariacaoNome" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAutor" shadowOpacity="true" width="750" height="500" top="0" onshow="document.getElementById('formAutor:valorConsultarAutor').focus();" onhide="document.getElementById('form:nomeAutor').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Catalogo_consultarAutor}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkAutor" />
+					<rich:componentControl target="panelAutor" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAutor">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarEditora" value="#{CatalogoControle.campoConsultarAutor}">
+						<f:selectItems value="#{CatalogoControle.tipoConsultarComboAutor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarAutor" styleClass="form-control campos" value="#{CatalogoControle.valorConsultarAutor}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarAutor" render="formAutor:mensagemConsultaAutor, formAutor:resultadoConsultaAutor , formAutor:scResultadoAutor , formAutor" action="#{CatalogoControle.consultarAutorRichModal}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="btnNovoAutor" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary btn_icon_adicionar_embutido" value="Adicionar Autor" oncomplete="#{rich:component('panelAutor')}.hide(); #{rich:component('panelNovoAutor')}.show()" render="formNovoAutor" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAutor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{CatalogoControle.listaConsultarAutor}" rows="10" var="autorConsultadoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Autor_codigo}" />
+						</f:facet>
+						<h:outputText value="#{autorConsultadoItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Autor_nome}" />
+						</f:facet>
+						<h:outputText value="#{autorConsultadoItens.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{CatalogoControle.selecionarAutor}" render="form" oncomplete="#{rich:component('panelAutor')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formAutor:resultadoConsultaAutor" maxPages="10" id="scResultadoAutor" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAutor" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{CatalogoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelNovaCidadePublicacao" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formNovaCidadePublicacao:nomeNovaCidadePublicacao').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Catalogo_cidadePublicacao}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkNovaCidadePublicacao" />
+					<rich:componentControl target="panelNovaCidadePublicacao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNovaCidadePublicacao">
+				<h:panelGroup layout="block" styleClass="col-md-1">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LinguaPublicacaoCatalogo_codigo}" />
+					<h:inputText id="codigoNovaCidadePublicacao" size="10" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.novaCidadePublicacaoCatalogoVO.codigo}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LinguaPublicacaoCatalogo_nome}" />
+					<h:inputText id="nomeNovaCidadePublicacao" size="50" maxlength="100" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.novaCidadePublicacaoCatalogoVO.nome}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CidadePublicacaoCatalogo_estado}" />
+					<h:inputText id="estadoNovaCidadePublicacao" size="50" maxlength="100" styleClass="form-control campos" value="#{CatalogoControle.novaCidadePublicacaoCatalogoVO.estado}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CidadePublicacaoCatalogo_pais}" />
+					<h:inputText id="paisNovaCidadePublicacao" size="50" maxlength="100" styleClass="form-control campos" value="#{CatalogoControle.novaCidadePublicacaoCatalogoVO.pais}" />
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{CatalogoControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton id="salvarNovaCidadePublicacao" action="#{CatalogoControle.persistirNovaCidadePublicacao}" oncomplete="#{rich:component('panelNovaCidadePublicacao')}.hide()" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" title="#{msg.msg_gravar_dados}" render="form, formNovaCidadePublicacao" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCidadePublicacao" shadowOpacity="true" width="800" height="600" onshow="document.getElementById('formCidadePublicacao:valorConsultarCidadePublicacao').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Catalogo_consultarCidadePublicacao}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkCidadePublicacao" />
+					<rich:componentControl target="panelCidadePublicacao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCidadePublicacao">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarEditora" value="#{CatalogoControle.campoConsultarCidadePublicacao}">
+						<f:selectItems value="#{CatalogoControle.tipoConsultarComboCidadePublicacao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarCidadePublicacao" styleClass="form-control campos" value="#{CatalogoControle.valorConsultarCidadePublicacao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarCidadePublicacao" render="formCidadePublicacao:mensagemConsultaCidadePublicacao, formCidadePublicacao:resultadoConsultaCidadePublicacao , formCidadePublicacao:scResultadoCidadePublicacao , formCidadePublicacao" action="#{CatalogoControle.consultarCidadePublicacaoRichModal}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="btnNovaCidadePublicacao" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary btn_icon_adicionar_embutido" value="Adicionar Nova Cidade" onclick="#{rich:component('panelNovaCidadePublicacao')}.show()" oncomplete="#{rich:component('panelCidadePublicacao')}.hide()" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCidadePublicacao" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{CatalogoControle.listaConsultarCidadePublicacao}" rows="10" var="cidadePublicacaoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Editora_codigo}" />
+						</f:facet>
+						<h:outputText value="#{cidadePublicacaoItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Editora_nome}" />
+						</f:facet>
+						<h:inputText styleClass="form-control camposObrigatorios" size="40" value="#{cidadePublicacaoItens.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cidade_estado}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" size="2" value="#{cidadePublicacaoItens.estado}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Estado_paiz}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" size="20" value="#{cidadePublicacaoItens.pais}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{CatalogoControle.selecionarCidadePublicacao}" render="form, formCidadePublicacao" oncomplete="#{rich:component('panelCidadePublicacao')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+						<otm:commandIcon action="#{CatalogoControle.alterarCidadePublicacao}" render="formCidadePublicacao" icon="#{msg_botoes.btn_icon_gravar} iconePequeno" />
+						<otm:commandIcon action="#{CatalogoControle.excluirCidadePublicacao}" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" render="formCidadePublicacao" icon="#{msg_botoes.btn_icon_remover} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCidadePublicacao:resultadoConsultaCidadePublicacao" maxPages="10" id="scResultadoCidadePublicacao" boundaryControls="auto" fastControls="hide" stepControls="auto" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCidadePublicacao" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{CatalogoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelNovaLinguaPublicacao" shadowOpacity="true" width="450" height="250" onshow="document.getElementById('formNovaLinguaPublicacao:nomeNovaLinguaPublicacao').focus();" onhide="document.getElementById('form:dataPadronizada').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Catalogo_linguaPublicacao}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkNovaLinguaPublicacao" />
+					<rich:componentControl target="panelNovaLinguaPublicacao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNovaLinguaPublicacao">
+				<h:panelGroup layout="block" styleClass="col-md-1">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LinguaPublicacaoCatalogo_codigo}" />
+					<h:inputText id="codigoNovaLinguaPublicacao" size="10" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.novaLinguaPublicacaoCatalogoVO.codigo}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LinguaPublicacaoCatalogo_marcCode}" />
+					<h:inputText id="marcCode" size="10" maxlength="10" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.novaLinguaPublicacaoCatalogoVO.marcCode}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LinguaPublicacaoCatalogo_nome}" />
+					<h:inputText id="nomeNovaLinguaPublicacao" size="40" maxlength="100" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.novaLinguaPublicacaoCatalogoVO.nome}" />
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{CatalogoControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton id="salvarNovaLinguaPublicacao" action="#{CatalogoControle.persistirNovaLinguaPublicacao}" oncomplete="#{rich:component('panelNovaLinguaPublicacao')}.hide()" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" title="#{msg.msg_gravar_dados}" accesskey="2" render="form" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelLinguaPublicacao" shadowOpacity="true" width="800" height="600" onshow="document.getElementById('formLinguaPublicacao:valorConsultarLinguaPublicacao').focus();" onhide="document.getElementById('form:dataPadronizada').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Catalogo_consultarLinguaPublicacao}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkLinguaPublicacao" />
+					<rich:componentControl target="panelLinguaPublicacao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLinguaPublicacao">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarEditora" value="#{CatalogoControle.campoConsultarLinguaPublicacao}">
+						<f:selectItems value="#{CatalogoControle.tipoConsultarComboLinguaPublicacao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarLinguaPublicacao" styleClass="form-control campos" value="#{CatalogoControle.valorConsultarLinguaPublicacao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarLinguaPublicacao" render="formLinguaPublicacao:mensagemConsultaLinguaPublicacao, formLinguaPublicacao:resultadoConsultaLinguaPublicacao , formLinguaPublicacao:scResultadoLinguaPublicacao , formLinguaPublicacao" action="#{CatalogoControle.consultarLinguaPublicacaoRichModal}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="btnNovaLinguaPublicacao" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary btn_icon_adicionar_embutido" value="Adicionar Nova Língua" onclick="#{rich:component('panelNovaLinguaPublicacao')}.show()" oncomplete="#{rich:component('panelLinguaPublicacao')}.hide()" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaLinguaPublicacao" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{CatalogoControle.listaConsultarLinguaPublicacao}" rows="10" var="linguaPublicacaoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Editora_codigo}" />
+						</f:facet>
+						<h:outputText value="#{linguaPublicacaoItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Editora_nome}" />
+						</f:facet>
+						<h:inputText styleClass="form-control camposObrigatorios" size="40" value="#{linguaPublicacaoItens.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="MARC Code" />
+						</f:facet>
+						<h:inputText styleClass="form-control camposObrigatorios" size="4" value="#{linguaPublicacaoItens.marcCode}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{CatalogoControle.selecionarLinguaPublicacao}" render="form, formLinguaPublicacao" oncomplete="#{rich:component('panelLinguaPublicacao')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+						<otm:commandIcon action="#{CatalogoControle.alterarLinguaPublicacao}" render="formLinguaPublicacao" icon="#{msg_botoes.btn_icon_gravar} iconePequeno" />
+						<otm:commandIcon action="#{CatalogoControle.excluirLinguaPublicacao}" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" render="formLinguaPublicacao" icon="#{msg_botoes.btn_icon_remover} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formLinguaPublicacao:resultadoConsultaLinguaPublicacao" maxPages="10" id="scResultadoLinguaPublicacao" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaLinguaPublicacao" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{CatalogoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelImportarMarc21" shadowOpacity="true" width="350" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ImportarArquivoMarc21_tituloForm}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkImportarMarc21" />
+					<rich:componentControl target="panelImportarMarc21" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImportarMarc21">
+				<h:panelGroup columns="2" width="100%">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ImportarArquivoMarc21_uploadArquivo}" />
+						<rich:fileUpload listHeight="0" disabled="#{CatalogoControle.isArquivoSelecionado}" listWidth="195" noDuplicate="true" fileUploadListener="#{CatalogoControle.uploadArquivo}" acceptedTypes="txt" maxFilesQuantity="1" addControlLabel="Selecionar" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido 100 MB" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" id="uploadArquivo" immediateUpload="true" autoclear="true">
+							<a4j:ajax event="uploadcomplete" render="nomeArquivo, panelGridMensagens" />
+						</rich:fileUpload>
+						<h:outputText id="nomeArquivo" styleClass="field control-label tituloCampos" value="#{CatalogoControle.arquivoMarc21VO.arquivoVO.nome}" />
+					</h:panelGroup>
+					<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{CatalogoControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<h:panelGroup>
+						<otm:commandButton id="processar" action="#{CatalogoControle.executarProcessarArquivoMarc21}" oncomplete="#{rich:component('panelImportarMarc21')}.hide()" icon="#{msg_botoes.btn_icon_engrenagem_embutido}" styleClass="btn btn-primary" value="Processar Arquivo" accesskey="2" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelExportarMarc21XML" shadowOpacity="true" width="350" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ImportarArquivoMarc21_tituloForm}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkExportarMarc21XML" />
+					<rich:componentControl target="panelExportarMarc21XML" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExportarMarc21XML">
+				<h:panelGroup columns="2" width="100%" cellpadding="10" cellspacing="10" columnClasses="colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada">
+					<h:panelGroup columns="1" styleClass="colunaEsquerda" width="100%">
+						<h:outputText id="nomeArquivo" styleClass="tituloCampos" value="Deseja Enviar Arquivo Para FTP da Biblioteca Externa ? " />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<h:panelGroup>
+						<otm:commandButton id="exportarMarcXML" render="form:panelGridMensagens" action="#{CatalogoControle.realizarEnvioCatalogoIntegracaoEbsco}" onbeforedomupdate="#{rich:component('panelExportarMarc21XML')}.hide()" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" value="Sim" image="#{resource['/imagens/botaoSim.png']}" title="#{msg.msg_sim}" accesskey="1" />
+					</h:panelGroup>
+					<h:panelGroup>
+						<otm:commandButton id="exportarMarcXMLNAo" render="form:panelGridMensagens, panelExportarMarc21XML" action="#{CatalogoControle.executarExportarArquivoMarc21XML}" oncomplete="#{CatalogoControle.downloadArquivoMarc21}" onbeforedomupdate="#{rich:component('panelExportarMarc21XML')}.hide()" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" value="#{msg.msg_nao}" accesskey="1" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelEditora" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formEditora:valorConsultarEditora').focus();" onhide="document.getElementById('form:titulo').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Catalogo_consultarEditora}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkEditora" />
+					<rich:componentControl target="panelEditora" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formEditora">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarEditora" value="#{CatalogoControle.campoConsultarEditora}">
+						<f:selectItems value="#{CatalogoControle.tipoConsultarComboEditora}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarEditora" styleClass="form-control campos" value="#{CatalogoControle.valorConsultarEditora}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarEditora" render="formEditora:mensagemConsultaEditora, formEditora:resultadoConsultaEditora , formEditora:scResultadoEditora , formEditora" action="#{CatalogoControle.consultarEditoraRichModal}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaEditora" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{CatalogoControle.listaConsultarEditora}" rows="10" var="editoraItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Editora_codigo}" />
+						</f:facet>
+						<h:outputText value="#{editoraItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Editora_nome}" />
+						</f:facet>
+						<h:outputText value="#{editoraItens.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{CatalogoControle.selecionarEditora}" render="form, formEditora" oncomplete="#{rich:component('panelEditora')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formEditora:resultadoConsultaEditora" maxPages="10" id="scResultadoEditora" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaEditora" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup columns="1" width="100%">
+						<h:outputText styleClass="field control-label mensagem col-md-12" value="#{CatalogoControle.mensagem}" />
+						<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{CatalogoControle.mensagemDetalhada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formCurso:valorConsultaCurso').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{CatalogoControle.campoConsultaCurso}">
+						<f:selectItems value="#{CatalogoControle.tipoConsultaComboCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaCurso" size="10" styleClass="form-control campos" value="#{CatalogoControle.valorConsultaCurso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCurso:mensagemConsultaCurso, formCurso:resultadoConsultaCurso, formCurso:scResultadoCurso" action="#{CatalogoControle.consultarCurso}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCurso" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{CatalogoControle.listaConsultaCurso}" rows="5" var="cursoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{cursoItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{cursoItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:panelGroup>
+								<h:outputText styleClass="mr5" value="#{msg_botoes.btn_opcoes}" />
+								<otm:commandIcon id="btnPreencherCurso" action="#{CatalogoControle.preencherTodosCurso}" render="formCurso" tooltip="Marcar Tudo" icon="#{msg_botoes.btn_icon_marcarTodos_embutido}" />
+								<otm:commandIcon id="btnDesmarcarCurso" action="#{CatalogoControle.desmarcarTodosCurso}" render="formCurso" tooltip="Desmarcar Tudo" icon="#{msg_botoes.btn_icon_desmarcarTodos_embutido}" />
+							</h:panelGroup>
+						</f:facet>
+						<ha:panelGroup layout="block" styleClass="col-md-12 mb10">
+							<otm:selectBooleanCheckbox value="#{cursoItens.cursoSelecionado}" styleClass="form-control campos" style="position:relative; top:9px;">
+								<a4j:ajax event="click" render="formCurso" />
+							</otm:selectBooleanCheckbox>
+						</ha:panelGroup>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCurso:resultadoConsultaCurso" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoCurso" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="botaoAdicionarCursos" render="form, mensagemConsultaCurso" rendered="#{!empty CatalogoControle.listaConsultaCurso }" value="Adicionar Curso" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary btn_icon_adicionar_embutido" action="#{CatalogoControle.adicionarCatalogoCursoVOs }" oncomplete="#{CatalogoControle.isFecharModalCurso }" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCurso" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup columns="1" width="100%">
+						<h:outputText styleClass="field control-label mensagem col-md-12" value="#{CatalogoControle.mensagem}" />
+						<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{CatalogoControle.mensagemDetalhada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFornecedor" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formEditora:valorConsultarFornecedor').focus();" onhide="document.getElementById('form:titulo').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ContaPagar_consultarFornecedor}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkFornecedor" />
+					<rich:componentControl target="panelFornecedor" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFornecedor">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultarFornecedor" value="#{CatalogoControle.campoConsultaFornecedor}">
+						<f:selectItems value="#{CatalogoControle.tipoConsultarComboFornecedor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarFornecedor" styleClass="form-control campos" value="#{CatalogoControle.valorConsultaFornecedor}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarFornecedor" render="formFornecedor:mensagemConsultaFornecedor, formFornecedor:resultadoConsultaFornecedor, formFornecedor:scResultadoFornecedor, formFornecedor" action="#{CatalogoControle.consultarFornecedor}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFornecedor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{CatalogoControle.listaConsultaFornecedor}" rows="10" var="fornecedorItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Editora_codigo}" />
+						</f:facet>
+						<h:outputText value="#{fornecedorItens.codigo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Editora_nome}" />
+						</f:facet>
+						<h:outputText value="#{fornecedorItens.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{CatalogoControle.selecionarFornecedor}" render="form, formFornecedor, formExibirExemplar" oncomplete="#{rich:component('panelFornecedor')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formFornecedor:resultadoConsultaFornecedor" maxPages="10" id="scResultadoFornecedor" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton render="form, formFornecedor" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" value="Adicionar Novo Fornecedor" onclick="abrirPopup('../compras/fornecedorForm.xhtml', 'fornecedorForm', 950, 595);" image="#{resource['/imagens/botaoNovoFornecedor.png']}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFornecedor" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup columns="1" width="100%">
+						<h:outputText styleClass="field control-label mensagem col-md-12" value="#{CatalogoControle.mensagem}" />
+						<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{CatalogoControle.mensagemDetalhada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelResumoEmprestimo" shadowOpacity="true" width="470" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Resumo Emprestimo" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkResumoEmprestimo" />
+					<rich:componentControl target="panelResumoEmprestimo" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formResumoEmprestimo">
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="Matrícula: " />
+					<h:inputText size="55" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.emprestimoVO.matricula.matricula}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="Solicitante: " />
+					<h:inputText size="55" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.emprestimoVO.pessoa.nome}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="Previsão Devolução: " />
+					<otm:calendar id="dataCadastro" readonly="true" inputSize="10" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" value="#{CatalogoControle.emprestimoVO.itemEmprestimoVOs[0].dataPrevisaoDevolucao}" />
+				</h:panelGroup>
+				<otm:spacer height="12" />
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelLogTransferenciaBiblioteca" autosized="true" shadowOpacity="true" width="700" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Logs de Tranferência" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkLogTransferenciaBiblioteca" />
+					<rich:componentControl target="panelLogTransferenciaBiblioteca" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLogTranferenciaBibliotecas">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="logs" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{CatalogoControle.exemplarEdicao.logTransferenciaBibliotecaExemplarVOs}" rendered="#{!empty CatalogoControle.exemplarEdicao.logTransferenciaBibliotecaExemplarVOs}" rows="5" var="item">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ExemplarLogTransferencia_dataLog}" />
+							</f:facet>
+							<a4j:commandLink id="data" value="#{item.dataEmissao_Apresentar}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ExemplarLogTransferencia_Origem}" />
+							</f:facet>
+							<a4j:commandLink id="origem" value="#{item.bibliotecaOrigem.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ExemplarLogTransferencia_Destino}" />
+							</f:facet>
+							<a4j:commandLink id="destino" value="#{item.bibliotecaDestino.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ExemplarLogTransferencia_responsavel}" />
+							</f:facet>
+							<a4j:commandLink id="responsavel" value="#{item.responsavel.nome}" />
+						</rich:column>
+					</rich:dataTable>
+					<rich:dataScroller align="center" for="logs" stepControls="auto" boundaryControls="auto" fastControls="auto" id="scResultadoConsulta" rendered="#{!empty CatalogoControle.exemplarEdicao.logTransferenciaBibliotecaExemplarVOs}" />
+				</h:panelGroup>
+				<otm:spacer height="20" />
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelTransferenciaBiblioteca" autosized="true" shadowOpacity="true" width="500" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Tranferência de Bibliotecas" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkTransferenciaBiblioteca" />
+					<rich:componentControl target="panelTransferenciaBiblioteca" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTranferenciaBibliotecas">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ExemplarLogTransferencia_Origem}" />
+					<h:inputText id="bibliotecaOrigem" size="50" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.exemplarEdicao.biblioteca.nome}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ExemplarLogTransferencia_Destino}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:selectOneMenu id="bibliotecaDestino" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.exemplarEdicao.bibliotecaDestino.codigo}">
+							<f:selectItems value="#{CatalogoControle.listaSelectItemBiblioteca}" />
+						</h:selectOneMenu>
+						<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_biblioteca_transferencia" tooltip="Atualizar Biblioteca Transferência" action="#{CatalogoControle.montarListaSelectItemBiblioteca}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="form:biblioteca" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<otm:spacer height="20" />
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton image="#{resource['./imagens/botaoTransmitir.png']}" value="Confirmar" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" action="#{CatalogoControle.executarTranferirExemplarBiblioteca}" oncomplete="#{rich:component('panelTransferenciaBiblioteca')}.hide()" render="formTranferenciaBibliotecas, form, resultadoGeracaoExemplares" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAlteracoesExemplares" shadowOpacity="true" width="850" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Alterações Exemplares" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="lll" />
+					<rich:componentControl target="panelAlteracoesExemplares" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="dadosExemplares">
+				<h:panelGroup layout=" block" styleClass="row">
+					<h:panelGroup layout=" block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_titulo_catalogo}" />
+						<h:inputText id="tituloCatalogoAlterar" size="50" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.catalogoVO.titulo}" />
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_campo_alterar}" />
+						<h:selectOneMenu id="tipoColunaAlterar" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.tipoAlterarColunaExemplar}">
+							<f:selectItems value="#{CatalogoControle.listaSelectItemAlterarexemplar}" />
+							<a4j:ajax event="change" listener="#{CatalogoControle.buscarExemplaresEdicao}" render="dadosBuscarExemplares , valorExemplarAlterar ,valorExemplarAlterarData  , dadosExemplares,btnsAcima" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-12 title pn" rendered="#{!empty CatalogoControle.tipoAlterarColunaExemplar}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoExemplar_Consulta}" rendered="#{!empty CatalogoControle.tipoAlterarColunaExemplar}" />
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-4" rendered="#{CatalogoControle.campoString}">
+						<h:inputText id="valorExemplarConsulta" value="#{CatalogoControle.valorConsultaAlteracao}" rendered="#{CatalogoControle.campoString}">
+							<a4j:ajax event="change" listener="#{CatalogoControle.buscarExemplares}" render="dadosExemplares" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoData}">
+						<otm:calendar jsFunction="buscarExemplares" id="valorExemplarConsultaData" inputSize="10" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" value="#{CatalogoControle.valorConsultaAlteracaoData}" rendered="#{CatalogoControle.campoData}">
+							<!-- 							<a4j:ajax event="change" listener="#{CatalogoControle.buscarExemplares}" render="dadosExemplares" /> -->
+						</otm:calendar>
+						<a4j:jsFunction name="buscarExemplares" action="#{CatalogoControle.buscarExemplares}" render="dadosExemplares" />
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoAno}">
+						<h:inputText id="valorExemplarConsultaAno" value="#{CatalogoControle.valorConsultaAlteracao}" rendered="#{CatalogoControle.campoAno}">
+							<a4j:ajax event="change" listener="#{CatalogoControle.buscarExemplares}" render="dadosExemplares" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoBoolean}">
+						<h:selectOneMenu id="valorExemplarConsultaBoolean" styleClass="form-control campos" value="#{CatalogoControle.valorConsultaAlteracao}" rendered="#{CatalogoControle.campoBoolean}">
+							<f:selectItems value="#{CatalogoControle.listaSelectItemTipoBoolean}" />
+							<a4j:ajax event="change" listener="#{CatalogoControle.buscarExemplares}" render="dadosExemplares" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoSecao}">
+						<h:selectOneMenu id="valorExemplarConsultaSecao" styleClass="form-control campos" value="#{CatalogoControle.valorConsultaAlteracao}" rendered="#{CatalogoControle.campoSecao}">
+							<f:selectItems value="#{CatalogoControle.listaSelectItemSecao}" />
+							<a4j:ajax event="change" listener="#{CatalogoControle.buscarExemplares}" render="dadosExemplares" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoTipoEntrada}">
+						<h:selectOneMenu id="valorExemplarConsultaTipoEntrada" styleClass="form-control campos" value="#{CatalogoControle.valorConsultaAlteracao}" rendered="#{CatalogoControle.campoTipoEntrada}">
+							<f:selectItems value="#{CatalogoControle.listaSelectItemTipoEntradaAlterarexemplar}" />
+							<a4j:ajax event="change" listener="#{CatalogoControle.buscarExemplares}" render="dadosExemplares" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-12 title pn" rendered="#{!empty CatalogoControle.tipoAlterarColunaExemplar}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoExemplar_Alterar}" rendered="#{!empty CatalogoControle.tipoAlterarColunaExemplar}" />
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoString}">
+						<h:inputText id="valorExemplarAlterar" value="#{CatalogoControle.valorAlteracao}" rendered="#{CatalogoControle.campoString}" />
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoData}">
+						<otm:calendar id="valorExemplarAlterarData" inputSize="10" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" value="#{CatalogoControle.valorAlteracaoData}" rendered="#{CatalogoControle.campoData}" />
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoAno}">
+						<h:inputText id="valorExemplarAno" size="04" maxlength="4" onkeypress="aceitarSomenteValorNumerico(this)" value="#{CatalogoControle.valorAlteracao}" rendered="#{CatalogoControle.campoAno}" />
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoBoolean}">
+						<otm:selectBooleanCheckbox id="valorExemplarBoolean" value="#{CatalogoControle.valorAlteracaoBoolean}" rendered="#{CatalogoControle.campoBoolean}" styleClass="form-control campos" style="position:relative; top:3px;">
+							<a4j:ajax render="listasExemplaresEdicao" event="change" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoSecao}">
+						<h:selectOneMenu id="valorExemplarSecao" styleClass="form-control campos" value="#{CatalogoControle.valorAlteracao}" rendered="#{CatalogoControle.campoSecao}">
+							<f:selectItems value="#{CatalogoControle.listaSelectItemSecao}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout=" block" styleClass="col-md-2" rendered="#{CatalogoControle.campoTipoEntrada}">
+						<h:selectOneMenu styleClass="form-control campos" value="#{CatalogoControle.valorAlteracao}" rendered="#{CatalogoControle.campoTipoEntrada}">
+							<f:selectItems value="#{CatalogoControle.listaSelectItemTipoEntradaAlterarexemplar}" />
+							<a4j:ajax event="change" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="listasExemplaresEdicao" width="100%" columnClasses="colunaAlinhamento" value="#{CatalogoControle.listasExemplarEditar}" rendered="#{CatalogoControle.apresentarResultadoConsulta}" rows="6" var="exemplaresItens">
+					<rich:column rendered="#{!empty CatalogoControle.listasExemplarEditar}">
+						<f:facet name="header">
+							<h:panelGroup>
+								<otm:commandIcon id="MarcarTodosListaExemplares" action="#{CatalogoControle.marcarTodosListaExemplares}" tooltip="Marcar Todos" render="listasExemplaresEdicao" icon="#{msg_botoes.btn_icon_marcarTodos_embutido}" />
+								<otm:commandIcon id="DesmarcarTodosListaExemplares" action="#{CatalogoControle.desmarcarTodosListaExemplares}" tooltip="Desmarcar Todos" render="listasExemplaresEdicao" icon="#{msg_botoes.btn_icon_desmarcarTodos_embutido}" />
+							</h:panelGroup>
+						</f:facet>
+						<otm:selectBooleanCheckbox value="#{exemplaresItens.exemplarSelecionado}" styleClass="form-control campos">
+							<a4j:ajax render="listasExemplaresEdicao" event="change" />
+						</otm:selectBooleanCheckbox>
+					</rich:column>
+					<rich:column width="5%" rendered="#{!empty CatalogoControle.listasExemplarEditar}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_HistoricoExemplar_exemplar}" />
+						</f:facet>
+						<h:outputText id="codigoBarra" value="#{exemplaresItens.codigoBarra}" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'dataaquisicao'}">
+						<f:facet name="header">
+							<h:outputText value="Data Aquisição" />
+						</f:facet>
+						<rich:calendar id="adataAquisicao" inputSize="10" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="campos" value="#{exemplaresItens.dataAquisicao}" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'tipoentrada'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_titulo}" />
+						</f:facet>
+						<h:selectOneMenu styleClass="form-control campos" value="#{exemplaresItens.tipoEntrada}">
+							<f:selectItems value="#{CatalogoControle.listaSelectItemTipoEntrada}" />
+							<a4j:ajax event="change" />
+						</h:selectOneMenu>
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'tituloexemplar'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_titulo}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" maxlength="255" value="#{exemplaresItens.tituloExemplar}" style="width:143px; text-align:center;" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'subtitulo'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_subtitulo}" />
+						</f:facet>
+						<h:outputText styleClass="form-control campos" value="#{exemplaresItens.subtitulo}" style="width:143px; text-align:center;" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'secao'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_secao}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" maxlength="255" value="#{exemplaresItens.secao.nome}" style="width:143px; text-align:center;" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'edicao'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_edicao}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" maxlength="255" value="#{exemplaresItens.edicao}" style="width:143px; text-align:center;" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'anopublicacao'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_anoPublicacao}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" maxlength="255" value="#{exemplaresItens.anoPublicacao}" style="width:143px; text-align:center;" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'volume'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_volume}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" maxlength="255" value="#{exemplaresItens.volume}" style="width:143px; text-align:center;" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'local'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_local}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" maxlength="255" value="#{exemplaresItens.local}" style="width:143px; text-align:center;" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'link'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_link}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" maxlength="255" value="#{exemplaresItens.link}" style="width:143px; text-align:center;" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'fasciculo'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_fasciculo}" />
+						</f:facet>
+						<h:inputText styleClass="form-control campos" maxlength="255" value="#{exemplaresItens.fasciculos}" style="width:143px; text-align:center;" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'paraconsulta'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_ParaConsulta}" />
+						</f:facet>
+						<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{exemplaresItens.paraConsulta}" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'emprestarsomentefinaldesemana'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_EmprestarSomenteFinalDeSemana}" />
+						</f:facet>
+						<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{exemplaresItens.emprestarSomenteFinalDeSemana}" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'desconsiderarreserva'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_DesconsiderarReserva}" />
+						</f:facet>
+						<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{exemplaresItens.desconsiderarReserva}" />
+					</rich:column>
+					<rich:column width="5%" rendered="#{CatalogoControle.tipoAlterarColunaExemplar eq 'datacompra'}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Exemplar_dataCompra}" />
+						</f:facet>
+						<rich:calendar inputSize="10" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="campos" value="#{exemplaresItens.dataCompra}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="listasExemplaresEdicao" maxPages="6" id="scExemplares" fastStep="3" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout=" block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton icon="#{msg_botoes.btn_icon_atualizar_embutido}" styleClass="btn btn-primary" value="#{msg.msg_atualizar_dados}" action="#{CatalogoControle.editarDadosExemplares}" image="#{resource['./imagens/botaoAlterar.png']}" title="#{msg.msg_atualizar_dados}" oncomplete="#{rich:component('panelAlteracoesExemplares')}.hide()" rendered="#{!empty CatalogoControle.listasExemplarEditar}" render="dadosExemplares, form, resultadoGeracaoExemplares" />
+					<otm:commandButton icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger ml5" value="#{msg.msg_fechar}" oncomplete="#{rich:component('panelAlteracoesExemplares')}.hide()" rendered="#{!empty CatalogoControle.listasExemplarEditar}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<rich:tabPanel>
+				<rich:tab header="#{msg_aplic.prt_Catalogo_geral}">
+					<h:panelGroup layout=" block" styleClass="row">
+						<h:panelGroup layout=" block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_editora}" />
+							<h:panelGroup layout=" block" styleClass="col-md-12 pn">
+								<h:inputText id="editora" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.catalogoVO.editora.nome}" />
+								<span class="append-icon right"> <otm:commandIcon oncomplete="#{rich:component('panelEditora')}.show()" render="editora, formEditora" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_Catalogo_consultarEditora}" /> <otm:commandIcon id="limparEditora" action="#{CatalogoControle.limparCampoEditora}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="editora" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_titulo}" />
+							<h:inputText id="titulo" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.catalogoVO.titulo}" />
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_abreviacaoTitulo}" />
+							<h:inputText id="abreviacaoTitulo" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.abreviacaoTitulo}" />
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_subtitulo}" />
+							<h:inputText id="subtitulo" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.subtitulo}" />
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_nivelBibliografico}" />
+							<h:selectOneMenu id="nivelBibliografico" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.catalogoVO.nivelBibliografico}">
+								<f:selectItems value="#{CatalogoControle.listaSelectItemNivelBibliografico}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_assunto}" />
+							<h:inputText id="assunto" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.assunto}" />
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_classificacao}" />
+							<!--                            <h:selectOneMenu -->
+							<!--                                 id="classificacao" -->
+							<!--                                 styleClass="form-control camposObrigatorios" -->
+							<!--                                 value="#{CatalogoControle.catalogoVO.classificacaoBibliografica.codigo}"> -->
+							<!--                                 <f:selectItems -->
+							<!--                                     value="#{CatalogoControle.listaSelectItemClassificacaoBibliografica}" /> -->
+							<!--                             </h:selectOneMenu> -->
+							<h:inputText id="classificacao" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.classificacaoBibliografica}" />
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_link}" />
+							<h:inputText id="linkCatalogo" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.link}" />
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_numeroControle}" />
+							<h:inputText id="numeroControle" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.numeroControle}" />
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_cutterPha}" />
+							<h:inputText id="cutterPha" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.cutterPha}" />
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="#{!empty CatalogoControle.catalogoVO.catalogoAutorVOs ? 'col-md-12' : 'col-md-6'}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_autores}/#{msg_aplic.prt_Catalogo_editores}" />
+							<h:panelGroup layout=" block" styleClass="col-md-12 pn">
+								<h:inputText id="nomeAutor" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.nomeAutor}" />
+								<span class="append-icon right"> <otm:commandIcon oncomplete="#{rich:component('panelAutor')}.show()" render="form, formAutor, panelNovoAutor" icon="#{msg_botoes.btn_icon_lupa_embutido}" alt="#{msg_aplic.prt_Catalogo_consultarAutor}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mt10 mb10" id="panelDtAutor" rendered="#{!empty CatalogoControle.catalogoVO.catalogoAutorVOs}">
+							<h:panelGroup layout=" block" styleClass="col-md-12 border" />
+							<rich:dragIndicator id="indicator" acceptClass="acceptDrag" rejectClass="rejectDrag" draggingClass="drag">
+								<h:panelGroup styleClass="defaultDrag" />
+							</rich:dragIndicator>
+							<h:panelGroup rendered="#{!empty CatalogoControle.catalogoVO.catalogoAutorVOs}" />
+							<h:panelGroup layout="block" styleClass="panelUnidadeImpar" style="float:none;height:100%;" id="pgDtAutor" rendered="#{!empty CatalogoControle.catalogoVO.catalogoAutorVOs}">
+								<a4j:jsFunction action="#{CatalogoControle.editarOrdemAutoresApresentacao}" name="editarCatalogo" execute="pgDtAutor" render="pgDtAutor">
+									<a4j:param name="catalogoAutorOrdemApresentacao" assignTo="#{CatalogoControle.catalogoAutorVO.ordemApresentacao}" />
+								</a4j:jsFunction>
+								<rich:dataTable id="dtAutor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{CatalogoControle.catalogoVO.catalogoAutorVOs}" rowKeyVar="row" var="catalogoAutorItens">
+									<rich:column style="cursor:pointer">
+										<rich:dragSource type="CatalogoAutorVO1" dragIndicator="indicator" dragValue="#{catalogoAutorItens}">
+										</rich:dragSource>
+										<rich:dropTarget dropValue="#{catalogoAutorItens}" render="form:pgDtAutor" dropListener="#{CatalogoControle.alterarOrdemApresentacaoAutores}" acceptedTypes="CatalogoAutorVO1">
+										</rich:dropTarget>
+										<h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-10">
+												<h:selectOneMenu id="tipoAutoria" styleClass="form-control camposObrigatorios" value="#{catalogoAutorItens.tipoAutoria}">
+													<f:selectItems value="#{CatalogoControle.listaSelectItemTipoAutoria}" />
+													<a4j:ajax render="inputSigla" listener="#{CatalogoControle.alterarSiglaAutor}" execute="inputSigla" />
+												</h:selectOneMenu>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2">
+												<h:inputText id="inputSigla" styleClass="form-control" value="#{catalogoAutorItens.siglaAutoria}">
+													<!-- 													<rich:placeholder value="Sigla Autoria" /> -->
+												</h:inputText>
+											</h:panelGroup>
+										</h:panelGroup>
+									</rich:column>
+									<rich:column>
+										<rich:dragSource type="CatalogoAutorVO" dragIndicator="indicator" dragValue="#{catalogoAutorItens}">
+										</rich:dragSource>
+										<rich:dropTarget dropValue="#{catalogoAutorItens}" render="form:pgDtAutor" dropListener="#{CatalogoControle.alterarOrdemApresentacaoAutores}" acceptedTypes="CatalogoAutorVO">
+										</rich:dropTarget>
+										<h:panelGroup layout="block" id="editorClose" styleClass="field control-label tituloCampos" style="float:left">
+											<h:panelGroup columns="1" onclick="editarCatalogo(#{catalogoAutorItens.ordemApresentacao})" width="100%">
+												<h:outputText styleClass="field control-label tituloCampos" value="Nome Autor:  #{catalogoAutorItens.autor.nome}" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</rich:column>
+									<rich:column>
+										<otm:commandIcon image="#{resource['imagens/botaoExcluirResumido.png']}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" render="form" action="#{CatalogoControle.removerAutorLista}" />
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="#{!empty CatalogoControle.catalogoVO.catalogoAutorVOs ? 'col-md-6' : 'col-md-4'}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_tipoCatalogo}" />
+							<h:selectOneMenu id="tipoCatalogo" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.catalogoVO.tipoCatalogo.codigo}">
+								<f:selectItems value="#{CatalogoControle.listaSelectItemTipoCatalogo}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_edicao}" />
+							<h:inputText id="edicao" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.edicao}" />
+						</h:panelGroup>
+						<!--                                              <h:outputText  -->
+						<!--                                                  styleClass="field control-label tituloCampos"  -->
+						<!--                                                  value="#{msg_aplic.prt_Catalogo_volume}" />  -->
+						<!--                                              <h:panelGroup>  -->
+						<!--                                                  <h:inputText  -->
+						<!--                                                      id="volume"  -->
+						<!--                                                      size="5"  -->
+						<!--                                                      maxlength="5"  -->
+						<!--                                                      styleClass="form-control campos"  -->
+						<!--                                                      value="#{CatalogoControle.catalogoVO.volume}" />  -->
+						<!--                                                  <otm:spacer width="10px" />  -->
+						<h:panelGroup layout=" block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_numero}" />
+							<h:inputText id="numero" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.numero}" onkeypress="aceitarSomenteValorNumerico(this)" />
+						</h:panelGroup>
+						<!--                                              </h:panelGroup>  -->
+						<h:panelGroup layout=" block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_nrExemplaresParaConsulta}" />
+							<h:inputText id="nrExemplaresParaConsulta" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.nrExemplaresParaConsulta}" onkeypress="aceitarSomenteValorNumerico(this)" />
+						</h:panelGroup>
+						<!--                             <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_usaConfiguracaoEspecifica}" />  -->
+						<!--                             <h:panelGroup>  -->
+						<!--                                 <otm:selectBooleanCheckbox styleClass="form-control campos" id="configuracaoEspecifica" value="#{CatalogoControle.catalogoVO.configuracaoEspecifica}">  -->
+						<!--                                     <a4j:ajax event="click" render="form" />  -->
+						<!--                                 </otm:selectBooleanCheckbox>  -->
+						<!--                                 <h:inputText rendered="#{CatalogoControle.catalogoVO.configuracaoEspecifica}" id="configuracaoBiblioteca" size="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.catalogoVO.configuracaoBiblioteca.nome}" />  -->
+						<!--                                 <otm:commandButton rendered="#{CatalogoControle.catalogoVO.configuracaoEspecifica}" action="#{CatalogoControle.montarConfiguracaoEspecifica}" oncomplete="#{rich:component('panelConfiguracaoBiblioteca')}.show()" styleClass="#{msg_botoes.btn_icon_lupa_embutido}" style="position:relative; top:4px; left:-5px;" alt="#{msg_aplic.prt_Catalogo_consultarConfiguracaoBiblioteca}" />  -->
+						<!--                                 <otm:commandButton id="limparConfiguracaoBiblioteca" style="position:relative; top:4px; left:-5px;" rendered="#{CatalogoControle.catalogoVO.configuracaoEspecifica}" action="#{CatalogoControle.limparCampoConfiguracaoBiblioteca}" icon="#{msg_botoes.btn_icon_limpar_embutido}" alt="#{msg_aplic.prt_limparCampo}" render="configuracaoBiblioteca" />  -->
+						<!--                             </h:panelGroup>  -->
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{!empty CatalogoControle.catalogoVO.catalogoAutorVOs}"></h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_ocultar}" />
+							<h:panelGroup layout=" block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox styleClass="form-control campos" id="ocultar" value="#{CatalogoControle.catalogoVO.ocultar}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout=" block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_controlaTempoDefasagem}" />
+							<h:panelGroup layout=" block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox id="controlaTempoDefasagem" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.controlaTempoDefasagem}">
+									<a4j:ajax event="click" listener="#{CatalogoControle.renderizarCampoBibliografia}" execute="form" render="form" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{CatalogoControle.catalogoVO.controlaTempoDefasagem}" />
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{CatalogoControle.catalogoVO.controlaTempoDefasagem}">
+							<h:outputText rendered="#{CatalogoControle.catalogoVO.controlaTempoDefasagem}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_bibliograficaComplementarMes}" />
+							<h:inputText rendered="#{CatalogoControle.catalogoVO.controlaTempoDefasagem}" id="bibliograficaComplementarMes" size="5" maxlength="5" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.bibliograficaComplementarMes}" onkeydown="aceitarSomenteValorNumerico(this)" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{CatalogoControle.catalogoVO.controlaTempoDefasagem}">
+							<h:outputText rendered="#{CatalogoControle.catalogoVO.controlaTempoDefasagem}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_bibliograficaBasicaMes}" />
+							<h:inputText rendered="#{CatalogoControle.catalogoVO.controlaTempoDefasagem}" id="bibliograficaBasicaMes" size="5" maxlength="5" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.bibliograficaBasicaMes}" onkeydown="aceitarSomenteValorNumerico(this)" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+
+				<rich:tab header="#{msg_aplic.prt_Catalogo_dadosAdicionais}">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_dataCadastro}" />
+							<h:inputText id="dataCadastro" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{CatalogoControle.catalogoVO.dataCadastro_Apresentar}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_nrPaginas}" />
+							<h:inputText id="nrPaginas" size="10" maxlength="6" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.nrPaginas}" onkeypress="aceitarSomenteValorNumerico(this);" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_serie}" />
+							<h:inputText id="serie" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.serie}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_isbn}" />
+							<h:inputText id="isbn" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.isbn}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_issn}" />
+							<h:inputText id="issn" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.issn}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_linguaPublicacao}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText id="linguaPublicacao" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.catalogoVO.linguaPublicacaoCatalogo.nome}" />
+								<span class="append-icon right"> <otm:commandIcon action="#{CatalogoControle.consultarLinguaPublicacao}" oncomplete="#{rich:component('panelLinguaPublicacao')}.show()" render="linguaPublicacao, formLinguaPublicacao" icon="#{msg_botoes.btn_icon_lupa_embutido}" alt="#{msg_aplic.prt_Catalogo_consultarLinguaPublicacao}" id="btnConsultarLingua" /> <otm:commandIcon id="limparLinguaPublicacao" action="#{CatalogoControle.limparCampoLinguaPublicacao}" icon="#{msg_botoes.btn_icon_limpar_embutido}" alt="#{msg_aplic.prt_limparCampo}" render="linguaPublicacao" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_cidadePublicacao}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText id="cidadePublicacao" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{CatalogoControle.catalogoVO.cidadePublicacaoCatalogo.nomeConcatEstado}" />
+								<span class="append-icon right"> <otm:commandIcon action="#{CatalogoControle.consultarCidadePublicacao}" oncomplete="#{rich:component('panelCidadePublicacao')}.show()" render="cidadePublicacao, formCidadePublicacao" icon="#{msg_botoes.btn_icon_lupa_embutido}" alt="#{msg_aplic.prt_Catalogo_consultarCidadePublicacao}" /> <otm:commandIcon id="limparCidadePublicacao" action="#{CatalogoControle.limparCampoCidadePublicacao}" icon="#{msg_botoes.btn_icon_limpar_embutido}" alt="#{msg_aplic.prt_limparCampo}" render="cidadePublicacao" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_responsavelAtualizacao}" />
+							<h:inputText id="responsavelAtualizacao" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.catalogoVO.responsavelAtualizacao.nome}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_dataPadronizada}" />
+							<h:inputText id="dataPadronizada" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.dataPadronizada}" onkeypress="return mascara(this.form, this.id, '99/99/9999 99:99', event); aceitarSomenteValorNumerico(this)" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_anoPublicacao}" />
+							<h:inputText onkeypress="aceitarSomenteValorNumerico(this)" id="anoPublicacao" styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.anoPublicacao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_dataUltimaAtualizacao}" />
+							<h:inputText styleClass="form-control campos" value="#{CatalogoControle.catalogoVO.dataUltimaAtualizacao_Apresentar}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_palavrasChave}" />
+							<h:inputTextarea id="palavrasChave" styleClass="form-control camposTextArea" value="#{CatalogoControle.catalogoVO.palavrasChave}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_notas}" />
+							<h:inputTextarea id="notas" styleClass="form-control camposTextArea" value="#{CatalogoControle.catalogoVO.notas}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+
+				<rich:tab header="#{msg_aplic.prt_Catalogo_exemplares}" id="tabExemplares">
+					<h:panelGroup id="groupExemplares" layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_biblioteca}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:selectOneMenu id="biblioteca" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.exemplarVO.biblioteca.codigo}">
+									<f:selectItems value="#{CatalogoControle.listaSelectItemBiblioteca}" />
+								</h:selectOneMenu>
+								<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_biblioteca" action="#{CatalogoControle.montarListaSelectItemBiblioteca}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="form:biblioteca" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_titulo}" />
+							<h:inputText id="tituloExemplar" value="#{CatalogoControle.exemplarVO.tituloExemplar}" styleClass="form-control campos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_subtitulo}" />
+							<h:inputText id="subtituloExemplar" value="#{CatalogoControle.exemplarVO.subtitulo}" styleClass="form-control campos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 h36">
+							<h:outputText styleClass="field control-label tituloCampos" value="Data Aquisição" />
+							<otm:calendar id="adataAquisicao" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" value="#{CatalogoControle.exemplarVO.dataAquisicao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_edicao}" />
+							<h:inputText id="edicaoExemplar" value="#{CatalogoControle.exemplarVO.edicao}" styleClass="form-control campos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_anoPublicacao}" />
+							<h:inputText onkeypress="aceitarSomenteValorNumerico(this)" id="anoPublicacaoExemplar" value="#{CatalogoControle.exemplarVO.anoPublicacao}" styleClass="form-control campos" size="10" maxlength="10" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_secao}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:selectOneMenu id="secao" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.secao.codigo}">
+									<f:selectItems value="#{CatalogoControle.listaSelectItemSecao}" />
+								</h:selectOneMenu>
+								<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_secao" action="#{CatalogoControle.montarListaSelectItemSecao}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="form:secao" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_volume}" />
+							<h:inputText id="volume" value="#{CatalogoControle.exemplarVO.volume }" styleClass="form-control campos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_isbn}" />
+							<h:inputText id="exemplar_isbn" value="#{CatalogoControle.exemplarVO.isbn}" styleClass="form-control campos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_issn}" />
+							<h:inputText id="exemplar_issn" value="#{CatalogoControle.exemplarVO.issn}" styleClass="form-control campos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_nrPagina}" />
+							<h:inputText id="exemplar_nrpagina" value="#{CatalogoControle.exemplarVO.nrPaginas}" styleClass="form-control campos" onkeypress="aceitarSomenteValorNumerico(this)" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_local}" />
+							<h:inputText id="local" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.local}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_link}" />
+							<h:inputText id="linkExemplar" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.link}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_fasciculos}" />
+							<h:inputText id="fasciculos" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.fasciculos}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_formaEntrada}" />
+							<h:selectOneMenu id="tipoEntrada" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.tipoEntrada}">
+								<f:selectItems value="#{CatalogoControle.listaSelectItemTipoEntrada}" />
+								<a4j:ajax event="change" render="outNotaFiscal, panelNotaFiscal, outValorCompra, panelValorCompra, panelDataCompra, groupExemplares" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_tipoMidia}" />
+							<h:selectOneMenu id="tipoMidia" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.tipoMidia}">
+								<f:selectItems value="#{CatalogoControle.listaSelectItemTipoMidia}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MovimentacaoCaixa_fornecedor}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText id="fornecedor" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{CatalogoControle.exemplarVO.fornecedorVO.nome}" />
+								<span class="append-icon right"> <otm:commandIcon oncomplete="#{rich:component('panelFornecedor')}.show()" render="fornecedor, formFornecedor" icon="#{msg_botoes.btn_icon_lupa_embutido}" alt="#{msg_aplic.prt_Catalogo_consultarEditora}" /> <otm:commandIcon id="limparFornecedor" action="#{CatalogoControle.limparCampoFornecedor}" icon="#{msg_botoes.btn_icon_limpar_embutido}" alt="#{msg_aplic.prt_limparCampo}" render="fornecedor" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_numeroExemplaresAGerar}" />
+							<h:inputText id="NumeroExemplaresAGerar" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.numeroExemplaresAGerar}" onkeypress="aceitarSomenteValorNumerico(this)" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}">
+							<h:panelGroup id="outNotaFiscal">
+								<h:outputText styleClass="field control-label tituloCampos" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}" value="#{msg_aplic.prt_Exemplar_nrNotaFiscal}" />
+							</h:panelGroup>
+							<h:panelGroup id="panelNotaFiscal">
+								<h:inputText id="nrNotaFiscal" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.nrNotaFiscal}" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}" onkeypress="aceitarSomenteValorNumerico(this)" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}">
+							<h:panelGroup id="outValorCompra">
+								<h:outputText styleClass="field control-label tituloCampos" value="Valor da Compra" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}" />
+							</h:panelGroup>
+							<h:panelGroup id="panelValorCompra">
+								<h:inputText id="valorCompra" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.valorCompra}" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}" onkeydown="aceitarSomenteValorDecimal(this)">
+									<a4j:ajax event="change" render="panelValorCompra" />
+									<f:converter converterId="FormatadorNumerico" />
+								</h:inputText>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup id="panelDataCompra" layout="block" styleClass="col-md-2 h36" rendered="#{CatalogoControle.exibirCamposAdicionaisCompra}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Data da Compra" />
+							<otm:calendar id="dataCompra" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" value="#{CatalogoControle.exemplarVO.dataCompra}" />
+						</h:panelGroup>
+						<!--                              <h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_tipoExemplar}"  />  -->
+						<!--                              <h:selectOneMenu id="tipoExemplar" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.tipoExemplar}" >  -->
+						<!--                                  <f:selectItems value="#{CatalogoControle.listaSelectItemTipoExemplar}" />  -->
+						<!--                              </h:selectOneMenu>  -->
+
+						<h:panelGroup layout="block" styleClass="#{CatalogoControle.exibirCamposAdicionaisCompra ? 'col-md-12' : ''} pn">
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_ParaConsulta}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox id="paraConsulta" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.paraConsulta}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_EmprestarSomenteFinalDeSemana}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox id="emprestarSomenteFinalDeSemana" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.emprestarSomenteFinalDeSemana}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Exemplar_DesconsiderarReserva}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox id="desconsiderarReserva" styleClass="form-control campos" value="#{CatalogoControle.exemplarVO.desconsiderarReserva}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup style="margin:10px" layout="block" styleClass="col-md-12 text-center">
+							<otm:commandButton id="gerarExemplares" action="#{CatalogoControle.gerarExemplares}" value="Gerar Exemplares" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary dark btn_icon_adicionar_embutido" render="panelResultadoGeracaoExemplares" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mt10" id="panelResultadoGeracaoExemplares">
+
+							<style>
+.rf-edt {
+	border-width: 0px !important;
+}
+
+.rf-edt-hdr {
+	background-image: none !important;
+	background-color: transparent !important;
+	border: none !important;
+}
+
+.rf-edt-hdr-c {
+	/* 	background-color: #003c7e !important; */
+	background-image: none !important;
+	border-bottom-width: 0px !important;
+	border-right-width: 0px !important;
+	border-right-style: solid !important;
+	border-right-color: #c4c0c9 !important;
+	background-position: top left !important;
+	/* 	color: #f6ebeb !important; */
+	font-family: 'Oxygen', Helvetica, Arial, sans-serif !important;
+	font-size: 14px !important;
+	text-align: center;
+	/* 	min-width: 130px !important; */
+}
+
+.rf-edt-tbl {
+	width: 460px !important;
+}
+
+.rf-edt-c {
+	border-bottom-width: 1px !important;
+	border-right-width: 0px !important;
+	height: 45px !important;
+	padding: 5px !important;
+	/* 	vertical-align: middle !important; */
+	/* 	text-align: center !important; */
+	/* 	font: 600 13px 'Oxygen', Helvetica, Arial, sans-serif !important; */
+	/* 	color: #2a3342; */
+	/* 	min-width: 130px; */
+}
+
+.rf-edt-c-cnt {
+	/* 	color: #343a38; */
+	/* 	font-family: 'Oxygen', Helvetica, Arial, sans-serif !important; */
+	/* 	font-size: 12px !important; */
+	/* 	font-family: 'Oxygen', Helvetica, Arial, sans-serif !important; */
+	padding: 2px 0px !important;
+}
+
+.rf-edt-ftr {
+	background-color: transparent !important;
+	border: none !important;
+}
+
+.rf-edt-tbl-ftr {
+	background-color: transparent !important;
+	border: none !important;
+}
+
+.panelGeralLista {
+	display: block;
+	width: calc(100%);
+	min-width: calc(100%);
+}
+
+.panelNotasOpcoesHead {
+	display: block;
+	width: calc(100% - 20%);
+	float: left;
+}
+
+.panelNotasHead {
+	min-width: inherit;
+	display: inline-flex;
+	width: calc(100% - 130px);
+	float: left;
+	overflow: auto;
+}
+
+.labelOp {
+	display: none;
+}
+
+.labelOpcoes {
+	display: block;
+}
+
+.rf-edt-c-colunaMatricula {
+	width: 180px !important;
+	min-width: 180px !important;
+	vertical-align: baseline !important;
+	padding: 0px !important;
+}
+
+.hRow {
+	height: 40px !important;
+	padding: 5px 0px 5px 0px;
+}
+
+.panelAluno2 {
+	display: none;
+}
+
+.hRowOpcoes {
+	height: 40px !important;
+	padding: 5px 0px 5px 0px;
+}
+
+.panelNotas {
+	min-width: inherit;
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: inline-flex;
+	width: calc(100% - 130px);
+}
+
+.panelNotas::-webkit-scrollbar {
+	height: 10px !important;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.panelNotas::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #c7c7c7 !important;
+	scrollbar-color: #c7c7c7 transparent !important;
+	height: 20px !important;
+}
+
+.panelNotasHead::-webkit-scrollbar {
+	height: 5px !important;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.panelNotasHead::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #c7c7c7 !important;
+	scrollbar-color: #c7c7c7 transparent !important;
+	height: 20px !important;
+}
+
+.hHead {
+	height: 68px;
+}
+
+.rf-edt-c-colunaFrequencia {
+	width: 120px !important;
+	min-width: 120px !important;
+	text-align: center;
+	padding: 0px !important;
+	margin-right: 5px;
+}
+
+.panelAluno {
+	display: block;
+	width: calc(94% - 80%);
+	min-width: calc(92% - 80%);
+	text-align: center;
+	float: left;
+}
+
+.panelNotasOpcoes {
+	display: block;
+	width: calc(100% - 20%);
+	float: left;
+}
+
+.labelAluno2 {
+	position: relative;
+}
+
+.panelOpcoes {
+	width: 130px;
+	min-width: 130px;
+	display: block;
+	float: right;
+	text-align: center;
+}
+
+.panelAlunoHead {
+	display: block;
+	width: calc(15%);
+	min-width: calc(10%);
+	text-align: center;
+	float: left;
+}
+
+.panelOpcoesHead {
+	width: 130px;
+	min-width: 130px;
+	display: block;
+	float: right;
+	text-align: center;
+}
+
+.w-100-panel {
+	width: 97% !important;
+}
+
+@media ( max-width : 780px) {
+	.panelGeralLista {
+		display: block;
+	}
+	.panelNotasOpcoesHead {
+		width: calc(100%);
+	}
+	.panelNotasHead {
+		width: calc(100% - 40px) !important;
+		min-width: calc(100% - 40px) !important;
+	}
+	.labelOpcoes {
+		display: none;
+	}
+	.labelOp {
+		display: block;
+		position: relative;
+		top: -7px;
+	}
+	.panelAluno2 {
+		display: block !important;
+		width: calc(100%);
+	}
+	.hRowOpcoes {
+		height: 90px !important;
+	}
+	.hHead {
+		height: 96px;
+	}
+	.panelAluno {
+		display: none !important;
+	}
+	.panelNotasOpcoes {
+		width: calc(100%);
+	}
+	.panelNotas {
+		width: calc(100% - 40px) !important;
+		min-width: calc(100% - 40px) !important;
+	}
+	.panelOpcoes {
+		width: 40px !important;
+		min-width: 40px !important;
+	}
+	.panelAlunoHead {
+		display: block;
+		width: calc(100%);
+		min-width: calc(100%);
+		text-align: center;
+		float: none;
+	}
+	.panelOpcoesHead {
+		width: 40px !important;
+		min-width: 40px !important;
+	}
+}
+</style>
+
+							<script>
+						(function($) {
+							$(document)
+									.ready(
+											function() {
+
+												$('.panelNotas')
+														.on(
+																'scroll',
+																function() {
+																	$(
+																			'.panelNotasHead')
+																			.scrollLeft(
+																					$(
+																							this)
+																							.scrollLeft());
+																	$(
+																			'.labelAluno2')
+																			.css(
+																					"left",
+																					$(
+																							this)
+																							.scrollLeft() + 5);
+																});
+												$('.panelNotasHead')
+														.on(
+																'scroll',
+																function() {
+																	$(
+																			'.panelNotas')
+																			.scrollLeft(
+																					$(
+																							this)
+																							.scrollLeft());
+																	$(
+																			'.labelAluno2')
+																			.css(
+																					"left",
+																					$(
+																							this)
+																							.scrollLeft() + 5);
+																});
+											});
+
+							nextInputTable = function(id) {
+								$(id).next().focus();
+							};
+						}(jQuery));
+					</script>
+
+							<h:panelGroup styleClass="panelGeralLista table-control row" rendered="#{!empty CatalogoControle.catalogoVO.exemplarVOs}">
+								<div class="">
+									<div class="rf-dt-thd hHead table-head">
+										<div class="panelAlunoHead  rf-dt-hdr-c" style="padding: 5px !important">
+											<h:outputText value="Número" />
+											<h:panelGroup layout="block" style="width:100%">
+												<h:inputText styleClass="form-control campos form-control-input-table" size="5" value="#{FilterFactory.filter('resultadoGeracaoExemplares', 'numeroExemplar', 'INTEIRO').filtro}">
+													<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+												</h:inputText>
+											</h:panelGroup>
+										</div>
+										<div class="panelNotasOpcoesHead ">
+											<div class="panelNotasHead">
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_biblioteca}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="15" value="#{FilterFactory.filter('resultadoGeracaoExemplares2', 'biblioteca.nome', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="Data Aquisição" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_titulo}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="20" value="#{FilterFactory.filter('resultadoGeracaoExemplares3', 'tituloExemplar', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_subtitulo}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="15" value="#{FilterFactory.filter('resultadoGeracaoExemplares4', 'subtitulo', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_secao}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="10" value="#{FilterFactory.filter('resultadoGeracaoExemplares5', 'secao.nome', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_edicao}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="10" value="#{FilterFactory.filter('resultadoGeracaoExemplares6', 'edicao', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_anoPublicacao}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="10" value="#{FilterFactory.filter('resultadoGeracaoExemplares7', 'anoPublicacao', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_volume}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="10" value="#{FilterFactory.filter('resultadoGeracaoExemplares8', 'volume', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_local}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="10" value="#{FilterFactory.filter('resultadoGeracaoExemplares9', 'local', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_tipoMidia}" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_tituloForm}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="10" value="#{FilterFactory.filter('resultadoGeracaoExemplarescodigoBarra', 'codigoBarra', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_situacaoAtual}" />
+													<h:panelGroup layout="block" style="width:100%">
+														<h:inputText styleClass="form-control campos form-control-input-table" size="10" value="#{FilterFactory.filter('resultadoGeracaoExemplaressituacao', 'situacaoAtualApresentar', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="form:panelResultadoGeracaoExemplares" />
+														</h:inputText>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_ParaConsulta}" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_EmprestarSomenteFinalDeSemana}" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c " style="padding:5px !important">
+													<h:outputText value="#{msg_aplic.prt_Exemplar_DesconsiderarReserva}" />
+												</h:panelGroup>
+											</div>
+											<div class="panelOpcoesHead">
+												<h:outputText styleClass="text-center  rf-dt-hdr-c labelOpcoes" style="padding:5px !important" value="Opções" />
+												<h:outputText styleClass="text-center  rf-dt-hdr-c labelOp" style="padding:5px !important" value="Op" />
+											</div>
+										</div>
+										<div class="ml5">
+											<div class="panelAluno float-left">
+												<a4j:repeat rowKeyVar="rowNumeros" id="panelListaNumeros" value="#{CatalogoControle.catalogoVO.exemplarVOs}" var="exemplarItens">
+													<h:panelGroup layout="block" styleClass="border-bottom hRow w-100" style="padding: 5px !important"
+														rendered="#{FilterFactory.filter('resultadoGeracaoExemplares', 'numeroExemplar', 'INTEIRO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares2', 'biblioteca.nome', 'TEXTO').accept(exemplarItens) and 
+FilterFactory.filter('resultadoGeracaoExemplares3', 'tituloExemplar', 'TEXTO').accept(exemplarItens) and 
+FilterFactory.filter('resultadoGeracaoExemplares4', 'subtitulo', 'TEXTO').accept(exemplarItens) and 
+FilterFactory.filter('resultadoGeracaoExemplares5', 'secao.nome', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares6', 'edicao', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares7', 'anoPublicacao', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares8', 'volume', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares9', 'local', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplaresprefixoExemplar', 'prefixoExemplar', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplarescodigoBarra', 'codigoBarra', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplaressituacao', 'situacaoAtualApresentar', 'TEXTO').accept(exemplarItens)
+}">
+														<h:inputText disabled="#{!exemplarItens.exemplarUnidadeLogado}" maxlength="9" onkeypress="aceitarSomenteValorNumerico(this)" size="5" styleClass="form-control camposObrigatorios form-control-input-table" title="Valor deste campo não pode ser repetido para a mesma biblioteca, edição e volume." value="#{exemplarItens.numeroExemplar}" />
+													</h:panelGroup>
+												</a4j:repeat>
+											</div>
+											<div class="panelNotasOpcoes float-left">
+												<div class="panelNotas">
+													<table>
+														<tbody>
+															<a4j:repeat rowKeyVar="rowExem" id="panelListaExemplares" value="#{CatalogoControle.catalogoVO.exemplarVOs}" var="exemplarItens">
+																<h:panelGroup layout="block" styleClass="w-100"
+																	rendered="#{FilterFactory.filter('resultadoGeracaoExemplares', 'numeroExemplar', 'INTEIRO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares2', 'biblioteca.nome', 'TEXTO').accept(exemplarItens) and 
+FilterFactory.filter('resultadoGeracaoExemplares3', 'tituloExemplar', 'TEXTO').accept(exemplarItens) and 
+FilterFactory.filter('resultadoGeracaoExemplares4', 'subtitulo', 'TEXTO').accept(exemplarItens) and 
+FilterFactory.filter('resultadoGeracaoExemplares5', 'secao.nome', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares6', 'edicao', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares7', 'anoPublicacao', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares8', 'volume', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares9', 'local', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplaresprefixoExemplar', 'prefixoExemplar', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplarescodigoBarra', 'codigoBarra', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplaressituacao', 'situacaoAtualApresentar', 'TEXTO').accept(exemplarItens)
+}">
+																	<tr style="display: inline-flex">
+																		<td class="border-bottom hRow panelAluno2"><h:inputText disabled="#{!exemplarItens.exemplarUnidadeLogado}" maxlength="9" onkeypress="aceitarSomenteValorNumerico(this)" size="5" styleClass="form-control camposObrigatorios" title="Valor deste campo não pode ser repetido para a mesma biblioteca, edição e volume." value="#{exemplarItens.numeroExemplar}" /></td>
+																		<td style="display: inline-flex" class="border-bottom hRow"><h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<h:outputLabel value="#{exemplarItens.biblioteca.nome}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<otm:calendar id="adataAquisicao" inputSize="10" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos form-control-input-table" value="#{exemplarItens.dataAquisicao}" disabled="#{!exemplarItens.exemplarUnidadeLogado}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<h:inputText styleClass="form-control campos form-control-input-table" maxlength="255" value="#{exemplarItens.tituloExemplar}" disabled="#{!exemplarItens.exemplarUnidadeLogado}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<h:inputText styleClass="form-control campos form-control-input-table" maxlength="255" value="#{exemplarItens.subtitulo}" disabled="#{!exemplarItens.exemplarUnidadeLogado}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<h:outputText value="#{exemplarItens.secao.nome}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<h:inputText styleClass="form-control campos form-control-input-table" value="#{exemplarItens.edicao}" maxlength="50" disabled="#{!exemplarItens.exemplarUnidadeLogado}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<h:inputText styleClass="form-control campos form-control-input-table" maxlength="100" disabled="#{!exemplarItens.exemplarUnidadeLogado}" value="#{exemplarItens.anoPublicacao}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<h:inputText styleClass="form-control campos form-control-input-table" maxlength="10" value="#{exemplarItens.volume}" disabled="#{!exemplarItens.exemplarUnidadeLogado}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<h:inputText styleClass="form-control campos form-control-input-table" maxlength="50" value="#{exemplarItens.local}" disabled="#{!exemplarItens.exemplarUnidadeLogado}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<h:selectOneMenu styleClass="form-control campos form-control-input-table" value="#{exemplarItens.tipoMidia}" disabled="#{!exemplarItens.exemplarUnidadeLogado}">
+																					<f:selectItems value="#{CatalogoControle.listaSelectItemTipoMidia}" />
+																				</h:selectOneMenu>
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<rich:inplaceInput id="codigoBarra" value="#{exemplarItens.codigoBarra}" defaultLabel="#{msg_aplic.prt_Exemplar_codigoBarraGeradoAutomatico}" oninputkeyup="return limitarCampos(this, this.value, 9)" maxlength="9" selectOnEdit="true" layout="block" rendered="#{exemplarItens.situacaoAtual ne 'EM' and exemplarItens.exemplarUnidadeLogado}" />
+																				<h:outputText value="#{exemplarItens.codigoBarra}" rendered="#{exemplarItens.situacaoAtual eq 'EM' and exemplarItens.exemplarUnidadeLogado}" />
+																				<h:outputText value="#{exemplarItens.codigoBarra}" rendered="#{!exemplarItens.exemplarUnidadeLogado}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<a4j:commandLink rendered="#{exemplarItens.situacaoAtual eq 'EM' and exemplarItens.exemplarUnidadeLogado}" value="#{exemplarItens.situacaoAtualApresentar}" action="#{CatalogoControle.montarResumoEmprestimoExemplar}" render="formResumoEmprestimo, panelResumoEmprestimo" oncomplete="#{rich:component('panelResumoEmprestimo')}.show()" />
+																				<h:outputText rendered="#{exemplarItens.situacaoAtual ne 'EM' and exemplarItens.exemplarUnidadeLogado}" value="#{exemplarItens.situacaoAtualApresentar}" />
+																				<h:outputText rendered="#{!exemplarItens.exemplarUnidadeLogado}" value="#{exemplarItens.situacaoAtualApresentar}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<otm:selectBooleanCheckbox styleClass="form-control campos" id="paraConsulta" value="#{exemplarItens.paraConsulta}" disabled="#{exemplarItens.situacaoAtual eq 'EM' or !exemplarItens.exemplarUnidadeLogado}" readonly="#{exemplarItens.situacaoAtual eq 'EM'}">
+																					<a4j:ajax event="change" execute="resultadoGeracaoExemplares" render="resultadoGeracaoExemplares" listener="#{CatalogoControle.realizarValidacaoDisponibilizarExemplarConsulta}" />
+																				</otm:selectBooleanCheckbox>
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<otm:selectBooleanCheckbox styleClass="form-control campos" id="emprestarSomenteFinalDeSemana" value="#{exemplarItens.emprestarSomenteFinalDeSemana}" disabled="#{exemplarItens.situacaoAtual eq 'EM' or !exemplarItens.exemplarUnidadeLogado}" readonly="#{exemplarItens.situacaoAtual eq 'EM'}" />
+																			</h:panelGroup> <h:panelGroup styleClass="rf-edt-c-colunaMatricula float-left rf-dt-hdr-c ">
+																				<otm:selectBooleanCheckbox styleClass="form-control campos" id="desconsiderarReserva" value="#{exemplarItens.desconsiderarReserva}" disabled="#{exemplarItens.situacaoAtual eq 'EM' or !exemplarItens.exemplarUnidadeLogado}" readonly="#{exemplarItens.situacaoAtual eq 'EM'}" />
+																			</h:panelGroup></td>
+																	</tr>
+																</h:panelGroup>
+															</a4j:repeat>
+														</tbody>
+													</table>
+												</div>
+												<div class="panelOpcoes">
+													<!-- 												rendered="#{exemplarItens.exemplarUnidadeLogado}" -->
+													<a4j:repeat rowKeyVar="rowOpco" id="panelListaExemplaresOpcoes" value="#{CatalogoControle.catalogoVO.exemplarVOs}" var="exemplarItens">
+														<h:panelGroup layout="block" styleClass="border-bottom hRowOpcoes w-100"
+															rendered="#{FilterFactory.filter('resultadoGeracaoExemplares', 'numeroExemplar', 'INTEIRO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares2', 'biblioteca.nome', 'TEXTO').accept(exemplarItens) and 
+FilterFactory.filter('resultadoGeracaoExemplares3', 'tituloExemplar', 'TEXTO').accept(exemplarItens) and 
+FilterFactory.filter('resultadoGeracaoExemplares4', 'subtitulo', 'TEXTO').accept(exemplarItens) and 
+FilterFactory.filter('resultadoGeracaoExemplares5', 'secao.nome', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares6', 'edicao', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares7', 'anoPublicacao', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares8', 'volume', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplares9', 'local', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplaresprefixoExemplar', 'prefixoExemplar', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplarescodigoBarra', 'codigoBarra', 'TEXTO').accept(exemplarItens) and
+FilterFactory.filter('resultadoGeracaoExemplaressituacao', 'situacaoAtualApresentar', 'TEXTO').accept(exemplarItens)
+}">
+															<otm:commandIcon rendered="#{exemplarItens.tipoEntrada eq 'CO'}" oncomplete="#{rich:component('panelExibirExemplar')}.show()" render="form, formExibirExemplar" action="#{CatalogoControle.selecionaExemplar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar" />
+															<otm:commandIcon image="#{resource['imagens/botaoRemover.png']}" oncomplete="#{rich:component('panelExcluirExemplar')}.show()" render="formExcluirExemplar" action="#{CatalogoControle.selecionarExemplarExcluir}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" />
+															<otm:commandIcon image="#{resource['imagens/botaoTransferir.png']}" oncomplete="#{rich:component('panelTransferenciaBiblioteca')}.show()" action="#{CatalogoControle.selecionaExemplarEdicao}" render="formTranferenciaBibliotecas" icon="#{msg_botoes.btn_icon_atualizar} iconePequeno" tooltip="Transferir" />
+															<otm:commandIcon image="#{resource['imagens/informacao.png']}" rendered="#{!empty exemplarItens.logTransferenciaBibliotecaExemplarVOs}" action="#{CatalogoControle.selecionaExemplarEdicao}" render="formLogTranferenciaBibliotecas" oncomplete="#{rich:component('panelLogTransferenciaBiblioteca')}.show()" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" />
+														</h:panelGroup>
+													</a4j:repeat>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</h:panelGroup>
+							<h:panelGroup rendered="#{!empty CatalogoControle.catalogoVO.exemplarVOs}" layout="block" styleClass="col-md-12 text-center m10">
+								<otm:commandButton oncomplete="abrirPopup('relatorio/etiquetaLivroRel.xhtml', 'etiquetaLivroRel', 930, 595);" image="#{resource['imagens/botaoGerarEtiquetas.png']}" icon="#{msg_botoes.btn_icon_gerar_relatorio_embutido}" styleClass="btn btn-primary" value="Gerar Etiquetas" rendered="#{!CatalogoControle.catalogoVO.novoObj}" action="#{CatalogoControle.gerarEtiquetas}" />
+								<otm:commandButton style="margin-left:5px" id="alteracoesExemplares" styleClass="btn btn-info light btn_icon_editar_embutido" icon="#{msg_botoes.btn_icon_editar_embutido}" value="Alterar Exemplares" render="panelResultadoGeracaoExemplares" oncomplete="#{rich:component('panelAlteracoesExemplares')}.show()" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+
+				<rich:tab header="#{msg_aplic.prt_Catalogo_cursos }">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+							<otm:commandButton id="adicionarCurso" render="formCurso" onclick="#{rich:component('panelCurso')}.show()" value="Adicionar Curso" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary btn_icon_adicionar_embutido" />
+						</h:panelGroup>
+						<h:panelGroup width="100%">
+							<rich:dataTable var="catalogoCursoItens" id="tabelaCatalogoCurso" width="100%" value="#{CatalogoControle.catalogoVO.catalogoCursoVOs }" rendered="#{!empty CatalogoControle.catalogoVO.catalogoCursoVOs }" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" rows="5">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Curso_codigo}" />
+									</f:facet>
+									<h:panelGroup>
+										<h:outputText value="#{catalogoCursoItens.cursoVO.codigo}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+									</f:facet>
+									<h:panelGroup>
+										<h:outputText value="#{catalogoCursoItens.cursoVO.nome}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									</f:facet>
+									<otm:commandIcon action="#{CatalogoControle.removerCatalogoCursoVOs }" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover" execute="form" render="form" />
+								</rich:column>
+								<f:facet name="footer">
+									<div style="text-align: center !important">
+										<rich:dataScroller align="center" for="form:tabelaCatalogoCurso" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoCatalogoCurso" />
+									</div>
+								</f:facet>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+
+				<rich:tab header="#{msg_aplic.prt_Catalogo_areaDeConhecimento}">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText value="#{msg_aplic.prt_Catalogo_areaDeConhecimento}" styleClass="field control-label tituloCampos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-10">
+							<h:selectOneMenu id="areaDeConhecimento" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.areaConhecimentoVO.codigo}">
+								<f:selectItems value="#{CatalogoControle.listaSelectItemAreaDeConhecimento}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+							<otm:commandButton action="#{CatalogoControle.adicionarAreaDeConhecimento}" value="Adicionar" styleClass="btn btn-primary pl30 pr30" icon="#{msg_botoes.btn_icon_adicionar_embutido}" render="form, tabelaAreaConhecimento" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+						<h:panelGroup width="100%">
+							<rich:dataTable var="catalogoAreaConhecimentoItens" id="tabelaAreaConhecimento" width="100%" value="#{CatalogoControle.catalogoVO.catalogoAreaConhecimentoVOs}" rendered="#{!empty CatalogoControle.catalogoVO.catalogoAreaConhecimentoVOs}" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" rows="5">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Curso_codigo}" />
+									</f:facet>
+									<h:panelGroup>
+										<h:outputText value="#{catalogoAreaConhecimentoItens.areaConhecimentoVO.codigo}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+									</f:facet>
+									<h:panelGroup>
+										<h:outputText value="#{catalogoAreaConhecimentoItens.areaConhecimentoVO.nome}" />
+									</h:panelGroup>
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									</f:facet>
+									<otm:commandIcon action="#{CatalogoControle.removerAreaConhecimentoVOs }" tooltip="Remover" icon="#{msg_botoes.btn_icon_remover} iconePequeno" execute="form" render="form" />
+								</rich:column>
+								<f:facet name="footer">
+									<div style="text-align: center !important">
+										<rich:dataScroller align="center" for="tabelaAreaConhecimento" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoAreaConhecimento" />
+									</div>
+								</f:facet>
+							</rich:dataTable>
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+
+				<!-- UPLOAD -->
+
+				<rich:tab id="tabUpload" header="#{msg_aplic.prt_Catalogo_areaDeUpload}">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup id="panelArquivo">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_uploadArquivoCatalogo}" styleClass="field control-label tituloCampos" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-10">
+								<h:selectOneMenu id="tipoUploadApresentar" styleClass="form-control camposObrigatorios" value="#{CatalogoControle.tipoUploadApresentar}">
+									<f:selectItems value="#{CatalogoControle.listaSelectItemTipoUploadCatalogo}" />
+									<a4j:ajax event="change" render="panelGridUploadCatalogo, formImagem , SemDownload" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+								<otm:commandButton onclick="#{rich:component('painelImagem')}.show();" action="#{CatalogoControle.novoObjAnexado}" value="Adicionar" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary pl30 pr30" render="formUploadArquivo , panelGridUploadCatalogo, formImagem ,SemDownload " />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+						<rich:dataTable id="arquivos" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" rendered="#{!empty CatalogoControle.listaArquivosBibliotecaExterna}" columnClasses="colunaAlinhamento" value="#{CatalogoControle.listaArquivosBibliotecaExterna}" rows="10" var="arquivoItens">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Origem" />
+								</f:facet>
+								<h:outputText value="#{arquivoItens.codOrigem}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Data Upload" />
+								</f:facet>
+								<h:outputText value="#{arquivoItens.dataUpload_Apresentar}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Descrição" />
+								</f:facet>
+								<h:outputText value="#{arquivoItens.descricaoArquivo}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Tipo" />
+								</f:facet>
+								<h:outputText value="#{arquivoItens.agrupador}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<h:panelGroup>
+									<otm:commandIcon oncomplete="location.href='../../DownloadSV'" tooltip="Download Arquivo" image="#{resource['imagens/botaoDownloadResumido.png']}" icon="#{msg_botoes.btn_icon_download} iconePequeno" action="#{CatalogoControle.realizarDownloadArquivo}" />
+									<otm:commandIcon id="removerItemArquivo" action="#{CatalogoControle.selecionarArquivoRemover}" tooltip="Excluir Arquivo" icon="#{msg_botoes.btn_icon_remover} iconePequeno" image="#{resource['/imagens/biblioteca/delete.png']}" render="formConfirmarExclusaoArquivo" onclick="#{rich:component('painelConfirmarExclusaoArquivo')}.show();" style="width:15px;" />
+									<otm:commandIcon image="#{resource['/imagens/biblioteca/lupa2.png']}" rendered="#{arquivoItens.extensao eq '.jpg' || arquivoItens.extensao eq '.gif' || arquivoItens.extensao eq '.png' || arquivoItens.extensao eq '.bmp'}" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" tooltip="Visualizar Imagem" onclick="#{rich:component('painelImagemBiblioteca')}.show();" action="#{CatalogoControle.realizarConsultaImagem}" render="formImagemBiblioteca" />
+								</h:panelGroup>
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="arquivos" limitRender="10" align="center" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+					</h:panelGroup>
+				</rich:tab>
+			</rich:tabPanel>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{CatalogoControle}"></otm:mensagem>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<h:panelGroup>
+						<otm:commandButton id="novo" immediate="true" action="#{CatalogoControle.novo}" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" />
+						<otm:commandButton style="margin-left: 5px" id="importar" rendered="#{CatalogoControle.catalogoVO.novoObj}" action="#{CatalogoControle.prepararImportarArquivoMarc21}" oncomplete="#{rich:component('panelImportarMarc21')}.show()" value="Importar" icon="fas fa-file-import" styleClass="btn btn-primary" title="#{msg.msg_novo_dados}" accesskey="1" />
+						<otm:commandButton style="margin-left: 5px" id="exportar" render="panelGridMensagens" action="#{CatalogoControle.executarExportarArquivoMarc21}" oncomplete="#{CatalogoControle.downloadArquivoMarc21}" rendered="#{!CatalogoControle.catalogoVO.novoObj}" icon="fas fa-file-export" value="Exportar MARC" styleClass="btn btn-success" image="#{resource['/imagens/botaoExportarMarc21.png']}" title="#{msg.msg_exportar_marc21}" accesskey="1" />
+						<otm:commandButton style="margin-left: 5px" id="exportarMarcXML" action="#{CatalogoControle.validarAbrirModalExportarArquivoMarc21}" oncomplete="#{CatalogoControle.modalpanelExportarMarc21XML}" onbeforedomupdate="#{CatalogoControle.downloadArquivoMarc21}" rendered="#{!CatalogoControle.catalogoVO.novoObj}" icon="fas fa-file-export" value="Exportar MARC XML" styleClass="btn btn-default" image="#{resource['/imagens/botaoExportarMarcXML.png']}" title="#{msg.msg_exportar_marcXML}" accesskey="1" />
+						<otm:commandButton style="margin-left: 5px" id="salvar" action="#{CatalogoControle.gravar}" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Gravar" accesskey="2" styleClass="btn btn-dark" />
+						<otm:commandButton style="margin-left: 5px" id="excluir" onclick="return confirm('#{msg.msg_ConfirmaExclusao}');" action="#{CatalogoControle.excluir}" value="#{msg_botoes.btn_excluir}" styleClass="btn btn-danger btn-excluir" title="#{msg.msg_excluir_dados}" accesskey="3" />
+						<otm:commandButton style="margin-left: 5px" id="consultar" immediate="true" action="#{CatalogoControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="4" />
+						<otm:commandButton style="margin-left: 5px" id="clonar" render="form" action="#{CatalogoControle.clonar}" value="Clonar" icon="#{msg_botoes.btn_icon_clonar_embutido}" styleClass="btn btn-warning" accesskey="5" image="#{resource['imagens/botaoClonar.png']}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

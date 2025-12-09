@@ -1,0 +1,1402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:pt="http://xmlns.jcp.org/jsf/passthrough" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Interação - #{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.nome}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:panelGroup>
+			<h:form id="form">
+				<h:panelGroup id="clock">
+					<a4j:region>
+						<a4j:poll id="poll" interval="1000" rendered="#{InteracaoWorkflowControle.prospeccaoIniciada}" onsubmit='this.disabled=true' oncomplete='this.disable=false' ignoreDupResponses="true" render="clock, relogio" status="false" />
+					</a4j:region>
+				</h:panelGroup>
+				<h:commandLink action="#{InteracaoWorkflowControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+				<h:panelGroup id="panelGridForm" layout="block" styleClass="row">
+					<h:panelGroup id="panelGroupProspect" layout="block" styleClass="row ml5">
+						<h:panelGroup layout="block" styleClass="col-md-12 pn mb10">
+							<h:panelGroup rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.existeImagem}" styleClass="col-md-1 text-center" layout="block">
+								<h:graphicImage id="foto12" style="width:64px; height:64px" value="#{InteracaoWorkflowControle.obterCaminhoFotoUsuario}">
+								</h:graphicImage>
+							</h:panelGroup>
+							<h:panelGroup rendered="#{!InteracaoWorkflowControle.interacaoWorkflowVO.prospect.existeImagem}" styleClass="col-md-1 text-center" layout="block">
+								<h:panelGroup style="font-size:64px;color: #CCCCCC  !important;" styleClass="fa fa-user" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-11 pn ">
+								<h:panelGroup layout="block" styleClass="col-md-6 pn ">
+									<h:outputText value="#{msg_aplic.prt_FollowUp_nome}" styleClass="field control-label tituloCampos" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText id="nomeProspect" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.nome}" styleClass="form-control campos" size="30">
+											<a4j:ajax event="change" listener="#{InteracaoWorkflowControle.setarNomeBatismo}" render="form:nomeBatismoProspect" />
+										</h:inputText>
+										<h:panelGroup layout="block" styleClass="append-icon right">
+											<otm:commandIcon icon="#{msg_botoes.btn_icon_followup_embutido}" tooltip="Visualizar Follow-up com todas Interações com Prospect" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" oncomplete="window.open('./ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigo&amp;valor=#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.codigo}','FollowUP','resizable=yes,maximize=yes,fullscreen=yes,scrollbars=yes');" rendered="#{LoginControle.permissaoAcessoMenuVO.followUpProspect and InteracaoWorkflowControle.apresentarBotaoFollowUp}" />
+											<otm:commandIcon styleClass="ml5 mr5" icon="#{msg_botoes.btn_icon_envelope_aberto_embutido}" tooltip="Enviar e-mail para Prospect" oncomplete="#{rich:component('panelEnvioEmailEnvMsg')}.show()" render="formEnvioEmailEnvMsg" action="#{InteracaoWorkflowControle.abrirComunicacaoInterna(InteracaoWorkflowControle.interacaoWorkflowVO.prospect)}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText value="#{msg_aplic.prt_FollowUp_nomeBatismo}" styleClass="field control-label tituloCampos" />
+									<h:inputText id="nomeBatismoProspect" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.nomeBatismo}" styleClass="form-control campos" size="30">
+										<a4j:ajax event="change" listener="#{InteracaoWorkflowControle.setarNomeSocial}" render="form:nomeProspect" />
+									</h:inputText>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<otm2:panel name="idInfoProspect" col="12" styleClassFooter="dn">
+							<ui:define name="header">
+								<h:outputText value="Informações Básicas Prospect" styleClass="field control-label tituloCampos" />
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_email}" styleClass="field control-label tituloCampos" />
+									<a4j:region id="regionEmailPrincipal">
+										<h:panelGroup styleClass="col-md-12 pn" layout="block">
+											<h:inputText id="eamilProspect" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.emailPrincipal}" styleClass="form-control campos" size="30">
+												<a4j:ajax event="change" execute="@this" oncomplete="#{InteracaoWorkflowControle.abrirModalInteracaoProspect}" listener="#{InteracaoWorkflowControle.consultarTipoInteracaoProspectEmail}" render="formTipoProspect, form" />
+											</h:inputText>
+											<h:panelGroup styleClass="append-icon right">
+												<otm:commandIcon styleClass="ml5 mr5" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" tooltip="Enviar e-mail para Prospect" oncomplete="#{rich:component('panelEnvioEmailEnvMsg')}.show()" render="formEnvioEmailEnvMsg" action="#{InteracaoWorkflowControle.abrirComunicacaoInterna(InteracaoWorkflowControle.interacaoWorkflowVO.prospect)}" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</a4j:region>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_emailSecundario}" />
+									<h:panelGroup styleClass="col-md-12 pn" layout="block">
+										<h:inputText id="emailSecundario1" size="22" maxlength="100" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.emailSecundario}" />
+										<h:panelGroup styleClass="append-icon right">
+											<otm:commandIcon styleClass="ml5 mr5" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" tooltip="Enviar e-mail para Prospect" oncomplete="#{rich:component('panelEnvioEmailEnvMsg')}.show()" render="formEnvioEmailEnvMsg" action="#{InteracaoWorkflowControle.abrirComunicacaoInterna(InteracaoWorkflowControle.interacaoWorkflowVO.prospect)}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText value="#{msg_aplic.prt_FollowUp_sexo}" styleClass="field control-label tituloCampos" />
+									<h:selectOneMenu id="sexo" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.sexo}">
+										<f:selectItems value="#{EnumControle.comboboxSexoEnumCrm}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_celular}" styleClass="field control-label tituloCampos" />
+									<h:inputText id="celular" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.celular}" styleClass="form-control campos" size="16" maxlength="15" onkeyup="return maskTelefone('form:celular',event)" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_telefoneResidencial}" styleClass="field control-label tituloCampos" />
+									<h:inputText id="telefoneResidencial" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.telefoneResidencial}" styleClass="form-control campos" size="14" maxlength="14" onkeypress="return mascara(this.form, 'form:telefoneResidencial', '(99)9999-9999', event);" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_telefonecComercial}" styleClass="field control-label tituloCampos" />
+									<h:inputText id="telefoneComercial" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.telefoneComercial}" styleClass="form-control campos" size="14" maxlength="14" onkeypress="return mascara(this.form, 'form:telefoneComercial', '(99)9999-9999', event);" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_telefoneRecado}" styleClass="field control-label tituloCampos" />
+									<h:inputText id="telefoneRecado" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.telefoneRecado}" styleClass="form-control campos" size="14" maxlength="14" onkeypress="return mascara(this.form, 'form:telefoneRecado', '(99)9999-9999', event);" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!InteracaoWorkflowControle.campanhaCobranca}">
+									<h:outputText rendered="#{!InteracaoWorkflowControle.campanhaCobranca}" value="#{msg_aplic.prt_InteracaoWorkflow_comoFicouSabendoInstituicao}" styleClass="field control-label tituloCampos" />
+									<h:selectOneMenu id="tipoMidia" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.tipoMidia.codigo}">
+										<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemTipoMidia}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InteracaoWorkflowControle.campanhaCobranca}">
+									<h:outputText rendered="#{InteracaoWorkflowControle.campanhaCobranca}" value="#{msg_aplic.prt_InteracaoWorkflow_matricula}" styleClass="field control-label tituloCampos" />
+									<h:selectOneMenu id="matricula" styleClass="form-control campos" value="#{InteracaoWorkflowControle.matriculaVO.matricula}">
+										<f:selectItems value="#{InteracaoWorkflowControle.listaMatricula}" />
+										<a4j:ajax event="change" listener="#{InteracaoWorkflowControle.montarDadosMatriculaSelectItem}" render="form" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{InteracaoWorkflowControle.campanhaCobranca}">
+									<h:outputText rendered="#{InteracaoWorkflowControle.campanhaCobranca}" value="#{msg_aplic.prt_InteracaoWorkflow_turma}" styleClass="field control-label tituloCampos" />
+									<h:inputText rendered="#{InteracaoWorkflowControle.campanhaCobranca}" id="turma" size="28" readonly="true" maxlength="100" styleClass="form-control camposSomenteLeitura" value="#{InteracaoWorkflowControle.identificadorTurma}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{InteracaoWorkflowControle.campanhaCobranca}">
+									<h:outputText rendered="#{InteracaoWorkflowControle.campanhaCobranca}" value="#{msg_aplic.prt_InteracaoWorkflow_unidadeEnsino}" styleClass="field control-label tituloCampos" />
+									<h:inputText rendered="#{InteracaoWorkflowControle.campanhaCobranca}" readonly="true" id="unidadeEnsinoCampanhaCobranca" size="28" maxlength="100" styleClass="form-control camposSomenteLeitura" value="#{InteracaoWorkflowControle.nomeUnidade}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!InteracaoWorkflowControle.campanhaCobranca}">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CursoInteresse_tituloForm}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<rich:autocomplete fetchValue="#{curso2.nome} (#{curso2.codigo})" autocompleteMethod="#{InteracaoWorkflowControle.autocompleteCursoInteresse}" minChars="2" rowClasses="10" var="curso2" popupClass="consulta" id="suggestionCurso2" styleClass="form-control" value="#{InteracaoWorkflowControle.autocompleteValorCurso2}">
+											<rich:column>
+												<f:facet name="header">
+													<h:outputText styleClass="tituloCamposReduzidosNegrito" value="Curso" />
+												</f:facet>
+												<h:outputText value="#{curso2.nome}" />
+											</rich:column>
+											<a4j:ajax event="selectitem" execute="form:suggestionCurso2" status="loading" render="form:suggestionCurso2" listener="#{InteracaoWorkflowControle.selecionarCursoPorCodigo}" />
+										</rich:autocomplete>
+										<span class="append-icon right"> <otm:commandIcon action="#{InteracaoWorkflowControle.adicionarCursoInteresse2}" execute="@this, form" icon="#{msg_botoes.btn_icon_adicionar_embutido}" accesskey="5" tooltip="Adicionar Curso Interesse" render="form" />
+										</span>
+									</h:panelGroup>
+									<!-- 										<h:outputText styleClass="mensagemDetalhada" id="mensagemCursoInteresse" value="#{InteracaoWorkflowControle.mensagemDetalhada}" /> -->
+								</h:panelGroup>
+							</ui:define>
+						</otm2:panel>
+
+						<otm2:panel name="panelInteracaoWorkflowControle" col="12" opened="false" styleClassFooter="dn">
+							<ui:define name="header">
+								<h:panelGroup layout="block" styleClass="p5">
+									<h:outputText styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="Informações Complementares Prospect" />
+								</h:panelGroup>
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block" styleClass="row">
+									<rich:tabPanel switchType="client">
+										<rich:tab header="#{msg_aplic.prt_Prospects_prospect}" switchType="client" execute="@form" id="tabProspectDadosBasico">
+											<h:panelGroup layout="block" styleClass="row" id="pgProspects">
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_tipoProspect}" />
+														<h:selectOneMenu id="tipoProspect" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.tipoProspect}">
+															<f:selectItems value="#{EnumControle.comboboxTipoProspectEnum}" />
+															<a4j:ajax event="change" execute="form:pgProspects, form:nomeProspect, form:eamilProspect, form:dataNascimento,  form:sexo, form:telefoneResidencial, form:telefoneComercial, form:telefoneRecado, form:celular, form:panelGridMensagens" render="form:pgProspects, form:nomeProspect, form:eamilProspect, form:dataNascimento,  form:sexo, form:telefoneResidencial, form:telefoneComercial, form:telefoneRecado, form:celular, form:panelGridMensagens" listener="#{InteracaoWorkflowControle.limparDadosReferenteTipoInteracaoProspect}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.juridico}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_cnpj}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.juridico}" />
+														<a4j:region id="regionCNPJ">
+															<h:inputText id="CNPJ" size="18" maxlength="18" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.cnpj}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.juridico}" onkeypress="return mascara(this.form, 'form:CNPJ', '99.999.999/9999-99', event);">
+																<a4j:ajax event="change" execute="@this" oncomplete="#{InteracaoWorkflowControle.abrirModalInteracaoProspect}" listener="#{InteracaoWorkflowControle.consultarTipoInteracaoProspect}" render="form:pgProspects, form:nomeProspect, form:eamilProspect, form:dataNascimento,  form:sexo, form:telefoneResidencial, form:telefoneComercial, form:telefoneRecado, form:celular, form:panelGridMensagens, formTipoProspect" />
+															</h:inputText>
+														</a4j:region>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_cpf}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" />
+														<a4j:region id="regionCPF">
+															<h:inputText id="CPF" size="14" maxlength="14" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.cpf}" onkeypress="return mascara(this.form, 'form:CPF', '999.999.999-99', event);" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+																<a4j:ajax event="change" oncomplete="#{InteracaoWorkflowControle.abrirModalInteracaoProspect}" listener="#{InteracaoWorkflowControle.consultarTipoInteracaoProspect}" execute="@this, form, formTipoProspect, pgProspects, pgAcademico, pgCursoInteresse" render="form, formTipoProspect, pgProspects, pgAcademico, pgCursoInteresse" />
+															</h:inputText>
+														</a4j:region>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.juridico}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_razaoSocial}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.juridico}" />
+														<h:inputText id="razaoSocial" size="60" maxlength="100" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.razaoSocial}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.juridico}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-4">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_unidadeEnsino}" />
+														<h:selectOneMenu id="unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.unidadeEnsino.codigo}">
+															<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemUnidadeEnsino}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2 h36" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+														<h:outputText value="#{msg_aplic.prt_FollowUp_dataNascimento}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" styleClass="field control-label tituloCampos" />
+														<otm:calendar id="dataNascimento" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.dataNascimento}" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control camposObrigatorios" inputSize="10" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+														<h:outputText styleClass="field control-label tituloCampos" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" value="#{msg_aplic.prt_Pessoa_estadoCivil}" />
+														<h:selectOneMenu id="estadoCivil" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.estadoCivil}">
+															<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemEstadoCivilProspect}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_rg}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" />
+														<h:inputText id="rg" size="13" maxlength="25" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.rg}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" onkeydown="aceitarSomenteValorNumerico(this)" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2 h36" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospect_dataExpedicao}" />
+														<otm:calendar id="dataExpedicao" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.dataExpedicao}" inputSize="10" inputClass="form-control campos" oninputblur="blurinput(this);" oninputfocus="focusinput(this);" oninputchange="validarData(this.value,this.id);" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" datePattern="dd/MM/yyyy" enableManualInput="true" zindex="2" showWeeksBar="false" />
+														<h:message for="dataExpedicao" styleClass="mensagemDetalhada" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospect_orgaoEmissor}" />
+														<h:inputText id="orgaoEmissor" size="7" maxlength="10" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.orgaoEmissor}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospect_estadoEmissor}" />
+														<h:selectOneMenu id="estadoEmissaoRG" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.estadoEmissor}">
+															<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemEstadoEmissaoRGPessoa}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.juridico}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_inscricaoEstadual}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.juridico}" />
+														<h:inputText id="inscricaoEstadual" size="13" maxlength="50" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.inscricaoEstadual}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.juridico}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-3">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_nomeEmpresa}" />
+														<h:inputText id="nomeEmpresa" size="35" maxlength="100" styleClass="form-control campos" value="#{ProspectsControle.prospectsVO.nomeEmpresa}" readonly="#{ProspectsControle.liberarEdicaoProspectVinculadoPessoaSomenteComSenha}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_cargo}" />
+														<h:inputText id="cargo" size="28" maxlength="100" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.cargo}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_InteracaoWorkflow_telefoneEmpresa}" />
+														<h:inputText id="telefoneEmpresa" size="14" maxlength="14" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.telefoneEmpresa}" onkeyup="return maskTelefone('form:telefoneEmpresa',event)" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_renda}" />
+														<h:selectOneMenu id="renda" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.renda}">
+															<f:selectItems value="#{EnumControle.comboboxRendaProspectEnum}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_tipoEmpresa}" />
+														<h:selectOneMenu id="tipoEmpresa" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.tipoEmpresa}">
+															<f:selectItems value="#{EnumControle.comboboxTipoEmpresaProspectEnum}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row pn">
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_cep}" />
+														<h:inputText id="CEP" size="13" maxlength="10" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.CEP}" onkeypress="return mascara(this.form, 'form:CEP', '99.999-999', event);">
+															<a4j:ajax event="change" execute="@this" listener="#{InteracaoWorkflowControle.realizarBuscaEndereco}" render="endereco, setor, cidade" />
+														</h:inputText>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-4">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_endereco}" />
+														<h:inputText id="endereco" size="60" maxlength="100" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.endereco}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-4">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_setorBairro}" />
+														<h:inputText id="setor" size="40" maxlength="100" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.setor}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_numero}" />
+														<h:inputText id="numero" size="10" maxlength="10" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.numero}" onkeydown="aceitarSomenteValorNumerico(this)" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_complemento}" />
+														<h:inputText id="complemento" size="40" maxlength="100" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.complemento}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6" id="pgCidade">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_cidade}" />
+														<h:panelGroup layout="block" styleClass="col-md-12 pn">
+															<h:inputText readonly="true" id="cidade" size="40" maxlength="30" styleClass="form-control camposSomenteLeitura" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.cidade.nome} - #{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.cidade.estado.sigla}" />
+															<span class="append-icon right"> <otm:commandIcon id="consultaCidades" focus="nomeCidade" tooltip="Localizar Cidade" render="pgCidade, formCidade" action="#{InteracaoWorkflowControle.inicializarDadosMensagem}" oncomplete="#{rich:component('panelCidade')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" immediate="true" /> <otm:commandIcon id="limparConsultaCidades" render="pgCidade" action="#{InteracaoWorkflowControle.limparDadosCidade}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="Limpar Dados" immediate="true" />
+															</span>
+														</h:panelGroup>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="field control-label tituloCampos" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" value="#{msg_aplic.prt_Pessoa_naturalidade}" />
+														<h:panelGroup layout="block" styleClass="col-md-12 pn">
+															<h:inputText readonly="true" id="naturalidade" size="20" maxlength="20" styleClass="form-control camposSomenteLeitura" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.naturalidade.nome} - #{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.naturalidade.estado.sigla}" />
+															<span class="append-icon right"> <otm:commandIcon id="consultaNaturalidade" focus="naturalidade" tooltip="Localizar Naturalidade" render="formNaturalidade" oncomplete="#{rich:component('panelNaturalidade')}.show()" action="#{InteracaoWorkflowControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" immediate="true" />
+															</span>
+														</h:panelGroup>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nacionalidade}" />
+														<h:panelGroup layout="block" styleClass="col-md-12 pn">
+															<h:selectOneMenu id="nacionalidade" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.nacionalidade.codigo}">
+																<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemNacionalidade}" />
+															</h:selectOneMenu>
+															<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_nacionalidade" tooltip="Atualizar Nacionalidade" action="#{InteracaoWorkflowControle.montarListaSelectItemNacionalidade}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" render="form:nacionalidade" />
+															</span>
+														</h:panelGroup>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+													<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+														<h:outputText styleClass="field control-label tituloCampos" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" value="#{msg_aplic.prt_Prospects_nomePai}" />
+														<h:inputText id="nomePai" size="40" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" maxlength="100" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.nomePai}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}">
+														<h:outputText styleClass="field control-label tituloCampos" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" value="#{msg_aplic.prt_Prospects_nomeMae}" />
+														<h:inputText id="nomeMae" size="40" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.fisico}" maxlength="100" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.nomeMae}" />
+													</h:panelGroup>
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:tab>
+										<rich:tab switchType="client" header="Formação Acadêmica" execute="@form">
+											<h:panelGroup id="pgAcademico" styleClass="row" layout="block">
+												<h:panelGroup id="formacaoAcademico" styleClass="row" layout="block">
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_curso}" />
+														<h:inputText size="70" maxlength="100" styleClass="form-control campos camposObrigatorios" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.curso}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_instituicao}" />
+														<h:inputText size="70" maxlength="100" styleClass="form-control campos" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.instituicao}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_cidade}" />
+														<h:panelGroup layout="block" styleClass="col-md-12 pn">
+															<h:inputText readonly="true" id="cidadeFormacao" size="30" maxlength="30" styleClass="form-control camposSomenteLeitura" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.cidade.nome} - #{InteracaoWorkflowControle.formacaoAcademicaVO.cidade.estado.sigla}" />
+															<span class="append-icon right"> <otm:commandIcon id="consultaCidadesFormacao" focus="nomeCidade" tooltip="Localizar Cidade" render="formCidadeFormacao" oncomplete="#{rich:component('panelCidadeFormacao')}.show()" action="#{InteracaoWorkflowControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" immediate="true" /> <otm:commandIcon id="limparCidadesFormacao" focus="nomeCidade" tooltip="Limpar Cidade" render="cidadeFormacao" action="#{InteracaoWorkflowControle.limparCidadeFormacaoAcademica}" icon="#{msg_botoes.btn_icon_limpar_embutido}" immediate="true" />
+															</span>
+														</h:panelGroup>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_escolaridade}" />
+														<h:selectOneMenu id="FormacaoAcademica_escolaridade" styleClass="form-control campos" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.escolaridade}">
+															<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemEscolaridadeFormacaoAcademica}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Aluno_areaConhecimento}" />
+														<h:panelGroup layout="block" styleClass="col-md-12 pn">
+															<h:selectOneMenu id="FormacaoAcademica_areaConhecimento" styleClass="form-control campos" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.areaConhecimento.codigo}">
+																<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemAreaConhecimento}" />
+															</h:selectOneMenu>
+															<span class="append-icon right mr10"> <otm:commandIcon id="atualizarFormacaoAcademica" tooltip="Atualizar Formação Academica" action="#{InteracaoWorkflowControle.montarListaSelectItemAreaConhecimento}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" execute="@this" render="form:FormacaoAcademica_areaConhecimento" />
+															</span>
+														</h:panelGroup>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_situacao}" />
+														<h:selectOneMenu id="FormacaoAcademica_situacao" styleClass="form-control campos" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.situacao}">
+															<a4j:ajax event="change" render="form:labelPeriodo, form:groupPeriodo" execute="@this" />
+															<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemSituacaoFormacaoAcademica}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_tipoInst}" />
+														<h:selectOneMenu id="tipoInst" styleClass="form-control campos" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.tipoInst}">
+															<a4j:ajax event="change" render="form:formacaoAcademico" />
+															<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemTipoInstFormacaoAcademica}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+													<h:panelGroup id="groupPeriodo">
+														<h:panelGroup layout="block" styleClass="col-md-2">
+															<h:outputText id="labelPeriodo" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_periodo}" />
+															<h:inputText maxlength="4" styleClass="form-control camposObrigatorios" onkeydown="aceitarSomenteValorNumerico(this)" id="anoDataFim" rendered="#{InteracaoWorkflowControle.formacaoAcademicaVO.desenharDataFim}" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.anoDataFim}" />
+															<otm:calendar id="dataInicio" rendered="#{!InteracaoWorkflowControle.formacaoAcademicaVO.desenharDataFim}" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" inputSize="10" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.dataInicio}" />
+														</h:panelGroup>
+														<h:panelGroup layout="block" styleClass="col-md-2">
+															<h:outputText rendered="#{!InteracaoWorkflowControle.formacaoAcademicaVO.desenharDataFim}" styleClass="field control-label tituloCampos" value=" a " />
+															<otm:calendar id="dataFim" rendered="#{!InteracaoWorkflowControle.formacaoAcademicaVO.desenharDataFim}" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" inputSize="10" value="#{InteracaoWorkflowControle.formacaoAcademicaVO.dataFim}" />
+														</h:panelGroup>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+													<otm:commandButton action="#{InteracaoWorkflowControle.adicionarFormacaoAcademica}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="Adicionar Formação Acadêmica" styleClass="btn btn-primary" accesskey="5" render="form:panelGridMensagens, form:pgAcademico" image="#{resource['/imagens/botaoAdicionar2.png']}" />
+												</h:panelGroup>
+												<rich:dataTable id="formacaoAcademicaVO" width="100%" rendered="#{!empty InteracaoWorkflowControle.interacaoWorkflowVO.prospect.formacaoAcademicaVOs}" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.formacaoAcademicaVOs}" var="formacaoAcademicaItens">
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="#{msg_aplic.prt_FormacaoAcademica_curso}" />
+														</f:facet>
+														<h:outputText value="#{formacaoAcademicaItens.curso}" />
+													</rich:column>
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="#{msg_aplic.prt_FormacaoAcademica_instituicao}" />
+														</f:facet>
+														<h:outputText value="#{formacaoAcademicaItens.instituicao}" />
+													</rich:column>
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="#{msg_aplic.prt_FormacaoAcademica_escolaridade}" />
+														</f:facet>
+														<h:outputText value="#{formacaoAcademicaItens.escolaridade_Apresentar}" />
+													</rich:column>
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="#{msg_aplic.prt_FormacaoAcademica_situacao}" />
+														</f:facet>
+														<h:outputText value="#{formacaoAcademicaItens.situacao_Apresentar}" />
+													</rich:column>
+													<rich:column>
+														<f:facet name="header">
+															<h:outputText value="#{msg_botoes.btn_opcoes}" />
+														</f:facet>
+														<h:panelGroup>
+															<otm:commandIcon id="editarItemVenda" render="form:panelGridMensagens, form:pgAcademico" action="#{InteracaoWorkflowControle.editarFormacaoAcademica}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar Formação Academica" />
+															<otm:commandIcon id="removerItemVenda" render="form:panelGridMensagens, form:pgAcademico" action="#{InteracaoWorkflowControle.removerFormacaoAcademica}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" accesskey="7" tooltip="Remover Formação Academica" />
+														</h:panelGroup>
+													</rich:column>
+												</rich:dataTable>
+											</h:panelGroup>
+										</rich:tab>
+										<rich:tab header="#{msg_aplic.prt_Prospects_cursoInteresse}" switchType="client">
+											<h:panelGroup layout="block" styleClass="row">
+												<a4j:region>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<rich:autocomplete pt:placeholder="Filtre aqui o curso de interesse" fetchValue="#{cursoItens.nome} (#{cursoItens.codigo})" autocompleteMethod="#{InteracaoWorkflowControle.autocompleteCursoInteresse}" minChars="2" rowClasses="10" var="cursoItens" popupClass="consulta" id="suggestionCurso" styleClass="form-control" value="#{InteracaoWorkflowControle.autocompleteValorCurso}">
+															<rich:column>
+																<f:facet name="header">
+																	<h:outputText styleClass="tituloCamposReduzidosNegrito" value="Curso" />
+																</f:facet>
+																<h:outputText value="#{cursoItens.nome}" />
+															</rich:column>
+															<a4j:ajax event="selectitem" execute="form:suggestionCurso" status="loading" render="form:suggestionCurso" listener="#{InteracaoWorkflowControle.selecionarCursoPorCodigo}" />
+														</rich:autocomplete>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6 text-left">
+														<otm:commandButton action="#{InteracaoWorkflowControle.adicionarCursoInteresse}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" value="Adicionar Curso Interesse" accesskey="5" render="form:panelGridMensagens, form:pgCursoInteresse, form:mensagemCursoInteresse, form:panelCursoPrincipal" />
+													</h:panelGroup>
+												</a4j:region>
+												<h:panelGroup layout="block" styleClass="col-md-12 mt10">
+													<rich:dataTable id="cursoInteresseVO" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento,colunaAlinhamento,colunaAlinhamento" rendered="#{!empty InteracaoWorkflowControle.interacaoWorkflowVO.prospect.cursoInteresseVOs}" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.cursoInteresseVOs}" var="cursoInteresseItens">
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_aplic.prt_CursoInteresse_curso}" />
+															</f:facet>
+															<h:outputText value="#{cursoInteresseItens.curso.nome}" />
+														</rich:column>
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_aplic.prt_CursoInteresse_dataCadastro}" />
+															</f:facet>
+															<h:outputText value="#{cursoInteresseItens.dataCadastro_Apresentar}" />
+														</rich:column>
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="opções" />
+															</f:facet>
+															<h:panelGroup>
+																<otm:commandIcon id="removerItemVenda" render="form:pgCursoInteresse, form:panelGridMensagens, form:cursoInteresse_curso_nome2, form:cursoInteresseVO" immediate="true" action="#{InteracaoWorkflowControle.removerCursoInteresse}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Curso Interesse" accesskey="7" />
+															</h:panelGroup>
+														</rich:column>
+													</rich:dataTable>
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:tab>
+
+										<rich:tab header="Informações Filhos" rendered="#{!empty InteracaoWorkflowControle.interacaoWorkflowVO.listaFilhosResponsavelFinanceiroVOs}" switchType="client">
+											<rich:dataTable id="itemsFilhos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.listaFilhosResponsavelFinanceiroVOs}" var="filhoItem">
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="#{msg_aplic.prt_Pessoa_codigo}" />
+													</f:facet>
+													<h:outputText value="#{filhoItem.codigo}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+													</f:facet>
+													<h:outputText value="#{filhoItem.nome}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+													</f:facet>
+													<h:outputText value="#{filhoItem.CPF}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="#{msg_aplic.prt_Pessoa_celular}" />
+													</f:facet>
+													<h:outputText value="#{filhoItem.celular}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="#{msg_aplic.prt_Pessoa_email}" />
+													</f:facet>
+													<h:outputText value="#{filhoItem.email}" />
+												</rich:column>
+												<rich:column>
+													<f:facet name="header">
+														<h:outputText value="#{msg_bt.btn_opcoes}" />
+													</f:facet>
+													<otm:commandIcon tooltip="#{msg_aplic.prt_FichaAluno_fichaAluno}" oncomplete="abrirPopup('./visaoAdministrativo/academico/fichaAlunoForm.xhtml?aluno=#{filhoItem.codigo}&amp;idControlador=FichaAlunoControle_#{filhoItem.codigo}', 'fichaAlunoForm_FichaAlunoControle_#{filhoItem.codigo}', 780, 590);" icon="#{msg_botoes.btn_icon_ficha_aluno} iconePequeno">
+													</otm:commandIcon>
+												</rich:column>
+											</rich:dataTable>
+										</rich:tab>
+									</rich:tabPanel>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:panel>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row ml5 mt10">
+						<otm2:panel name="panelEtapa" styleClassFooter="dn">
+							<ui:define name="header">
+								<h:panelGroup layout="block" style="width:100%;">
+									<h:outputText styleClass="tituloCamposReduzidosNegritoItalicoCinza" value="#{msg_aplic.prt_InteracaoWorkflow_acompanhamentoEtapa}" />
+									<h:panelGroup layout="block" style="float:right">
+										<h:outputText styleClass="tituloCamposReduzidosNegritoItalicoCinza mr10" rendered="#{InteracaoWorkflowControle.prospeccaoIniciada}" value="Início: #{InteracaoWorkflowControle.interacaoWorkflowVO.horaInicio}h" />
+										<h:outputText styleClass="tituloCamposReduzidosNegritoItalicoCinza mr10" value="#{msg_aplic.prt_InteracaoWorkflow_tempoMinimo}: #{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.tempoMinimo}(s)" />
+										<h:outputText styleClass="tituloCamposReduzidosNegritoItalicoCinza mr10" value="#{msg_aplic.prt_InteracaoWorkflow_tempoMaximo}: #{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.tempoMaximo}(s)" />
+									</h:panelGroup>
+								</h:panelGroup>
+							</ui:define>
+							<ui:define name="body">
+								<a4j:region>
+									<h:panelGroup layout="block" styleClass="row">
+										<h:panelGroup layout="block" styleClass="row mt5 text-right">
+											<h:panelGroup layout="block" styleClass="col-md-8">
+												<h:inputText styleClass="form-control text-center font-weight-bold" id="etapaNome" readonly="true" style=" background-color:#{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.cor} !important;  color:#{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.corFonte} !important" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.nome}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2">
+												<h:inputText id="relogio" disabled="#{InteracaoWorkflowControle.prospeccaoIniciada}" readonly="true" styleClass="form-control text-center font-weight-bold" style="#{InteracaoWorkflowControle.css_Relogio}" value="#{InteracaoWorkflowControle.relogio}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2">
+												<otm:commandButton value="Iniciar" icon="#{msg_botoes.btn_icon_play_embutido}" styleClass="btn btn-default btn-block" action="#{InteracaoWorkflowControle.inicializarContagemTempoProspeccao}" render="form, clock" rendered="#{!InteracaoWorkflowControle.prospeccaoIniciada}" disabled="#{InteracaoWorkflowControle.prospeccaoIniciada}" />
+												<otm:commandButton id="salvar2" onclick="this.disabled=true;" rendered="#{InteracaoWorkflowControle.prospeccaoIniciada}" action="#{InteracaoWorkflowControle.realizarGravacaoEtapa}" icon="fas fa-stop" value="Encerrar" styleClass="btn btn-dark  btn-block" tooltip="#{msg.msg_gravar_dados}" execute="@form" render="form, formMensagemErro, formInteracoesObservacaoObrigatoriaNaoPreenchida, panelMensagemErro, panelInteracoesObservacaoObrigatoriaNaoPreenchida" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="#{!empty InteracaoWorkflowControle.listaSelectItemMotivoEtapaWorkflow ? 'col-md-6' : 'col-md-12'}">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_InteracaoWorkflow_observacao} Geral" />
+											<h:inputTextarea id="observacao" styleClass="form-control #{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.obrigatorioInformarObservacao ? 'camposObrigatorios' : 'campos'}" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.observacao}">
+												<a4j:ajax event="change" status="observacao" render="form:observacao" />
+											</h:inputTextarea>
+										</h:panelGroup>
+										<h:panelGroup rendered="#{!empty InteracaoWorkflowControle.listaSelectItemMotivoEtapaWorkflow}" layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EtapaWorkflow_motivo}" />
+											<h:selectOneMenu id="motivoEW" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.motivo}">
+												<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemMotivoEtapaWorkflow}" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.situacaoDefinirProspectFinal.situacaoProspectPipeline.controleFinalizadoInsucesso}">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_InteracaoWorkflow_motivoInsucesso}" />
+											<h:selectOneMenu styleClass="form-control campos" id="motivoInsucesso" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.motivoInsucesso.codigo}">
+												<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemMotivoInsucesso}" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row mt5">
+											<a4j:region>
+												<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!empty InteracaoWorkflowControle.etapasAnteriores}">
+													<otm2:panel name="panelEtapaAnterior" styleClassFooter="dn">
+														<ui:define name="header">
+															<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_etapasAnteriores}"></h:outputText>
+														</ui:define>
+														<ui:define name="body">
+															<h:panelGroup layout="block" styleClass="row">
+																<a4j:repeat id="etapaAnteriores" value="#{InteracaoWorkflowControle.etapasAnteriores}" var="interacaoItens">
+																	<h:panelGroup layout="block" styleClass="12 mb5">
+																		<otm:commandButton styleClass="btn btn-block font-weight-bold" style="background:#{interacaoItens.etapaWorkflow.cor} !important;color:#{interacaoItens.etapaWorkflow.corFonte} !important;" value="#{interacaoItens.etapaWorkflow.nome}" action="#{InteracaoWorkflowControle.voltarEtapaPermissaoUsuarioAdministrador}" oncomplete="#{InteracaoWorkflowControle.modalApresentadoPermissaoVoltarEtapa}" render="form, togglePanelObservacoes, formMensagemErro, panelMensagemErro, formPermissaoVoltarEtapa" execute="@this" />
+																	</h:panelGroup>
+																</a4j:repeat>
+															</h:panelGroup>
+														</ui:define>
+													</otm2:panel>
+												</h:panelGroup>
+												<h:panelGroup layout="block" rendered="#{InteracaoWorkflowControle.prospeccaoIniciada and !empty InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.etapaWorkflowAntecedenteVOs}" styleClass="col-md-6">
+													<otm2:panel name="panelProximaEtapa" styleClassFooter="dn">
+														<ui:define name="header">
+															<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_proximaEtapa}"></h:outputText>
+														</ui:define>
+														<ui:define name="body">
+															<h:panelGroup layout="block" styleClass="row">
+																<a4j:repeat id="etapaWorkflowAntecedentesVOs" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.etapaWorkflowAntecedenteVOs}" var="etapaWorkflowAntecedenteItens">
+																	<h:panelGroup layout="block" styleClass="12 mb5">
+																		<otm:commandButton styleClass="btn btn-block font-weight-bold" style="background:#{etapaWorkflowAntecedenteItens.etapaWorkflow.cor} !important;color:#{etapaWorkflowAntecedenteItens.etapaWorkflow.corFonte} !important;" value="#{etapaWorkflowAntecedenteItens.etapaWorkflow.nome}" action="#{InteracaoWorkflowControle.realizarNavegacaoProximaEtapa}" render="formMensagemErro, panelMensagemErro, form" execute="@this" />
+																	</h:panelGroup>
+																</a4j:repeat>
+															</h:panelGroup>
+														</ui:define>
+													</otm2:panel>
+												</h:panelGroup>
+											</a4j:region>
+										</h:panelGroup>
+									</h:panelGroup>
+								</a4j:region>
+							</ui:define>
+						</otm2:panel>
+					</h:panelGroup>
+					<h:panelGroup layout="block" id="togglePanelObservacoes" styleClass="row ml5 mt10 pn">
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!empty InteracaoWorkflowControle.observacoesEtapasAnteriores}">
+							<otm2:panel name="panelObservacoesEtapa" styleClassFooter="dn" opened="true">
+								<ui:define name="header">
+									<h:outputText value="Observações Anteriores (#{fn:length(InteracaoWorkflowControle.observacoesEtapasAnteriores)})" />
+								</ui:define>
+								<ui:define name="body">
+									<a4j:repeat value="#{InteracaoWorkflowControle.listaInteracoesPercorridas}" var="observacaoItens">
+										<h:panelGroup layout="block" styleClass="row mb5 bg-gray rounded">
+											<h:panelGroup layout="block" styleClass="col-md-12 title lh30 p5">
+												<h:outputText styleClass="float-left" value="#{observacaoItens.etapaWorkflow.nome}" />
+												<h:outputText styleClass="float-right" value="#{observacaoItens.dataHora_Apresentar}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" id="togglePanelObservacoes" styleClass="col-md-12">
+												<h:outputText escape="false" value="#{observacaoItens.observacao}" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</a4j:repeat>
+								</ui:define>
+							</otm2:panel>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<otm2:panel name="panelInfoApoio" styleClassFooter="dn" opened="true">
+								<ui:define name="header">
+									<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_informacoesApoio}" />
+								</ui:define>
+								<ui:define name="body">
+									<h:panelGroup layout="block" styleClass="row" id="informacoesAdicionais">
+										<h:panelGroup layout="block" styleClass="col-md-12" style="max-height:200px; overflow:auto">
+											<h:outputText id="script" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.script_Apresentar}" escape="false" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row" rendered="#{!empty InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.arquivoEtapaWorkflowVOs}" style="max-height:200px; overflow:auto">
+											<a4j:repeat id="arquivoEtapaWorkflowVOs" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.arquivoEtapaWorkflowVOs}" var="arquivoWFItens" rendered="#{!empty InteracaoWorkflowControle.interacaoWorkflowVO.etapaWorkflow.arquivoEtapaWorkflowVOs}">
+												<h:panelGroup layout="block" styleClass="col-md-6 p5">
+													<h:panelGroup layout="block" styleClass="col-md-12 border rounded text-left">
+														<h:panelGroup layout="block" styleClass="col-md-12 border rounded">
+															<h:outputText styleClass="float-right tituloCampos font-weight-bold" value="#{arquivoWFItens.arquivo.nome}" />
+															<otm:commandIcon styleClass="float-right" icon="#{msg_botoes.btn_icon_download} iconePequeno" oncomplete="#{InteracaoWorkflowControle.caminhoServidorDownloadArquivo}" action="#{InteracaoWorkflowControle.registrarDownloadWF}">
+															</otm:commandIcon>
+														</h:panelGroup>
+														<h:outputText rendered="#{!empty arquivoWFItens.arquivo.descricao}" value="#{arquivoWFItens.arquivo.descricao}" styleClass="tituloCampos btn-block fs10 mt5" />
+													</h:panelGroup>
+												</h:panelGroup>
+											</a4j:repeat>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_InteracaoWorkflow_curso}" />
+											<h:panelGroup layout="block" styleClass="col-md-12 pn">
+												<h:inputText id="cursoProspect" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.curso.nome}" />
+												<span class="append-icon right"> <otm:commandIcon id="consultaCursos" focus="nome" tooltip="Localizar Curso" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparCurso" action="#{InteracaoWorkflowControle.limparCampoCurso}" image="#{resource['imagens/limpar.gif']}" tooltip="#{msg_aplic.prt_limparCampo}" render="cursoProspect, scriptCurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+												</span>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup id="scriptCursoPanel" layout="block" style="max-height:200px; overflow:auto" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.scriptCurso}" styleClass="col-md-12 border rounded p5 mt5 camposSomenteLeitura">
+											<h:outputText id="scriptCurso" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.scriptCurso}" escape="false" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</ui:define>
+							</otm2:panel>
+						</h:panelGroup>
+					</h:panelGroup>
+
+
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<otm:commandButton id="salvarInteracaoProspect1" onclick='this.disabled=true' action="#{InteracaoWorkflowControle.realizarPersistenciaInteracaoProspect}" render="form:panelGridMensagens, form:panelGridForm" tooltip="Gravar Dados do Prospect (Interações Devem Ser Salvar no Botão Finalizar Etapa)" accesskey="2" styleClass="btn btn-dark mr5" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Gravar Prospect" />
+						<otm:commandButton rendered="#{LoginControle.permissaoAcessoMenuVO.minhasNotasAdminsitrativo}" id="mapaMinhasNotas" onclick='this.disabled=true' action="#{InteracaoWorkflowControle.navegarPaginaUtilizandoMatriculaUnidadeEnsino}" execute="@this" oncomplete="abrirPopup('../academico/minhasNotasAdministrativo.xhtml', 'minhasNotasAdministrativo', 950, 595);" tooltip="Visualizar mapa de notas do aluno" accesskey="2" styleClass="btn btn-info mr5" icon="fas fa-list-ol" value="Notas Aluno" />
+						<otm:commandButton id="fichaFinanceiroDoAluno" onclick='this.disabled=true' rendered="#{InteracaoWorkflowControle.apresentarFichaAluno and !InteracaoWorkflowControle.campanhaCobranca}" execute="@this" oncomplete="abrirPopup('./visaoAdministrativo/academico/fichaAlunoForm.xhtml?aluno=#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.pessoa.codigo}&amp;idControlador=FichaAlunoControle_#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.pessoa.codigo}', 'fichaAlunoForm_FichaAlunoControle_#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.pessoa.codigo}', 950, 595);this.disabled=false" value="Ficha do aluno" tooltip="Visualizar Ficha do Aluno(com dados acadêmicos e financeiros do mesmo)" accesskey="2" styleClass="btn btn-info mr5" icon="#{msg_botoes.btn_icon_gerar_relatorio}" />
+						<otm:commandButton oncomplete="abrirPopupMaximizado2('./visaoAdministrativo/financeiro/relatorio/situacaoFinanceiraAlunoRel.xhtml', 'situacaoFinanceiraAlunoRel', 950, 595);this.disabled=false;" id="relSituacaoFinanceira" onclick='this.disabled=true' action="#{InteracaoWorkflowControle.navegarPaginaUtilizandoMatricula}" value="situação financeira" execute="@this" tooltip="Visualizar Ficha do Aluno(com dados acadêmicos e financeiros do mesmo)" accesskey="2" styleClass="btn btn-info mr5" icon="#{msg_botoes.btn_icon_ficha_aluno_embutido}" />
+						<otm:commandButton oncomplete="abrirPopupMaximizado2('./visaoAdministrativo/financeiro/relatorio/inadimplenciaRel.xhtml', 'inadimplenciaRel', 950, 595);this.disabled=false;" id="relInadimplencia" onclick='this.disabled=true' action="#{InteracaoWorkflowControle.navegarPaginaUtilizandoMatriculaUnidadeEnsino}" value="Rel. Inadimplência" tooltip="Emitir Relatório de Inadimplência" accesskey="2" styleClass="btn btn-info mr5" icon="fas fa-hand-holding-usd" />
+						<otm:commandButton id="visualizarDuvida" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.compromissoAgendaPessoaHorario.tipoCompromisso eq 'TIRE_SUAS_DUVIDAS'}" value="Visualizar Dúvida" image="#{resource['/imagens/botaoVisualizarDuvida.png']}" tooltip="Dúvida: #{InteracaoWorkflowControle.interacaoWorkflowVO.compromissoAgendaPessoaHorario.duvida}" accesskey="2" styleClass="btn btn-default mr5" icon="#{msg_botoes.btn_icon_lupa_embutido}" />
+						<otm:commandButton action="#{InteracaoWorkflowControle.realizarNavegacaoProspectTelaInscricao}" rendered="#{InteracaoWorkflowControle.interacaoWorkflowVO.compromissoAgendaPessoaHorario.apresentarBotaoInscricaoCandidatoProcSeletivo}" oncomplete="abrirPopup('./visaoAdministrativo/processoSeletivo/inscricaoForm.xhtml', 'inscricaoCons', 930, 595);" value="Inscrição" styleClass="btn btn-primary mr5" icon="#{msg_botoes.btn_icon_editar_embutido}" />
+						<otm:commandButton value="Matrícula" icon="fas fa-graduation-cap" styleClass="btn btn-primary mr5" action="#{InteracaoWorkflowControle.validarDadosMatricularAluno}" oncomplete="#{InteracaoWorkflowControle.popUpMatricula}" rendered="#{InteracaoWorkflowControle.apresentarMatriculaCRM and !InteracaoWorkflowControle.campanhaCobranca  and LoginControle.permissaoAcessoMenuVO.matricula}" execute="form, form:panelGridMensagens, form:mensagemCursoInteresse, panelMensagemErro, formMensagemErro, formIniciarMatricula, formCompromissoFuturo" render="form:panelGridMensagens, form:mensagemCursoInteresse, panelMensagemErro, formMensagemErro, formIniciarMatricula, formCompromissoFuturo" />
+						<otm:commandButton value="Negociação Dívida" icon="#{msg_botoes.btn_icon_dollar_embutido}" styleClass="btn btn-primary mr5" action="#{InteracaoWorkflowControle.iniciarNegociacaoAluno}" oncomplete="#{InteracaoWorkflowControle.popUpMatricula}" rendered="#{!InteracaoWorkflowControle.apresentarMatriculaCRM and InteracaoWorkflowControle.campanhaCobranca and LoginControle.permissaoAcessoMenuVO.negociacaoContaReceber}" render="form:panelGridMensagens, form:mensagemCursoInteresse, panelMensagemErro, formMensagemErro, formIniciarMatricula, formCompromissoFuturo" />
+						<!-- 						<otm:commandButton value="Iniciar Serasa" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info mr5" action="#{InteracaoWorkflowControle.iniciarSerasaAluno}" oncomplete="#{InteracaoWorkflowControle.popUpMatricula}" rendered="#{InteracaoWorkflowControle.apresentarSerasa and InteracaoWorkflowControle.campanhaCobranca and LoginControle.permissaoAcessoMenuVO.matriculaSerasa}" render="form:panelGridMensagens, form:mensagemCursoInteresse, panelMensagemErro, formMensagemErro, formIniciarMatricula, formCompromissoFuturo" /> -->
+						<otm:commandButton rendered="#{!InteracaoWorkflowControle.campanhaCobranca}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary mr5" value="Novo Prospect" image="#{resource['/imagens/botaoNovoProspect.png']}" action="#{InteracaoWorkflowControle.limparDadosReferenteProspect}" render="panelGridMensagens, formAdicionarProspect" oncomplete="#{rich:component('panelAdicionarProspect')}.show()" />
+						<otm:commandButton value="Adiar Compromisso" icon="#{msg_botoes.btn_icon_calendario_embutido}" styleClass="btn btn-default" image="#{resource['/imagens/botaoReagendar.png']}" render="formInteracoesObservacaoObrigatoriaNaoPreenchida,panelInteracoesObservacaoObrigatoriaNaoPreenchida,panelGridMensagens, formAdiarCompromisso" action="#{InteracaoWorkflowControle.realizarVerificacaoObservacaoPendente}" oncomplete="#{InteracaoWorkflowControle.abrirModalAdiarCompromisso}" />
+					</h:panelGroup>
+					<h:panelGroup id="panelGridMensagens">
+						<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</h:panelGroup>
+		<otm2:popupEnvioEmail bean="#{InteracaoWorkflowControle}" />
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCampanha" domElementAttachment="parent" show="#{InteracaoWorkflowControle.apresentarRichModalCampanha}" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formCampanha:valorConsultarCampanha').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_consultarCampanha}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkCampanha" />
+					<rich:componentControl target="panelCampanha" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCampanha" onkeydown="fecharModal('panelCampanha',event);">
+				<h:panelGroup layout="block" styleClass="row">
+					<rich:dataTable id="resultadoConsultaCampanha" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InteracaoWorkflowControle.listaCampanha}" rows="5" var="campanhaItens">
+						<h:panelGroup layout="block" styleClass="col-md-12 title">
+							<h:outputText value="Selecione uma campanha para esse contato." />
+						</h:panelGroup>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Campanha_descricao}" />
+							</f:facet>
+							<h:outputText id="descricao" value="#{campanhaItens.descricao}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Campanha_unidade}" />
+							</f:facet>
+							<h:outputText id="unidadeensino" value="#{campanhaItens.unidadeEnsino.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Campanha_curso}" />
+							</f:facet>
+							<h:outputText id="curso" value="#{campanhaItens.curso.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Campanha_situacao}" />
+							</f:facet>
+							<h:outputText id="situacao" value="#{campanhaItens.situacao_Apresentar}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{InteracaoWorkflowControle.realizarSelecaoCampanha}" render="form, formCampanha" oncomplete="#{rich:component('panelCampanha')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" image="#{resource['/imagens/botaoEditar.png']}" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formCampanha:resultadoConsultaCampanha" maxPages="10" id="scResultadoCampanha" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup id="mensagemConsultaCampanha" columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCidade" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formCidade:valorConsultaCidade').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Cidade_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink2" />
+					<rich:componentControl target="panelCidade" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCidade">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCidade" value="#{InteracaoWorkflowControle.campoConsultaCidade}">
+						<f:selectItems value="#{InteracaoWorkflowControle.tipoConsultaCidade}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCidade" size="10" styleClass="form-control campos" value="#{InteracaoWorkflowControle.valorConsultaCidade}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCidade:mensagemConsultaCidade, formCidade:resultadoConsultaCidade, formCidade:scResultadoCidade" action="#{InteracaoWorkflowControle.consultarCidade}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" />
+				</h:panelGroup>
+				<a4j:ajax oncomplete="#{limparListaConsultaCidade}" event="click" />
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCidade" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InteracaoWorkflowControle.listaConsultaCidade}" rows="5" var="cidadeItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cidade_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarCidade}" focus="Cidade" render="formCidade:resultadoConsultaCidade, formCidade:valorConsultaCidade, form:pgCidade" oncomplete="#{rich:component('panelCidade')}.hide()" value="#{cidadeItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cidade_estado}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarCidade}" focus="Cidade" render="formCidade:resultadoConsultaCidade, formCidade:valorConsultaCidade, form:pgCidade" oncomplete="#{rich:component('panelCidade')}.hide()" value="#{cidadeItens.estado.sigla}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{InteracaoWorkflowControle.selecionarCidade}" focus="Cidade" render="formCidade:resultadoConsultaCidade, formCidade:valorConsultaCidade, form:pgCidade" oncomplete="#{rich:component('panelCidade')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCidade:resultadoConsultaCidade" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoCidade" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCidade" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formCurso:valorConsultaCurso').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{InteracaoWorkflowControle.campoConsultaCurso}">
+						<f:selectItem itemLabel="Nome" itemValue="nome" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCurso" size="10" styleClass="form-control campos" value="#{InteracaoWorkflowControle.valorConsultaCurso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCurso:mensagemConsultaCurso, formCurso:resultadoConsultaCurso, formCurso:scResultadoCurso" action="#{InteracaoWorkflowControle.consultarCurso}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCurso" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InteracaoWorkflowControle.listaConsultaCurso}" rows="5" var="cursoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarCurso}" render="cursoProspect, scriptCurso, mensagem" oncomplete="#{rich:component('panelCurso')}.hide()" value="#{cursoItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{InteracaoWorkflowControle.selecionarCurso}" render="cursoProspect, scriptCurso, mensagem" oncomplete="#{rich:component('panelCurso')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCurso:resultadoConsultaCurso" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoCurso" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCurso" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelMensagemErro" shadowOpacity="true" width="350" height="200" domElementAttachment="parent" show="#{InteracaoWorkflowControle.abrirModalMensagemErro}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Erro"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkMensagemErro" />
+					<rich:componentControl target="panelMensagemErro" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMensagemErro">
+
+				<h:panelGroup id="mensagemConsultaMensagemErro" layout="block">
+					<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton action="#{InteracaoWorkflowControle.fecharModalMensagemErro}" oncomplete="#{rich:component('panelMensagemErro')}.hide();" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" image="#{resource['/imagens/botaoFechar.png']}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelIniciarMatricula" shadowOpacity="true" width="800" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Iniciar Matrícula"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+			</f:facet>
+			<h:form id="formIniciarMatricula">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_unidadeEnsino}" />
+					<h:selectOneMenu id="unidadeEnsino" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.unidadeEnsino.codigo}">
+						<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemUnidadeEnsino}" />
+						<a4j:ajax event="change" listener="#{InteracaoWorkflowControle.montarListaSelectItemTurno}" render="formIniciarMatricula" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_tituloForm}" />
+					<h:selectOneMenu id="curso" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.curso.codigo}">
+						<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemCursoInteresse}" />
+						<a4j:ajax event="change" listener="#{InteracaoWorkflowControle.montarListaSelectItemTurno}" render="formIniciarMatricula,form:this" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turno_tituloForm}" />
+					<h:selectOneMenu id="turno" styleClass="form-control campos" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.turno.codigo}">
+						<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemTurno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText value="#{msg_aplic.prt_FollowUp_nome}" styleClass="field control-label tituloCampos" />
+					<h:inputText id="nomeProspect" readonly="true" value="#{InteracaoWorkflowControle.interacaoWorkflowVO.prospect.nome}" styleClass="form-control camposSomenteLeitura" size="30">
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton value="Iniciar Matrícula" icon="#{msg_botoes.btn_icon_confirmar_embutido}" image="#{resource['/imagens/botaoIniciarMatricula.png']}" styleClass="btn btn-info" action="#{InteracaoWorkflowControle.iniciarMatriculaAluno}" oncomplete="#{InteracaoWorkflowControle.popUpMatricula}; RichFaces.$('panelIniciarMatricula').hide();" render="mensagemIniciarMatricula, form:panelGridMensagens" />
+					<otm:commandButton action="#{InteracaoWorkflowControle.naoIniciarMatricula}" oncomplete="RichFaces.$('panelIniciarMatricula').hide()" styleClass="btn btn-danger ml5" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" image="#{resource['/imagens/botaoFechar.png']}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemIniciarMatricula" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCompromissoFuturo" shadowOpacity="true" width="550" height="400">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Compromisso Futuro Existente"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+			</f:facet>
+			<h:form id="formCompromissoFuturo">
+				<h:outputText styleClass="field control-label tituloCampos" value="Prezado usuário, existe um compromisso futuro agendado para esse prospect" />
+				<rich:dataTable id="resultadoConsultaCompromissoFuturo" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InteracaoWorkflowControle.listaCompromissoFuturo}" rows="5" var="compromissoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Descrição" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{compromissoItens.descricao}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Data" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{compromissoItens.dataCompromisso_Apresentar}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Hora" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{compromissoItens.hora}" />
+						</h:panelGroup>
+					</rich:column>					
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton value="Iniciar Matrícula" icon="fas fa-user-graduate"  styleClass="btn btn-info" action="#{InteracaoWorkflowControle.prepararDadosIniciarMatricula}" oncomplete="#{rich:component('panelCompromissoFuturo')}.hide(); #{InteracaoWorkflowControle.popUpMatricula}" render="form:panelGridMensagens, formIniciarMatricula, form:mensagemCursoInteresse, panelMensagemErro, formMensagemErro, formCompromissoFuturo" />
+					<otm:commandButton action="#{InteracaoWorkflowControle.naoIniciarMatricula}" oncomplete="#{rich:component('panelCompromissoFuturo')}.hide();" styleClass="btn btn-danger ml5" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelPermissaoVoltarEtapa" shadowOpacity="true" width="330" height="100" onshow="document.getElementById('formLiberarInclusaoExclusaoForaPrazo:username1').focus()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_voltarEtapa}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperLinksPermissaoVoltarEtapa" />
+					<rich:componentControl target="panelPermissaoVoltarEtapa" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPermissaoVoltarEtapa">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+						<h:inputText id="username1" size="15" maxlength="15" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.usuarioAdministrador.username}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_msg_senha}" />
+						<h:inputSecret id="senha1" size="15" maxlength="15" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.usuarioAdministrador.senha}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton render="form, formPermissaoVoltarEtapa, formMensagemErro, panelMensagemErro" oncomplete="#{rich:component('panelPermissaoVoltarEtapa')}.hide();#{InteracaoWorkflowControle.modalApresentadoPermissaoVoltarEtapa}" action="#{InteracaoWorkflowControle.voltarEtapaPermissaoUsuarioAdministrador}" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Confirmar Liberação" image="#{resource['/imagens/botaoConfirm.png']}" title="Confirmar Liberação" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAdicionarProspect" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formProspect:consultarProspect').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_adicionarProspect}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkAdicionarProspect" />
+					<rich:componentControl target="panelAdicionarProspect" operation="hide" event="click">
+						<a4j:ajax event="click" listener="#{InteracaoWorkflowControle.limparDadosReferenteProspect}" />
+					</rich:componentControl>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAdicionarProspect" onkeydown="fecharModal('panelAdicionarProspect',event);">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_tipoProspect}" />
+						<h:selectOneMenu id="tipoProspect" styleClass="form-control campos" value="#{InteracaoWorkflowControle.prospectsVO.tipoProspect}">
+							<f:selectItems value="#{EnumControle.comboboxTipoProspectEnum}" />
+							<a4j:ajax event="change" execute="@this" render="formAdicionarProspect" listener="#{InteracaoWorkflowControle.limparDadosReferenteTipoProspect}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{InteracaoWorkflowControle.prospectsVO.juridico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Cnpj" rendered="#{InteracaoWorkflowControle.prospectsVO.juridico}" />
+						<h:inputText id="CNPJ" size="18" maxlength="18" styleClass="form-control campos" value="#{InteracaoWorkflowControle.prospectsVO.cnpj}" rendered="#{InteracaoWorkflowControle.prospectsVO.juridico}" onkeypress="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:CNPJ', '99.999.999/9999-99', event);">
+							<a4j:ajax event="change" oncomplete="#{InteracaoWorkflowControle.abrirModalProspect}" listener="#{InteracaoWorkflowControle.consultarTipoProspect}" render="formAdicionarProspect, formTipoProspect" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{InteracaoWorkflowControle.prospectsVO.juridico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Inscrição Estadual" />
+						<h:inputText id="ine2" size="18" maxlength="18" styleClass="form-control campos" value="#{InteracaoWorkflowControle.prospectsVO.inscricaoEstadual}">
+
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{InteracaoWorkflowControle.prospectsVO.fisico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="CPF" rendered="#{InteracaoWorkflowControle.prospectsVO.fisico}" />
+						<h:inputText id="CPF" size="18" maxlength="14" styleClass="form-control campos" value="#{InteracaoWorkflowControle.prospectsVO.cpf}" onkeypress="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:CPF', '999.999.999-99', event);" rendered="#{InteracaoWorkflowControle.prospectsVO.fisico}">
+							<a4j:ajax event="change" oncomplete="#{InteracaoWorkflowControle.abrirModalProspect}" listener="#{InteracaoWorkflowControle.consultarTipoProspect}" render="formAdicionarProspect, formTipoProspect" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_nome}" />
+						<h:inputText id="nome" size="58" maxlength="100" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.prospectsVO.nome}">
+							<a4j:ajax event="change" listener="#{InteracaoWorkflowControle.setarNomeBatismoProspect}" render="formAdicionarProspect:nomeBatismo" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_nomeBatismo}" />
+						<h:inputText id="nomeBatismo" size="58" maxlength="100" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.prospectsVO.nomeBatismo}">
+							<a4j:ajax event="change" listener="#{InteracaoWorkflowControle.setarNomeSocialProspect}" render="formAdicionarProspect:nome" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{InteracaoWorkflowControle.prospectsVO.juridico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_razaoSocial}" rendered="#{InteracaoWorkflowControle.prospectsVO.juridico}" />
+						<h:inputText id="razaoSocial" size="58" maxlength="100" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.prospectsVO.razaoSocial}" rendered="#{InteracaoWorkflowControle.prospectsVO.juridico}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InteracaoWorkflowControle.prospectsVO.fisico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_dataNascimento}" rendered="#{InteracaoWorkflowControle.prospectsVO.fisico}" />
+						<otm:calendar id="dataNascimento" value="#{InteracaoWorkflowControle.prospectsVO.dataNascimento}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{InteracaoWorkflowControle.prospectsVO.fisico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_sexo}" />
+						<h:selectOneMenu id="sexo" styleClass="form-control campos" value="#{InteracaoWorkflowControle.prospectsVO.sexo}">
+							<f:selectItems value="#{EnumControle.comboboxSexoEnum}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_telefoneComercial}" />
+						<h:inputText id="telefoneComercial" size="14" maxlength="14" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.prospectsVO.telefoneComercial}" onchange="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:telefoneComercial', '(99)9999-9999', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_telefoneResidencial}" />
+						<h:inputText id="telefoneResidencial" size="14" maxlength="14" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.prospectsVO.telefoneResidencial}" onchange="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:telefoneResidencial', '(99)9999-9999', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_telefoneRecado}" />
+						<h:inputText id="telefoneRecado" size="14" maxlength="14" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.prospectsVO.telefoneRecado}" onchange="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:telefoneRecado', '(99)9999-9999', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_celular}" />
+						<h:inputText id="celular" value="#{InteracaoWorkflowControle.prospectsVO.celular}" styleClass="form-control camposObrigatorios" size="16" maxlength="15" style="position:relative; top:-2px; left:0px;" onkeyup="return maskTelefone('formAdicionarProspect:celular',event)" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_emailPrincipal}" />
+						<h:inputText id="emailPrincipal" size="58" maxlength="100" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.prospectsVO.emailPrincipal}">
+							<a4j:ajax event="change" execute="@form" oncomplete="#{InteracaoWorkflowControle.abrirModalProspect}" listener="#{InteracaoWorkflowControle.consultarTipoInteracaoProspectEmail}" render="formTipoProspect, formAdicionarProspect" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_unidadeEnsino}" />
+						<h:selectOneMenu id="unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.prospectsVO.unidadeEnsino.codigo}">
+							<f:selectItems value="#{InteracaoWorkflowControle.listaSelectItemUnidadeEnsino}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup id="mensagemConsultaProspect" columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<otm:commandButton id="salvarProspect" action="#{InteracaoWorkflowControle.incluirProspect}" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Gravar" accesskey="2" styleClass="btn btn-dark" render="formAdicionarProspect, panelGridMensagens" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTipoProspect" shadowOpacity="true" width="700" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_TipoProspect_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelTipoProspect" />
+					<rich:componentControl target="panelTipoProspect" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTipoProspect">
+				<rich:dataTable id="resultadoConsultaTipoProspect" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InteracaoWorkflowControle.listaConsultaTipoProspect}" rows="5" var="tipoProspectItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoProspect_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarInteracaoProspectPesquisaCpfCnpjSemModal}" render="form:pgProspects, form:nomeProspect, form:eamilProspect, form:dataNascimento,  form:sexo, form:telefoneResidencial, form:telefoneComercial, form:telefoneRecado, form:celular, form:panelGridMensagens, form" oncomplete="#{rich:component('panelTipoProspect')}.hide()" value="#{tipoProspectItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoProspect_tipo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarInteracaoProspectPesquisaCpfCnpjSemModal}" render="form:pgProspects, form:nomeProspect, form:eamilProspect, form:dataNascimento,  form:sexo, form:telefoneResidencial, form:telefoneComercial, form:telefoneRecado, form:celular, form:panelGridMensagens, form" oncomplete="#{rich:component('panelTipoProspect')}.hide()" value="#{tipoProspectItens.perfisProspect}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoProspect_email}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarInteracaoProspectPesquisaCpfCnpjSemModal}" render="form:pgProspects, form:nomeProspect, form:eamilProspect, form:dataNascimento,  form:sexo, form:telefoneResidencial, form:telefoneComercial, form:telefoneRecado, form:celular, form:panelGridMensagens, form" oncomplete="#{rich:component('panelTipoProspect')}.hide()" value="#{tipoProspectItens.email}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoProspect_cpf}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarInteracaoProspectPesquisaCpfCnpjSemModal}" render="form:pgProspects, form:nomeProspect, form:eamilProspect, form:dataNascimento,  form:sexo, form:telefoneResidencial, form:telefoneComercial, form:telefoneRecado, form:celular, form:panelGridMensagens, form" oncomplete="#{rich:component('panelTipoProspect')}.hide()" value="#{tipoProspectItens.cpf}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TipoProspect_cnpj}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarInteracaoProspectPesquisaCpfCnpjSemModal}" render="form:pgProspects, form:nomeProspect, form:eamilProspect, form:dataNascimento,  form:sexo, form:telefoneResidencial, form:telefoneComercial, form:telefoneRecado, form:celular, form:panelGridMensagens, form" oncomplete="#{rich:component('panelTipoProspect')}.hide()" value="#{tipoProspectItens.cnpj}" />
+						</h:panelGroup>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTipoProspect:resultadoConsultaTipoProspect" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoTipoProspect" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTipoProspect" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelInteracoesObservacaoObrigatoriaNaoPreenchida" domElementAttachment="parent" show="#{InteracaoWorkflowControle.abrirModalPreencherObservacoes}" shadowOpacity="true" width="600" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Interações Com Observação Obrigatória Não Preenchida"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelInteracoesObservacaoObrigatoriaNaoPreenchida" />
+					<rich:componentControl target="panelInteracoesObservacaoObrigatoriaNaoPreenchida" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formInteracoesObservacaoObrigatoriaNaoPreenchida">
+				<a4j:region>
+					<h:panelGroup layout="block" styleClass="row">
+						<a4j:repeat id="interacoesObservacaoObrigatoriaNaoPreenchida" value="#{InteracaoWorkflowControle.listaInteracoesObservacaoObrigatoriaNaoPreenchida}" var="interacaoItens">
+							<h:panelGroup layout="block" styleClass="col-md-12 mb5 border rounded p5">
+								<h:outputText styleClass="title" value="Etapa: #{interacaoItens.etapaWorkflow.nome}" />
+								<h:inputTextarea id="observacaoObrigatoriaPreencher" rows="3" styleClass="form-control camposObrigatorios" value="#{interacaoItens.observacao}">
+									<a4j:ajax event="blur" render="formInteracoesObservacaoObrigatoriaNaoPreenchida:interacoesObservacaoObrigatoriaNaoPreenchida:observacaoObrigatoriaPreencher" status="none" />
+								</h:inputTextarea>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<otm:commandButton render="form" oncomplete="#{rich:component('panelInteracoesObservacaoObrigatoriaNaoPreenchida')}.hide()" action="#{InteracaoWorkflowControle.adicionarObservacoesInteracoesComObservacaoObrigatoriaNaoPreenchida}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" accesskey="5" value="Adicionar Observação Interesse" styleClass="btn btn-primary" />
+					</h:panelGroup>
+				</a4j:region>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAdiarCompromisso" shadowOpacity="true" width="500" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Adiar Compromisso"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelAdiarCompromisso" />
+					<rich:componentControl target="panelAdiarCompromisso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAdiarCompromisso">
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_dataCompromisso}" />
+					<otm:calendar id="dataCompromissoAdiado" value="#{InteracaoWorkflowControle.dataCompromissoAdiado}" inputClass="form-control camposObrigatorios" >
+					</otm:calendar>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+					<h:inputText id="horaCompromissoAdiado" size="5" maxlength="5" styleClass="form-control camposObrigatorios" value="#{InteracaoWorkflowControle.horaCompromissoAdiado}" onkeypress="return mascara(this.form, this.id, '99:99', event);" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_horaFim}" />
+					<h:inputText id="horaFimCompromissoAdiado" size="5" maxlength="5" styleClass="form-control campos" value="#{InteracaoWorkflowControle.horaFimCompromissoAdiado}" onkeypress="return mascara(this.form, this.id, '99:99', event);" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" value="consultar Horarios não disponiveis" id="consultaHorariosNaoDisponiveis" action="#{InteracaoWorkflowControle.consultarHorariosNaoDisponiveis}" oncomplete="#{rich:component('panelCompromissosMarcados')}.show()" render="formCompromissosMarcados" />
+					<otm:commandButton id="adiarCompromisso" onclick="this.disabled=true;" action="#{InteracaoWorkflowControle.realizarPersistenciaAdiarCompromisso}" render="form" oncomplete="#{rich:component('panelAdiarCompromisso')}.hide();this.disabled=false;"  value="Remarcar Compromisso" styleClass="btn btn-default ml5" icon="#{msg_botoes.btn_icon_calendario}" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCampanha" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelCompromissosMarcados" shadowOpacity="true" width="350" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Horários indisponíveis"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelCompromissosMarcados" />
+					<rich:componentControl target="panelCompromissosMarcados" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCompromissosMarcados">
+				<rich:dataTable id="compromissoAgendaPessoaHorario" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento,colunaAlinhamento,colunaAlinhamento" value="#{InteracaoWorkflowControle.agendaPessoaHorarioVO.listaCompromissoAgendaPessoaHorarioVOs}" rows="15" var="compromissoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+						</f:facet>
+						<h:outputText value="#{compromissoItens.hora}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCompromissosMarcados:compromissoAgendaPessoaHorario" maxPages="10" id="scResultadoCompromissosMarcados" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCidadeFormacao" shadowOpacity="true" width="750" onshow="document.getElementById('formCidadeFormacao:valorConsultaCidade').focus();" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Cidade_consultarCidade}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink4" />
+					<rich:componentControl target="panelCidadeFormacao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCidadeFormacao">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCidade" value="#{InteracaoWorkflowControle.campoConsultaCidade}">
+						<f:selectItems value="#{InteracaoWorkflowControle.tipoConsultaCidade}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCidade" size="10" styleClass="form-control campos" value="#{InteracaoWorkflowControle.valorConsultaCidade}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCidadeFormacao:mensagemConsultaCidade, formCidadeFormacao:resultadoConsultaCidade, formCidadeFormacao:scResultadoCidade" action="#{InteracaoWorkflowControle.consultarCidade}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCidade" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InteracaoWorkflowControle.listaConsultaCidade}" rows="5" var="cidadeFormacaoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cidade_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarCidadeFormacao}" focus="cidadeFormacao" render="cidadeFormacao" oncomplete="#{rich:component('panelCidadeFormacao')}.hide()" value="#{cidadeFormacaoItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cidade_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarCidadeFormacao}" focus="cidadeFormacao" render="cidadeFormacao" oncomplete="#{rich:component('panelCidadeFormacao')}.hide()" value="#{cidadeFormacaoItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cidade_estado}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarCidadeFormacao}" focus="cidadeFormacao" render="cidadeFormacao" oncomplete="#{rich:component('panelCidadeFormacao')}.hide()" value="#{cidadeFormacaoItens.estado.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{InteracaoWorkflowControle.selecionarCidadeFormacao}" focus="cidadeFormacao" render="cidadeFormacao" oncomplete="#{rich:component('panelCidadeFormacao')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCidadeFormacao:resultadoConsultaCidade" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoCidade" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCidade" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelNaturalidade" shadowOpacity="true" width="750" onshow="document.getElementById('formNaturalidade:valorConsultaNaturalidade').focus();" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Cidade_consultarCidade}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink31" />
+					<rich:componentControl target="panelNaturalidade" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNaturalidade">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaNaturalidade" value="#{InteracaoWorkflowControle.campoConsultaNaturalidade}">
+						<f:selectItems value="#{InteracaoWorkflowControle.tipoConsultaNaturalidade}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaNaturalidade" size="10" styleClass="form-control campos" value="#{InteracaoWorkflowControle.valorConsultaNaturalidade}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formNaturalidade:mensagemConsultaNaturalidade, formNaturalidade:resultadoConsultaNaturalidade, formNaturalidade:scResultadoNaturalidade" action="#{InteracaoWorkflowControle.consultarNaturalidade}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaNaturalidade" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{InteracaoWorkflowControle.listaConsultaNaturalidade}" rows="5" var="naturalidadeItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cidade_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarNaturalidade}" focus="naturalidade" render="naturalidade" oncomplete="#{rich:component('panelNaturalidade')}.hide()" value="#{naturalidadeItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cidade_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarNaturalidade}" focus="naturalidade" render="naturalidade" oncomplete="#{rich:component('panelNaturalidade')}.hide()" value="#{naturalidadeItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cidade_estado}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{InteracaoWorkflowControle.selecionarNaturalidade}" focus="cidade" render="naturalidade" oncomplete="#{rich:component('panelNaturalidade')}.hide()" value="#{naturalidadeItens.estado.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{InteracaoWorkflowControle.selecionarNaturalidade}" focus="naturalidade" render="naturalidade" oncomplete="#{rich:component('panelNaturalidade')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formNaturalidade:resultadoConsultaNaturalidade" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoNaturalidade" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaNaturalidade" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{InteracaoWorkflowControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

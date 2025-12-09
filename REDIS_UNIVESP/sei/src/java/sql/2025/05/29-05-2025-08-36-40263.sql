@@ -1,0 +1,3 @@
+ALTER TABLE public.integracaomestregroperacoes ADD COLUMN IF NOT EXISTS created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+CREATE INDEX IF NOT EXISTS idx_item_dadosenvio_gin_txt ON integracaomestregritem USING GIN ((dadosenvio::jsonb) jsonb_path_ops)WHERE dadosenvio ~ '^\s*\[.*\]\s*$';
+CREATE INDEX IF NOT EXISTS idx_integracaomestregritem_mensagemerro_gin ON integracaomestregritem USING GIN ((mensagemerro::jsonb) jsonb_path_ops) WHERE mensagemerro ~ '^\s*\{.*\}\s*$';

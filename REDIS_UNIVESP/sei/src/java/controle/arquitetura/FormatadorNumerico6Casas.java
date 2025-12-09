@@ -1,0 +1,33 @@
+package controle.arquitetura;
+
+import java.text.NumberFormat;
+
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+
+public class FormatadorNumerico6Casas implements Converter {
+
+	public FormatadorNumerico6Casas() {
+	}
+
+	public Object getAsObject(final FacesContext context, final UIComponent component, final String value) {
+		try {
+			final NumberFormat nf = NumberFormat.getInstance();
+			nf.setMinimumFractionDigits(6);
+			return new Double(nf.parse(value).doubleValue());
+		} catch (final Exception e) {
+			return new Double(0.0);
+		}
+	}
+
+	public String getAsString(final FacesContext context, final UIComponent component, Object value) {
+		if ((value == null) || (value.toString().trim().equals(""))) {
+			value = new Double(0.0);
+		}
+		final NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(6);
+		return nf.format(Double.valueOf(value.toString()));
+	}
+
+}

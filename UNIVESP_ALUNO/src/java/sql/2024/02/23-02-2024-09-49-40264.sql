@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS maparegistroevasaocurso ADD COLUMN IF NOT EXISTS anoRegistroEvasao varchar(10) DEFAULT(NULL);
+ALTER TABLE IF EXISTS maparegistroevasaocurso ADD COLUMN IF NOT EXISTS semestreRegistroEvasao varchar(2) DEFAULT(NULL);

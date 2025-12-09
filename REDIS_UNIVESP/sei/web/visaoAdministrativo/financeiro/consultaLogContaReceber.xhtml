@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<h:head></h:head>
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ConsultaLogContaReceber_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style>
+.expandido {
+	height: 500px;
+}
+
+.recolhido {
+	height: 200px;
+}
+
+.iconExpandido {
+	fas fa-plus;
+}
+
+.iconRecolhido {
+	fa fa-minus;
+}
+.recolhido::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #c7c7c7 !important;
+	scrollbar-color: #c7c7c7 transparent !important;
+	height: 20px !important;
+}
+</style>
+
+		<script type="text/javascript">
+			(function($) {
+				$.ajaxSetup({
+					cache : false
+				});
+				$.ajax({
+					cache : false,
+				});
+
+				expandir = function(id) {
+					if ($(id).hasClass('recolhido')) {
+
+						$(id).removeClass('recolhido');
+						$(id).addClass('expandido');
+					} else {
+						$(id).removeClass('expandido');
+						$(id).addClass('recolhido');
+					}
+				}
+			}(jQuery));
+		</script>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelUsuario" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Usuário Destinatário"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkFunc" />
+					<rich:componentControl target="panelUsuario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUsuario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaUsuario" value="#{ConsultaLogContaReceberControle.campoConsultaUsuario}">
+						<f:selectItems value="#{ConsultaLogContaReceberControle.tipoConsultaComboUsuario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaUsuario" size="20" styleClass="form-control campos" value="#{ConsultaLogContaReceberControle.valorConsultaUsuario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formUsuario:mensagemConsultaUsuario, formUsuario:resultadoConsultaUsuario, formUsuario:scResultadoUsuario" action="#{ConsultaLogContaReceberControle.consultarUsuario}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaUsuario" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ConsultaLogContaReceberControle.listaConsultaUsuarioVOs}" rows="5" var="usuarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Usuario_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ConsultaLogContaReceberControle.selecionarUsuario}" focus="nomeUsuario" render="usuario" oncomplete="#{rich:component('panelUsuario')}.hide()" value="#{usuarioItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Usuario_nome} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ConsultaLogContaReceberControle.selecionarUsuario}" focus="nomeUsuario" render="usuario" oncomplete="#{rich:component('panelUsuario')}.hide()" value="#{usuarioItens.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ConsultaLogContaReceberControle.selecionarUsuario}" focus="nomeUsuario" render="usuario" oncomplete="#{rich:component('panelUsuario')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formUsuario:resultadoConsultaUsuario" maxPages="10" id="scResultadoUsuario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaUsuario" styleClass="tabMensagens">
+					<h:panelGroup>
+						<h:outputText styleClass="mensagem" value="#{ConsultaLogContaReceberControle.mensagem}" />
+						<h:outputText styleClass="mensagemDetalhada" value="#{ConsultaLogContaReceberControle.mensagemDetalhada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{ConsultaLogContaReceberControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridPrincipal" styleClass="tabForm">
+				<h:panelGroup layout="block" styleClass="col-md-1">
+					<h:outputText styleClass="tituloCampos" value="Ano" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" id="ano" value="#{ConsultaLogContaReceberControle.ano}">
+						<f:selectItems value="#{ConsultaLogContaReceberControle.listaSelectItemAnoVOs}" />
+						<a4j:ajax event="change" render="form" listener="#{ConsultaLogContaReceberControle.montarListaSelectItemMes}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-1">
+					<h:outputText styleClass="tituloCampos" value="Mês" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" id="mes" value="#{ConsultaLogContaReceberControle.mes}">
+						<f:selectItems value="#{ConsultaLogContaReceberControle.listaSelectItemMesVOs}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" />
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="tituloCampos" value="Ação" />
+					<h:selectOneMenu styleClass="form-control campos" id="acao" value="#{ConsultaLogContaReceberControle.acao}">
+						<f:selectItems value="#{ConsultaLogContaReceberControle.tipoConsultaComboAcao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="tituloCampos" value="Tipo Origem" />
+					<h:selectOneMenu styleClass="form-control campos" id="tipoOrigem" value="#{ConsultaLogContaReceberControle.tipoOrigem}">
+						<f:selectItems value="#{ConsultaLogContaReceberControle.listaSelectItemTipoOrigemContaReceberVOs}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText value="Usuário Log" styleClass="tituloCampos" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="usuario" value="#{ConsultaLogContaReceberControle.usuarioLogVO.nome}" size="30" readonly="true" disabled="true" styleClass="form-control camposSomenteLeitura" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosUsuario" tooltip="Localizar Usuário" icon="#{msg_botoes.btn_icon_lupa_embutido}" render="formUsuario" oncomplete="#{rich:component('panelUsuario')}.show()" action="#{ConsultaLogContaReceberControle.limparConsultaUsuario}" image="#{resource['/imagens/informacao.gif']}" /> <otm:commandIcon id="limparDadosFuncionario" tooltip="Limpas Dados" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{ConsultaLogContaReceberControle.limparDadosUsuario}" render="usuario" image="#{resource['/imagens/limpar.gif']}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="tituloCampos" value="Matrícula" />
+					<h:inputText id="matricula" styleClass="form-control campos" size="20" value="#{ConsultaLogContaReceberControle.matricula}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="tituloCampos" value="Nosso Número" />
+					<h:inputText id="nossoNumero" styleClass="form-control campos" size="20" value="#{ConsultaLogContaReceberControle.nossoNumero}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="tituloCampos" value="Código" />
+					<h:inputText id="codigo" styleClass="form-control campos" size="20" value="#{ConsultaLogContaReceberControle.codigo}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2 h36">
+					<h:outputText styleClass="tituloCampos" value="Data Início Log" />
+					<otm:calendar id="valorConsultaDataInicio" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" inputSize="10" value="#{ConsultaLogContaReceberControle.dataInicio}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2 h36">
+					<h:outputText styleClass="tituloCampos" value="Data Fim Log" />
+					<otm:calendar id="valorConsultaDataFim" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" inputSize="10" value="#{ConsultaLogContaReceberControle.dataFim}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="tituloCampos" value="Trazer Somente Coluna" />
+					<h:selectOneMenu id="coluna" styleClass="form-control campos" value="#{ConsultaLogContaReceberControle.coluna}">
+						<f:selectItems value="#{ConsultaLogContaReceberControle.listaSelectItemColunaVOs}" />
+						<a4j:ajax event="change" listener="#{ConsultaLogContaReceberControle.consultarLogContaReceber}" render="form:resultado"></a4j:ajax>
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2 h36">
+					<h:outputText styleClass="tituloCampos" value="Data Início Recebimento" />
+					<otm:calendar id="DataInicioRecebimento" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" inputSize="10" value="#{ConsultaLogContaReceberControle.dataInicioRecebimento}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2 h36">
+					<h:outputText styleClass="tituloCampos" value="Data Início Recebimento" />
+					<otm:calendar id="DataFimRecebimento" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" inputSize="10" value="#{ConsultaLogContaReceberControle.dataFimRecebimento}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<otm:commandButton id="consultar" render="form:resultado, form:panelMensagem" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" action="#{ConsultaLogContaReceberControle.consultarLogContaReceber}" image="#{resource['imagens/botaoConsultar.png']}" alt="#{msg.msg_consultar_dados}" accesskey="2" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn" id="resultado">
+					<a4j:repeat id="items" type="definitions" rowKeyVar="row" value="#{ConsultaLogContaReceberControle.listaConsultaLogContaReceberVOs}" rendered="#{!empty ConsultaLogContaReceberControle.listaConsultaLogContaReceberVOs}" rows="10" var="contaReceberItem">
+						<otm2:panel name="panelInforma#{row}" styleClassFooter="dn" renderedControl="true">
+							<ui:define name="header">
+								<h:panelGroup layout="block" styleClass="col-md-11">
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_event_id}" />
+										<h:outputText styleClass="tituloCamposNegrito" id="event_id" readonly="true" value="#{contaReceberItem.auditVO.event_id}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_schema_name}" />
+										<h:outputText styleClass="tituloCamposNegrito" id="schema_name" readonly="true" value="#{contaReceberItem.auditVO.schema_name}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_session_user_name}" />
+										<h:outputText styleClass="tituloCamposNegrito" id="session_user_name" readonly="true" value="#{contaReceberItem.auditVO.session_user_name}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_usuario_logado}" />
+										<h:outputText styleClass="tituloCamposNegrito" id="usuario_logado" readonly="true" value="#{contaReceberItem.auditVO.usuarioLogadoVO.nome}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_action_tstamp_clk}" />
+										<h:outputText styleClass="tituloCamposNegrito" id="action_tstamp_clk" readonly="true" value="#{contaReceberItem.auditVO.action_tstamp_clk}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_transaction_id}" />
+										<h:outputText styleClass="tituloCamposNegrito" id="transaction_id" readonly="true" value="#{contaReceberItem.auditVO.transaction_id}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_client_addr}" />
+										<h:outputText styleClass="tituloCamposNegrito" id="client_addr" readonly="true" value="#{contaReceberItem.auditVO.client_addr}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos btn-block" value="#{msg_aplic.prt_Audit_action}" />
+										<h:outputText styleClass="tituloCamposNegrito" id="action" readonly="true" value="#{contaReceberItem.auditVO.action_Apresentar}" />
+									</h:panelGroup>
+								</h:panelGroup>
+<!-- 								<h:panelGroup id="apresentar" layout="block" styleClass="col-md-1 text-center"> -->
+<!-- 									<otm:spacer width="100%"></otm:spacer> -->
+<!-- 									<otm:commandIcon action="#{ConsultaLogContaReceberControle.setApresentarDetalhes(true)}" rendered="#{!ConsultaLogContaReceberControle.apresentarDetalhes}" onclick="expandir('.log#{row}')" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleIcon="fs15" render="form:resultado" /> -->
+<!-- 						 			<otm:commandIcon action="#{ConsultaLogContaReceberControle.setApresentarDetalhes(false)}" rendered="#{ConsultaLogContaReceberControle.apresentarDetalhes}" onclick="expandir('.log#{row}')" icon="fa fa-minus" styleIcon="fs15" render="form:resultado" /> -->
+<!-- 								</h:panelGroup> -->
+							</ui:define>
+							<ui:define name="body">
+								<h:panelGroup layout="block" styleClass="row mn">
+									<h:panelGroup layout="block" styleClass="col-md-6 pn">
+										<h:panelGroup layout="block" styleClass="col-md-12 title pn">
+											<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Audit_row_data}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="log#{row} recolhido" style="width:100%;overflow-y:auto;overflow-x:hidden; margin-top:15px;border-right:1px solid #C4C0C9;line-height:20px;word-break: break-all; padding-right: 3px;">
+											<a4j:repeat value="#{contaReceberItem.auditVO.listaAtributoJsonRow_dataVOs}" var="atributoJsonItem">
+												<h:panelGroup layout="block" style="float:left;width:100%; text-align:left; border-bottom:1px solid #C4C0C9;">
+													<h:panelGroup layout="block" style="float:left;width:50%; text-align:left;word-break: break-all;">
+														<h:outputText styleClass="tituloCampos" value="#{atributoJsonItem.atributo}:" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" style="float:left;width:50%; text-align:left;word-break: break-all;">
+														<h:outputText value="#{atributoJsonItem.valor}" />
+													</h:panelGroup>
+												</h:panelGroup>
+											</a4j:repeat>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 pn">
+										<!-- 									<a4j:commandButton onclick="expandir('.log#{row}')" image="#{resource['imagens/botaoExpandir1.png']}" /> -->
+										<h:panelGroup layout="block" styleClass="col-md-12 title pn ml5">
+											<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Audit_changed_fields}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="log#{row} recolhido" style="width:100%;overflow-y:overlay;overflow-x:hidden; margin-top:15px; margin-left: 5px">
+											<a4j:repeat value="#{contaReceberItem.auditVO.listaAtributoJsonChanged_fieldsVOs}" var="atributoJsonItem">
+												<h:panelGroup layout="block" style="float:left;width:100%; text-align:left; border-bottom:1px solid #C4C0C9;border-right:1px solid #C4C0C9;line-height:20px;word-break: break-all;">
+													<h:panelGroup layout="block" style="float:left;width:50%; text-align:left;word-break: break-all;">
+														<h:outputText styleClass="tituloCampos" value="#{atributoJsonItem.atributo}:" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" style="float:left;width:50%; text-align:left;word-break: break-all;">
+														<h:outputText value="#{atributoJsonItem.valor}" />
+													</h:panelGroup>
+												</h:panelGroup>
+											</a4j:repeat>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:panel>
+					</a4j:repeat>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+						<rich:dataScroller boundaryControls="auto" fastControls="hide" render="form:resultado" stepControls="auto" for="form:items" limitRender="10" align="center" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="panelMensagem" styleClass="tabMensagens">
+					<h:panelGroup>
+						<h:outputText styleClass="mensagem" value="#{ConsultaLogContaReceberControle.mensagem}" />
+						<h:outputText styleClass="mensagemDetalhada" value="#{ConsultaLogContaReceberControle.mensagemDetalhada}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

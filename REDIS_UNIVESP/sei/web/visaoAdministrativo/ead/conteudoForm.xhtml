@@ -1,0 +1,1252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+
+
+	<script type="text/javascript" charset="UTF-8">
+		(function($) {
+
+			$.ajaxSetup({
+				cache : false
+			});
+			$.ajax({
+				cache : false,
+			});
+			$(document).ready(function() {
+				$(".repositorioDrag").hide();
+				$(".repositorioDrag").attr('layout', 'none');
+				carregarTooltip();
+				dragEvent();
+				
+			});
+			
+
+			dragEvent = function() {
+				$(".dragOcultarEditor").draggable({
+					start : function() {
+						ocultarEditor();
+					},
+		      		stop: function() {
+		    			apresentarEditor();
+		    	  		atualizarEditor();
+		    	  		atualizarEditorREA();
+		        	}
+				});
+			
+			
+			}
+			
+			ocultarEditor = function() {
+				$("#container").hide('fast');
+				$("#containerREA").hide('fast');
+				$(".repositorioDrag").attr('layout', 'block');
+				$(".repositorioDrag").attr('style','width:99%;height:376px; -moz-border-radius: 3px; border: 1px solid #bdc1c4; -webkit-border-radius: 3px;float:left;');
+				$(".repositorioDrag").show();
+			};
+			apresentarEditor = function() {
+				$("#container").show('fast');
+				$("#containerREA").show('fast');
+				$(".repositorioDrag").attr('layout', 'none');
+				$(".repositorioDrag").attr('style','width:99%;height:376px; -moz-border-radius: 3px; border: 1px solid #bdc1c4;   -webkit-border-radius: 3px;float:left;display:none');
+				$(".repositorioDrag").hide();
+			};
+			
+			fecharTooltips = function() {
+				$('.tooltipster-box').hide();
+				$('.tooltipster-arrow-background').hide();
+				$('.tooltipster-arrow-border').hide();
+				
+				
+			}
+			
+		}(jQuery));
+		</script>
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Conteudo_tituloForm}" />
+	</ui:define>
+	<ui:define name="modal">
+
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelConteudista" shadowOpacity="true" top="0" width="750" onshow="document.getElementById('formConteudista:valorConsultaConteudista').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Conteudo_conteudista}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink2">
+						<rich:componentControl target="panelConteudista" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConteudista">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consulta" value="#{ConteudoControle.controleConsulta.campoConsulta}">
+						<a4j:ajax event="change" render="formConteudista" listener="#{ConteudoControle.anularDataModelo}" />
+						<f:selectItems value="#{ConteudoControle.tipoConsultaComboConteudista}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsulta" onkeypress="#{ConteudoControle.mascaraConsulta}" styleClass="form-control campos" value="#{ConteudoControle.controleConsulta.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="consultar" render="formConteudista" value="#{msg_bt.btn_consultar}" action="#{ConteudoControle.consultarConteudista}" styleClass="btn btn-default btn-consultar" accesskey="2">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ConteudoControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ConteudoControle.controleConsultaOtimizado.page}" value="0" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="items" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{ConteudoControle.controleConsultaOtimizado}" rendered="#{ConteudoControle.controleConsultaOtimizado.apresentarPaginador}" rows="10" var="funcionarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<a4j:commandLink id="matriculaCont" render="form:conteudista" oncomplete="#{rich:component('panelConteudista')}.hide()" action="#{ConteudoControle.selecionarConteudista}" value="#{funcionarioItens.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<a4j:commandLink id="nomeCont" render="form:conteudista" oncomplete="#{rich:component('panelConteudista')}.hide()" action="#{ConteudoControle.selecionarConteudista}" value="#{funcionarioItens.pessoa.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_cidade}" />
+						</f:facet>
+						<a4j:commandLink id="cidadeCont" render="form:conteudista" oncomplete="#{rich:component('panelConteudista')}.hide()" action="#{ConteudoControle.selecionarConteudista}" value="#{funcionarioItens.pessoa.cidade.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF}" />
+						</f:facet>
+						<a4j:commandLink id="CPFCont" render="form:conteudista" oncomplete="#{rich:component('panelConteudista')}.hide()" action="#{ConteudoControle.selecionarConteudista}" value="#{funcionarioItens.pessoa.CPF}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ConteudoControle.selecionarConteudista}" oncomplete="#{rich:component('panelConteudista')}.hide()" render="form:conteudista" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Adicionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formConteudista:items" id="paginador" page="#{ConteudoControle.controleConsultaOtimizado.page}" scrollListener="#{ConteudoControle.scrollerListenerConteudista}" rendered="#{ConteudoControle.controleConsultaOtimizado.apresentarPaginador}" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaConteudista" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ConteudoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelNovaPagina" onhide="removerVisibilidadeImagem();" shadowOpacity="true" domElementAttachment="parent" onshow="document.getElementById('formNovaPagina:unidade').focus()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Nova Página - #{ConteudoControle.conteudo.disciplina.nome}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNovaPagina">
+				<h:panelGroup id="panelGrafico">
+					<ui:include src="grafico.xhtml" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="Unidade" />
+						<h:inputText id="unidade" readonly="false" maxlength="200" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.unidadeConteudoVO.titulo}">
+							<a4j:ajax event="change" execute="@this" render="form:listaUnidades, formNovaPagina:mensagemConsultaNovaPagina" listener="#{ConteudoControle.alterarUnidadeConteudo}" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UnidadeConteudo_tituloPagina}" />
+						<h:inputText id="titulo" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.conteudoUnidadePagina.titulo}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ConteudoControle.conteudo.controlarPonto}">
+						<h:outputText styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.conteudo.controlarPonto}" value="#{msg_aplic.prt_UnidadeConteudo_ponto}" />
+						<h:inputText id="ponto" size="4" maxlength="50" rendered="#{ConteudoControle.conteudo.controlarPonto}" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.conteudoUnidadePagina.ponto}">
+							<f:converter converterId="FormatadorNumerico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ConteudoControle.conteudo.controlarTempo}">
+						<h:outputText styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.conteudo.controlarTempo}" value="#{msg_aplic.prt_UnidadeConteudo_tempo}" />
+						<h:inputText id="tempo" size="4" maxlength="20" rendered="#{ConteudoControle.conteudo.controlarTempo}" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.conteudoUnidadePagina.tempo}" />
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup id="coteudoPag" styleClass="row" layout="block">
+
+					<style>
+						.backConteudoUnidadePagina {#{ConteudoControle.backgroundPagina}}
+
+
+						
+</style>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<rich:panel id="dadosConteudo" layout="block" bodyClass="backConteudoUnidadePagina" headerClass="pt5 pb5">
+							<f:facet name="header">
+								<h:panelGroup layout="block" id="topoConteudoConteudo" styleClass="row">
+									<h:panelGroup id="treeREA" layout="block" styleClass="row mt5">
+										<h:panelGroup styleClass="ml10  float-left">
+											<a4j:repeat value="#{ConteudoControle.tipoRecursoEducacionalConteudo}" var="recurso">
+												<h:panelGroup styleClass="p10 #{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq recurso ? 'rounded-top bg-white text-dark' : ''}" style="width:42px;height:42px;cursor:pointer;position:relative;top:-2px">
+													<otm:commandIcon direction="topAuto" tooltip="Alterar Conteúdo Para - #{recurso.valorApresentar}" styleIcon=" " onclick="return confirm('Ao alterar o conteúdo desta página você poderá perder as informações cadastradas. Deseja realizar esta operação?')" oncomplete="fecharTooltips();" render="formNovaPagina" action="#{ConteudoControle.alterarTipoRecursoEducacionalConteudoUnidadePagina}" icon="#{recurso.icone} fs16" />
+												</h:panelGroup>
+											</a4j:repeat>
+										</h:panelGroup>
+										<h:panelGroup styleClass="float-right mr10">
+											<a4j:commandLink id="btnBREAS" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional ne 'FORUM' and ConteudoControle.existeRecursoEducacionalConteudo}" render="topoConteudoConteudo" styleClass="p10 #{ConteudoControle.apresentarListaRecursoEducacionalConteudo ? 'bg-white rounded-top text-dark' : ''}" execute="@form" status="reaAntStatus" oncomplete="#{ConteudoControle.executarScriptRecursoEducacionalConteudo}">
+												<f:setPropertyActionListener value="#{!ConteudoControle.apresentarListaRecursoEducacionalConteudo}" target="#{ConteudoControle.apresentarListaRecursoEducacionalConteudo}"></f:setPropertyActionListener>
+												<h:panelGroup rendered="#{!ConteudoControle.apresentarListaRecursoEducacionalConteudo}" styleClass="fas fa-book fs16 " />
+												<h:panelGroup rendered="#{ConteudoControle.apresentarListaRecursoEducacionalConteudo}" styleClass="fas fa-book-open fs16 " />
+												<rich:tooltip target="btnBREAS" id="tooltipbtnBREAS" styleClass="tooltipRich" followMouse="true" direction="bottomLeft" horizontalOffset="-10" verticalOffset="20" showDelay="0" style="z-index:10000">
+													<h:outputText styleClass="field control-label tituloCampos" rendered="#{!ConteudoControle.apresentarListaRecursoEducacionalConteudo}" value="Abrir biblioteca de recursos educacionais" />
+													<h:outputText styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.apresentarListaRecursoEducacionalConteudo}" value="Fechar biblioteca de recursos educacionais" />
+												</rich:tooltip>
+											</a4j:commandLink>
+
+											<a4j:commandLink id="botaoAddRe" styleClass="p10" rendered="#{ConteudoControle.conteudoUnidadePagina.recursoEducacional.codigo eq 0 and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional ne 'FORUM' }" render="botaoAddRe">
+												<f:setPropertyActionListener target="#{ConteudoControle.conteudoUnidadePagina.publicarBibliotecaRecursoEducacional}" value="#{!ConteudoControle.conteudoUnidadePagina.publicarBibliotecaRecursoEducacional}" />
+												<h:panelGroup rendered="#{!ConteudoControle.conteudoUnidadePagina.publicarBibliotecaRecursoEducacional}" styleClass="fas fa-folder-plus fs16 "></h:panelGroup>
+												<h:panelGroup rendered="#{ConteudoControle.conteudoUnidadePagina.publicarBibliotecaRecursoEducacional}" styleClass="fas fa-folder-minus fs16 "></h:panelGroup>
+												<rich:tooltip target="botaoAddRe" id="tooltipbotaoAddRe" styleClass="tooltipRich" followMouse="true" direction="bottomLeft" horizontalOffset="-10" verticalOffset="20" showDelay="0" style="z-index:10000">
+													<h:outputText styleClass="field control-label tituloCampos" rendered="#{!ConteudoControle.conteudoUnidadePagina.publicarBibliotecaRecursoEducacional}" value="Adicionar conteúdo na biblioteca de recursos educacionais" />
+													<h:outputText styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.conteudoUnidadePagina.publicarBibliotecaRecursoEducacional}" value="Remover conteudo da biblioteca de recursos educacionais" />
+												</rich:tooltip>
+											</a4j:commandLink>
+
+
+											<otm:commandIcon styleClass="p10" icon="fas fa-images fs19 fs16 " styleIcon=" " id="botaoAddUploadRe" tooltip="Adicionar imagem ao conteúdo HTML" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'TEXTO_HTML'}" render="formUpload" oncomplete="#{rich:component('panelUpload')}.show()" action="#{ConteudoControle.iniciarAbrirModalUpload}">
+
+											</otm:commandIcon>
+											<otm:commandIcon styleClass="p10" id="botaoAddUploadBackPagina" icon="#{msg_botoes.btn_icon_imagem_embutido} fs16 " styleIcon=" " render="formUploadBackPagina" tooltip="Adicionar imagem/cor de background" oncomplete="#{rich:component('panelUploadBackPagina')}.show()">
+
+											</otm:commandIcon>
+
+											<otm:commandIcon styleClass="p10" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.necessitaUploadArquivo and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'IMAGEM'}" oncomplete="iniciarCrop()" action="#{ConteudoControle.recortarImagemPagina}" render="formNovaPagina" tooltip="Recorte a Imagem" icon="#{msg_botoes.btn_icon_recortar_embutido} fs16 " styleIcon=" " />
+											<otm:commandIcon styleClass="p10" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.necessitaUploadArquivo and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'IMAGEM'}" oncomplete="iniciarCrop()" action="#{ConteudoControle.executarZoomInPagina}" render="formNovaPagina" icon="#{msg_botoes.btn_icon_zoomPlus_embutido} fs16 " styleIcon=" " tooltip="Aumentar Imagem" />
+											<otm:commandIcon styleClass="p10" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.necessitaUploadArquivo and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'IMAGEM'}" oncomplete="iniciarCrop()" action="#{ConteudoControle.executarZoomOutPagina}" render="formNovaPagina" icon="#{msg_botoes.btn_icon_zoomMinus_embutido} fs16 " styleIcon=" " tooltip="Diminuir Imagem" />
+											<otm:commandIcon styleClass="p10" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.necessitaUploadArquivo and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'IMAGEM'}" oncomplete="iniciarCrop()" action="#{ConteudoControle.rotacionarPagina90GrausParaEsquerda}" render="formNovaPagina" tooltip="Girar 90º para Esquerda" icon="#{msg_botoes.btn_icon_girar_esquerda_embutido} fs16 " styleIcon=" " />
+											<otm:commandIcon styleClass="p10" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.necessitaUploadArquivo and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'IMAGEM'}" oncomplete="iniciarCrop()" action="#{ConteudoControle.rotacionarPagina90GrausParaDireita}" render="formNovaPagina" tooltip="Girar 90º para Direita" icon="#{msg_botoes.btn_icon_girar_direita_embutido} fs16 " styleIcon=" " />
+											<otm:commandIcon styleClass="p10" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.necessitaUploadArquivo and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'IMAGEM'}" oncomplete="iniciarCrop()" action="#{ConteudoControle.rotacionarPagina180Graus}" render="formNovaPagina" tooltip="Girar 180º" icon="#{msg_botoes.btn_icon_girar_180_embutido} fs16 " styleIcon=" " />
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup id="listatreeREA" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional ne 'FORUM' and ConteudoControle.existeRecursoEducacionalConteudo and ConteudoControle.apresentarListaRecursoEducacionalConteudo}" layout="block" styleClass="bg-white rounded ml5 mr20 mt5 p10" style="max-height:300px;overflow:auto">
+										<a4j:repeat value="#{ConteudoControle.treeNodeCustomizado.filhos}" var="node">
+
+											<h:panelGroup layout="block">
+												<i class="far fa-folder-open fs10 mr5 font-bold tituloCampos text-dark"></i>
+												<h:outputText styleClass="text-dark fs10 font-bold" value="#{node.data.disciplina.nome}" />
+											</h:panelGroup>
+
+											<a4j:repeat value="#{node.filhos}" var="item">
+												<h:panelGroup layout="block" styleClass="ml10">
+													<a4j:outputPanel>
+														<rich:dragSource type="REA" dragIndicator="#{item.data.tipoRecursoEducacional}" dragValue="#{item.data}">
+															<span class="#{item.data.tipoRecursoEducacional.icone} fs16 mr5" />
+															<h:outputText id="testando2" styleClass="text-dark fs10" value="#{item.data.titulo}" />
+														</rich:dragSource>
+														<rich:tooltip zindex="10000" execute="@this" followMouse="true" styleClass="tooltipRich" direction="topAuto" horizontalOffset="10" verticalOffset="10" showDelay="10">
+															<h:outputText styleClass="text-dark fs10" value="Clique sobre o recurso arraste e solte na página" />
+														</rich:tooltip>
+													</a4j:outputPanel>
+												</h:panelGroup>
+											</a4j:repeat>
+
+										</a4j:repeat>
+									</h:panelGroup>
+								</h:panelGroup>
+
+							</f:facet>
+
+
+
+							<h:panelGroup id="conteudos" layout="block" styleClass="row">
+								<rich:dropTarget acceptedTypes="REA" dropListener="#{ConteudoControle.dropRecursoEducacionalConteudoUnidadePagina}" render="dadosConteudo, textoHtml">
+								</rich:dropTarget>
+								<!-- 								Recurso  HTML -->
+								<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'TEXTO_HTML'}">
+									<otm:editor theme="transparent" id="textoHtml" value="#{ConteudoControle.conteudoUnidadePagina.texto}">
+									</otm:editor>
+									<h:panelGroup styleClass="repositorioDrag" style="display:none">
+									</h:panelGroup>
+								</h:panelGroup>
+
+
+								<!-- 									Recurso de Imagem           -->
+								<h:panelGroup rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.necessitaUploadArquivo and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'IMAGEM'}" layout="block" styleClass="col-md-12 text-center">
+									<rich:fileUpload style="float:left" listHeight="0" oncomplete="iniciarCrop();" noDuplicate="true" fileUploadListener="#{ConteudoControle.uploadArquivoConteudoUnidadePagina}" acceptedTypes="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.extensao}" maxFilesQuantity="1" addLabel="Selecionar Arquivo" doneLabel="Pronto" sizeExceededLabel="#{ConteudoControle.verificarUltrapassouTamanhoMaximoUpload}" uploadLabel="Enviar" clearAllLabel="Limpar lista" immediateUpload="true" id="uploadConteudoImg" onupload="return validarTamanhoUploadArquivoExtensao(event, 'formNovaPagina:uploadConteudo', #{ConteudoControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}, '#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.extensao}');">
+										<a4j:ajax event="uploadcomplete" render="conteudos, mensagemConsultaNovaPagina" />
+										<a4j:ajax event="typerejected" oncomplete="alert('Arquivo não Enviado. Formato inválido do arquivo.');" render="conteudos" />
+										<a4j:ajax event="clear" render="conteudos" />
+									</rich:fileUpload>
+
+
+									<script type="text/javascript">
+													jQuery(function($) {
+														$(document).ready(
+																		function() {
+																			iniciarCrop();
+																			
+
+																		});
+													});
+													
+													function iniciarCrop(){
+														$("#formNovaPagina\\:imagemConteudo").Jcrop(
+																{
+																	onSelect : showCoords,
+																	onChange : showCoords,
+																	bgColor : 'black',
+																	bgOpacity : .3,
+																});
+													};
+													function showCoords(c) {
+														var valorX = document
+																.getElementById('formNovaPagina:x');
+														valorX.value = c.x;
+														var valorY = document
+																.getElementById('formNovaPagina:y');
+														valorY.value = c.y;
+														var valorW = document
+																.getElementById('formNovaPagina:w');
+														valorW.value = c.w;
+														var valorH = document
+																.getElementById('formNovaPagina:h');
+														valorH.value = c.h;
+													};
+												</script>
+
+									<h:inputHidden size="4" id="x" value="#{ConteudoControle.x}" />
+									<h:inputHidden size="4" id="y" value="#{ConteudoControle.y}" />
+									<h:inputHidden size="4" id="w" value="#{ConteudoControle.largura}" />
+									<h:inputHidden size="4" id="h" value="#{ConteudoControle.altura}" />
+
+
+
+								</h:panelGroup>
+								<!-- 									Recurso Url de Vídeo -->
+								<h:panelGroup styleClass="col-md-12 mb10" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'VIDEO_URL'}">
+									<h:outputText styleClass="field control-label tituloCampos" value="Informe Abaixo a URL de Vídeo Desejada (youtube, vímeo, outro link de stream e link de PDF)" />
+									<otm:spacer width="5px" />
+									<h:inputText size="60" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.conteudoUnidadePagina.texto}">
+										<a4j:ajax event="change" execute="@form" oncomplete="carregarPdf()" listener="#{ConteudoControle.conteudoUnidadePagina.setConteudoPaginaApresentar('')}" render="formNovaPagina" />
+									</h:inputText>
+								</h:panelGroup>
+								<!-- 									Usado para Slide e Audio -->
+								<rich:fileUpload listHeight="0" oncomplete="iniciarBanner()" render="conteudos, mensagemConsultaNovaPagina" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.necessitaUploadArquivo and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional ne 'IMAGEM'}" noDuplicate="true" fileUploadListener="#{ConteudoControle.uploadArquivoConteudoUnidadePagina}" acceptedTypes="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.extensao}" maxFilesQuantity="100" addLabel="Selecionar Arquivo" doneLabel="Pronto" sizeExceededLabel="#{ConteudoControle.verificarUltrapassouTamanhoMaximoUpload}" uploadLabel="Enviar" clearAllLabel="Limpar lista" immediateUpload="true" id="uploadConteudo" onupload="return validarTamanhoUploadArquivoExtensao(event, 'formNovaPagina:uploadConteudo', #{ConteudoControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}, '#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional.extensao}');">
+									<a4j:ajax event="uploadcomplete" render="conteudos, mensagemConsultaNovaPagina" />
+									<a4j:ajax event="typerejected" oncomplete="alert('Arquivo não Enviado. Formato inválido do arquivo.');" render="conteudos, mensagemConsultaNovaPagina" />
+									<a4j:ajax event="clear" render="conteudos, mensagemConsultaNovaPagina" />
+								</rich:fileUpload>
+								<!-- 									Recurso de Slide -->
+								<h:panelGroup layout="block" styleClass="col-md-1" style="height: 450px;overflow: auto;" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'SLIDE_IMAGEM'}">
+												<a4j:repeat value="#{ConteudoControle.listaImagensSlidePagina}" var="imagem">
+													<h:panelGroup layout="block" styleClass="col-md-12 p2 mb5 border rounded">
+														<a4j:commandLink onclick="return confirm('Deseja remover esta imagem do SLIDE?')" action="#{ConteudoControle.removerImagemSlideConteudoUnidadePagina(imagem)}" render="formNovaPagina">
+															<h:graphicImage value="#{imagem}" width="100%" styleClass="float-left w-100"></h:graphicImage>
+															<i class="fa fa-times text-danger float-right mt2 mr2" style="position: absolute;right: 5px;" />
+														</a4j:commandLink>
+													</h:panelGroup>
+												</a4j:repeat>
+											</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-11" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'SLIDE_IMAGEM'}">
+
+									<h:outputText escape="false" id="bxslider" style="display:block;height:calc(100vh - 350px);" value="#{ConteudoControle.caminhoArquivoConteudoUnidadePagina}" />
+
+									<script type="text/javascript" charset="UTF-8">
+												
+												$(document).ready(function() {
+													iniciarBanner();
+												});
+												
+												iniciarBanner =  function(){
+													$('#formNovaPagina\\:bxslider').bxSlider(
+															{
+																auto : true,
+																captions : false,
+																mode : 'fade',
+																pagerType : 'short',
+																pager : false,
+																adaptiveHeight : false,
+																responsive : true,
+																video : false,
+																nextText : '<i class="fa fa-angle-right fs16" ></i>',
+																prevText : '<i class="fa fa-angle-left fs16" ></i>'
+															});
+												};
+												
+														
+													</script>
+								</h:panelGroup>
+								<!-- 									Recurso de Url de Vídeo Flash e Audio -->
+								<h:panelGroup id="panelConteudoArquivo" layout="block" rendered="#{(ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'FLASH' or															
+															ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'VIDEO_URL' or
+															ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'IMAGEM' or
+															ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'AUDIO')}" styleClass="col-md-12 text-center">
+									<a4j:region>
+										<h:outputText id="flashImagemVideoUrlAudio" styleClass="col-md-12 text-center p10" escape="false" rendered="#{(ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'FLASH' or															
+															(ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'VIDEO_URL'  and !fn:endsWith(ConteudoControle.caminhoArquivoConteudoUnidadePagina, '.pdf')) or
+															ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'AUDIO')}" value="#{ConteudoControle.caminhoArquivoConteudoUnidadePagina}" />
+										<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{fn:endsWith(ConteudoControle.caminhoArquivoConteudoUnidadePagina, '.pdf') and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'VIDEO_URL'}">
+											<otm:pdfView id="pdfConteudo" data="#{ConteudoControle.caminhoArquivoConteudoUnidadePagina}" />
+										</h:panelGroup>
+										<h:graphicImage id="imagemConteudo" rendered="#{!empty ConteudoControle.conteudoUnidadePagina.caminhoBaseRepositorio and ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'IMAGEM'}" url="#{ConteudoControle.caminhoArquivoConteudoUnidadePagina}" />
+									</a4j:region>
+
+
+								</h:panelGroup>
+
+								<!-- 									Recurso de Gráfico -->
+								<h:panelGroup id="grafico" layout="block" styleClass="row" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoRecursoEducacional eq 'GRAFICO'}">
+
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-3">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_tipoGraficao}" />
+												<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico}" id="tipoGrafico">
+													<a4j:ajax event="change" execute="@form" status="ajaxGraf" render="formNovaPagina" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');" listener="#{ConteudoControle.visualizarGraficoConteudoUnidadePagina}" />
+													<f:selectItems value="#{ConteudoControle.listaSelectItemTipoGrafico}" />
+												</h:selectOneMenu>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_apresentarLegenda}" />
+												<h:panelGroup layout="block" styleClass="pn col-md-12">
+													<otm:selectBooleanCheckbox id="apresentarLegenda" styleClass="form-control campos" value="#{ConteudoControle.conteudoUnidadePagina.apresentarLegenda}">
+														<a4j:ajax event="change" execute="@form" status="ajaxGraf" render="formNovaPagina" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');" listener="#{ConteudoControle.visualizarGraficoConteudoUnidadePagina}" />
+													</otm:selectBooleanCheckbox>
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-6">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_tituloGraficao}" />
+												<h:inputText styleClass="form-control campos" id="tituloGrafico" size="57" maxlength="50" value="#{ConteudoControle.conteudoUnidadePagina.tituloGrafico}">
+													<a4j:ajax event="change" execute="@form" status="ajaxGraf" render="formNovaPagina" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');" listener="#{ConteudoControle.visualizarGraficoConteudoUnidadePagina}" />
+												</h:inputText>
+											</h:panelGroup>
+
+										</h:panelGroup>
+										<h:panelGroup rendered="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico.permiteTituloXY}" layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_tituloX}" />
+											<h:inputText styleClass="form-control campos" id="tituloEixoX" value="#{ConteudoControle.conteudoUnidadePagina.tituloEixoX}" />
+										</h:panelGroup>
+										<h:panelGroup rendered="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico.permiteTituloXY}" layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_tituloY}" />
+											<h:inputText styleClass="form-control campos" id="tituloEixoY" value="#{ConteudoControle.conteudoUnidadePagina.tituloEixoY}" />
+										</h:panelGroup>
+
+										<h:panelGroup layout="block" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico.exigeCategoria}" styleClass="row border-top mt10 pt10">
+											<h:panelGroup layout="block" styleClass="col-md-8">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePaginaGrafico_categoria}" />
+												<h:inputText styleClass="form-control camposObrigatorios" id="categoriaGrafico" value="#{ConteudoControle.categoriaGraficoConteudoUnidadePagina}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+												<otm:spacer width="5px" />
+												<otm:commandButton render="formNovaPagina" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');focus('formNovaPagina:categoriaGrafico')" action="#{ConteudoControle.adicionarCategoriaGraficoConteudoUnidadePagina}" tooltip="#{msg_bt.btn_adicionar}" value="#{msg_bt.btn_adicionar} Categoria" styleClass="btn btn-primary dark btn-adicionar btn-block" icon="#{msg_botoes.btn_icon_adicionar_embutido}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row border-top mt10 pt10">
+											<h:panelGroup layout="block" styleClass="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico.exigeValor ? 'col-md-6' : 'col-md-8'}">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePaginaGrafico_serie}" />
+												<h:inputText styleClass="form-control camposObrigatorios" id="serieGrafico" size="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico.permiteTituloXY? 50: 30}" value="#{ConteudoControle.serieGraficoConteudoUnidadePagina}" />
+											</h:panelGroup>
+
+											<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico.exigeValor}">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePaginaGrafico_valor}" />
+												<h:inputText styleClass="form-control camposObrigatorios" onkeyup="aceitarSomenteValorDecimal(this)" id="valorGrafico" value="#{ConteudoControle.valorGraficoConteudoUnidadePagina}">
+													<f:converter converterId="FormatadorNumerico" />
+												</h:inputText>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico.exigeValor ? 'col-md-3' : 'col-md-4'} text-center mt10">
+												<otm:spacer width="5px" />
+												<otm:commandButton render="formNovaPagina" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');focus('formNovaPagina:serieGrafico')" action="#{ConteudoControle.adicionarSerieGraficoConteudoUnidadePagina}" tooltip="#{msg_bt.btn_adicionar}" value="#{msg_bt.btn_adicionar} Série" styleClass="btn btn-primary dark btn-adicionar btn-block" icon="#{msg_botoes.btn_icon_adicionar_embutido}" />
+											</h:panelGroup>
+										</h:panelGroup>
+
+
+
+										<h:panelGroup styleClass="row bg-gray-200 rounded p10 mt5" rendered="#{!ConteudoControle.conteudoUnidadePagina.tipoGrafico.permiteTituloXY and !empty ConteudoControle.conteudoUnidadePagina.conteudoUnidadePaginaGraficoVOs}" layout="block">
+											<a4j:repeat headerClass="headerOpcaoGrafico" id="dadosGraficoPizza" value="#{ConteudoControle.conteudoUnidadePagina.conteudoUnidadePaginaGraficoVOs}" var="serieItens">
+												<h:panelGroup layout="block" styleClass="col-md-6">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{serieItens.serie}" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control camposObrigatorios" id="vdgp" size="12" maxlength="30" value="#{serieItens.valor}">
+															<a4j:ajax event="change" execute="@form" status="ajaxGrafico" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');" listener="#{ConteudoControle.visualizarGraficoConteudoUnidadePagina}" render="formNovaPagina" />
+															<f:converter converterId="FormatadorNumerico" />
+														</h:inputText>
+
+														<span class="append-icon right"> <otm:commandIcon render="formNovaPagina" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');" action="#{ConteudoControle.removerSerieGraficoConteudoUnidadePagina}" tooltip="#{msg_bt.btn_remover}" alt="#{msg_bt.btn_remover}" icon="#{msg_botoes.btn_icon_remover_embutido}" />
+														</span>
+													</h:panelGroup>
+
+												</h:panelGroup>
+											</a4j:repeat>
+										</h:panelGroup>
+
+										<h:panelGroup rendered="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico.permiteTituloXY and !empty ConteudoControle.conteudoUnidadePagina.conteudoUnidadePaginaGraficoCategoriaVOs}" layout="block" styleClass="row mt5">
+											<a4j:repeat cellpadding="0" cellspacing="0" rowKeyVar="rowCat" headerClass="headerOpcaoGrafico" id="dadosGraficoCategoria" value="#{ConteudoControle.conteudoUnidadePagina.conteudoUnidadePaginaGraficoCategoriaVOs}" var="categoria">
+												<h:panelGroup layout="block" styleClass="row bg-gray-200 rounded p10 mt5">
+													<h:panelGroup layout="block" styleClass="col-md-12 title">
+														<h:outputText id="categoria" styleClass="field control-label tituloCampos" value="#{categoria.sequencia} - #{categoria.categoria}">
+														</h:outputText>
+														<otm:commandIcon styleClass="float-right" render="formNovaPagina" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');" action="#{ConteudoControle.removerCategoriaGraficoConteudoUnidadePagina}" tooltip="#{msg_bt.btn_remover}" alt="#{msg_bt.btn_remover}" icon="#{msg_botoes.btn_icon_remover_embutido} iconePequeno" />
+													</h:panelGroup>
+													<a4j:repeat id="dadosGraficoSerieCategoria" rowKeyVar="rowSerie" value="#{ConteudoControle.conteudoUnidadePagina.conteudoUnidadePaginaGraficoSerieVOs}" var="serieItens" rendered="#{ConteudoControle.conteudoUnidadePagina.tipoGrafico.permiteTituloXY  and !empty ConteudoControle.conteudoUnidadePagina.conteudoUnidadePaginaGraficoSerieVOs }">
+
+														<a4j:repeat id="dadosGraficoValorSerieCategoria" rowKeyVar="rowValue" value="#{serieItens.conteudoUnidadePaginaGraficoSerieValorVOs}" var="valor" rendered="#{!empty serieItens.conteudoUnidadePaginaGraficoSerieValorVOs}">
+															<h:panelGroup layout="block" rendered="#{valor.sequencia eq categoria.sequencia}" styleClass="col-md-4	">
+																<h:outputText id="serie" styleClass="tituloCampos" value="#{serieItens.serieApresentar}" tooltip="#{serieItens.serie}">
+																</h:outputText>
+																<h:panelGroup layout="block" styleClass="col-md-12 pn">
+
+																	<h:inputText styleClass="form-control camposObrigatorios" id="dadosGraficoValorSerieCategoriaValor" size="10" maxlength="30" value="#{valor.valor}">
+																		<a4j:ajax event="change" execute="@form" status="ajaxGrafico" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');focus('formNovaPagina:dadosGraficoCategoria:#{rowCat}:dadosGraficoSerieCategoria:#{rowSerie}:dadosGraficoValorSerieCategoria:#{rowValue}:dadosGraficoValorSerieCategoriaValor')" listener="#{ConteudoControle.visualizarGraficoConteudoUnidadePagina}" render="formNovaPagina" />
+																		<f:converter converterId="FormatadorNumerico" />
+																	</h:inputText>
+																	<span class="append-icon right"> <otm:commandIcon render="formNovaPagina" oncomplete="definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');" action="#{ConteudoControle.removerSerieGraficoConteudoUnidadePagina}" tooltip="#{msg_bt.btn_remover}" alt="#{msg_bt.btn_remover}" icon="#{msg_botoes.btn_icon_remover_embutido}" />
+																	</span>
+																</h:panelGroup>
+
+															</h:panelGroup>
+														</a4j:repeat>
+
+													</a4j:repeat>
+												</h:panelGroup>
+											</a4j:repeat>
+
+										</h:panelGroup>
+									</h:panelGroup>
+
+
+									<h:panelGroup layout="block" styleClass="col-md-6 border-left text-center" id="visualizarGraficoPizza">
+										<h:panelGroup id="graficoGerado" layout="block" styleClass="text-center col-md-12 pn" rendered="#{ConteudoControle.visualizarGraficoConteudoUnidadePagina}" style="height: 355px;width:100%;">
+
+										</h:panelGroup>
+									</h:panelGroup>
+
+								</h:panelGroup>
+							</h:panelGroup>
+
+
+
+						</rich:panel>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaNovaPagina" styleClass="row" layout="block">
+
+					<otm:mensagem bean="#{ConteudoControle}"></otm:mensagem>
+
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+					<otm:commandButton id="salvar" oncomplete="#{ConteudoControle.acaoModalNovaPagina}" action="#{ConteudoControle.gravarConteudoUnidadePaginaForm}" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" value="#{msg.msg_gravar_dados}" accesskey="2" render="form:panelGridMensagens, form:unidades, formNovaPagina:mensagemConsultaNovaPagina" />
+					<otm:spacer width="5px"></otm:spacer>
+					<otm:commandButton id="cancelar" oncomplete="#{rich:component('panelNovaPagina')}.hide()" action="#{ConteudoControle.fecharEditarEIniciarNovaPagina}" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="#{msg.msg_fechar}" accesskey="3" styleClass="btn btn-danger" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelUploadBackPagina" domElementAttachment="parent" zindex="500" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Definição Plano Fundo" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUploadBackPagina">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_corFundo}" />
+						<a4j:jsFunction name="atualizarPreview" render="previewPlanoFundo" />
+						<otm:inputColorPiker gradiente="false" id="corback" jsFunction="atualizarPreview()" value="#{ConteudoControle.conteudoUnidadePagina.corBackground}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_tamanho} Imagem Fundo" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ConteudoControle.conteudoUnidadePagina.tamanhoImagemBackgroundConteudo}">
+							<f:selectItems value="#{ConteudoControle.listaSelectItemTamanhoImagemBackground}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_aplicarBackRea}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="replicarBackgroundTodoConteudo" value="#{ConteudoControle.replicarBackgroundTodoConteudo}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_imagemFundo}" />
+						<rich:fileUpload allowFlash="false" listHeight="0" listWidth="200" noDuplicate="true" fileUploadListener="#{ConteudoControle.uploadImagemBackgroundConteudoUnidadePagina}" acceptedTypes="gif, png, jpg, jpeg, bmp, GIF, PNG, JPG, JPEG, BMP" maxFilesQuantity="1" addLabel="Selecionar Arquivo" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="#{ConteudoControle.verificarUltrapassouTamanhoMaximoUpload}" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" id="uploadImagemBackPagina" onupload="return validarTamanhoUploadArquivoExtensao(event, 'formUploadBackPagina:uploadImagemBackPagina', #{ConteudoControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}, 'gif, png, jpg, jpeg, bmp, GIF, PNG, JPG, JPEG, BMP');">
+							<!-- 						<a4j:ajax event="onfileuploadcomplete" oncomplete="Richfaces.hideModalPanel('panelUploadBackPagina')" render="formNovaPagina" /> -->
+							<!-- 						<a4j:ajax event="onsizerejected" oncomplete="alert('Arquivo não Enviado. Tamanho Máximo Permitido #{ConteudoControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB.');" render="uploadImagemBackPagina" /> -->
+							<!-- 						<a4j:ajax event="ontyperejected" oncomplete="alert('Arquivo não Enviado. Formato inválido do arquivo.');" render="uploadImagemBackPagina" /> -->
+							<!-- 						<a4j:ajax event="onclear" render="uploadImagemBackPagina" /> -->
+							<!-- 						<a4j:ajax event="onuploadcanceled" render="uploadImagemBackPagina" /> -->
+						</rich:fileUpload>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" id="previewPlanoFundo" styleClass="col-md-12" style="#{ConteudoControle.backgroundPagina};height:300px !important;">
+
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagensUpBackPagina" width="100%">
+					<otm:mensagem bean="#{ConteudoControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80" id="panelGridBtns">
+
+					<otm:commandButton render="formNovaPagina, formNovaPagina:mensagemConsultaNovaPagina" oncomplete="#{rich:component('panelUploadBackPagina')}.hide();definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');" action="#{ConteudoControle.alterarImagemBackgroundConteudoUnidadePagina}" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" value="Aplicar Plano Fundo" />
+					<otm:spacer width="5" rendered="#{ConteudoControle.conteudoUnidadePagina.existeImagemBackground or ConteudoControle.conteudo.corBackground ne 'ffffff'}" />
+					<otm:commandButton render="formNovaPagina, formNovaPagina:mensagemConsultaNovaPagina" oncomplete="#{rich:component('panelUploadBackPagina')}.hide();definirGraficoApresentar('formNovaPagina:graficoGerado', 'true');" rendered="#{ConteudoControle.conteudoUnidadePagina.existeImagemBackground or ConteudoControle.conteudo.corBackground ne 'ffffff'}" action="#{ConteudoControle.removerImagemBackgroundConteudoUnidadePagina}" icon="#{msg_botoes.btn_icon_remver_embutido}" styleClass="btn btn-danger" value="Remover Plano Fundo" />
+
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelUpload" zindex="500" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_UploadArquivos_escolherArquivo}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3">
+						<rich:componentControl target="panelUpload" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUpload">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_publicarBibliotecaRecursoEducacional}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox value="#{ConteudoControle.publicarImagem}">
+								<a4j:ajax event="click" render="Upload" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-9" rendered="#{ConteudoControle.publicarImagem}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_RecurosEducacional_titulo}" />
+						<h:inputText size="60" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.nomeImagem}">
+							<a4j:ajax event="change" render="this" />
+						</h:inputText>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" style="margin:5px">
+					<rich:fileUpload listHeight="0" listWidth="200" noDuplicate="true" fileUploadListener="#{ConteudoControle.upLoadArquivoConteudoUnidadePaginaHtml}" acceptedTypes="gif, png, jpg, jpeg, bmp" maxFilesQuantity="1" addLabel="Selecionar Arquivo" doneLabel="Pronto" sizeExceededLabel="#{ConteudoControle.verificarUltrapassouTamanhoMaximoUpload}" uploadLabel="Enviar" clearAllLabel="Limpar lista" serverErrorLabel="Falha de Transmissão" immediateUpload="true" id="uploadImagemConteudo" onuploadcomplete="return validarTamanhoUploadArquivoExtensao(event, 'formUpload:uploadImagemConteudo', #{ConteudoControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}, 'gif, png, jpg, jpeg, bmp');">
+						<a4j:ajax event="uploadcomplete" oncomplete="#{rich:component('panelUpload')}.hide()" render="formNovaPagina" />
+					</rich:fileUpload>
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagensUp" width="100%">
+					<otm:mensagem bean="#{ConteudoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelUploadBackConteudo" domElementAttachment="parent" zindex="500" shadowOpacity="true" width="850" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_UploadArquivos_escolherArquivo}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkConteudo">
+						<rich:componentControl target="panelUploadBackConteudo" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUploadBackConteudo">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_corFundo}" />
+						<a4j:jsFunction name="atualizarPreview2" render="previewPlanoFundo2" />
+						<otm:inputColorPiker gradiente="false" id="corBackground1" jsFunction="atualizarPreview2()" value="#{ConteudoControle.conteudo.corBackground}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_tamanho}  Imagem Fundo" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{ConteudoControle.conteudo.tamanhoImagemBackgroundConteudo}">
+							<f:selectItems value="#{ConteudoControle.listaSelectItemTamanhoImagemBackground}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_aplicarBackUnidade}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="replicarBackgroundTodoConteudo" value="#{ConteudoControle.replicarBackgroundTodoConteudo}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12" style="margin:5px">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConteudoUnidadePagina_imagemFundo}" />
+						<rich:fileUpload listHeight="0" listWidth="200" noDuplicate="true" fileUploadListener="#{ConteudoControle.uploadImagemBackgroundConteudo}" acceptedTypes="gif, png, jpg, jpeg, bmp, GIF, PNG, JPG, JPEG, BMP" maxFilesQuantity="1" addLabel="Selecionar Arquivo" doneLabel="Pronto" sizeExceededLabel="#{ConteudoControle.verificarUltrapassouTamanhoMaximoUpload}" uploadLabel="Enviar" clearAllLabel="Limpar lista" serverErrorLabel="Falha de Transmissão" immediateUpload="true" id="uploadImagemBackUnidadeConteudo">
+							<a4j:ajax event="uploadcomplete" render="formUploadBackConteudo" />
+						</rich:fileUpload>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" id="previewPlanoFundo2" styleClass="col-md-12" style="#{ConteudoControle.backgroundConteudo};height:300px !important;">
+
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagensUpBackConteudo" width="100%">
+					<otm:mensagem bean="#{ConteudoControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup id="panelGridConteudoBtns" layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton oncomplete="#{rich:component('panelUploadBackConteudo')}.hide()" action="#{ConteudoControle.alterarImagemBackgroundConteudo}" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Aplicar Plano Fundo" styleClass="btn btn-dark" />
+					<otm:spacer width="5" />
+					<otm:commandButton oncomplete="#{rich:component('panelUploadBackConteudo')}.hide()" rendered="#{ConteudoControle.conteudo.existeImagemBackground or ConteudoControle.conteudo.corBackground ne 'ffffff'}" action="#{ConteudoControle.removerImagemBackgroundConteudo}" icon="#{msg_botoes.btn_icon_remver_embutido}" value="Remover Plano Fundo" styleClass="btn btn-danger" />
+					<otm:spacer width="5" rendered="#{ConteudoControle.conteudo.existeImagemBackground or ConteudoControle.conteudo.corBackground ne 'ffffff'}" />
+					<otm:commandButton oncomplete="#{rich:component('panelUploadBackConteudo')}.hide()" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplina" shadowOpacity="true" top="0" width="750" onshow="document.getElementById('formDisciplina:valorConsultaDisciplina').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink4">
+						<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+						<h:selectOneMenu styleClass="form-control campos" id="consultaDisciplina" value="#{ConteudoControle.campoConsultaDisciplina}">
+							<f:selectItems value="#{ConteudoControle.tipoConsultaComboDisciplina}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="Valor Consulta" />
+						<h:inputText id="valorConsultaDisciplina" size="10" styleClass="form-control campos" value="#{ConteudoControle.valorConsultaDisciplina}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2 pt7">
+						<otm:spacer width="100%" />
+						<otm:commandButton id="btnConsultar" render="formDisciplina" action="#{ConteudoControle.consultarDisciplina}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaDisciplina" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" rendered="#{!empty ConteudoControle.listaConsultaDisciplina}" columnClasses="colunaAlinhamento" value="#{ConteudoControle.listaConsultaDisciplina}" rows="10" var="disciplinaItens">
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Disciplina_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ConteudoControle.selecionarDisciplina}" render="form, formDisciplinaConteudoClone" oncomplete="#{ConteudoControle.modalPanelDisciplinaConteudoClone}" value="#{disciplinaItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Disciplina_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ConteudoControle.selecionarDisciplina}" render="form, formDisciplinaConteudoClone" oncomplete="#{ConteudoControle.modalPanelDisciplinaConteudoClone}" value="#{disciplinaItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="1">
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ConteudoControle.selecionarDisciplina}" oncomplete="#{ConteudoControle.modalPanelDisciplinaConteudoClone}" render="form, formDisciplinaConteudoClone" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" tooltip="#{msg.msg_adicionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" fastControls="hide" boundaryControls="auto" stepControls="auto" for="formDisciplina:resultadoConsultaDisciplina" maxPages="10" id="scResultadoDisciplina" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaDisciplina" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ConteudoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProfessor" onshow="document.getElementById('formProfessor:valorConsultarProfessor').focus()" shadowOpacity="true" top="0" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_consultaProfessor}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink5">
+						<rich:componentControl target="panelProfessor" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProfessor">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" id="consultaProfessor" value="#{ConteudoControle.campoConsultaProfessor}">
+							<a4j:ajax event="change" render="formProfessor" />
+							<f:selectItems value="#{ConteudoControle.tipoConsultaComboProfessor}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{!ConteudoControle.apresentarCampoCpf}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Valor Consulta" />
+						<h:inputText id="valorConsultarProfessor" styleClass="form-control campos" value="#{ConteudoControle.valorConsultaProfessor}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{ConteudoControle.apresentarCampoCpf}">
+						<h:outputText styleClass="field control-label tituloCampos" value="Valor Consulta" />
+						<h:inputText id="cpf" onkeypress="return mascara(this.formProfessor, 'formProfessor:cpf', '999.999.999-99', event);" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.valorConsultaProfessor}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2 pt5">
+						<otm:spacer width="100%" />
+						<otm:commandButton id="btnConsultar" render="formProfessor" action="#{ConteudoControle.consultarProfessor}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultarProfessor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" rendered="#{!empty ConteudoControle.listaConsultaProfessor}" columnClasses="colunaAlinhamento" value="#{ConteudoControle.listaConsultaProfessor}" rows="5" var="professor">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_professor}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ConteudoControle.selecionarProfessor}" focus="professor" render="form:panelProfessorExclusivo, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide()" value="#{professor.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_cpf}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ConteudoControle.selecionarProfessor}" focus="professor" render="form:panelProfessorExclusivo, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide()" value="#{professor.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_titulacao}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ConteudoControle.selecionarProfessor}" focus="professor" render="form:panelProfessorExclusivo, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide()" value="#{professor.titulacaoNivelEscolaridade}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ConteudoControle.selecionarProfessor}" focus="professor" render="form:panelProfessorExclusivo, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide()" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" tooltip="Adicionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formProfessor:resultadoConsultarProfessor" maxPages="10" id="scResultadoProfessor" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="mensagemConsultarProfessor">
+					<otm:mensagem bean="#{ConteudoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplinaConteudoClone" shadowOpacity="true" top="0" width="500" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg.msg_Atencao}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkDisciplinaConteudoClone">
+						<rich:componentControl target="panelDisciplinaConteudoClone" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplinaConteudoClone">
+				<h:panelGroup id="panelGridDisciplinaConteudoClone">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_Conteudo_disciplinaNaoPodeSerAlterada}" />
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<otm:outputHelp tooltip="#{msg.msg_Conteudo_clonarReasOutraDisciplina}" id="Conteudo_clonarReasOutraDisciplina" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_clonarReasOutraDisciplina}" />
+						<otm:selectBooleanCheckbox value="#{ConteudoControle.conteudo.clonarReasOutraDisciplina}">
+							<a4j:ajax event="change" listener="#{ConteudoControle.clonarReasOutraDisciplina}" render="panelGridDisciplinaConteudoClone" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ConteudoControle.conteudo.clonarReasOutraDisciplina}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_clonarQuestaoOnline}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox value="#{ConteudoControle.conteudo.clonarQuestaoOnline}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ConteudoControle.conteudo.clonarReasOutraDisciplina}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_clonarQuestaoExercicio}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox value="#{ConteudoControle.conteudo.clonarQuestaoExercicio}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<otm:outputHelp tooltip="#{msg.msg_Conteudo_descartarReasOutraDisciplina}" id="Conteudo_descartarReasOutraDisciplina" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_descartarReasOutraDisciplina}" />
+						<otm:selectBooleanCheckbox value="#{ConteudoControle.conteudo.descartarReasOutraDisciplina}">
+							<a4j:ajax event="change" listener="#{ConteudoControle.descartarReasOutraDisciplina}" render="panelGridDisciplinaConteudoClone" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+						<otm:commandButton id="confirmaDisciplinaConteudoClone" action="#{ConteudoControle.realizarClonagemReaPorSelecaoDisciplina}" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Realizar Clonagem Rea Por Selecao Disciplina" styleClass="btn btn-dark" accesskey="2" render="" oncomplete="#{rich:component('panelDisciplinaConteudoClone')}.hide();#{rich:component('panelDisciplina')}.hide();" />
+						<otm:spacer width="5px" />
+						<otm:commandButton id="cancelaDisciplinaConteudoClone" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="#{msg_bt.btn_cancelar}" render="formDisciplina" oncomplete="#{rich:component('panelDisciplinaConteudoClone')}.hide()" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelConteudoClone" shadowOpacity="true" top="0" width="450" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg.msg_Atencao}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink6">
+						<rich:componentControl target="panelConteudoClone" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConteudoClone">
+				<h:panelGroup columns="1" width="100%" columnClasses="colunaCentralizada">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_Conteudo_clonar}" />
+					<otm:spacer height="10" width="0px" />
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+						<otm:commandButton id="salvarClonar" action="#{ConteudoControle.clonar}" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" value="#{msg_bt.btn_sim}" accesskey="2" render="formConteudoClone, form:panelGridForm, form:panelGridMensagens,form:panelGridTopo" oncomplete="#{rich:component('panelConteudoClone')}.hide();" />
+						<otm:spacer width="5px" />
+						<otm:commandButton id="cancelarClonar" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="#{msg_bt.btn_nao}" render="formConteudoClone" oncomplete="#{rich:component('panelConteudoClone')}.hide();" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+
+	<ui:define name="conteudo">
+
+		<style type="text/css">
+*.rf-cst-c, *.rf-cst-nd-c {
+	border: none;
+	color: #000000;
+	background-color: #FFFFFF;
+	font-family: Arial, Verdana, sans-serif;
+	font-size: 11px;
+	padding: 4px;
+}
+</style>
+		<rich:dragIndicator id="TEXTO_HTML" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="far fa-file-code fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="PAGINA_HTML" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-file-code fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="ARQUIVO_DOWNLOAD" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-file-download fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="FLASH" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-adobe fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="VIDEO_URL" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-video fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="IMAGEM" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-image fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="EXERCICIO" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-tasks fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="FORUM" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-users fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="GRAFICO" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa--chart-pie fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="SLIDE_IMAGEM" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-images fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="AUDIO" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-headphones fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="AVALIACAO_PBL" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-atlas fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="AVALIACAO_ONLINE" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-globe fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="ATA_PBL" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-address-book fs30"></i>
+		</rich:dragIndicator>
+		<rich:dragIndicator id="unidadeIndicator" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+			<i class="fas fa-folder-open fs30"></i>
+		</rich:dragIndicator>
+		<h:form id="form" onreset="removerVisibilidadeImagem()" >
+			<script type="text/javascript">
+			jQuery(function($) {
+				$(document).ready(
+								function() {
+									removerVisibilidadeImagem();									
+
+								});
+				removerVisibilidadeImagem = function(){
+														$("#formNovaPagina\\:panelConteudoArquivo").hide()
+													};
+			});
+					
+											</script>
+			<h:inputText id="idControlador" style="display:none" size="90" value="#{ConteudoControle.idControlador}"></h:inputText>
+			<h:commandLink action="#{ConteudoControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{LoginControle.permissaoAcessoMenuVO.permitirProfessorCadastrarConteudoQualquerDisciplina or !usuarioLogado.isApresentarVisaoProfessor}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_disciplina}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText rendered="#{LoginControle.permissaoAcessoMenuVO.permitirProfessorCadastrarConteudoQualquerDisciplina or !usuarioLogado.isApresentarVisaoProfessor}" id="disciplina" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeituraObrigatorio" value="#{ConteudoControle.conteudo.disciplina.codigo} - #{ConteudoControle.conteudo.disciplina.nome}" />
+							<span class="append-icon right"> <otm:commandIcon rendered="#{LoginControle.permissaoAcessoMenuVO.permitirProfessorCadastrarConteudoQualquerDisciplina or !usuarioLogado.isApresentarVisaoProfessor}" id="consultarDisciplina" render="formDisciplina" oncomplete="#{rich:component('panelDisciplina')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg.msg_consultar_dados}" /> <otm:commandIcon rendered="#{LoginControle.permissaoAcessoMenuVO.permitirProfessorCadastrarConteudoQualquerDisciplina or !usuarioLogado.isApresentarVisaoProfessor}" id="limparDisciplina" render="form" action="#{ConteudoControle.limparDisciplina}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_bt.btn_btnLimpar}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!LoginControle.permissaoAcessoMenuVO.permitirProfessorCadastrarConteudoQualquerDisciplina and usuarioLogado.isApresentarVisaoProfessor}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_disciplina}" />
+						<h:selectOneMenu rendered="#{!LoginControle.permissaoAcessoMenuVO.permitirProfessorCadastrarConteudoQualquerDisciplina and usuarioLogado.isApresentarVisaoProfessor}" id="disciplinas" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.conteudo.disciplina.codigo}">
+							<f:selectItems value="#{ConteudoControle.listaSelectItemDisciplinasProfessor}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Código" />
+						<h:inputText id="codigo" readonly="true" size="4" maxlength="50" styleClass="form-control camposSomenteLeitura" value="#{ConteudoControle.conteudo.codigo}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_versao}" />
+						<h:inputText id="versao" readonly="true" size="4" maxlength="50" styleClass="form-control camposSomenteLeitura" value="#{ConteudoControle.conteudo.versao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_situacao}" />
+						<h:inputText id="situacao" readonly="true" size="20" maxlength="50" styleClass="form-control camposSomenteLeitura" value="#{ConteudoControle.conteudo.situacaoConteudo.valorApresentar}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_descricao}" />
+						<h:inputText id="descricao" size="70" maxlength="80" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.conteudo.descricao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_controlaPonto}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{ConteudoControle.conteudo.controlarPonto}">
+								<a4j:ajax event="click" render="unidades" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_controlaTempo}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{ConteudoControle.conteudo.controlarTempo}">
+								<a4j:ajax event="click" render="unidades" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:tabPanel switchType="client" activeItem="dadosUnidade">
+
+					<rich:tab switchType="client" id="dadosUnidade" header="#{msg_aplic.prt_Conteudo_unidades}" title="#{msg_aplic.prt_Conteudo_unidades}">
+						<h:panelGroup layout="block" styleClass="row" id="unidades">
+							<h:panelGroup layout="block" styleClass="col-md-8">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UnidadeConteudo_unidade}" />
+								<h:inputText maxlength="100" styleClass="form-control camposObrigatorios" value="#{ConteudoControle.unidadeConteudoVO.titulo}" id="unidadeConteudoTitulo" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TemaAssunto_assunto}" />
+								<h:selectOneMenu value="#{ConteudoControle.unidadeConteudoVO.temaAssuntoVO.codigo}" styleClass="form-control campos ">
+									<f:selectItems value="#{ConteudoControle.listaSelectItemTemaAssuntoVOs}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+								<otm:commandButton action="#{ConteudoControle.adicionarUnidadeConteudo}" render="form" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" value="Adicionar Unidade Conteudo" tooltip="#{msg.msg_adicionar_dados}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="row mt10 bg-white p10 rounded">
+								<h:panelGroup layout="block" styleClass="col-md-12 title" id="tituloUnidades">
+									<h:outputText rendered="#{!empty ConteudoControle.conteudo.unidadeConteudoVOs}" value="#{msg_aplic.prt_Conteudo_unidades}" />
+									<h:panelGroup layout="block" style="float:right">
+										<h:panelGroup layout="block" style="text-align:left;min-width:120px;width:auto;float:left;margin-top:5px">
+											<h:outputText style="font-size:10px" styleClass="field control-label tituloCampos" value="Nr. de Página(s): " />
+											<h:outputText style="font-size:10px" styleClass="field control-label tituloCampos" value="#{ConteudoControle.conteudo.paginaTotal}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" style="text-align:left;min-width:120px;width:auto;float:left;margin-top:5px">
+											<h:outputText style="font-size:10px" styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.conteudo.controlarPonto}" value="Total de Ponto(s): " />
+											<h:outputText style="font-size:10px" styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.conteudo.controlarPonto}" value="#{ConteudoControle.conteudo.pontoTotal}">
+												<f:converter converterId="FormatadorNumerico" />
+											</h:outputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block" style="text-align:left;min-width:120px;width:auto;float:left;margin-top:5px">
+											<h:outputText style="font-size:10px" styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.conteudo.controlarTempo}" value="Tempo Total: " />
+											<h:outputText style="font-size:10px" styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.conteudo.controlarTempo}" value="#{ConteudoControle.conteudo.tempoTotal}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<a4j:repeat id="listaUnidades" rowKeyVar="listUnidade" value="#{ConteudoControle.conteudo.unidadeConteudoVOs}" var="unidade">
+									<otm2:panel name="panelUnidade_#{listUnidade}" styleClass="bg-light" styleClassFooter="dn">
+										<ui:define name="header">
+											<a4j:outputPanel title="Arrate e solte para alterar a ordem da unidade" styleClass="col-md-12" layout="block">
+												<rich:dragSource type="UnidadeConteudo" dragIndicator="unidadeIndicator" dragValue="#{unidade}">
+												</rich:dragSource>
+												<rich:dropTarget dropValue="#{unidade}" render="form:unidades, form:panelGridMensagens" dropListener="#{ConteudoControle.alterarOrdemApresentacaoUnidadeConteudo}" acceptedTypes="UnidadeConteudo, ConteudoUnidadePagina">
+												</rich:dropTarget>
+												<h:panelGroup title="Arrate e solte para alterar a ordem da unidade" layout="block" styleClass="row">
+													<h:panelGroup layout="block" styleClass="float-left">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{unidade.ordem} - " />
+														<h:commandLink action="#{ConteudoControle.editarUnidadeConteudo}">
+															<h:outputText styleClass="field control-label tituloCampos" value="#{unidade.titulo}" />
+														</h:commandLink>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="float-right">
+														<h:panelGroup layout="block" styleClass="float-right ml10">
+															<otm:commandIcon styleClass="iconeOpcoesUnidade" render="form:listaUnidades, form:panelGridMensagens, form:tituloUnidades" action="#{ConteudoControle.subirUnidadeConteudo}" tooltip="Clique para subir ou clique sobre o titulo arraste e solte" icon="#{msg_botoes.btn_icon_subir_embutido} iconePequeno" />
+															<otm:commandIcon styleClass="iconeOpcoesUnidade" render="form:listaUnidades, form:panelGridMensagens, form:tituloUnidades" action="#{ConteudoControle.descerUnidadeConteudo}" tooltip="Clique para descer ou clique sobre o titulo arraste e solte" icon="#{msg_botoes.btn_icon_descer_embutido} iconePequeno" />
+															<otm:commandIcon styleClass="iconeOpcoesUnidade" render="formNovaPagina" oncomplete="#{rich:component('panelNovaPagina')}.show()" action="#{ConteudoControle.editarEIniciarNovaPagina}" tooltip="Adicionar Página na Unidade" id="btnaddpag" icon="#{msg_botoes.btn_icon_adicionar_embutido} iconePequeno" />
+															<otm:commandIcon styleClass="iconeOpcoesUnidade" action="#{ConteudoControle.editarUnidadeConteudo}" tooltip="#{msg.msg_editar_dados} Unidade" icon="#{msg_botoes.btn_icon_editar_embutido} iconePequeno" />
+															<otm:commandIcon styleClass="iconeOpcoesUnidade" onclick="return confirm('#{ConteudoControle.validarExcluirUnidadeConteudo}');" action="#{ConteudoControle.excluirUnidadeConteudo}" tooltip="#{msg_bt.btn_excluir} Unidade e Suas Páginas" icon="#{msg_botoes.btn_icon_remver_embutido} iconePequeno" />
+														</h:panelGroup>
+														<!-- 												<h:outputText styleClass="field control-label tituloCampos" value="Assunto: " /> -->
+														<h:selectOneMenu value="#{unidade.temaAssuntoVO.codigo}" styleClass="form-control campos form-control-input-table" style="width: 270px;">
+															<f:selectItems value="#{ConteudoControle.listaSelectItemTemaAssuntoVOs}" />
+														</h:selectOneMenu>
+													</h:panelGroup>
+												</h:panelGroup>
+											</a4j:outputPanel>
+										</ui:define>
+										<ui:define name="body">
+												<a4j:outputPanel title="Arrate e solte para alterar a ordem da página da unidade" rendered="#{empty unidade.conteudoUnidadePaginaVOs}" styleClass="col-md-12 ml10" layout="block">
+											<h:outputText value="Não existe páginas neste unidade, clique no ícone + para adicionar as páginas." rendered="#{empty unidade.conteudoUnidadePaginaVOs}" styleClass="tituloCampos font-weight-bold ml10" />													
+													<rich:dropTarget dropValue="#{unidade}" render="form:unidades, form:panelGridMensagens" dropListener="#{ConteudoControle.alterarOrdemApresentacaoConteudoUnidadePagina}" acceptedTypes="ConteudoUnidadePagina">
+													</rich:dropTarget>
+												</a4j:outputPanel>
+											<a4j:repeat value="#{unidade.conteudoUnidadePaginaVOs}" rendered="#{!empty unidade.conteudoUnidadePaginaVOs}" style="margin-bottom:5px" var="pagina">
+												<a4j:outputPanel title="Arrate e solte para alterar a ordem da página da unidade" styleClass="col-md-12 ml10" layout="block">
+													<rich:dragSource type="ConteudoUnidadePagina" dragIndicator="#{pagina.tipoRecursoEducacional}" dragValue="#{pagina}">
+													</rich:dragSource>
+													<rich:dropTarget dropValue="#{pagina}" render="form:unidades, form:panelGridMensagens" dropListener="#{ConteudoControle.alterarOrdemApresentacaoConteudoUnidadePagina}" acceptedTypes="ConteudoUnidadePagina">
+													</rich:dropTarget>
+													<h:panelGroup title="Arrate e solte para alterar a ordem da página da unidade" layout="block" styleClass="row border-bottom">
+
+														<h:commandLink style="text-decoration:none;margin-left:5px;" action="#{ConteudoControle.editarPagina}">
+															<i class="#{pagina.tipoRecursoEducacional.icone} mr5 text-dark fs12" />
+															<h:outputText styleClass="text-dark fs12" value="#{unidade.ordem}.#{pagina.pagina} - #{pagina.titulo} " />
+
+															<h:outputText styleClass="fs10 font-italic" rendered="#{ConteudoControle.conteudo.controlarPonto or ConteudoControle.conteudo.controlarTempo}" value="(" />
+															<h:panelGroup rendered="#{ConteudoControle.conteudo.controlarPonto}" styleClass="fas fa-hand-pointer mr5 fs10 font-italic" />
+															<h:outputText styleClass="fs10 font-italic" rendered="#{ConteudoControle.conteudo.controlarPonto}" value="#{pagina.ponto} pts" />
+															<h:outputText styleClass="fs10 font-italic" rendered="#{ConteudoControle.conteudo.controlarPonto and ConteudoControle.conteudo.controlarTempo}" value=" - " />
+															<h:panelGroup rendered="#{ConteudoControle.conteudo.controlarTempo}" styleClass="far fa-clock mr5 fs10 font-italic" />
+															<h:outputText styleClass="fs10 font-italic" rendered="#{ConteudoControle.conteudo.controlarPonto}" value="#{pagina.tempo} min" />
+															<h:outputText styleClass="fs10 font-italic" rendered="#{ConteudoControle.conteudo.controlarPonto or ConteudoControle.conteudo.controlarTempo}" value=")" />
+
+														</h:commandLink>
+														<h:panelGroup style="float:right;" layout="block">
+															<otm:commandIcon id="visualizar" action="#{ConteudoControle.editarVisualizarPagina}" rendered="#{pagina.codigo ne 0}" tooltip="#{msg.msg_visualizar_conteudo}" icon="far fa-eye iconePequeno" />
+															<otm:commandIcon styleClass="iconeOpcoesUnidade" render="form:listaUnidades, form:panelGridMensagens, form:tituloUnidades" action="#{ConteudoControle.subirConteudoUnidadePagina}" tooltip="Clique para subir ou clique sobre o titulo arraste e solte" icon="#{msg_botoes.btn_icon_subir_embutido} iconePequeno" />
+															<otm:commandIcon styleClass="iconeOpcoesUnidade" render="form:listaUnidades, form:panelGridMensagens, form:tituloUnidades" action="#{ConteudoControle.descerConteudoUnidadePagina}" tooltip="Clique para descer ou clique sobre o titulo arraste e solte" icon="#{msg_botoes.btn_icon_descer_embutido} iconePequeno" />
+															<otm:commandIcon render="panelGridMensagens" styleClass="iconeOpcoesUnidade" action="#{ConteudoControle.editarPagina}" tooltip="#{msg.msg_editar_dados} Página" icon="#{msg_botoes.btn_icon_editar_embutido} iconePequeno" />
+															<otm:commandIcon styleClass="iconeOpcoesUnidade" onclick="return confirm('#{ConteudoControle.validarExcluirConteudoUnidadePaginaIndice}');" action="#{ConteudoControle.excluirConteudoUnidadePaginaIndice}" tooltip="#{msg_bt.btn_excluir} Página" icon="#{msg_botoes.btn_icon_remver_embutido} iconePequeno" />
+														</h:panelGroup>
+
+													</h:panelGroup>
+												</a4j:outputPanel>
+											</a4j:repeat>
+										</ui:define>
+									</otm2:panel>
+								</a4j:repeat>
+							</h:panelGroup>
+
+						</h:panelGroup>
+					</rich:tab>
+					<rich:tab switchType="client" header="Conteudista" title="Conteudista">
+						<h:panelGroup layout="block" styleClass="row" id="dadosGerais">
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_origemConteudista}" />
+								<h:selectOneMenu styleClass="form-control campos" value="#{ConteudoControle.conteudo.tipoConteudista}">
+									<a4j:ajax event="change" render="dadosGerais" />
+									<f:selectItems value="#{ConteudoControle.listaSelectItemTipoConteudista}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{ConteudoControle.conteudo.isConteudistaInterno}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_conteudista}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:inputText id="conteudista" size="50" maxlength="50" readonly="true" styleClass="form-control campos" value="#{ConteudoControle.conteudo.conteudista.nome}" />
+									<span class="append-icon right" style="margin-bottom: 5px"> <otm:commandIcon id="consultarConteudista" render="formConteudista" oncomplete="#{rich:component('panelConteudista')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg.msg_consultar_dados}" /> <otm:commandIcon id="limparConteudista" render="conteudista" action="#{ConteudoControle.limparConteudista}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_bt.btn_btnLimpar}" />
+									</span>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{ConteudoControle.conteudo.isConteudistaExterno}">
+								<h:outputText styleClass="field control-label tituloCampos" value="Nome Conteudista" />
+								<h:inputText id="nomeConteudista" rendered="#{ConteudoControle.conteudo.isConteudistaExterno}" size="50" maxlength="50" styleClass="form-control campos" value="#{ConteudoControle.conteudo.nomeConteudista}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ConteudoControle.conteudo.isConteudistaExterno}">
+								<h:outputText styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.conteudo.isConteudistaExterno}" value="E-mail" />
+								<h:inputText id="emailConteudista" rendered="#{ConteudoControle.conteudo.isConteudistaExterno}" size="50" maxlength="50" styleClass="form-control campos" value="#{ConteudoControle.conteudo.emailConteudista}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ConteudoControle.conteudo.isConteudistaExterno}">
+								<h:outputText styleClass="field control-label tituloCampos" rendered="#{ConteudoControle.conteudo.isConteudistaExterno}" value="#{msg_aplic.prt_Conteudo_curriculumConteudista}" />
+								<h:inputTextarea styleClass="form-control" id="curriculumConteudista" rendered="#{ConteudoControle.conteudo.isConteudistaExterno}" value="#{ConteudoControle.conteudo.curriculumConteudista}" />
+							</h:panelGroup>
+
+							<h:panelGroup id="panelProfessorExclusivo" rendered="#{!usuarioLogado.isApresentarVisaoProfessor}">
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" rendered="#{!usuarioLogado.isApresentarVisaoProfessor}" value="#{msg_aplic.prt_Conteudo_usoExclusivoProfessor}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="usoExclusivoProfessor" disabled="#{usuarioLogado.isApresentarVisaoProfessor}" styleClass="form-control campos" value="#{ConteudoControle.conteudo.usoExclusivoProfessor}">
+											<a4j:ajax event="change" render="panelProfessorExclusivo" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText rendered="#{ConteudoControle.conteudo.usoExclusivoProfessor}" id="professor" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Emprestimo_Professor}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText rendered="#{ConteudoControle.conteudo.usoExclusivoProfessor}" id="nomeProfessor" size="57" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeituraObrigatorio" value="#{ConteudoControle.conteudo.professor.nome}" />
+										<span class="append-icon right"> <otm:commandIcon rendered="#{ConteudoControle.conteudo.usoExclusivoProfessor}" id="consultarProfessor" render="formProfessor" oncomplete="#{rich:component('panelProfessor')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg.msg_consultar_dados}" /> <otm:commandIcon rendered="#{ConteudoControle.conteudo.usoExclusivoProfessor}" id="limparProfessor" render="form" action="#{ConteudoControle.limparDadosProfessor}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_bt.btn_btnLimpar}" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+					<rich:tab switchType="client" header="#{msg_aplic.prt_Conteudo_controleAlteracoes}" title="#{msg_aplic.prt_Conteudo_controleAlteracoes}">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_dataCadastro}" />
+								<h:inputText id="dataCadastro" size="10" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ConteudoControle.conteudo.dataCadastro}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_responsavelCadastro}" />
+								<h:inputText id="responsavelCadastro" size="50" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ConteudoControle.conteudo.responsavelCadastro.nome}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_dataAlteracao}" />
+								<h:inputText id="dataAlteracao" size="10" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ConteudoControle.conteudo.dataAlteracao}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_responsavelAlteracao}" />
+								<h:inputText id="responsavelAlteracao" size="50" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{ConteudoControle.conteudo.responsavelAlteracao.nome}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+				</rich:tabPanel>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup id="panelGridMensagens">
+						<otm:mensagem bean="#{ConteudoControle}"></otm:mensagem>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<otm:commandButton id="novoVisaoAdm" action="#{ConteudoControle.novo}" rendered="#{ConteudoControle.isApresentarBotaoNovoVisaoAdministrativo}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-info" value="Novo" accesskey="1" />
+						<otm:spacer width="5px" rendered="#{ConteudoControle.isApresentarBotaoNovoVisaoAdministrativo}" />
+						<otm:commandButton id="novoVisaoProfessor" action="#{ConteudoControle.novo}" rendered="#{ConteudoControle.isApresentarBotaoNovoVisaoProfessor}" icon="#{msg_botoes.btn_novo}" styleClass="btn btn-info" value="Nova Visao Professor" accesskey="1" />
+						<otm:spacer width="5px" rendered="#{ConteudoControle.isApresentarBotaoNovoVisaoProfessor}" />
+						<otm:commandButton id="salvar" action="#{ConteudoControle.persistir}" value="#{msg_bt.btn_gravar}" styleClass="btn btn-dark btn-gravar" tooltip="#{msg.msg_gravar_dados}" render="form:panelGridMensagens,form:panelGridTopo" />
+						<otm:spacer width="5px" />
+						<otm:commandButton id="ativar" rendered="#{ConteudoControle.conteudo.isEmElaboracao or !ConteudoControle.conteudo.isAtivo}" render="form" action="#{ConteudoControle.ativar}" icon="#{msg_botoes.btn_icon_ativar_embutido}" value="Ativar" styleClass="btn btn-primary" accesskey="3" />
+						<otm:spacer rendered="#{ConteudoControle.conteudo.isEmElaboracao or !ConteudoControle.conteudo.isAtivo}" width="5px" />
+						<otm:commandButton id="emConstrucao" rendered="#{ConteudoControle.conteudo.isAtivo and !ConteudoControle.conteudo.existeAlunoCursandoConteudo}" render="form" action="#{ConteudoControle.emConstrucao}" icon="#{msg_botoes.btn_icon_engrenagem_embutido}" value="Em Construcao" styleClass="btn btn-default" />
+						<otm:spacer rendered="#{ConteudoControle.conteudo.isAtivo and !ConteudoControle.conteudo.existeAlunoCursandoConteudo}" width="5px" />
+						<otm:commandButton id="inativar" rendered="#{ConteudoControle.conteudo.isAtivo}" render="form" action="#{ConteudoControle.inativar}" icon="#{msg_botoes.btn_icon_inativar_embutido}" value="Inativar" styleClass="btn btn-danger" />
+						<otm:spacer rendered="#{ConteudoControle.conteudo.isAtivo}" width="5px" />
+						<otm:commandButton render="form" id="clonar" rendered="#{!ConteudoControle.conteudo.novoObj}" oncomplete="#{rich:component('panelConteudoClone')}.show()" icon="#{msg_botoes.btn_icon_clonar_embutido}" styleClass="btn btn-warning" value="#{msg_bt.btn_clonar}" />
+						<otm:spacer width="5px" rendered="#{!ConteudoControle.conteudo.novoObj}" />
+						<otm:commandButton id="consultar" immediate="true" action="#{ConteudoControle.inicializarConsultar}" rendered="#{!usuarioLogado.isApresentarVisaoProfessor}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" tooltip="#{msg.msg_consultar_dados}" />
+						<otm:spacer rendered="#{!usuarioLogado.isApresentarVisaoProfessor}" width="5px" />
+						<otm:commandButton id="visualizar" action="#{ConteudoControle.emularAcessoConteudo}" rendered="#{ConteudoControle.conteudo.paginaTotal > 0}" icon="fas fa-eye" styleClass="btn btn-info" value="Visualizar" />
+						<otm:spacer rendered="#{ConteudoControle.conteudo.paginaTotal > 0}" width="5px" />
+						<otm:commandButton id="botaoAddUploadBackConteudo" tooltip="Adicionar imagem/cor de background padrão das unidades, páginas e REA." render="formUploadBackConteudo" value="Plano de Fundo" icon="#{msg_botoes.btn_icon_imagem_embutido}" oncomplete="#{rich:component('panelUploadBackConteudo')}.show()" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,392 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" 
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough" 
+                xmlns:h="http://xmlns.jcp.org/jsf/html" 
+                xmlns:f="http://xmlns.jcp.org/jsf/core" 
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"  
+                xmlns:p="http://primefaces.org/ui" 
+                xmlns:otm="http://java.sun.com/jsf/composite/otm">
+
+    <p:dialog id="panelCapturarImagemWebCamFotoUsuario" widgetVar="panelCapturarImagemWebCamFotoUsuarioWidget"
+              modal="true" responsive="true" fitViewport="true"
+              header="#{msg_aplic.prt_Disciplina_tirarFoto}" width="750" height="500"
+              onShow="showWebCamAPP()">
+        
+        <f:facet name="header">
+            <h:outputText value="#{msg_aplic.prt_Disciplina_tirarFoto}" />
+        </f:facet>
+
+        <h:form id="formWebCamFotoUsuario">
+            <div id="my_camera" style="width: 320px; height: 240px;"></div>
+            <br />
+            <br />
+            <h:panelGroup layout="block" id="mcMenu" styleClass="barra-btn-flutuante-modal-50">
+                <otm:commandButton id="btnTirarFoto" styleClass="btn btn-primary" icon=" #{msg_botoes.btn_icon_camera_embutido}" value="Tirar Foto" action="#{VisaoAlunoControle.executarCapturarFotoWebCam}" oncomplete="take_snapshot('../UploadServlet');" />
+                <otm:commandButton id="btnNovaFoto" style="margin-left: 10px" styleClass="btn btn-info btn-novo" value="Tirar Foto" onclick="Webcam.unfreeze();" />
+                
+                <otm:commandButton id="btnGravarFoto" style="margin-left: 10px" styleClass="btn btn-dark btn-gravar" 
+                                   icon=" #{msg_botoes.btn_icon_retrato_embutido}" value="Gravar" 
+                                   render="formImagem, formWebCamFotoUsuario" 
+                                   onclick="PF('panelCapturarImagemWebCamFotoUsuarioWidget').hide(); PF('panelImagemWidget').show();" />
+            </h:panelGroup>
+        </h:form>
+    </p:dialog>
+
+    <p:dialog id="panelImagem" widgetVar="panelImagemWidget"
+              modal="true" responsive="true" fitViewport="true"
+              header="#{msg_aplic.prt_AlterarFoto}" width="800" height="600">
+        
+        <h:form id="formImagem" enctype="multipart/form-data">
+
+            <h:panelGroup layout="block" styleClass="row mb10 border-bottom pb10">
+                <h:panelGroup layout="block" styleClass="col-md-12 text-center">
+                    <otm:commandIcon id="btnZoomIn" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}" action="#{VisaoAlunoControle.executarZoomIn}" icon="#{msg_botoes.btn_icon_zoomPlus_embutido} fs18" render="formImagem" />
+                    <otm:commandIcon id="btnZoomOut" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}" action="#{VisaoAlunoControle.executarZoomOut}" icon="#{msg_botoes.btn_icon_zoomMinus_embutido} fs18" render="formImagem" />
+                    <otm:commandIcon id="btnGirarEsquerda" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}" icon="#{msg_botoes.btn_icon_girar_esquerda_embutido} fs18" action="#{VisaoAlunoControle.rotacionar90GrausParaEsquerda}" render="formImagem" tooltip="Girar 90º para Esquerda" />
+                    <otm:commandIcon id="btnGirarDireita" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}" icon="#{msg_botoes.btn_icon_girar_direita_embutido} fs18" action="#{VisaoAlunoControle.rotacionar90GrausParaDireita}" render="formImagem" tooltip="Girar 90º para Direita" />
+                    <otm:commandIcon id="btnGirar180" style="margin-left: 10px" rendered="#{VisaoAlunoControle.exibirBotao}" icon="#{msg_botoes.btn_icon_girar_180_embutido} fs18" action="#{VisaoAlunoControle.rotacionar180Graus}" render="formImagem" tooltip="Girar 180º" />
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{VisaoAlunoControle.exibirBotao}" styleClass="col-md-12 text-center" layout="block">
+                <h:graphicImage url="#{VisaoAlunoControle.showFotoCrop}" id="foto2" />
+                <script src="#{resource['script/crop/jquery.Jcrop.js']}"></script>
+                <script type="text/javascript">
+                    jQuery(function($) {
+                        $(document).ready(function() {
+                            iniciarCropFotoAluno();
+                        });
+                    });
+                    
+                    var iniciarCropFotoAluno = function(){
+                        // Escape do ID do JSF para jQuery
+                        $(document.getElementById('formImagem:foto2')).Jcrop({
+                            onSelect : showCoords,
+                            onChange : showCoords,
+                            bgColor : 'black',
+                            bgOpacity : .3,
+                            setSelect : [ 1, 1, 85, 113 ],
+                            minSize : [ 31, 21 ],
+                            maxSize : [ 600, 450 ]
+                        });
+                    }
+                    
+                    function showCoords(c) {
+                        document.getElementById('formImagem:x').value = c.x;
+                        document.getElementById('formImagem:y').value = c.y;
+                        document.getElementById('formImagem:w').value = c.w;
+                        document.getElementById('formImagem:h').value = c.h;
+                    };
+                </script>
+            </h:panelGroup>
+
+            <h:panelGroup style="display:none" layout="block">
+                <h:panelGrid style="display:none" columns="6">
+                    <h:inputText size="4" id="x" value="#{VisaoAlunoControle.x}" />
+                    <h:inputText size="4" id="y" value="#{VisaoAlunoControle.y}" />
+                    <h:inputText size="4" id="w" value="#{VisaoAlunoControle.largura}" />
+                    <h:inputText size="4" id="h" value="#{VisaoAlunoControle.altura}" />
+                </h:panelGrid>
+            </h:panelGroup>
+
+            <h:panelGroup layout="block" styleClass="row" rendered="#{VisaoAlunoControle.exibirUpload}">
+                <h:panelGroup layout="block" styleClass="col-md-12">
+                    <p:fileUpload id="btnUpload" 
+                                  listener="#{VisaoAlunoControle.upLoadImagem}" 
+                                  mode="advanced" 
+                                  dragDropSupport="false"
+                                  update="formImagem"
+                                  oncomplete="iniciarCropFotoAluno()"
+                                  sizeLimit="2097152" 
+                                  fileLimit="1" 
+                                  allowTypes="/(\.|\/)(gif|jpe?g|png|pdf)$/"
+                                  label="Selecionar Arquivo"
+                                  uploadLabel="Enviar"
+                                  cancelLabel="Cancelar"
+                                  invalidFileMessage="Formato inválido do arquivo."
+                                  invalidSizeMessage="Arquivo não Enviado. Tamanho Máximo Permitido 2 MB" />
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <h:panelGroup layout="block" styleClass="row" rendered="#{VisaoAlunoControle.exibirUpload}">
+                <h:panelGroup layout="block" styleClass="col-md-12">
+                    <h:outputText styleClass="field control-label tituloCampos" value="Você pode enviar arquivos JPG ou PNG (tamanho máximo de 2MB)" />
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+                <otm:commandButton styleClass="btn btn-dark" 
+                                   oncomplete="#{VisaoAlunoControle.oncompleteModal}; Webcam.reset();" 
+                                   rendered="#{VisaoAlunoControle.exibirBotao}" 
+                                   action="#{VisaoAlunoControle.recortarFoto}" 
+                                   render="formImagem, formWebcam, foto2, formTopoVisaoAluno:box-user" 
+                                   value="Confirmar foto" icon="#{msg_botoes.btn_icon_confirmar_embutido}" />
+                                   
+                <otm:commandButton styleClass="btn btn-info" style="margin-left: 10px" 
+                                   oncomplete="Webcam.reset(); PF('panelCapturarImagemWebCamFotoUsuarioWidget').show()" 
+                                   render="formWebcam" value="Tirar foto" icon="#{msg_botoes.btn_icon_camera_embutido}" />
+                                   
+                <otm:commandButton style="margin-left: 10px" styleClass="btn btn-danger light btn-cancelar" 
+                                   icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" 
+                                   action="#{VisaoAlunoControle.cancelar}" 
+                                   oncomplete="PF('panelImagemWidget').hide()" 
+                                   render="formImagem" title="Cancelar" />
+            </h:panelGroup>
+
+            <p:outputPanel id="panelMensagem">
+                <otm:mensagem bean="#{VisaoAlunoControle}"></otm:mensagem>
+            </p:outputPanel>
+
+        </h:form>
+    </p:dialog>
+
+    <p:dialog id="alterarSenha" widgetVar="alterarSenhaWidget"
+              modal="true" responsive="true" fitViewport="true"
+              header="Alterar Senha" width="650" height="300"
+              onShow="javascript:verifica('formAlterarSenha:senha')">
+        
+        <h:form id="formAlterarSenha">
+            <h:panelGroup layout="block" styleClass="row">
+                <h:panelGroup layout="block" styleClass="col-md-3 ">
+                    <h:outputText styleClass="field control-label tituloCampos" value="Usuário Atual" />
+                    <h:inputText styleClass="form-control camposObrigatorios" size="20" maxlength="50" disabled="true" readonly="true" value="#{VisaoAlunoControle.loginAnterior}" />
+                </h:panelGroup>
+
+                <h:panelGroup layout="block" styleClass="col-md-3 ">
+                    <h:outputText styleClass="field control-label tituloCampos" value="Senha Atual" />
+                    <h:inputSecret styleClass="form-control camposObrigatorios" size="20" maxlength="50" value="#{VisaoAlunoControle.senhaAnterior}" />
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <h:panelGroup layout="block" styleClass="row">
+                <h:panelGroup layout="block" styleClass="col-md-3 ">
+                    <h:outputText styleClass="field control-label tituloCampos" value="Usuário Novo" />
+                    <h:inputText styleClass="form-control camposObrigatorios" size="20" maxlength="50" readonly="#{VisaoAlunoControle.permitirAlterarUsername}" disabled="#{VisaoAlunoControle.permitirAlterarUsername}" value="#{VisaoAlunoControle.login}" />
+                </h:panelGroup>
+
+                <h:panelGroup layout="block" styleClass="col-md-3 ">
+                    <h:outputText styleClass="field control-label tituloCampos" value="Senha Nova" />
+                    <h:inputSecret id="senha" styleClass="form-control camposObrigatorios" size="20" maxlength="50" value="#{VisaoAlunoControle.senha}" onkeyup="javascript:verifica('formAlterarSenha:senha')" />
+                </h:panelGroup>
+
+                <h:panelGroup layout="block" styleClass="col-md-2 ">
+                    <otm:spacer width="100%" />
+                    <h:outputText styleClass="field control-label tituloCampos" value="Nível Segurança" />
+                    <div id="page-wrap"></div>
+                </h:panelGroup>
+            </h:panelGroup>
+            
+            <h:panelGroup layout="block" styleClass="row" rendered="#{VisaoAlunoControle.existeConfiguracaoSeiGsuite}">
+                <h:panelGroup layout="block" styleClass="col-md-12 ">
+                    <h:outputText styleClass="field control-label tituloCampos" value="Alterar Senha Conta Gsuite" />
+                    <h:panelGroup layout="block" styleClass="col-md-12 ">
+                        <otm:selectBooleanCheckbox id="alterarSenhaContaGsuite" value="#{VisaoAlunoControle.alterarSenhaContaGsuite}" rendered="#{VisaoAlunoControle.existeConfiguracaoSeiGsuite}" />
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <otm:mensagem bean="#{VisaoAlunoControle}"></otm:mensagem>
+            
+            <h:panelGroup layout="block" styleClass="row" style="margin-top: 15px">
+                <h:panelGroup layout="block" styleClass="col-md-12 text-center">
+                    <otm:commandButton styleClass="btn btn-dark btn-gravar" 
+                                       oncomplete="PF('alterarSenhaWidget').hide()" 
+                                       icon="#{msg_botoes.btn_icon_gravar_embutido}" 
+                                       render="form,formFoto,formAlterarSenha" 
+                                       action="#{VisaoAlunoControle.alterarSenha}" 
+                                       value="Alterar Senha" />
+                </h:panelGroup>
+            </h:panelGroup>
+        </h:form>
+    </p:dialog>
+
+    <p:dialog id="popupGeracaoArquivoAcessoDados" widgetVar="popupGeracaoArquivoAcessoDadosWidget"
+              modal="true" responsive="true" fitViewport="true"
+              header="Geração de Arquivo Acesso a Dados">
+        
+        <h:form id="formPanelGeracaoArquivoAcessoDados" >
+            <h:outputText value="#{msg.msg_geracaoArquivoLGPD}" />
+            <h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+                <otm:commandButton id="gerar" value="#{msg_botoes.btn_gerarArquivo}" 
+                                   action="#{OcorrenciaLGPDControle.realizarGeracaoTextoPadraoLGPD}" 
+                                   oncomplete="#{OcorrenciaLGPDControle.download}; PF('popupGeracaoArquivoAcessoDadosWidget').hide();" 
+                                   tooltip="Gerar Arquivo Acesso a Dados" 
+                                   styleClass="btn btn-info btn-novo" 
+                                   render="formPanelGeracaoArquivoAcessoDados" 
+                                   icon="far fa-file-alt" />
+                <h:outputText value=" "/>
+                <otm:commandButton id="fechar" value="#{msg_botoes.btn_fechar}"
+                    oncomplete="PF('popupGeracaoArquivoAcessoDadosWidget').hide()"
+                    tooltip="Fechar" styleClass="btn btn-primary dark btn-fechar"
+                    icon="fas fa-times" />
+            </h:panelGroup>
+        </h:form>
+    </p:dialog>
+    
+    <p:dialog id="panelQRCodeLogin" widgetVar="panelQRCodeLoginWidget" 
+              modal="true" responsive="true" fitViewport="true" width="400" height="410"
+              header="QR Code Login App Aluno">
+        
+        <h:form id="formQRCodeLogin">
+            <h:panelGrid columns="1" style="height:100%;margin: 0 auto;">
+                <h:inputText id="qrcodetext" style="display: none;" value="#{VisaoAlunoControle.qrCode}" />
+                <div id="qrcode"></div>
+                <script type="text/javascript">
+                    var qrcode = new QRCode(
+                            document.getElementById("qrcode"),
+                            {
+                                text : document.getElementById("formQRCodeLogin:qrcodetext").value,
+                                width : 360,
+                                height : 360,
+                                colorDark : "#000000",
+                                colorLight : "#ffffff",
+                                correctLevel : QRCode.CorrectLevel.H
+                            });
+                </script>
+            </h:panelGrid>
+        </h:form>
+    </p:dialog>
+
+    <h:form id="formTopoVisaoAluno" prependId="false" styleClass="w-100">
+        <style>
+            .iconeHomologacao { height: 46px; }
+            .panelHomologacao { position: fixed; left: 57%; }
+            @media(max-width : 500px) {
+                .iconeHomologacao { height: 30px !important; }
+                .panelHomologacao { position: fixed; left: 34%; } 
+            }
+        </style>
+
+        <div class="d-sm-inline-block w-100" style="height: 50px;">
+
+            <h:commandLink id="sidebarToggleTop" styleClass="btn btn-link d-md-none rounded-circle mt10 fonteTopo" style="float:left;height: 50px;" action="#{LoginControle.vizualizarMenuVisaoAluno}">
+                <i class="fa fa-bars fonteTopo "></i>
+            </h:commandLink>
+
+            <h:panelGroup id="box-user-total" style="float: left; height: 50px;">
+                <h:panelGroup id="box-user" style="float: left;height: 50px;">
+                    <h:graphicImage styleClass="foto-topo-visao" rendered="#{!empty LoginControle.caminhoFotoUsuario }" value="#{LoginControle.caminhoFotoUsuario}" />
+                    <h:panelGroup rendered="#{empty LoginControle.caminhoFotoUsuario }" styleClass="fa fa-fw fa-user fonteTopo foto-topo-visao">
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup styleClass="label-topo-visao" style="height:50px">                              
+                    <h:panelGroup  style="display:ruby;display: -webkit-box;">                  
+                      <h:outputText styleClass="fields control-label btn-block fs16 ml-2 mt-2 fonteTopo" style="line-height: 20px;" value="Olá #{LoginControle.usuarioLogado.nome}" />
+                      <h:outputText styleClass="fields control-label btn-block fs16 ml-2 mt-2 fonteTopo" style="line-height: 20px;" value="Registro Acadêmico:  #{LoginControle.usuarioLogado.pessoa.registroAcademico}" />                
+                    </h:panelGroup>             
+                    
+                    <p:commandLink rendered="#{LoginControle.permissaoAcessoMenuVO.aluno and VisaoAlunoControle.nomeTelaAtual ne '/visaoAluno/dadosPessoaisAluno.xhtml'}" id="btnDadosPessoais" action="#{VisaoAlunoControle.editarDadosPessoa}">
+                        <i class="fas fa-user-edit ml-2 mr-2 fs10 fonteTopo" style="line-height: 15px;"></i>
+                    </p:commandLink>
+                    
+                    <p:commandLink rendered="#{LoginControle.permissaoAcessoMenuVO.configuracoesAlteracaoSenha and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}" action="#{VisaoAlunoControle.inicializarMenuSenha}" oncomplete="PF('alterarSenhaWidget').show()" update="formAlterarSenha" id="btnSenha">
+                        <i class="fas fa-key ml-2 mr-2 fs10 fonteTopo" style="line-height: 15px;"></i>
+                    </p:commandLink>
+                    
+                    <p:commandLink rendered="#{LoginControle.permissaoAcessoMenuVO.configuracoesAlteracaoFoto and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}" update="formImagem, formWebCamFotoUsuario" oncomplete="Webcam.reset(); PF('panelImagemWidget').show()" id="btnFoto" action="#{VisaoAlunoControle.limparMensagem}">
+                        <i class="fas fa-camera ml-2 mr-2 fs10 fonteTopo" style="line-height: 15px;"></i>
+                    </p:commandLink>
+                </h:panelGroup>
+                
+                <h:panelGroup rendered="#{LoginControle.permissaoAcessoMenuVO.aluno or (LoginControle.permissaoAcessoMenuVO.configuracoesVisao and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso)}">
+                    <div id="box-options-user" class="rounded backMenu close" style="position: fixed; top: 50px; max-width: 800px; width: auto; left: 5px; z-index: 300; padding: 10px; min-width: 250px; box-shadow: 3px 3px 3px 3px #5a5c69">
+                        <p:commandLink styleClass="fonteMenu btn-block" rendered="#{LoginControle.permissaoAcessoMenuVO.aluno}" disabled="#{VisaoAlunoControle.nomeTelaAtual eq '/visaoAluno/dadosPessoaisAluno.xhtml'}" id="clink03" action="#{VisaoAlunoControle.editarDadosPessoa}">
+                            <i class="fas fa-pencil-alt  fonteMenu iconeMenu"></i>
+                            <span class="fonteMenu">Dados Pessoais</span>
+                        </p:commandLink>
+
+                        <p:commandLink styleClass="fonteMenu btn-block" rendered="#{LoginControle.permissaoAcessoMenuVO.configuracoesAlteracaoSenha and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}" action="#{VisaoAlunoControle.inicializarMenuSenha}" oncomplete="PF('alterarSenhaWidget').show()" update="formAlterarSenha" id="clink03AS2">
+                            <i class="fas fa-key  fonteMenu iconeMenu"></i>
+                            <span class="fonteMenu">Alterar Senha</span>
+                        </p:commandLink>
+                        <p:commandLink styleClass="fonteMenu btn-block" rendered="#{LoginControle.permissaoAcessoMenuVO.configuracoesAlteracaoFoto and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}" update="formImagem, formWebCamFotoUsuario" oncomplete="Webcam.reset(); PF('panelImagemWidget').show()" id="clink03AF2" action="#{VisaoAlunoControle.limparMensagem}">
+                            <i class="fas fa-camera fonteMenu iconeMenu"></i>
+                            <span class="fonteMenu">Alterar Foto</span>
+                        </p:commandLink>
+                    </div>
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <h:panelGroup styleClass="panelHomologacao" style="z-index:10000;display:block;" rendered="#{!LoginControle.isAmbienteProducao}">
+                <h:graphicImage value="#{resource['imagens/aviso_homologacao.png']}" style="margin-top: 5px;" styleClass="iconeHomologacao" />
+            </h:panelGroup>
+
+            <h:panelGroup style="float:right;height: 50px;">
+                <h:graphicImage styleClass="logo-cliente-topo-visao mt10" url="#{LoginControle.urlLogoUnidadeEnsino}" />
+            </h:panelGroup>
+
+            <h:panelGroup style="float:right;height: 50px;" styleClass="border-right">
+                <h:commandLink id="btnLogout" styleClass="nav-link mt10 " style="height: 50px;" title="Sair (alt+x)" action="#{LoginControle.logoutVisao}" rendered="#{!VisaoAlunoControle.usuarioLogado.permiteSimularNavegacaoAluno }" >
+                    <i class="fas fa-sign-out-alt fonteTopo" style="font-size: 1.2rem"></i>
+                </h:commandLink>
+                <h:commandLink id="cmdEncerarSimulacao" styleClass="nav-link mt10 " style="height: 50px;" action="#{LoginControle.logoutVisao}" title="Encerrar" rendered="#{VisaoAlunoControle.usuarioLogado.permiteSimularNavegacaoAluno }" >
+                    <i class="fas fa-door-open fonteTopo" style="font-size: 1.2rem"></i>
+                </h:commandLink>
+            </h:panelGroup>
+            
+            <h:panelGroup styleClass="iconeTopoMenuExpansivo">
+                <a style="height: 50px; cursor: pointer" onclick="collapseIconeMenuTopo()"> <i class="fas fa-ellipsis-v" style="font-size: 1.2rem; margin-top: 18px"></i>
+                </a>
+            </h:panelGroup>
+            
+            <h:panelGroup id="box-icone-menu-topo" styleClass="iconeTopoMenuAdm">
+                <h:panelGroup rendered="#{LoginControle.permissaoAcessoMenuVO.linkVisoesMoodle and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}" style="float:right;height: 50px;">
+                    <p:hotkey bind="alt+4" handler="clickBotao('clinkMoodle')" />
+                    <p:commandLink styleClass="nav-link-icon  mt10 iconMoodle fonteTopo" id="clinkMoodle" title="#{msg_menu.Menu_linkVisoesMoodle}" action="#{VisaoAlunoControle.realizaLoginMoodle}" oncomplete="abrirPopup3('#{VisaoAlunoControle.urlMoodle}');">
+                        <i class="fab fa-maxcdn"  style="font-size: 1rem"></i>
+                    </p:commandLink>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{VisaoAlunoControle.nomeTelaAtual ne '/visaoAluno/recadoAluno.xhtml' and LoginControle.permissaoAcessoMenuVO.comunicacaoInterna and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}" style="float:right;height: 50px;">
+                    <h:panelGroup rendered="#{ComunicacaoInternaControle.apresentarQtdMensagemCaixaEntrada}">
+                        <p:hotkey bind="alt+3" handler="clickBotao('btnMsg')" />
+                        <a class="nav-link-icon  mt10 iconMsg fonteTopo" title="Acessar Caixa de Mensagem (alt+3)" id="btnMsg" style="cursor: pointer" onclick="collapseCaixaMensagem()"> 
+                        <i class="fas fa-envelope " id="iconMsg" style="font-size: 1rem"></i> <span class="text-alerta-contador">#{ComunicacaoInternaControle.qtdMensagemCaixaEntrada}</span>
+                        </a>
+                    </h:panelGroup>
+                    <p:commandLink styleClass="nav-link-icon  mt10 fonteTopo iconMsg2" title="Acessar Caixa de Mensagem (alt+3)" id="btnMsg2" rendered="#{!ComunicacaoInternaControle.apresentarQtdMensagemCaixaEntrada}" action="#{ComunicacaoInternaControle.consultarTodasMensagemCaixaEntradaParaAlunoOuPai}">
+                        <p:hotkey bind="alt+3" handler="clickBotao('btnMsg2')" />
+                        <i class="fas fa-envelope   " style="font-size: 1rem" ></i>
+                    </p:commandLink>
+
+                    <div id="box-options-email" class="rounded backMenu close" style="position: fixed; top: 50px; max-width: 800px; width: auto; right: 5px; z-index: 300; padding: 10px; min-width: 250px; box-shadow: 3px 3px 3px 3px #5a5c69; max-height: 400px; overflow: auto">
+                        <ui:repeat id="listaNovasMsgs" value="#{ComunicacaoInternaControle.listaConsultaTopo}" var="comunicacaoInternaItem">
+                            <h:panelGroup layout="block" styleClass="w-100 p-2 ">
+                                <p:commandLink action="#{ComunicacaoInternaControle.editarComunicadoTopoVisao}">
+                                    <h:panelGroup layout="block" styleClass="w-100" style="line-height:20px">
+                                        <h:outputText styleClass="fonteMenu iconeMenu fs10" value="#{comunicacaoInternaItem.assunto}"></h:outputText>
+
+                                        <h:panelGroup layout="block" styleClass="w-100" style="line-height:20px">
+                                            <h:outputText styleClass="fonteMenu iconeMenu fs8 pull-left" value="#{comunicacaoInternaItem.responsavel.nome}"></h:outputText>
+                                            <h:outputText styleClass="fonteMenu iconeMenu fs8 pull-right" value="#{comunicacaoInternaItem.data_Apresentar}"></h:outputText>
+                                            
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </p:commandLink>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="w-100  border-bottom p-2 ">
+                            </h:panelGroup>
+                        </ui:repeat>
+                        
+                        <h:panelGroup layout="block" styleClass="w-100  mt5 p-2 text-center">
+                            <p:commandLink styleClass="nav-link-icon  mt10 fonteTopo" title="Acessar Caixa de Mensagem (alt+3)" action="#{ComunicacaoInternaControle.consultarTodasMensagemCaixaEntradaParaAlunoOuPai}">
+                                <i class="fas fa-envelope  fonteMenu " style="font-size: 1rem"></i>
+                                <span class="fonteMenu">Acessar Caixa Mensagem</span>   
+                            </p:commandLink>
+                        </h:panelGroup>
+                    </div>
+                </h:panelGroup>
+                
+                <h:panelGroup rendered="#{LoginControle.aplicacaoControle.apresentarQRCODELoginAPP and VisaoAlunoControle.isApresentarMenusPrimeiroAcesso}" style="float:right;height: 50px;">
+                    <p:hotkey bind="alt+2" handler="clickBotao('iconBtnQrcode')" />
+                    <p:commandLink styleClass="nav-link-icon  mt10 iconQrCode fonteTopo " title="Logar App Aluno Via QRCode" id="iconBtnQrcode" update="formQRCodeLogin" oncomplete="PF('panelQRCodeLoginWidget').show();" action="#{VisaoAlunoControle.montarQRCodeLoginAplicativo}">
+                        <i class="fas fa-qrcode" id="iconQrCode" style="font-size: 1rem"></i>
+                    </p:commandLink>
+                </h:panelGroup>
+                <otm:preferenciaSistema id="preferencia"></otm:preferenciaSistema>
+
+            </h:panelGroup>
+
+        </div>
+
+    </h:form>
+</ui:composition>

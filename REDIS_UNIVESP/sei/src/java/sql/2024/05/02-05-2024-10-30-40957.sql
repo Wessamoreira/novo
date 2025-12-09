@@ -1,0 +1,2 @@
+delete from materialrequerimento m where arquivo = 0; -- chamado: 40957
+SELECT create_constraint('alter table materialrequerimento add constraint fk_materialrequerimento_arquivo foreign key (arquivo) references arquivo(codigo);');

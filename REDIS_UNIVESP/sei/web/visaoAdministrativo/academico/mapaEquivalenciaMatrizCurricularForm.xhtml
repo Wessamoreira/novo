@@ -1,0 +1,947 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+	<script type="text/javascript">
+		function setCaretToEnd(e) {
+			var control = $((e.target ? e.target : e.srcElement).id);
+			if (control.createTextRange) {
+				var range = control.createTextRange();
+				range.collapse(false);
+				range.select();
+			} else if (control.setSelectionRange) {
+				control.focus();
+				var length = control.value.length;
+				control.setSelectionRange(length, length);
+			}
+			control.selectionStart = control.selectionEnd = control.value.length;
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_tituloForm}" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" onshow="document.getElementById('formCurso:valorConsultaCurso').focus()" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_DisciplinasGradeRel_consultarCurso}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink13">
+						<rich:componentControl target="panelCurso" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{MapaEquivalenciaMatrizCurricularControle.campoConsultaCurso}">
+						<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemOpcaoConsultaCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCurso" size="20" styleClass="form-control campos" value="#{MapaEquivalenciaMatrizCurricularControle.valorConsultaCurso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCurso:mensagemConsultaCurso, formCurso:resultadoConsultaCurso, formCurso:scResultadoCurso" action="#{MapaEquivalenciaMatrizCurricularControle.consultarCurso}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCurso" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MapaEquivalenciaMatrizCurricularControle.listaConsultaCurso}" rows="5" var="cursoItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaEquivalenciaMatrizCurricularControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{cursoItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaEquivalenciaMatrizCurricularControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{cursoItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MapaEquivalenciaMatrizCurricularControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="formCurso:resultadoConsultaCurso" maxPages="10" id="scResultadoCurso" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCurso" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MapaEquivalenciaMatrizCurricularControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCursoDisciplinaEquivalente" autosized="true" shadowOpacity="true" width="550" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_DisciplinasGradeRel_consultarCurso}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkCursoDisciplinaEquivalente" />
+					<rich:componentControl target="panelCursoDisciplinaEquivalente" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCursoDisciplinaEquivalente">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{MapaEquivalenciaMatrizCurricularControle.campoConsultaCurso}">
+						<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemOpcaoConsultaCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCurso" size="20" styleClass="form-control campos" value="#{MapaEquivalenciaMatrizCurricularControle.valorConsultaCurso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCursoDisciplinaEquivalente:mensagemConsultaCurso, formCursoDisciplinaEquivalente:resultadoConsultaCursoBuscaEquivalente, formCursoDisciplinaEquivalente:scResultadoCursoBuscaEquivalente" action="#{MapaEquivalenciaMatrizCurricularControle.consultarCurso}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCursoBuscaEquivalente" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MapaEquivalenciaMatrizCurricularControle.listaConsultaCurso}" rows="5" var="cursoBuscaEquivalente">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaEquivalenciaMatrizCurricularControle.selecionarCursoBuscaDisciplinaEquivalente}" render="form, formDisciplina" oncomplete="#{rich:component('panelCursoDisciplinaEquivalente')}.hide()" value="#{cursoBuscaEquivalente.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MapaEquivalenciaMatrizCurricularControle.selecionarCursoBuscaDisciplinaEquivalente}" render="form, formDisciplina" oncomplete="#{rich:component('panelCursoDisciplinaEquivalente')}.hide()" value="#{cursoBuscaEquivalente.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MapaEquivalenciaMatrizCurricularControle.selecionarCursoBuscaDisciplinaEquivalente}" render="form, formDisciplina" oncomplete="#{rich:component('panelCursoDisciplinaEquivalente')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="formCursoDisciplinaEquivalente:resultadoConsultaCursoBuscaEquivalente" maxPages="10" id="scResultadoCursoBuscaEquivalente" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCurso" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MapaEquivalenciaMatrizCurricularControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplina" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Consultar Disciplina Equivalente"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkDisciplina">
+						<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="#{MapaEquivalenciaMatrizCurricularControle.apresentarBuscaCursoDisciplinaEquivalente ? 'col-md-7':'col-md-12'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5" rendered="#{MapaEquivalenciaMatrizCurricularControle.apresentarBuscaCursoDisciplinaEquivalente}">
+						<h:outputText rendered="#{MapaEquivalenciaMatrizCurricularControle.apresentarBuscaCursoDisciplinaEquivalente}" styleClass="field control-label tituloCampos" value="Curso Específico" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:selectOneMenu styleClass="form-control campos" id="consultaDisciplina" value="#{MapaEquivalenciaMatrizCurricularControle.campoConsultaDisciplina}">
+							<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemOpcaoConsultaCurso}" />
+							<a4j:ajax render="formDisciplina" event="change"/>
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<h:inputText id="valorConsultaDisciplina" size="20" styleClass="form-control campos" value="#{MapaEquivalenciaMatrizCurricularControle.valorConsultaDisciplina}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5" rendered="#{MapaEquivalenciaMatrizCurricularControle.apresentarBuscaCursoDisciplinaEquivalente}">
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText styleClass="form-control camposSomenteLeitura" readonly="true" value="#{MapaEquivalenciaMatrizCurricularControle.cursoBuscaDisciplinaEquivalente.nome}" />
+							<span class="append-icon right"> <otm:commandIcon render="formCursoDisciplinaEquivalente" oncomplete="#{rich:component('panelCursoDisciplinaEquivalente')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon render="formDisciplina" action="#{MapaEquivalenciaMatrizCurricularControle.limparCursoDisciplinaEquivalente}" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+
+
+					<h:panelGroup layout="block" styleClass="col-md-6 mb5" rendered="#{MapaEquivalenciaMatrizCurricularControle.apresentarBuscaGradeCursoDisciplinaEquivalente}">
+						<h:outputText styleClass="field control-label tituloCampos" rendered="#{MapaEquivalenciaMatrizCurricularControle.apresentarBuscaGradeCursoDisciplinaEquivalente}" value="Matriz Curricular Específica" />
+						<h:selectOneMenu rendered="#{MapaEquivalenciaMatrizCurricularControle.apresentarBuscaGradeCursoDisciplinaEquivalente}" styleClass="form-control campos" value="#{MapaEquivalenciaMatrizCurricularControle.gradeBuscarDisciplinaEquivalente.codigo}">
+							<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemGradeBuscarDisciplinaEquivalente}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row text-center mt10">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<otm:commandButton id="btnConsultarDisciplina" render="formDisciplina" action="#{MapaEquivalenciaMatrizCurricularControle.consultarDisciplina}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaDisciplina" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MapaEquivalenciaMatrizCurricularControle.listaConsultaDisciplina}" rows="5" var="disciplinaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText styleClass="field control-label tituloCampos" value="#{disciplinaItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Abreviatura" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText styleClass="field control-label tituloCampos" value="#{disciplinaItem.abreviatura}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome Disciplina" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText styleClass="field control-label tituloCampos" value="#{disciplinaItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Carga Horária" />
+						</f:facet>
+						<h:panelGroup>
+							<h:inputText size="4" onkeydown="aceitarSomenteValorNumerico(this)" styleClass="form-control camposObrigatorios" value="#{disciplinaItem.cargaHorariaPrevista}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MapaEquivalenciaMatrizCurricularControle.adicionarMapaEquivalenciaDisciplinaCursada}" render="form" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" for="formDisciplina:resultadoConsultaDisciplina" maxPages="10" id="scResultadoDisciplina" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaDisciplina" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MapaEquivalenciaMatrizCurricularControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplinaPendente" shadowOpacity="true" width="750" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Disciplina Matriz Curricular sem Equivalência"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkDisciplinaPendente">
+						<rich:componentControl target="panelDisciplinaPendente" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplinaPendente">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable render="scResultadoDisciplinaPendente" id="resultadoConsultaDisciplinaPendente" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MapaEquivalenciaMatrizCurricularControle.listaDisciplinaSemEquivalencia}" rows="5" var="disciplinaItem">
+						<rich:column width="15%" filterType="custom" filter="#{FilterFactory.filter('codigoDisciplina', 'codigo', 'INTEIRO')}">
+							<f:facet name="header">
+								<h:panelGroup columns="1" width="100%" columnClasses="colunaCentralizada">
+									<h:outputText value="Código" />
+									<h:inputText id="filtroCodigoDisciplina" styleClass="form-control rich-filter-input" onkeydown="aceitarSomenteValorNumerico(this)" value="#{FilterFactory.filter('codigoDisciplina', 'codigo', 'INTEIRO').filtro}">
+										<a4j:ajax event="change" render="formDisciplinaPendente:resultadoConsultaDisciplinaPendente , formDisciplinaPendente:scResultadoDisciplinaPendente" />
+									</h:inputText>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{MapaEquivalenciaMatrizCurricularControle.adicionarMapaEquivalenciaDisciplinaMatrizCurricularSemEquivalencia}" render="formDisciplinaPendente, form:listaDisciplinasSemEquivalentes, form:groupDisciplinaSemEquivalencia, form:panelEquivalencia" value="#{disciplinaItem.codigo}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column width="15%" filterType="custom" filter="#{FilterFactory.filter('NomeAbreviaturaDisciplina', 'abreviatura', 'TEXTO')}">
+							<f:facet name="header">
+								<h:panelGroup columns="1" width="100%" columnClasses="colunaCentralizada">
+									<h:outputText value="Abreviatura" />
+									<h:inputText id="filtroNomeAbreviaturaDisciplina" styleClass="form-control rich-filter-input" value="#{FilterFactory.filter('NomeAbreviaturaDisciplina', 'abreviatura', 'TEXTO').filtro}">
+										<a4j:ajax event="change" render="resultadoConsultaDisciplinaPendente , scResultadoDisciplinaPendente" />
+									</h:inputText>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{MapaEquivalenciaMatrizCurricularControle.adicionarMapaEquivalenciaDisciplinaMatrizCurricularSemEquivalencia}" render="formDisciplinaPendente, form:listaDisciplinasSemEquivalentes, form:groupDisciplinaSemEquivalencia, form:panelEquivalencia" value="#{disciplinaItem.abreviatura}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column width="50%" filterType="custom" filter="#{FilterFactory.filter('nomeDisciplina', 'nome', 'TEXTO')}">
+							<f:facet name="header">
+								<h:panelGroup columns="1" width="100%" columnClasses="colunaCentralizada">
+									<h:outputText value="Nome Disciplina" />
+									<h:inputText id="filtroNomeDisciplina" styleClass="form-control rich-filter-input" value="#{FilterFactory.filter('nomeDisciplina', 'nome', 'TEXTO').filtro}">
+										<a4j:ajax event="change" render="resultadoConsultaDisciplinaPendente , scResultadoDisciplinaPendente" />
+									</h:inputText>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{MapaEquivalenciaMatrizCurricularControle.adicionarMapaEquivalenciaDisciplinaMatrizCurricularSemEquivalencia}" render="formDisciplinaPendente, form:listaDisciplinasSemEquivalentes, form:groupDisciplinaSemEquivalencia, form:panelEquivalencia" value="#{disciplinaItem.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column width="15%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Disciplina_cargaHoraria}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{MapaEquivalenciaMatrizCurricularControle.adicionarMapaEquivalenciaDisciplinaMatrizCurricularSemEquivalencia}" render="formDisciplinaPendente, form:listaDisciplinasSemEquivalentes, form:groupDisciplinaSemEquivalencia, form:panelEquivalencia" value="#{disciplinaItem.cargaHorariaPrevista}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column width="15%" filterType="custom" filter="#{FilterFactory.filter('periodoLetivo', 'descricaoPeriodoLetivo', 'TEXTO')}">
+							<f:facet name="header">
+								<h:panelGroup columns="1" width="100%" columnClasses="colunaCentralizada">
+									<h:outputText value="Periodo Letivo / Grupo Optativa" />
+									<h:inputText id="filtroOrigemDisciplina" styleClass="form-control rich-filter-input" value="#{FilterFactory.filter('periodoLetivo', 'descricaoPeriodoLetivo', 'TEXTO').filtro}">
+										<a4j:ajax event="change" render="resultadoConsultaDisciplinaPendente , scResultadoDisciplinaPendente" />
+									</h:inputText>
+								</h:panelGroup>
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink action="#{MapaEquivalenciaMatrizCurricularControle.adicionarMapaEquivalenciaDisciplinaMatrizCurricularSemEquivalencia}" render="formDisciplinaPendente, form:listaDisciplinasSemEquivalentes, form:groupDisciplinaSemEquivalencia, form:panelEquivalencia" value="#{disciplinaItem.descricaoPeriodoLetivo}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column width="5%" style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon style="margin:0px" action="#{MapaEquivalenciaMatrizCurricularControle.adicionarMapaEquivalenciaDisciplinaMatrizCurricularSemEquivalencia}" render="formDisciplinaPendente, form:listaDisciplinasSemEquivalentes, form:groupDisciplinaSemEquivalencia, form:panelEquivalencia" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" alt="#{msg.msg_selecionar_dados}" />
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller align="center" renderIfSinglePage="false" for="formDisciplinaPendente:resultadoConsultaDisciplinaPendente" boundaryControls="auto" stepControls="auto" fastControls="hide" maxPages="10" id="scResultadoDisciplinaPendente" />
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup id="mensagemConsultaDisciplinaPendente" columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{MapaEquivalenciaMatrizCurricularControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplinaMatriz" shadowOpacity="true" width="550" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Disciplina Matriz Curricular"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkDisciplinaMatriz">
+						<rich:componentControl target="panelDisciplinaMatriz" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplinaMatriz">
+				<h:panelGroup columns="1" width="100%">
+					<h:panelGroup columns="2" id="disciplinasMatriz" columnClasses="colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada" width="100%">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_tipoDisciplina}" />
+						<h:selectOneMenu style="width:400px" styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.tipoDisciplinaMatriz}">
+							<a4j:ajax event="change" listener="#{MapaEquivalenciaMatrizCurricularControle.montarDadosDisciplina}" render="disciplinasMatriz" />
+							<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemTipoConsultaDisciplina}" />
+						</h:selectOneMenu>
+						<h:outputText rendered="#{MapaEquivalenciaMatrizCurricularControle.tipoDisciplinaMatriz == 'periodoLetivo'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_periodoLetivo}" />
+						<h:outputText rendered="#{MapaEquivalenciaMatrizCurricularControle.tipoDisciplinaMatriz != 'periodoLetivo'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_grupoOptativa}" />
+
+						<h:selectOneMenu style="width:400px" styleClass="form-control camposObrigatorios" rendered="#{MapaEquivalenciaMatrizCurricularControle.tipoDisciplinaMatriz == 'periodoLetivo'}" value="#{MapaEquivalenciaMatrizCurricularControle.periodoLetivo}">
+							<a4j:ajax event="change" listener="#{MapaEquivalenciaMatrizCurricularControle.montarDadosDisciplina}" render="disciplinasMatriz" />
+							<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemPeriodoLetivo}" />
+						</h:selectOneMenu>
+						<h:selectOneMenu style="width:400px" styleClass="form-control camposObrigatorios" rendered="#{MapaEquivalenciaMatrizCurricularControle.tipoDisciplinaMatriz != 'periodoLetivo'}" value="#{MapaEquivalenciaMatrizCurricularControle.grupoOptativa}">
+							<a4j:ajax event="change" listener="#{MapaEquivalenciaMatrizCurricularControle.montarDadosDisciplina}" render="disciplinasMatriz" />
+							<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemGrupoOptativa}" />
+						</h:selectOneMenu>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_disciplina}" />
+						<h:panelGroup>
+							<h:selectOneMenu style="width:400px" styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.codigoOrigemDisciplina}">
+								<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemDisciplina}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup columns="1" columnClasses="colunaCentralizada" width="100%">
+						<otm:commandButton id="btnAddDisciGrade" render="form:panelGridMensagens, form:disMatrizCurricular, mensagemConsultaDisciplinaPMatriz" action="#{MapaEquivalenciaMatrizCurricularControle.adicionarMapaEquivalenciaDisciplinaMatrizCurricular}" value="#{msg_botoes.btn_adicionar}" image="#{resource['imagens/botaoAdicionarDisciplina.png']}" alt="#{msg.msg_adicionar_dados}" />
+					</h:panelGroup>
+					<h:panelGroup id="mensagemConsultaDisciplinaPMatriz" columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{MapaEquivalenciaMatrizCurricularControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup id="dadosBasicos">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_descricao}" />
+						<h:inputText size="78" styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.descricao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" id="curso">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_curso}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText size="90" readonly="true" styleClass="form-control camposSomenteLeituraObrigatorio" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.curso.nome}" />
+							<span class="append-icon right"> <otm:commandIcon rendered="#{empty MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.mapaEquivalenciaDisciplinaVOs}" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-10">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_matrizCurricular}" />
+						<h:selectOneMenu id="gradeCurricular" disabled="#{!empty MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.mapaEquivalenciaDisciplinaVOs}" styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.gradeCurricular.codigo}">
+							<a4j:ajax event="change" listener="#{MapaEquivalenciaMatrizCurricularControle.alterarMatrizCurricular}" render="form:disciplinasMatriz, form:disMatrizCurricular" />
+							<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemGradeCurricular}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_situacao}" />
+						<h:inputText size="20" readonly="true" styleClass="form-control camposSomenteLeituraObrigatorio" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.situacao.valorApresentar}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<style>
+.tituloCampos2 {
+	color: #929599 !important;
+	font-size: 14px;
+	font-weight: 510;
+	line-height: 23px !important;
+}
+
+.tituloCampos3 {
+	color: #929599 !important;
+	font-size: 11px;
+	font-weight: 510;
+	line-height: 23px !important;
+}
+
+.row-overflow::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #c7c7c7 !important;
+	scrollbar-color: #c7c7c7 transparent !important;
+	height: 20px !important;
+}
+</style>
+				<h:panelGroup id="panelEquivalencia" layout="block" styleClass="row mn" style="margin-top: 5px !important">
+
+					<h:panelGroup layout="block" styleClass="col-md-4 pn" style="width: 34%; margin-right: 5px;" id="disEquivalente">
+						<h:panelGroup layout="block" styleClass="col-md-12 pn border bg-gray" style="padding: 5px !important; border-radius: 5px 5px 0px 0px">
+							<h:outputText styleClass="tituloCampos font-weight-bold col-md-6" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_disciplinaEquivalente}" />
+							<a4j:commandLink id="btnAddDisciEqs" oncomplete="#{rich:component('panelDisciplina')}.show();" render="formDisciplina">
+								<h:outputText styleClass="btn btn-primary" value="Adicionar Disciplina" />
+							</a4j:commandLink>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 pn border row-overflow" style="border-radius: 0px 0px 5px 5px; max-height: 311px;" id="mapaEquivalenciaDisciplinaCursadaVOs">
+							<h:panelGroup layout="block" styleClass="col-md-12 pb5 mb5" style="border-bottom: solid 2px #cacaca; border-radius: 0px 0px 5px 5px">
+								<h:panelGroup layout="block" styleClass="col-md-5 text-center">
+									<h:outputText styleClass="tituloCampos2" value="Disciplina" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-5 text-center">
+									<h:outputText styleClass="tituloCampos2" value="Carga Horaria" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+									<h:outputText styleClass="tituloCampos2" value="Opções" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<a4j:repeat value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.mapaEquivalenciaDisciplinaCursadaVOs}" var="mapaEquivalenciaDisciplinaCursadaItem">
+								<h:panelGroup layout="block" styleClass="col-md-12 pb5 mb5" style="border-bottom: solid 2px #cacaca; border-radius: 5px 5px 0px 0px">
+									<h:panelGroup layout="block" styleClass="col-md-5 text-center">
+										<h:outputText styleClass="tituloCampos3" value="#{mapaEquivalenciaDisciplinaCursadaItem.disciplinaVO.abreviatura} - #{mapaEquivalenciaDisciplinaCursadaItem.disciplinaVO.nome}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-5 text-center">
+										<h:panelGroup layout="block" styleClass="col-md-2" />
+										<h:panelGroup layout="block" styleClass="col-md-8">
+											<h:inputText styleClass="form-control camposObrigatorios" size="4" onkeydown="aceitarSomenteValorNumerico(this)" maxlength="20" value="#{mapaEquivalenciaDisciplinaCursadaItem.cargaHoraria}">
+												<a4j:ajax event="change" render="this" />
+											</h:inputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+										<otm:commandIcon id="removerDisciEq" render="form:panelGridMensagens, form:mapaEquivalenciaDisciplinaCursadaVOs" action="#{MapaEquivalenciaMatrizCurricularControle.removerMapaEquivalenciaDisciplinaCursada}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" alt="#{msg.msg_remover_dados}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 border-top pt5 mt5" rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.tipoRegraNotaEquivalencia == 'FORMULA_CALCULO'}">
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="tituloCampos3" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_variavelNota}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-9">
+											<h:inputText size="10" maxlength="20" styleClass="form-control camposObrigatorios" value="#{mapaEquivalenciaDisciplinaCursadaItem.variavelNota}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</a4j:repeat>
+						</h:panelGroup>
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" styleClass="col-md-4 pn" style="width: 32%; margin-right: 5px;">
+						<h:panelGroup layout="block" styleClass="col-md-12 pn border bg-gray" style="padding: 5px !important; border-radius: 5px 5px 0px 0px">
+							<h:outputText styleClass="tituloCampos font-weight-bold col-md-6" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_regrasEquivalencia}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 pn border" style="border-radius: 0px 0px 5px 5px;" id="regras">
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<otm:outputHelp id="helpTipoRegraCargaHorariaEquivalencia" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_tipoRegraCargaHorariaEquivalencia}">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaInicio}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaSCH}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaCHM}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaMCH}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaMD}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaTermino}" />
+									</h:panelGroup>
+								</otm:outputHelp>
+								<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.tipoRegraCargaHorariaEquivalencia}">
+									<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemTipoRegraCargaHorariaEquivalencia}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<otm:outputHelp id="helpTipoRegraFrequenciaEquivalencia" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_tipoRegraFrequenciaEquivalencia}">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaInicio}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaMD}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaFP}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaSF}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaMF}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaTermino}" />
+									</h:panelGroup>
+								</otm:outputHelp>
+								<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.tipoRegraFrequenciaEquivalencia}">
+									<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemTipoRegraFrequenciaEquivalencia}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<otm:outputHelp id="helpTipoRegraAnoSemestreEquivalencia" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_tipoRegraAnoSemestreEquivalencia}">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaInicio}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaAT}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaMA}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaME}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaTermino}" />
+									</h:panelGroup>
+								</otm:outputHelp>
+								<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.tipoRegraAnoSemestreEquivalencia}">
+									<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemTipoRegraAnoSemestreEquivalencia}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<otm:outputHelp id="helpTipoRegraPeriodoLetivo" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_tipoRegraPeriodoLetivo}">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoInicio}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoPAN}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoPAT}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoPMC}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoTermino}" />
+									</h:panelGroup>
+								</otm:outputHelp>
+								<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.tipoRegraPeriodoLetivo}">
+									<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemTipoRegraPeriodoLetivo}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.tipoRegraNotaEquivalencia == 'FORMULA_CALCULO' ? 'col-md-6' : 'col-md-12'}">
+								<otm:outputHelp id="helpTipoRegraNotaEquivalencia" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_tipoRegraNotaEquivalencia}">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaInicio}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaFC}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaMN}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaSN}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaMD}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaTermino}" />
+									</h:panelGroup>
+								</otm:outputHelp>
+								<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.tipoRegraNotaEquivalencia}">
+									<a4j:ajax event="change" render="form:regras, form:disEquivalente" />
+									<f:selectItems value="#{MapaEquivalenciaMatrizCurricularControle.listaSelectItemTipoRegraNotaEquivalencia}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.tipoRegraNotaEquivalencia == 'FORMULA_CALCULO'}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_formulaCalculoNota}" />
+								<h:inputText rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.tipoRegraNotaEquivalencia == 'FORMULA_CALCULO'}" styleClass="form-control camposObrigatorios" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.formulaCalculoNota}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_observacao}" />
+								<h:inputTextarea rows="2" styleClass="form-control campos" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.observacao}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<otm:outputHelp id="helpEquivalenciaPorIsencao2" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_equivalenciaPorIsencao}">
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpEquivalenciaPorIsencaoInicio}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpEquivalenciaPorIsencaoSim}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpEquivalenciaPorIsencaoNao}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-12 pn" width="450px">
+										<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpEquivalenciaPorIsencaoTermino}" />
+									</h:panelGroup>
+								</otm:outputHelp>
+								<otm:selectBooleanCheckbox id="equivalenciaPorIsencao" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.equivalenciaPorIsencao}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" styleClass="col-md-4 pn row-overflow" style="width: 34%;">
+						<h:panelGroup layout="block" styleClass="col-md-12 pn border bg-gray" style="padding: 5px !important; border-radius: 5px 5px 0px 0px">
+							<h:outputText styleClass="tituloCampos font-weight-bold col-md-6" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_disciplinaMatrizCurricular}" />
+							<a4j:commandLink id="btnAddDisciMatriz2" oncomplete="#{rich:component('panelDisciplinaPendente')}.show();" render="formDisciplinaPendente" action="#{MapaEquivalenciaMatrizCurricularControle.consultarDisciplinaSemEquivalencia}">
+								<h:outputText styleClass="btn btn-primary" value="Adicionar Disciplina" />
+							</a4j:commandLink>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 pn border row-overflow" style="border-radius: 0px 0px 5px 5px; max-height: 311px;" id="disMatrizCurricular">
+							<h:panelGroup layout="block" styleClass="col-md-12 pb5 mb5" style="border-bottom: solid 2px #cacaca; border-radius: 0px 0px 5px 5px">
+								<h:panelGroup layout="block" styleClass="col-md-5 text-center">
+									<h:outputText styleClass="tituloCampos2" value="Disciplina" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-5 text-center">
+									<h:outputText styleClass="tituloCampos2" value="Carga Horaria" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+									<h:outputText styleClass="tituloCampos2" value="Opções" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<a4j:repeat value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaDisciplinaVO.mapaEquivalenciaDisciplinaMatrizCurricularVOs}" var="mapaEquivalenciaDisciplinaMatrizCurricularItem">
+								<h:panelGroup layout="block" styleClass="col-md-12 pb5 mb5" style="border-bottom: solid 2px #cacaca; border-radius: 5px 5px 0px 0px">
+									<h:panelGroup layout="block" styleClass="col-md-5 text-center">
+										<h:outputText styleClass="tituloCampos3" value="#{mapaEquivalenciaDisciplinaMatrizCurricularItem.disciplinaVO.abreviatura} - #{mapaEquivalenciaDisciplinaMatrizCurricularItem.disciplinaVO.nome}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-5 text-center">
+										<h:outputText styleClass="tituloCampos3" value="#{mapaEquivalenciaDisciplinaMatrizCurricularItem.cargaHoraria}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+										<otm:commandIcon id="removerAddDisciGrade" render="form:panelGridMensagens, form:disMatrizCurricular" action="#{MapaEquivalenciaMatrizCurricularControle.removerMapaEquivalenciaDisciplinaMatrizCurricular}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" alt="#{msg.msg_remover_dados}" />
+									</h:panelGroup>
+								</h:panelGroup>
+							</a4j:repeat>
+						</h:panelGroup>
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+						<otm:commandButton id="btnAddDisciEq" render="form" action="#{MapaEquivalenciaMatrizCurricularControle.adicionarMapaEquivalenciaDisciplina}" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="Adicionar à Lista" alt="#{msg.msg_adicionar_dados}" />
+					</h:panelGroup>
+
+				</h:panelGroup>
+				<h:panelGroup id="equivalencias">
+					<rich:dataTable rendered="#{!empty MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.mapaEquivalenciaDisciplinaVOs}" value="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.mapaEquivalenciaDisciplinaVOs}" var="mapaEquivalenciaDisciplinaItem" id="idMapaEquivalenciaDisciplinaVOs" width="100%" headerClass="consulta">
+						<rich:column width="2%">
+							<f:facet name="header">
+								<h:outputText value="Nº" />
+							</f:facet>
+							<h:outputText value="#{mapaEquivalenciaDisciplinaItem.sequencia}" />
+						</rich:column>
+						<rich:column width="30%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_disciplinaEquivalente}" />
+							</f:facet>
+							<a4j:repeat value="#{mapaEquivalenciaDisciplinaItem.mapaEquivalenciaDisciplinaCursadaVOs}" var="mapaEquivalenciaDisciplinaCursadaVOItem">
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom pb5 mb5">
+									<h:outputText styleClass="fs11" rendered="#{mapaEquivalenciaDisciplinaCursadaVOItem.cargaHoraria gt 0}" value="(#{mapaEquivalenciaDisciplinaCursadaVOItem.disciplinaApresentar}) " />
+									<h:outputText styleClass="fs11" rendered="#{mapaEquivalenciaDisciplinaCursadaVOItem.cargaHoraria eq 0}" value="(#{mapaEquivalenciaDisciplinaCursadaVOItem.disciplinaVO.codigo}) - (#{mapaEquivalenciaDisciplinaCursadaVOItem.disciplinaVO.nome}) - (CH:" />
+									<h:inputText size="5" styleClass="form-control camposObrigatorios" rendered="#{mapaEquivalenciaDisciplinaCursadaVOItem.cargaHoraria == 0}" onkeydown="aceitarSomenteValorNumerico(this)" value="#{mapaEquivalenciaDisciplinaCursadaVOItem.cargaHoraria}">
+										<a4j:ajax event="change" render="this" />
+									</h:inputText>
+								</h:panelGroup>
+							</a4j:repeat>
+						</rich:column>
+						<rich:column width="30%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_disciplinaMatrizCurricular}" />
+							</f:facet>
+							<a4j:repeat value="#{mapaEquivalenciaDisciplinaItem.mapaEquivalenciaDisciplinaMatrizCurricularVOs}" var="mapaEquivalenciaDisciplinaMatrizCurricularVOItem">
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom pb5 mb5">
+									<h:outputText styleClass="fs11" value="#{mapaEquivalenciaDisciplinaMatrizCurricularVOItem.disciplinaApresentar}" />
+								</h:panelGroup>
+							</a4j:repeat>
+						</rich:column>
+						<rich:column style="text-align:center" width="4%">
+							<f:facet name="header">
+								<h:panelGroup>
+									<otm:outputHelp id="helpTipoRegraCargaHorariaEquivalencia2" styleClass=" " value="C.H.">
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="350px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaInicio}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="350px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaSCH}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="350px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaCHM}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="350px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaMCH}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="350px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaMD}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="350px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpRegraCargaHorariaTermino}" />
+										</h:panelGroup>
+									</otm:outputHelp>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText title="#{mapaEquivalenciaDisciplinaItem.tipoRegraCargaHorariaEquivalencia.valorApresentar}" value="#{mapaEquivalenciaDisciplinaItem.tipoRegraCargaHorariaEquivalencia.siglaApresentar}" />
+						</rich:column>
+						<rich:column style="text-align:center" width="4%">
+							<f:facet name="header">
+								<h:panelGroup>
+									<otm:outputHelp value="Freq." id="helpTipoRegraFrequenciaEquivalencia2" styleClass=" ">
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaInicio}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaMD}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaFP}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaSF}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaMF}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraFrequenciaEquivalenciaTermino}" />
+										</h:panelGroup>
+									</otm:outputHelp>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText title="#{mapaEquivalenciaDisciplinaItem.tipoRegraFrequenciaEquivalencia.valorApresentar}" value="#{mapaEquivalenciaDisciplinaItem.tipoRegraFrequenciaEquivalencia.siglaApresentar}" />
+						</rich:column>
+						<rich:column style="text-align:center" width="4%">
+							<f:facet name="header">
+								<h:panelGroup>
+									<otm:outputHelp id="helpTipoRegraAnoSemestreEquivalencia2" styleClass=" " value="Ano/Sem.">
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaInicio}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaAT}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaMA}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaME}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+											<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraAnoSemestreEquivalenciaTermino}" />
+										</h:panelGroup>
+									</otm:outputHelp>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText title="#{mapaEquivalenciaDisciplinaItem.tipoRegraAnoSemestreEquivalencia.valorApresentar}" value="#{mapaEquivalenciaDisciplinaItem.tipoRegraAnoSemestreEquivalencia.siglaApresentar}" />
+						</rich:column>
+						<rich:column style="text-align:center" width="4%">
+							<f:facet name="header">
+								<h:panelGroup>
+									<otm:outputHelp id="helpTipoRegraPeriodoLetivo2" value="Per. Mat." styleClass=" " />
+									<a4j:region>
+										<rich:tooltip direction="topLeft" layout="block" styleClass="tituloCamposTooltip" target="form:idMapaEquivalenciaDisciplinaVOs:helpTipoRegraPeriodoLetivo2:helpTipoRegraPeriodoLetivo2" style="z-index: 1000">
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoInicio}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoPAN}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoPAT}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoPMC}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraPeriodoLetivoTermino}" />
+											</h:panelGroup>
+										</rich:tooltip>
+									</a4j:region>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText title="#{mapaEquivalenciaDisciplinaItem.tipoRegraPeriodoLetivo.valorApresentar}" value="#{mapaEquivalenciaDisciplinaItem.tipoRegraPeriodoLetivo.siglaApresentar}" />
+						</rich:column>
+						<rich:column style="text-align:center" width="4%">
+							<f:facet name="header">
+								<h:panelGroup>
+									<otm:outputHelp id="helpTipoRegraNotaEquivalencia2" styleClass=" " value="Nota" />
+									<a4j:region>
+										<rich:tooltip direction="auto" layout="block" styleClass="tituloCamposTooltip" target="form:idMapaEquivalenciaDisciplinaVOs:helpTipoRegraNotaEquivalencia2:helpTipoRegraNotaEquivalencia2">
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaInicio}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaFC}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaMN}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaSN}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaMD}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpTipoRegraNotaEquivalenciaTermino}" />
+											</h:panelGroup>
+										</rich:tooltip>
+									</a4j:region>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText title="#{mapaEquivalenciaDisciplinaItem.tipoRegraNotaEquivalencia.valorApresentar} #{mapaEquivalenciaDisciplinaItem.tipoRegraNotaEquivalencia.siglaApresentar == 'FC'? ' - ': ' '} #{mapaEquivalenciaDisciplinaItem.formulaCalculoNota} " value="#{mapaEquivalenciaDisciplinaItem.tipoRegraNotaEquivalencia.siglaApresentar}" />
+						</rich:column>
+						<rich:column style="text-align:center" width="4%">
+							<f:facet name="header">
+								<h:panelGroup>
+									<otm:outputHelp id="helpEquivalenciaPorIsencao" styleClass=" " value="IS" />
+									<a4j:region>
+										<rich:tooltip direction="auto" layout="block" styleClass="tituloCamposTooltip" target="form:idMapaEquivalenciaDisciplinaVOs:helpEquivalenciaPorIsencao:helpEquivalenciaPorIsencao">
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpEquivalenciaPorIsencaoInicio}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpEquivalenciaPorIsencaoSim}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpEquivalenciaPorIsencaoNao}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" style="padding-left:10px;" width="450px">
+												<h:outputText escape="false" value="#{msg.msg_MapaEquivalenciaMatrizCurricular_helpEquivalenciaPorIsencaoTermino}" />
+											</h:panelGroup>
+										</rich:tooltip>
+									</a4j:region>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText rendered="#{mapaEquivalenciaDisciplinaItem.equivalenciaPorIsencao}" value="#{msg_botoes.btn_sim}" />
+							<h:outputText rendered="#{!mapaEquivalenciaDisciplinaItem.equivalenciaPorIsencao}" value="#{msg_botoes.btn_nao}" />
+						</rich:column>
+						<rich:column style="text-align:center" width="5%">
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<h:panelGroup layout="block">
+								<otm:commandIcon rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.situacaoEmConstrucao or mapaEquivalenciaDisciplinaItem.novoObj}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" action="#{MapaEquivalenciaMatrizCurricularControle.editarMapaEquivalenciaDisciplina}" render="form" />
+								<otm:commandIcon rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.situacaoEmConstrucao or mapaEquivalenciaDisciplinaItem.novoObj}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" action="#{MapaEquivalenciaMatrizCurricularControle.removerMapaEquivalenciaDisciplina}" render="form" />
+								<h:panelGroup id="obs">
+									<span class="#{msg_botoes.btn_icon_lupa} iconePequeno border-radius-all"></span>
+								</h:panelGroup>
+								<a4j:region>
+									<rich:tooltip direction="topLeft" followMouse="false" horizontalOffset="0" verticalOffset="0" layout="block" styleClass="tituloCamposTooltip" target="obs">
+										<h:panelGroup columns="2" style="padding-left:10px;" width="450px">
+											<h:panelGroup layout="block" styleClass="col-md-12">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaMatrizCurricular_observacao}" />
+												<h:inputTextarea styleClass="form-control campos" cols="60" rows="3" value="#{mapaEquivalenciaDisciplinaItem.observacao}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{mapaEquivalenciaDisciplinaItem.codigo lt 0}">
+												<h:outputText rendered="#{mapaEquivalenciaDisciplinaItem.codigo lt 0}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaDisciplina_dataCadastro}" />
+												<h:inputText readonly="true" size="18" styleClass="form-control camposSomenteLeitura" value="#{mapaEquivalenciaDisciplinaItem.dataCadastro}">
+													<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+												</h:inputText>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-10" rendered="#{mapaEquivalenciaDisciplinaItem.codigo lt 0}">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaDisciplina_usuarioCadastro}" />
+												<h:inputText readonly="true" size="30" styleClass="form-control camposSomenteLeitura" value="#{mapaEquivalenciaDisciplinaItem.usuarioCadastro.nome}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{mapaEquivalenciaDisciplinaItem.isInativo}">
+												<h:outputText rendered="#{mapaEquivalenciaDisciplinaItem.isInativo}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaDisciplina_dataInativacao}" />
+												<h:inputText readonly="true" size="18" styleClass="form-control camposSomenteLeitura" value="#{mapaEquivalenciaDisciplinaItem.dataInativacao}">
+													<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+												</h:inputText>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{mapaEquivalenciaDisciplinaItem.isInativo}">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaEquivalenciaDisciplina_usuarioInativacao}" />
+												<h:inputText readonly="true" size="30" styleClass="form-control camposSomenteLeitura" value="#{mapaEquivalenciaDisciplinaItem.usuarioInativacao.nome}" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</rich:tooltip>
+								</a4j:region>
+								<otm:commandIcon  tooltip="Ativar" rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.situacaoAtivo and  mapaEquivalenciaDisciplinaItem.isInativo}" icon="#{msg_botoes.btn_icon_ativar} iconePequeno" action="#{MapaEquivalenciaMatrizCurricularControle.realizarAtivacaoMapaEquivalenciaDisciplina}" render="form:panelGridMensagens, form:equivalencias, form:panelEquivalencia" />
+								<otm:commandIcon  tooltip="Inativar"  rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.situacaoAtivo and  mapaEquivalenciaDisciplinaItem.isAtivo}" icon="#{msg_botoes.btn_icon_inativar} iconePequeno" action="#{MapaEquivalenciaMatrizCurricularControle.realizarInativacaoMapaEquivalenciaDisciplina}" render="form:panelGridMensagens, form:equivalencias, form:panelEquivalencia" />
+							</h:panelGroup>
+						</rich:column>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagens" columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{MapaEquivalenciaMatrizCurricularControle}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<h:panelGroup>
+							<otm:commandButton id="novo" render="form" action="#{MapaEquivalenciaMatrizCurricularControle.novo}" icon="#{msg_botoes.btn_icon_novoArquivo_embutido}" styleClass="btn btn-info mr5" value="Novo" title="#{msg.msg_novo_dados}" accesskey="1" />
+							<otm:commandButton id="gravar" render="form:panelGridMensagens" action="#{MapaEquivalenciaMatrizCurricularControle.persistir}" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark mr5" value="Gravar" title="#{msg.msg_gravar_dados}" accesskey="2" />
+							<otm:commandButton id="excluir" rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.situacaoEmConstrucao}" render="form" action="#{MapaEquivalenciaMatrizCurricularControle.excluir}" icon="#{msg_botoes.btn_icon_remover_embutido}" styleClass="btn btn-danger mr5" value="Excluir" title="#{msg.msg_excluir_dados}" accesskey="3" />
+							<otm:commandButton id="consultar" action="#{MapaEquivalenciaMatrizCurricularControle.irPaginaConsulta}" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default mr5" value="Consultar" title="#{msg.msg_consultar_dados}" accesskey="4" />
+							<otm:commandButton rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.situacaoEmConstrucao}" id="ativar" render="form" action="#{MapaEquivalenciaMatrizCurricularControle.ativar}" icon="#{msg_botoes.btn_icon_ativar_embutido}" styleClass="btn btn-primary mr5" value="Ativar" title="#{msg.msg_ativar_dados}" accesskey="5" />
+							<otm:commandButton rendered="#{MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.situacaoAtivo}" id="inativar" render="form" action="#{MapaEquivalenciaMatrizCurricularControle.inativar}" icon="#{msg_botoes.btn_icon_inativar_embutido}" styleClass="btn btn-warning mr5" value="Inativar" title="#{msg.msg_inativar_dados}" accesskey="6" />
+							<otm:commandButton rendered="#{!MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.novoObj}" render="form" id="clonar" action="#{MapaEquivalenciaMatrizCurricularControle.clonar}" accesskey="7" icon="#{msg_botoes.btn_icon_clonar_embutido}" styleClass="btn btn-success mr5" value="Clonar" />
+							<otm:commandButton rendered="#{!MapaEquivalenciaMatrizCurricularControle.mapaEquivalenciaMatrizCurricularVO.novoObj}" render="form" id="imprimirPDF" oncomplete="#{MapaEquivalenciaMatrizCurricularControle.download}" action="#{MapaEquivalenciaMatrizCurricularControle.imprimirPDF}" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger" value="Gerar Relatório (PDF)" accesskey="7" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

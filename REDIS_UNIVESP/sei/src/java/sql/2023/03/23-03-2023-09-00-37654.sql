@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS configuracaogeralsistema ADD COLUMN IF NOT EXISTS apresentarDocumentoPortalTransparenciaComPendenciaAssinatura BOOLEAN DEFAULT false;

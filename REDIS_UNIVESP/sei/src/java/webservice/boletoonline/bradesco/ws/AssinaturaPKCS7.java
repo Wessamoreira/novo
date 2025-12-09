@@ -1,0 +1,56 @@
+package webservice.boletoonline.bradesco.ws;
+
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+
+public final class AssinaturaPKCS7 {
+    private static final String SIGNATUREALGO = "Sha256WithRSA";
+
+    public static CMSSignedDataGenerator setUpProvider(final KeyStore keystore, final char[] senha) throws Exception {
+        Security.addProvider(new BouncyCastleProvider());
+        if(keystore == null || keystore.aliases() == null) {
+        	throw new Exception("Nao foi possível encontrar o certificado de autenticação da remessa boleto on-line.");
+        }
+        final Enumeration<String> aliases = keystore.aliases();
+        String aliaz = "";
+        while (aliases.hasMoreElements()) {
+            aliaz = aliases.nextElement();
+            if (keystore.isKeyEntry(aliaz)) {
+                break;
+            }
+        }
+        final Certificate[] certchain = keystore.getCertificateChain(aliaz);
+        final List<Certificate> certlist = new ArrayList<>();
+        for (int i = 0, length = certchain == null ? 0 : certchain.length; i < length; i++) {
+            certlist.add(certchain[i]);
+        }
+        final Certificate cert = keystore.getCertificate(aliaz);
+        if(keystore.getKey(aliaz, senha) == null) {
+        	throw new Exception("Senha do certificado de autenticação da remessa boleto on-line está inválida.");
+        }
+        final ContentSigner signer = new JcaContentSignerBuilder(AssinaturaPKCS7.SIGNATUREALGO).setProvider("BC").build((PrivateKey) (keystore.getKey(aliaz, senha)));
+        final CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
+        generator.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().setProvider("BC").build()).build(signer, (X509Certificate) cert));
+        generator.addCertificates(new JcaCertStore(certlist));
+        return generator;
+    }
+
+    static byte[] signPkcs7(final CMSSignedDataGenerator generator, final byte[] content) throws Exception {
+        return generator.generate(new CMSProcessableByteArray(content), true).getEncoded();
+    }
+}

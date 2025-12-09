@@ -1,0 +1,1 @@
+alter table if exists expedicaodiploma alter column numeroProcesso type varchar(20);

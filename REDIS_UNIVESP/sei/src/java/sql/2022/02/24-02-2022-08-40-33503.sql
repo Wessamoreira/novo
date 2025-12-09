@@ -1,0 +1,1 @@
+alter table public.configuracaogeralsistema add column if not exists textoParaOrientacaoProjetoIntegrador text;

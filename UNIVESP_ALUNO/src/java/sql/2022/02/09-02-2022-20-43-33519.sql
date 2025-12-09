@@ -1,0 +1,1 @@
+alter table tiporequerimento add column if not exists permitirAlunoRejeitarDocumento boolean default false;

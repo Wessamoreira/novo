@@ -1,0 +1,10 @@
+ALTER TABLE IF EXISTS  pessoa    DROP CONSTRAINT IF EXISTS check_validar_celular_pessoa; 
+ALTER TABLE IF EXISTS  pessoa    DROP CONSTRAINT IF EXISTS check_validar_telefonecomer_pessoa;
+ALTER TABLE IF EXISTS  pessoa	 DROP CONSTRAINT IF EXISTS check_validar_telefonefiador_pessoa;
+ALTER TABLE if EXISTS  pessoa 	 DROP CONSTRAINT IF EXISTS check_validar_telefonerecado_pessoa;
+ALTER TABLE IF EXISTS  pessoa    DROP CONSTRAINT IF EXISTS check_validar_telefoneres_pessoa;
+ALTER TABLE IF EXISTS  prospects DROP CONSTRAINT IF EXISTS check_validar_celular_prospects;
+ALTER TABLE IF EXISTS  prospects DROP CONSTRAINT IF EXISTS check_validar_telefonecomercial_prospects;
+ALTER TABLE IF EXISTS  prospects DROP CONSTRAINT IF EXISTS check_validar_telefoneempresa_prospects;
+ALTER TABLE IF EXISTS  prospects DROP CONSTRAINT IF EXISTS check_validar_telefonerecado_prospects;
+ALTER TABLE IF EXISTS  prospects DROP CONSTRAINT IF EXISTS check_validar_telefoneresidencial_prospects;

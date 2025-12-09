@@ -1,0 +1,1 @@
+alter table if exists salaaulablackboardoperacao add column if not exists idSalaAulaBlackboardConteudoMaster varchar(255);

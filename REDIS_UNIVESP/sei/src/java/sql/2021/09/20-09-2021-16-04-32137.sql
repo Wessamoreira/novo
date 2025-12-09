@@ -1,0 +1,5 @@
+alter table agentenegativacaocobrancacontareceber alter column tipocontratoagentenegativacaocobrancaenum set default 'NOSSO_NUMERO';
+alter table registronegativacaocobrancacontareceberitem add column if not exists tipocontratoagentenegativacaocobrancaenum varchar(50) default 'NOSSO_NUMERO';
+alter table registronegativacaocobrancacontareceberitem add column if not exists matriculaperiodo int;
+update registronegativacaocobrancacontareceberitem set tipocontratoagentenegativacaocobrancaenum = 'NOSSO_NUMERO';
+update agentenegativacaocobrancacontareceber set tipocontratoagentenegativacaocobrancaenum = 'MATRICULA_PERIODO' where tipocontratoagentenegativacaocobrancaenum='MATRICULA';

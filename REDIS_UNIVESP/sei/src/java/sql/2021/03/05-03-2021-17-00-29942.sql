@@ -1,0 +1,1 @@
+ALTER TABLE pessoa ALTER COLUMN passaporte TYPE VARCHAR(70);

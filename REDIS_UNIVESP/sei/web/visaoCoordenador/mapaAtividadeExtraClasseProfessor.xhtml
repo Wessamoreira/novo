@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
+
+<ui:composition template="/visaoCoordenador/template/visaoCoordenador.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_mapaAtividadeExtraClasseProfessortitulo}" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+
+		<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+
+		<h:panelGrid columns="1" width="100%" styleClass="background:#fff;" style="margin-top: 20px">
+			<h:form id="form">
+				<h1 class="title1">Mapa Atividade Extra Classe do Professor</h1>
+				<h:panelGrid id="gridRelatorio" columns="2" width="100%">
+
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_TextoPadrao_professor}" />
+					<h:panelGroup>
+						<h:inputText size="15" style="margin-left: 3px" styleClass="camposSomenteLeitura" readonly="true" disabled="true" value="#{MapaAtividadeExtraClasseProfessorControle.funcionarioCargoVO.matriculaCargo}" maxlength="10">
+							<a4j:ajax event="change" listener="#{MapaAtividadeExtraClasseProfessorControle.consultarFuncionarioPorMatricula}" render="form:nomePessoa" execute="@this" />
+						</h:inputText>
+						<otm:spacer width="7px" />
+						<h:inputText size="45" styleClass="camposSomenteLeitura" id="nomePessoa" readonly="true" value="#{MapaAtividadeExtraClasseProfessorControle.funcionarioCargoVO.funcionarioVO.pessoa.nome}" maxlength="10" />
+						<otm:spacer width="4px" />
+						<a4j:commandButton id="consultaDadosFuncionario" style="position:relative; left:-12px; top:4px;"  alt="Localizar Funcionario" render="form, formFuncionario" oncomplete="#{rich:component('panelFuncionario')}.show();" image="#{resource['/imagens/informacao.gif']}" styleClass="botoes" />
+						<a4j:commandButton id="limparDadosFuncionario" style="position:relative; left:-12px; top:4px;"  alt="Limpas Dados" action="#{MapaAtividadeExtraClasseProfessorControle.limparDadosFuncionario}" render="form:gridRelatorio" image="#{resource['/imagens/limpar.gif']}" styleClass="botoes" />
+					</h:panelGroup>
+
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_TextoPadrao_periodoRealizacao}" />
+					<h:panelGroup>
+						<rich:calendar id="dataInicio" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="campos" inputSize="15" value="#{MapaAtividadeExtraClasseProfessorControle.controleConsultaOtimizado.dataIni}" style="margin-left: 3px" />
+						
+						<h:outputText styleClass="tituloCampos" value="   à   " />
+
+						<rich:calendar id="dataFinal" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputblur="form" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="campos" inputSize="15" value="#{MapaAtividadeExtraClasseProfessorControle.controleConsultaOtimizado.dataFim}"/>
+						
+					</h:panelGroup>
+
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_TextoPadrao_situacao}" />
+					<h:selectManyCheckbox id="situacao" styleClass="tituloCampos" style="float: left" value="#{MapaAtividadeExtraClasseProfessorControle.situacao}">
+						<f:selectItems value="#{MapaAtividadeExtraClasseProfessorControle.situacoes}" />
+					</h:selectManyCheckbox>
+				</h:panelGrid>
+
+				<h:panelGrid columns="1" width="100%" styleClass="tabBotoes" columnClasses="colunaCentralizada">
+					<h:panelGroup>
+						<a4j:commandButton action="#{MapaAtividadeExtraClasseProfessorControle.consultarDados()}" value="#{msg_botoes.btn_consultar}" styleClass="botoes" image="#{resource['imagens/botaoConsultar.png']}" title="#{msg.msg_novo_dados}" accesskey="1" render="@form" />
+					</h:panelGroup>
+				</h:panelGrid>
+
+				<h:panelGrid columns="1" width="100%" styleClass="tabBotoes" columnClasses="colunaCentralizada">
+
+					<rich:dataTable id="itemsAtividadeComplementar" render="paginador" style="width:100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MapaAtividadeExtraClasseProfessorControle.controleConsultaOtimizado}" rendered="#{MapaAtividadeExtraClasseProfessorControle.controleConsultaOtimizado.apresentarListaConsulta}" rows="50" var="itemAtividadeExtraClasseProfessorPostado">
+						<rich:column style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_AtividadeExtraClasseProfessorResostaDataAtividade}" />
+							</f:facet>
+
+							<h:outputText value="#{itemAtividadeExtraClasseProfessorPostado.dataAtividade}">
+								<f:convertDateTime pattern="MM/yyyy" />
+							</h:outputText>
+						</rich:column>
+
+						<rich:column style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_nomeProfessor}" />
+							</f:facet>
+							<h:outputText id="nomeProfessor" value="#{itemAtividadeExtraClasseProfessorPostado.funcionarioCargo.funcionarioVO.pessoa.nome}" />
+						</rich:column>
+
+						<rich:column style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_AtividadeExtraClasseProfessorResostaHoraprevista}" />
+							</f:facet>
+							<h:outputText id="horaprevista" value="#{itemAtividadeExtraClasseProfessorPostado.atividadeExtraClasseProfessorVO.horaPrevista}" />
+						</rich:column>
+
+						<rich:column style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_AtividadeExtraClasseProfessorResostaAprovada}" />
+							</f:facet>
+							<a4j:commandLink action="#{MapaAtividadeExtraClasseProfessorControle.consultarAtivadeExtraClassePorSituacaoData('APROVADO', itemAtividadeExtraClasseProfessorPostado.dataAtividade, itemAtividadeExtraClasseProfessorPostado.funcionarioCargo)}" id="horasAprovada" value="#{itemAtividadeExtraClasseProfessorPostado.horasAprovada}" oncomplete="#{rich:component('panelAtividadeExtraClasse')}.show();" render="formAtividadeExtraClasse" />
+						</rich:column>
+
+						<rich:column style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_AtividadeExtraClasseProfessorResostaAguardandoAprovacao}" />
+							</f:facet>
+							<a4j:commandLink action="#{MapaAtividadeExtraClasseProfessorControle.consultarAtivadeExtraClassePorSituacaoData('AGUARDANDO_APROVACAO', itemAtividadeExtraClasseProfessorPostado.dataAtividade, itemAtividadeExtraClasseProfessorPostado.funcionarioCargo)}" id="horasAguardandoAprovacao" value="#{itemAtividadeExtraClasseProfessorPostado.horasAguardandoAprovacao}" oncomplete="#{rich:component('panelAtividadeExtraClasse')}.show();" render="formAtividadeExtraClasse" />
+						</rich:column>
+
+						<rich:column style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_AtividadeExtraClasseProfessorResostaIndeferidas}" />
+							</f:facet>
+							<a4j:commandLink action="#{MapaAtividadeExtraClasseProfessorControle.consultarAtivadeExtraClassePorSituacaoData('INDEFERIDO', itemAtividadeExtraClasseProfessorPostado.dataAtividade, itemAtividadeExtraClasseProfessorPostado.funcionarioCargo)}" id="horasIndeferidas" value="#{itemAtividadeExtraClasseProfessorPostado.horasIndeferidas}" oncomplete="#{rich:component('panelAtividadeExtraClasse')}.show();" render="formAtividadeExtraClasse" />
+						</rich:column>
+
+						<rich:column style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_AtividadeExtraClasseProfessorResostaPendente}" />
+							</f:facet>
+							<h:outputText id="horasPendente" value="#{itemAtividadeExtraClasseProfessorPostado.atividadeExtraClasseProfessorVO.horaPrevista - itemAtividadeExtraClasseProfessorPostado.horasAprovada}" />
+						</rich:column>
+
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" render="itemsAtividadeComplementar" for="itemsAtividadeComplementar" id="paginador" page="#{ContaReceberControle.controleConsultaOtimizado.page}" scrollListener="#{MapaAtividadeExtraClasseProfessorControle.scrollerListener}" rendered="#{MapaAtividadeExtraClasseProfessorControle.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGrid>
+
+				<h:panelGrid columns="1" width="100%" styleClass="tabMensagens" columnClasses="colunaEsquerda">
+					<h:panelGrid columns="1" width="100%" columnClasses="colunaEsquerda">
+						<h:outputText styleClass="linhaMensagem" value="#{MapaAtividadeExtraClasseProfessorControle.mensagem}" />
+						<h:outputText styleClass="mensagemDetalhada" value="#{MapaAtividadeExtraClasseProfessorControle.mensagemDetalhada}" />
+					</h:panelGrid>
+
+					<!-- <h:panelGrid columns="1" width="100%" styleClass="tabBotoes" columnClasses="colunaCentralizada">
+						<h:panelGroup>
+							<a4j:commandButton action="#{MapaAtividadeExtraClasseProfessorControle.chamarRelatorioSEIDecidir()}" oncomplete="abrirPopup('../../financeiro/relatorio/relatorioSEIDecidirRel.xhtml?ORIGEM=RECURSOS_HUMANOS', 'relatorioSEIDecidirRel?ORIGEM=RECURSOS_HUMANOS', 950, 595);" value="#{msg_botoes.btn_imprimir}" styleClass="botoes" image="#{resource['imagens/botaoGerarRelatorioPdf.png']}" title="#{msg.msg_novo_dados}" accesskey="1" render="form" />
+						</h:panelGroup>
+					</h:panelGrid> -->
+
+				</h:panelGrid>
+
+			</h:form>
+
+			<!-- Consulta Funcionario -->
+			<rich:popupPanel id="panelFuncionario" shadowOpacity="true" width="750" onshow="document.getElementById('formFuncionario:valorConsultaFuncionario').focus()" height="500">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{msg_aplic.prt_Curso_consultarFuncionario}" />
+					</h:panelGroup>
+				</f:facet>
+				<f:facet name="controls">
+					<h:panelGroup>
+						<h:graphicImage value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkPanelFuncionario" />
+						<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+					</h:panelGroup>
+				</f:facet>
+
+				<h:form id="formFuncionario">
+					<h:panelGrid columns="1" width="100%">
+						<h:panelGrid columns="4" footerClass="colunaCentralizada" width="100%">
+							<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+							<h:selectOneMenu styleClass="campos" id="consultaTipoDocumento" value="#{MapaAtividadeExtraClasseProfessorControle.campoConsultaFuncionario}">
+								<f:selectItems value="#{MapaAtividadeExtraClasseProfessorControle.tipoConsultaComboFuncionario}" />
+							</h:selectOneMenu>
+
+							<h:inputText id="valorConsultaFuncionario" size="30" styleClass="campos" value="#{MapaAtividadeExtraClasseProfessorControle.valorConsultaFuncionario}" />
+							<a4j:commandButton id="btnConsultarFuncionario" render="formFuncionario:mensagemConsultaFuncionario, formFuncionario:gridFuncionarioTab, formFuncionario:scResultadoFuncionarioRespPreInscricao" action="#{MapaAtividadeExtraClasseProfessorControle.consultarFuncionario}" styleClass="botoes" value="#{msg_botoes.btn_consultar}" image="#{resource['/imagens/botaoConsultar.png']}" alt="#{msg.msg_consultar_dados}">
+								<f:setPropertyActionListener target="#{MapaAtividadeExtraClasseProfessorControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+								<f:setPropertyActionListener target="#{MapaAtividadeExtraClasseProfessorControle.controleConsultaOtimizado.page}" value="1" />
+							</a4j:commandButton>
+						</h:panelGrid>
+
+						<h:panelGrid id="gridFuncionarioTab" columns="1" width="100%">
+							<rich:dataTable id="funcionarioItem" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{MapaAtividadeExtraClasseProfessorControle.funcionarioCargoVOs}" rendered="#{MapaAtividadeExtraClasseProfessorControle.apresentarResultadoConsultaFuncionarioCargo}" rows="10" var="funcionarioCargoItem">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+									</f:facet>
+									<a4j:commandLink id="matricula" action="#{MapaAtividadeExtraClasseProfessorControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.matriculaCargo}" render="form:gridRelatorio, form:itemsAtividadeComplementar" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+									</f:facet>
+									<a4j:commandLink id="nome" action="#{MapaAtividadeExtraClasseProfessorControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.funcionarioVO.pessoa.nome}" render="form:gridRelatorio, form:itemsAtividadeComplementar" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_cargo}" />
+									</f:facet>
+									<a4j:commandLink id="cargoNome" action="#{MapaAtividadeExtraClasseProfessorControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.cargo.nome}" render="form:gridRelatorio, form:itemsAtividadeComplementar" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_bt.btn_opcoes}" />
+									</f:facet>
+									<a4j:commandButton id="botaoEditar" action="#{MapaAtividadeExtraClasseProfessorControle.selecionarFuncionarioCargo}" styleClass="botoes" value="#{msg_bt.btn_editar}" image="#{resource['imagens/botaoEditar.png']}" render="form:gridRelatorio" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+								</rich:column>
+
+								<f:facet name="footer">
+									<div style="text-align: center !important">
+										<rich:dataScroller align="center" for="formFuncionario:funcionarioItem" maxPages="10" id="scResultadoFuncionarioRespPreInscricao"  boundaryControls="auto" stepControls="auto" fastControls="hide" />
+									</div>
+								</f:facet>
+							</rich:dataTable>
+						</h:panelGrid>
+
+						<h:panelGrid id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+							<h:panelGrid columns="1" width="100%">
+								<h:outputText styleClass="mensagem" value="#{MapaAtividadeExtraClasseProfessorControle.mensagem}" />
+								<h:outputText styleClass="mensagemDetalhada" value="#{MapaAtividadeExtraClasseProfessorControle.mensagemDetalhada}" />
+							</h:panelGrid>
+						</h:panelGrid>
+					</h:panelGrid>
+				</h:form>
+			</rich:popupPanel>
+
+			<rich:popupPanel id="panelUnidadeEnsino" shadowOpacity="true" width="800" height="600">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{msg_aplic.prt_ContaReceberRel_selecionarUnidadeEnsino}" />
+					</h:panelGroup>
+				</f:facet>
+				<f:facet name="controls">
+					<h:panelGroup>
+						<h:graphicImage value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hideUnidadeEnsino" />
+						<rich:componentControl target="panelUnidadeEnsino" operation="hide" event="click" />
+					</h:panelGroup>
+				</f:facet>
+				<h:form id="formUnidadeEnsino">
+
+					<h:panelGrid columns="1" width="100%" style="text-align: left;">
+
+						<h:panelGroup id="unidadeEnsinos" style="height:485px;width:99%">
+							<h:panelGroup layout="block" style="width:48%;float:left;height:485px;overflow:auto">
+								<h:outputText styleClass="tituloSelecionar" value="Não Selecionados" />
+								<rich:dataTable align="left" id="filtrosUnidadeEnsino" width="100%" var="unidadeEnsinoItens" value="#{MapaAtividadeExtraClasseProfessorControle.unidadeEnsinoVOs}">
+									<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosUnidadeEnsino', 'nome', 'TEXTO')}">
+										<f:facet name="header">
+											<h:inputText styleClass="campos" size="20" value="#{FilterFactory.filter('filtrosUnidadeEnsino', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="unidadeEnsinos" />
+											</h:inputText>
+											<a4j:commandButton render="unidadeEnsinos" styleClass="botoes" image="#{resource['/imagens/limpar.gif']}" action="#{FilterFactory.limparFiltro('filtrosUnidadeEnsino')}" value="Limpar" />
+										</f:facet>
+										<h:outputText value="#{unidadeEnsinoItens.nome}" />
+									</rich:column>
+									<rich:column filterType="custom" filterExpression="#{!unidadeEnsinoItens.filtrarUnidadeEnsino}">
+										<f:facet name="header">
+											<a4j:commandButton image="#{resource['/imagens/irFinal.png']}" style="border:none;margin:0px;display:block" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso, form:turnos" action="#{MapaAtividadeExtraClasseProfessorControle.marcarTodasUnidadesEnsinoAction}">
+												<f:setPropertyActionListener value="true" target="#{MapaAtividadeExtraClasseProfessorControle.marcarTodasUnidadeEnsino}" />
+											</a4j:commandButton>
+										</f:facet>
+										<a4j:commandButton image="#{resource['/imagens/iconeVoltar.png']}" style="border:none;margin:0px" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso, form:turnos" action="#{MapaAtividadeExtraClasseProfessorControle.verificarTodasUnidadesSelecionadas}">
+											<f:setPropertyActionListener value="true" target="#{unidadeEnsinoItens.filtrarUnidadeEnsino}" />
+										</a4j:commandButton>
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+							<h:panelGroup layout="block" style="width:48%;float:right;height:485px;overflow:auto">
+								<h:outputText styleClass="tituloSelecionar" value="Selecionados" />
+								<rich:dataTable align="left" id="filtrosUnidadeEnsino2" width="100%" var="unidadeEnsinoItens" value="#{MapaAtividadeExtraClasseProfessorControle.unidadeEnsinoVOs}">
+									<rich:column filterType="custom" filterExpression="#{unidadeEnsinoItens.filtrarUnidadeEnsino}">
+										<f:facet name="header">
+											<a4j:commandButton image="#{resource['/imagens/irInicio.png']}" style="border:none;margin:0px;display:block" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso, form:turnos" action="#{MapaAtividadeExtraClasseProfessorControle.marcarTodasUnidadesEnsinoAction}">
+												<f:setPropertyActionListener value="false" target="#{MapaAtividadeExtraClasseProfessorControle.marcarTodasUnidadeEnsino}" />
+											</a4j:commandButton>
+										</f:facet>
+										<a4j:commandButton image="#{resource['/imagens/iconeProximo.png']}" style="border:none;margin:0px" render="formUnidadeEnsino, form:unidadeEnsino, form:nomeCurso, form:turnos" action="#{MapaAtividadeExtraClasseProfessorControle.verificarTodasUnidadesSelecionadas}">
+											<f:setPropertyActionListener value="false" target="#{unidadeEnsinoItens.filtrarUnidadeEnsino}" />
+										</a4j:commandButton>
+									</rich:column>
+									<rich:column filterType="custom" filter="#{FilterFactory.filter('filtrosUnidadeEnsino2', 'nome', 'TEXTO')}">
+										<f:facet name="header">
+											<h:inputText styleClass="campos" size="20" value="#{FilterFactory.filter('filtrosUnidadeEnsino2', 'nome', 'TEXTO').filtro}">
+												<a4j:ajax event="change" execute="@this" render="unidadeEnsinos" />
+											</h:inputText>
+											<a4j:commandButton render="unidadeEnsinos" styleClass="botoes" image="#{resource['/imagens/limpar.gif']}" action="#{FilterFactory.limparFiltro('filtrosUnidadeEnsino2')}" value="Limpar" />
+										</f:facet>
+										<h:outputText value="#{unidadeEnsinoItens.nome}" />
+									</rich:column>
+
+								</rich:dataTable>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGrid>
+					<otm:spacer height="20px;" />
+					<h:panelGrid columnClasses="colunaCentralizada">
+						<a4j:commandButton render="form" styleClass="botoes" oncomplete="#{rich:component('panelUnidadeEnsino')}.hide()" image="#{resource['/imagens/botaoFechar.png']}" />
+					</h:panelGrid>
+				</h:form>
+			</rich:popupPanel>
+
+			<!-- Popup visualizar postagem professor -->
+			<rich:popupPanel id="panelAtividadeExtraClasse" autosized="false" shadowOpacity="true" top="100" width="800" height="400">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{msg_aplic.prt_AtividadeExtraClasseProfessorResostaAtividadeCadastrada}"></h:outputText>
+					</h:panelGroup>
+				</f:facet>
+				<f:facet name="controls">
+					<h:panelGroup>
+						<h:graphicImage value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkForumInteracaoResponder">
+							<rich:componentControl target="panelAtividadeExtraClasse" operation="hide" event="click" />
+						</h:graphicImage>
+					</h:panelGroup>
+				</f:facet>
+				<h:form id="formAtividadeExtraClasse">
+					<h:panelGrid columns="1" columnClasses="colunaCentralizada" width="100%">
+						<h:panelGrid columns="1" width="100%" columnClasses="colunaCentralizada">
+
+							<rich:dataTable id="tabelAtividadeExtraCurricular" style="width:100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MapaAtividadeExtraClasseProfessorControle.listaAtividadeExtraClasseProfessorPostadoVO}" var="itemsAtividadeExtraCurricular">
+
+								<rich:column style="text-align:center">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_AtividadeExtraClasseProfessorResostaDataAtividade}" />
+									</f:facet>
+
+									<h:outputText value="#{itemsAtividadeExtraCurricular.dataAtividade}">
+										<f:convertDateTime pattern="MM/yyyy" />
+									</h:outputText>
+								</rich:column>
+
+								<rich:column style="text-align:center">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataCadastro}" />
+									</f:facet>
+
+									<h:outputText value="#{itemsAtividadeExtraCurricular.atividadeExtraClasseProfessorVO.dataCadastro}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputText>
+								</rich:column>
+
+								<rich:column style="text-align:center">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_descricao}" />
+									</f:facet>
+
+									<h:outputText value="#{itemsAtividadeExtraCurricular.descricao}" />
+								</rich:column>
+
+								<rich:column style="text-align:center">
+									<f:facet name="header">
+										<h:outputText value="Responsável" />
+									</f:facet>
+
+									<h:outputText value="#{itemsAtividadeExtraCurricular.usuarioResponsavel.nome}" />
+								</rich:column>
+
+								<rich:column style="text-align:center">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_horasRealizadas}" />
+									</f:facet>
+
+									<h:outputText value="#{itemsAtividadeExtraCurricular.horasRealizada}" />
+								</rich:column>
+
+								<rich:column style="text-align:center" rendered="#{MapaAtividadeExtraClasseProfessorControle.situacaoHoraAtividadeExtraClasseEnum eq 'APROVADO'}">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataAprovacao}" />
+									</f:facet>
+
+									<h:outputText value="#{itemsAtividadeExtraCurricular.dataAprovacao}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputText>
+								</rich:column>
+
+								<rich:column style="text-align:center" rendered="#{MapaAtividadeExtraClasseProfessorControle.situacaoHoraAtividadeExtraClasseEnum eq 'INDEFERIDO'}">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_motivoIndeferimento}" />
+									</f:facet>
+									<h:outputText value="#{itemsAtividadeExtraCurricular.motivoIndeferimento}" />
+								</rich:column>
+
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_TextoPadrao_arquivo}" />
+									</f:facet>
+									<h:commandLink action="#{MapaAtividadeExtraClasseProfessorControle.selecionarArquivoDocumentoParaDownload}" style="position:relative;" rendered="#{itemsAtividadeExtraCurricular.arquivo.nome ne ''}" styleClass="iconeOpcoesUnidade" target="_blank" title="Download Arquivo">
+										<h:graphicImage url="#{resource['/imagens/botaoDownloadResumido.png']}" />
+									</h:commandLink>
+								</rich:column>
+
+								<rich:column style="text-align:center">
+									<f:facet name="header">
+										<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									</f:facet>
+									<a4j:commandButton action="#{MapaAtividadeExtraClasseProfessorControle.montarDadosAprovar()}" render="formAprovar" oncomplete="#{rich:component('panelAprovarAtividadeExtraClasse')}.show()" rendered="#{MapaAtividadeExtraClasseProfessorControle.apresentarAprovado(itemsAtividadeExtraCurricular)}" styleClass="botoes" value="#{msg_botoes.btn_editar}" title="Aprovar Atividade Extra Classe Professor" image="#{resource['/imagens/iconeCheck.png']}" />
+									<a4j:commandButton action="#{MapaAtividadeExtraClasseProfessorControle.montarDadosIndeferir()}" render="formIndeferir" oncomplete="#{rich:component('panelIndeferirAtividadeExtraClasse')}.show()" rendered="#{MapaAtividadeExtraClasseProfessorControle.apresentarIndeferido(itemsAtividadeExtraCurricular)}" styleClass="botoes" value="#{msg_botoes.btn_editar}" title="Indeferir Atividade Extra Classe Professor" image="#{resource['/imagens/iconeAnular.png']}" />
+								</rich:column>
+
+							</rich:dataTable>
+
+							<h:panelGroup layout="block" style="bottom: 0px;position: absolute;margin-bottom: 30px;margin-left: 42%;">
+								<a4j:commandButton id="cancelarResponderComentario" value="Fechar" image="#{resource['/imagens/botaoFechar.png']}" oncomplete="#{rich:component('panelAtividadeExtraClasse')}.hide();" styleClass="botoes" />
+							</h:panelGroup>
+						</h:panelGrid>
+					</h:panelGrid>
+				</h:form>
+			</rich:popupPanel>
+
+			<!-- Indeferir -->
+			<rich:popupPanel id="panelIndeferirAtividadeExtraClasse" shadowOpacity="true" width="900" height="500">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{msg_aplic.prt_Gabarito_anularQuestao}"></h:outputText>
+					</h:panelGroup>
+				</f:facet>
+				<f:facet name="controls">
+					<h:panelGroup>
+						<h:graphicImage value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkPanelIndeferirAtividadeExtraClasse" />
+						<rich:componentControl target="panelIndeferirAtividadeExtraClasse" operation="hide" event="click" />
+					</h:panelGroup>
+				</f:facet>
+				<h:form id="formIndeferir">
+					<h:panelGrid columns="1" width="100%">
+						<h:panelGrid columns="2" footerClass="colunaCentralizada" width="100%">
+							<h:graphicImage value="#{resource['/imagens/aviso.png']}" />
+							<h:outputText styleClass="tituloCampos" value="Confirma o INDEFERIMENTO de #{MapaAtividadeExtraClasseProfessorControle.atividadeExtraClasseProfessorPostadoVO.horasRealizada} horas
+									da atividade do Professor #{MapaAtividadeExtraClasseProfessorControle.atividadeExtraClasseProfessorPostadoVO.funcionarioCargo.funcionarioVO.pessoa.nome}" />
+
+							<otm:spacer/>
+							<otm:spacer/>
+
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_TextoPadrao_motivo}" />
+							<h:inputTextarea id="motivo" rows="4" a:maxlength="254" style="width: 373px" styleClass="camposTextArea" value="#{MapaAtividadeExtraClasseProfessorControle.atividadeExtraClasseProfessorPostadoVO.motivoIndeferimento}" />
+						</h:panelGrid>
+
+						<h:panelGrid columns="1" width="100%" styleClass="tabMensagens">
+							<h:panelGrid columns="1" width="100%" columnClasses="colunaCentralizada">
+								<a4j:commandButton id="confirmarIndeferir" render="form:itemsAtividadeComplementar formAtividadeExtraClasse:tabelAtividadeExtraCurricular" action="#{MapaAtividadeExtraClasseProfessorControle.aprovarIndeferirAtividadeExtraClasseProfessor()}" styleClass="botoes" value="#{msg_botoes.btn_confirmar}" image="#{resource['/imagens/botaoConfirm.png']}" alt="#{msg.msg_confirmar_dados}" oncomplete="#{rich:component('panelIndeferirAtividadeExtraClasse')}.hide()" />
+							</h:panelGrid>
+						</h:panelGrid>
+					</h:panelGrid>
+				</h:form>
+			</rich:popupPanel>
+
+			<!-- Aprovar -->
+			<rich:popupPanel id="panelAprovarAtividadeExtraClasse" shadowOpacity="true" maxWidth="750" autosized="true">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="Aprovar Atividade"></h:outputText>
+					</h:panelGroup>
+				</f:facet>
+				<f:facet name="controls">
+					<h:panelGroup>
+						<h:graphicImage value="#{resource['/imagens/close.png']}" style="cursor:pointer" id="hidelinkPanelAprovarAtividadeExtraClasse" />
+						<rich:componentControl target="panelAprovarAtividadeExtraClasse" operation="hide" event="click" />
+					</h:panelGroup>
+				</f:facet>
+				<h:form id="formAprovar">
+					<h:panelGrid columns="1" width="100%">
+						<h:panelGrid columns="2" footerClass="colunaCentralizada" width="100%">
+							<h:graphicImage value="#{resource['/imagens/aviso.png']}" />
+							<h:outputText styleClass="tituloCampos" value="Confirma a APROVAÇÃO de #{MapaAtividadeExtraClasseProfessorControle.atividadeExtraClasseProfessorPostadoVO.horasRealizada} horas
+									da atividade do Professor #{MapaAtividadeExtraClasseProfessorControle.atividadeExtraClasseProfessorPostadoVO.funcionarioCargo.funcionarioVO.pessoa.nome}" />
+						</h:panelGrid>
+
+						<h:panelGrid columns="1" width="100%" styleClass="tabMensagens">
+							<h:panelGrid columns="1" width="100%" columnClasses="colunaCentralizada">
+								<a4j:commandButton id="confirmarEstornoAnularQuestao" render="form:itemsAtividadeComplementar formAtividadeExtraClasse:tabelAtividadeExtraCurricular" action="#{MapaAtividadeExtraClasseProfessorControle.aprovarIndeferirAtividadeExtraClasseProfessor()}" styleClass="botoes" value="#{msg_botoes.btn_confirmar}" image="#{resource['/imagens/botaoConfirm.png']}" alt="#{msg.msg_confirmar_dados}" oncomplete="#{rich:component('panelAprovarAtividadeExtraClasse')}.hide()" />
+							</h:panelGrid>
+						</h:panelGrid>
+					</h:panelGrid>
+				</h:form>
+			</rich:popupPanel>
+
+		</h:panelGrid>
+	</ui:define>
+</ui:composition>
+</html>

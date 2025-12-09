@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_TransferenciaEntrada_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<title><h:outputText value="#{msg_aplic.prt_TransferenciaEntrada_tituloForm} " /></title>
+		<h:form id="formCadastro">
+			<h:commandLink action="#{TransferenciaEntradaControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{TransferenciaEntradaControle.controleConsulta.campoConsulta}">
+					<a4j:ajax event="change" render="formCadastro" execute="formCadastro" listener="#{TransferenciaEntradaControle.limparValorConsulta}" />
+					<f:selectItems value="#{TransferenciaEntradaControle.tipoConsultaCombo}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="Matriculado" />
+				<h:selectOneMenu styleClass="form-control campos" id="matriculado" required="true" value="#{TransferenciaEntradaControle.situacaoMatriculado}">
+					<f:selectItems value="#{TransferenciaEntradaControle.listaSelectItemMatriculado}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{TransferenciaEntradaControle.apresentarCampoTextoConsulta}">
+				<h:outputText styleClass="field control-label tituloCampos" value="Aluno" rendered="#{TransferenciaEntradaControle.controleConsulta.campoConsulta eq 'pessoa'}" />
+				<h:outputText styleClass="field control-label tituloCampos" value="Código Requerimento" rendered="#{TransferenciaEntradaControle.controleConsulta.campoConsulta eq 'codigoRequerimento'}" />
+				<h:outputText styleClass="field control-label tituloCampos" value="Matrícula" rendered="#{TransferenciaEntradaControle.controleConsulta.campoConsulta eq 'matriculaMatricula'}" />
+				<h:outputText styleClass="field control-label tituloCampos" value="Instituição Origem" rendered="#{TransferenciaEntradaControle.controleConsulta.campoConsulta eq 'instituicaoOrigem'}" />
+				<h:outputText styleClass="field control-label tituloCampos" value="Curso" rendered="#{TransferenciaEntradaControle.controleConsulta.campoConsulta eq 'curso'}" />
+				<h:inputText id="valorConsulta" rendered="#{TransferenciaEntradaControle.apresentarCampoTextoConsulta}" styleClass="form-control campos" value="#{TransferenciaEntradaControle.controleConsulta.valorConsulta}" />
+				<h:inputText id="valorConsultaInteiro" rendered="#{TransferenciaEntradaControle.apresentarCampoInteiroConsulta}" styleClass="form-control campos" onkeypress="aceitarSomenteValorNumerico(this)" value="#{TransferenciaEntradaControle.controleConsulta.valorConsulta}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{TransferenciaEntradaControle.apresentarCampoDataConsulta}">
+				<h:outputText styleClass="field control-label tituloCampos" value="Data" rendered="#{TransferenciaEntradaControle.controleConsulta.campoConsulta eq 'data'}" />
+				<otm:calendar jsFunction="dataConsulta()" id="valorConsultaData" rendered="#{TransferenciaEntradaControle.apresentarCampoDataConsulta}" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control camposObrigatorios" inputSize="10" value="#{TransferenciaEntradaControle.dataConsulta}">
+					<!-- 					<a4j:ajax event="change" render="formCadastro" execute="formCadastro" /> -->
+					<!-- 					<a4j:ajax event="inputchange" render="formCadastro" execute="formCadastro" /> -->
+				</otm:calendar>
+				<a4j:jsFunction name="dataConsulta" action="#{TransferenciaEntradaControle.dataConsulta}" render="formCadastro" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2 mt3">
+				<otm:spacer width="100%" />
+				<otm:commandButton id="consultar" type="submit" value="#{msg_botoes.btn_consultar}" action="#{TransferenciaEntradaControle.consultar}" accesskey="2" styleClass="btn btn-default btn-consultar" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+			<rich:dataTable id="items" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{TransferenciaEntradaControle.listaConsulta}" rendered="#{TransferenciaEntradaControle.apresentarResultadoConsulta}" rows="10" var="transferenciaEntradaItens">
+				<rich:column sortBy="#{transferenciaEntradaItens.codigo}">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_TransferenciaEntrada_codigo}" />
+					</f:facet>
+					<h:commandLink action="#{TransferenciaEntradaControle.editar}" id="codigo" value="#{transferenciaEntradaItens.codigo}" />
+				</rich:column>
+				<rich:column sortBy="#{transferenciaEntradaItens.situacao_Apresentar}">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_TransferenciaEntrada_situacao}" />
+					</f:facet>
+					<h:commandLink action="#{TransferenciaEntradaControle.editar}" id="situacao" value="#{transferenciaEntradaItens.situacao_Apresentar}" />
+				</rich:column>
+				<rich:column sortBy="#{transferenciaEntradaItens.codigoRequerimento.tipoRequerimento.nome}">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_Requerimento_tituloForm}" />
+					</f:facet>
+					<h:commandLink action="#{TransferenciaEntradaControle.editar}" id="codigoRequerimento" value="#{transferenciaEntradaItens.codigoRequerimento.tipoRequerimento.nome} #{transferenciaEntradaItens.codigoRequerimento.tipoRequerimento.codigo}" />
+				</rich:column>
+				<rich:column sortBy="#{transferenciaEntradaItens.cursoOrigem}">
+					<f:facet name="header">
+						<h:outputText value="Origem" />
+					</f:facet>
+					<h:commandLink action="#{TransferenciaEntradaControle.editar}" id="origem" value="#{transferenciaEntradaItens.instituicaoOrigem} #{transferenciaEntradaItens.cursoOrigem}" />
+				</rich:column>
+				<rich:column sortBy="#{transferenciaEntradaItens.pessoa.nome}">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_TransferenciaEntrada_aluno}" />
+					</f:facet>
+					<h:commandLink action="#{TransferenciaEntradaControle.editar}" id="instituicaoOrigem" value="#{transferenciaEntradaItens.pessoa.nome}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<otm:commandIcon action="#{TransferenciaEntradaControle.editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar" />
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="items" limitRender="10" align="center" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{TransferenciaEntradaControle}"></otm:mensagem>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton id="novo" action="#{TransferenciaEntradaControle.novo}" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<script>
+			document.getElementById("formCadastro:valorConsulta").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

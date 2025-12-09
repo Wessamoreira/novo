@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_AtaResultadosFinais_tituloForm}" />
+	</ui:define>
+	<ui:define name="ajuda">
+		<a4j:region>
+			<a4j:commandLink id="config" type="submit" rendered="#{LoginControle.permissaoAcessoMenuVO.permitirCadastrarConfiguracaoAtaResultadosFinais}" title="Configuração" style="float:right;border:none;margin-right:10px; margin-top:3px" action="#{AtaResultadosFinaisRelControle.consultarConfiguracaoAtaResultadosFinais}" oncomplete="#{rich:component('panelConfiguracao')}.show()" render="formConfiguracao">
+				<i class="fas fa-cogs" />
+			</a4j:commandLink>
+		</a4j:region>
+	</ui:define>
+	<ui:define name="conteudo">
+		<rich:popupPanel id="panelConfiguracaoLayout" styleClass="modalMaximizado" shadowOpacity="true" style="z-index: 5000 !important" width="800" height="600" domElementAttachment="parent" zindex="4000">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Incluir/Editar Layout" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelConfigurarLay">
+						<rich:componentControl target="panelConfiguracaoLayout" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConfiguracaoLayout">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="#{!AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.layoutFixoSistema ? 'col-md-8' : 'col-md-12'}">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ConfiguracaoLayoutAtaResultadosFinais_titulo}"></h:outputText>
+						<h:inputText id="tituloCLAtaResultadosFinais" styleClass="form-control camposObrigatorios" value="#{AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.titulo}"></h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{!AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.layoutFixoSistema}" styleClass="col-md-4">
+						<h:outputText styleClass="tituloCampos" value="Seguir Regras Layout">
+						</h:outputText>
+						<h:selectOneMenu styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.chave}">
+							<f:selectItems value="#{AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.configuracaoAtaResultadosFinaisVO.listaSelectItemLayoutPadrao}"></f:selectItems>
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt10">
+						<h:outputText value="#{msg_aplic.prt_ConfiguracaoLayoutAtaResultadosFinais_layouts} PDF"></h:outputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<a4j:jsFunction name="uploadPdf" action="#{AtaResultadosFinaisRelControle.setTipoRelatorioEnum('PDF')}"></a4j:jsFunction>
+						<rich:fileUpload listHeight="60" styleClass="col-md-12 pn" listWidth="450" execute="@form" noDuplicate="true" onclick="uploadPdf()" fileUploadListener="#{AtaResultadosFinaisRelControle.uploadLayout}" acceptedTypes="jasper" maxFilesQuantity="1" addLabel="ADICIONAR ARQUIVO COM A EXTENSÃO .jasper" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{AtaResultadosFinaisRelControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." uploadLabel="Enviar" clearAllLabel="Limpar lista" onupload="return validarTamanhoUploadArquivo(event, 'formConfiguracaoLayout', #{AtaResultadosFinaisRelControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload});" serverErrorLabel="Falha de Transmissão" immediateUpload="true" id="upload">
+							<a4j:ajax event="uploadcomplete" render="formConfiguracaoLayout" execute="@this" />
+							<a4j:ajax event="typerejected" oncomplete="alert('Formato inválido do arquivo. Aceita somente extensões jasper');" render="upload" execute="@this" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row ml5 p5 mt10" rendered="#{!empty AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.arquivoPdfVOs}" style="border:1px solid #ced4da; border-radius: .2rem; width: 99.3%;">
+						<a4j:repeat value="#{AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.arquivoPdfVOs}" var="arquivoItem">
+							<h:panelGroup layout="block" styleClass="row ml10 lh30">
+								<h:panelGroup layout="block" styleClass="col-md-8">
+									<h:outputText styleClass="tituloCampos" value="#{arquivoItem.descricao}"></h:outputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="Arquivo Principal"></h:outputText>
+									<otm:selectBooleanCheckbox id="arquivoIreportPrincipalAddPDF" value="#{arquivoItem.arquivoIreportPrincipal}" disabled="#{AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.layoutFixoSistema or arquivoItem.arquivoIreportPrincipal}">
+										<a4j:ajax event="change" execute="@form" listener="#{AtaResultadosFinaisRelControle.realizarDefinicaoArquivoPrincipalConfiguracaoLayoutAtaResultadosFinais(AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO, arquivoItem)}" render="formConfiguracaoLayout"></a4j:ajax>
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-1">
+									<otm:commandIcon id="removerPdf" tooltip="Remover Layout" icon="#{msg_botoes.btn_icon_excluir_embutido} text-danger" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" rendered="#{!AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.layoutFixoSistema}" action="#{AtaResultadosFinaisRelControle.removerLayout(arquivoItem, AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO)}" render="formConfiguracaoLayout"></otm:commandIcon>
+									<otm:spacer width="5px"></otm:spacer>
+									<otm:commandIcon id="dwlPdf2" oncomplete="location.href='../../../DownloadSV'" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido}" action="#{AtaResultadosFinaisRelControle.realizarDownloadArquivo(AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO, arquivoItem)}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+
+					<h:outputText styleClass="col-md-12 mensagemDetalhada btn-block" rendered="#{AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO.layoutFixoSistema}" value="*Este layout é fixo do sistema é só pode ser alterado a descrição, para realizar alguma alteração, baixe os arquivos .jasper realize as alterações e crie um novo layout." />
+				</h:panelGroup>
+
+				<h:panelGroup styleClass="row" layout="block">
+					<otm:mensagem bean="#{AtaResultadosFinaisRelControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton styleClass="btn btn-dark btn-gravar" value="#{msg_botoes.btn_gravar}" oncomplete="#{AtaResultadosFinaisRelControle.oncompleteModal}" action="#{AtaResultadosFinaisRelControle.persistirConfiguracaoLayoutAtaResultadosFinais(AtaResultadosFinaisRelControle.configuracaoLayoutAtaResultadosFinaisVO)}" render="formConfiguracao, formConfiguracaoLayout, form"></otm:commandButton>
+					<otm:spacer width="10px"></otm:spacer>
+					<otm:commandButton styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" oncomplete="#{rich:component('panelConfiguracaoLayout')}.hide()" action="#{AtaResultadosFinaisRelControle.cancelarConfiguracaoLayoutAtaResultadosFinais}" render="formConfiguracao"></otm:commandButton>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelConfiguracao" styleClass="modalMaximizado100" shadowOpacity="true" width="1000" height="700">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Configurações/Parametrizações" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelConfiguracao">
+						<rich:componentControl target="panelConfiguracao" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+		 	<h:form id="formConfiguracao" styleClass="scroll">
+				<h:panelGroup layout="block" styleClass="row">						
+						<h:panelGroup layout="block" id="panelLayout" styleClass="row" style="width:100%;margin-top:10px">
+							<h:panelGroup layout="block" style="height:30px; border-bottom:1px solid #ccc; margin-bottom:10px">
+								<h:outputText style="float:left" value="#{msg_aplic.prt_ConfiguracaoLayoutAtaResultadosFinais_layouts} - Ocultar Inativos"></h:outputText>
+								<otm:selectBooleanCheckbox id="edicaoManual" style="float:left;margin-left:5px;margin-top: -1px;" value="#{AtaResultadosFinaisRelControle.configuracaoAtaResultadosFinaisVO.edicaoManual}">
+									<a4j:ajax event="click" execute="@form" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao"></a4j:ajax>
+								</otm:selectBooleanCheckbox>
+								<h:panelGroup styleClass="float-right">
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_adicionar_embutido} iconePequeno" action="#{AtaResultadosFinaisRelControle.novoConfiguracaoLayoutAtaResultadosFinaisVO}" render="formConfiguracaoLayout" oncomplete="#{rich:component('panelConfiguracaoLayout')}.show();"></otm:commandIcon>
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoFechado_embutido} iconePequeno" action="#{AtaResultadosFinaisRelControle.inativarTodasConfiguracaoLayoutAtaResultadosFinais}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandIcon>
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_cadeadoAberto_embutido} iconePequeno" action="#{AtaResultadosFinaisRelControle.ativarTodasConfiguracaoLayoutAtaResultadosFinais}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandIcon>
+								</h:panelGroup>
+							</h:panelGroup>
+							<a4j:repeat id="listaLayout" var="configuracaoLayoutAtaResultadosFinaisItem" rowKeyVar="rowLayout" value="#{AtaResultadosFinaisRelControle.configuracaoAtaResultadosFinaisVO.configuracaoLayoutAtaResultadosFinaisVOs}">
+								<h:panelGroup styleClass="row ml2" layout="block" rendered="#{!AtaResultadosFinaisRelControle.configuracaoAtaResultadosFinaisVO.edicaoManual or (AtaResultadosFinaisRelControle.configuracaoAtaResultadosFinaisVO.edicaoManual and !configuracaoLayoutAtaResultadosFinaisItem.inativarLayout)}">									
+									<otm2:panel name="id#{configuracaoLayoutAtaResultadosFinaisItem.titulo}#{row}" styleClassFooter="dn" renderedControl="false">
+										<ui:define name="header">										
+											<h:outputText style="float:left" styleClass="tituloCampos" value="#{configuracaoLayoutAtaResultadosFinaisItem.titulo} - #{configuracaoLayoutAtaResultadosFinaisItem.inativarLayout ? 'Inativo' : 'Ativo'} ( "></h:outputText>
+											<h:outputText style="float:left; margin-left:5px" styleClass="tituloCampos" value="Layout Padrão"></h:outputText>
+											<otm:selectBooleanCheckbox style="float:left; margin-left:5px; position:relative;top:-1px" id="idLayPadrao" value="#{configuracaoLayoutAtaResultadosFinaisItem.layoutPadrao}">
+												<a4j:ajax event="click" render="formConfiguracao:panelLayout, formConfiguracao:mensagemConsultaConfiguracao" listener="#{AtaResultadosFinaisRelControle.realizarDefinicaoLayoutPadraoConfiguracaoLayoutAtaResultadosFinais(configuracaoLayoutAtaResultadosFinaisItem)}" execute="@this"></a4j:ajax>
+											</otm:selectBooleanCheckbox>
+											<h:outputText style="float:left; margin-left:5px" value=") " styleClass="tituloCampos"></h:outputText>
+											<h:panelGroup styleClass="float-right">
+												<a4j:commandLink style="float:left;margin-right:10px" onclick="return confirm('#{msg.msg_confirmacao_inativacao}');" rendered="#{!configuracaoLayoutAtaResultadosFinaisItem.inativarLayout}" action="#{AtaResultadosFinaisRelControle.inativarConfiguracaoLayoutAtaResultadosFinais(configuracaoLayoutAtaResultadosFinaisItem)}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao" title="Inativar Layout">
+													<i class="fas fa-unlock" />
+												</a4j:commandLink>
+												<a4j:commandLink style="float:left;margin-right:10px" rendered="#{configuracaoLayoutAtaResultadosFinaisItem.inativarLayout}" action="#{AtaResultadosFinaisRelControle.ativarConfiguracaoLayoutAtaResultadosFinais(configuracaoLayoutAtaResultadosFinaisItem)}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao" title="Ativar Layout">
+													<i class="fas fa-lock" />
+												</a4j:commandLink>
+												<a4j:commandLink style="float:left;margin-right:10px" rendered="#{!configuracaoLayoutAtaResultadosFinaisItem.maximixado}" action="#{configuracaoLayoutAtaResultadosFinaisItem.setMaximixado(true)}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao" title="Expandir Layout">
+													<i class="fas fa-chevron-up" />
+												</a4j:commandLink>
+												<a4j:commandLink style="float:left;margin-right:10px" rendered="#{configuracaoLayoutAtaResultadosFinaisItem.maximixado}" action="#{configuracaoLayoutAtaResultadosFinaisItem.setMaximixado(false)}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao" title="Minimizar Layout">
+													<i class="fas fa-chevron-down" />
+												</a4j:commandLink>
+											</h:panelGroup>
+										</ui:define>
+										<ui:define name="body">
+											<h:panelGroup layout="block" styleClass="row border rounded" rendered="#{configuracaoLayoutAtaResultadosFinaisItem.maximixado}">
+												<h:panelGroup layout="block" styleClass="#{!configuracaoLayoutAtaResultadosFinaisItem.layoutFixoSistema ? 'col-md-8': 'col-md-12'}">
+													<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ConfiguracaoLayoutAtaResultadosFinais_titulo}"></h:outputText>
+													<h:inputText id="tituloCLARF" styleClass="form-control camposObrigatorios" style="width:100%" value="#{configuracaoLayoutAtaResultadosFinaisItem.titulo}"></h:inputText>
+												</h:panelGroup>
+												<h:panelGroup rendered="#{!configuracaoLayoutAtaResultadosFinaisItem.layoutFixoSistema}" layout="block" styleClass="col-md-4">
+													<h:outputText styleClass="tituloCampos" value="Seguir Regras Layout">
+													</h:outputText>
+													<h:selectOneMenu styleClass="form-control campos" value="#{configuracaoLayoutAtaResultadosFinaisItem.chave}">
+														<f:selectItems value="#{AtaResultadosFinaisRelControle.configuracaoAtaResultadosFinaisVO.listaSelectItemLayoutPadrao}"></f:selectItems>
+													</h:selectOneMenu>
+												</h:panelGroup>
+												<h:panelGroup id="panelLayoutPdf" layout="block" styleClass="col-md-12 mt5">
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_ConfiguracaoLayoutAtaResultadosFinais_layouts} PDF"></h:outputText>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="row p5 " style="border:1px solid #ced4da; border-radius: .2rem">
+														<a4j:repeat value="#{configuracaoLayoutAtaResultadosFinaisItem.arquivoPdfVOs}" var="arquivoItem">
+															<h:panelGroup layout="block" styleClass="row ml10 lh30">
+																<h:panelGroup layout="block" styleClass="col-md-8">
+																	<h:outputText styleClass="tituloCampos" style="position: relative;   top: 4px;" value="#{arquivoItem.descricao}"></h:outputText>
+																</h:panelGroup>
+																<h:panelGroup layout="block" styleClass="col-md-3">
+																	<h:outputText styleClass="tituloCampos" value="Arquivo Principal"></h:outputText>
+																	<otm:selectBooleanCheckbox styleClass="ml5" id="arquivoIreportPrincipal" value="#{arquivoItem.arquivoIreportPrincipal}" disabled="#{configuracaoLayoutAtaResultadosFinaisItem.layoutFixoSistema or arquivoItem.arquivoIreportPrincipal}">
+																		<a4j:ajax event="click" execute="@form" listener="#{AtaResultadosFinaisRelControle.realizarDefinicaoArquivoPrincipalConfiguracaoLayoutAtaResultadosFinais(configuracaoLayoutAtaResultadosFinaisItem, arquivoItem)}" render="formConfiguracao:panelNivel:#{row}:listaLayout:#{rowLayout}:panelLayoutPdf, formConfiguracao:mensagemConsultaConfiguracao"></a4j:ajax>
+																	</otm:selectBooleanCheckbox>
+																</h:panelGroup>
+																<h:panelGroup layout="block" styleClass="col-md-1 text-center">
+																	<otm:commandIcon style="position: relative;   top: 6px;" id="dwlPdf" execute="@form" oncomplete="location.href='../../../DownloadSV'" tooltip="Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido} iconePequeno" action="#{AtaResultadosFinaisRelControle.realizarDownloadArquivo(configuracaoLayoutAtaResultadosFinaisItem, arquivoItem)}" />
+																</h:panelGroup>
+															</h:panelGroup>
+														</a4j:repeat>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="row text-center p5 mt10 border-top">
+													<otm:commandButton styleClass="btn btn-dark btn-gravar" value="#{msg_botoes.btn_gravar}" action="#{AtaResultadosFinaisRelControle.persistirConfiguracaoLayoutAtaResultadosFinais(configuracaoLayoutAtaResultadosFinaisItem)}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao, form"></otm:commandButton>
+													<otm:spacer width="10px"></otm:spacer>
+													<otm:commandButton styleClass="btn btn-primary dark btn-editar" value="#{msg_botoes.btn_editar}" action="#{AtaResultadosFinaisRelControle.editarConfiguracaoLayoutAtaResultadosFinaisVO(configuracaoLayoutAtaResultadosFinaisItem)}" render="formConfiguracaoLayout" oncomplete="#{rich:component('panelConfiguracaoLayout')}.show()"></otm:commandButton>
+													<otm:spacer width="10px"></otm:spacer>
+													<otm:commandButton styleClass="btn btn-danger btn-excluir" value="#{msg_botoes.btn_excluir}" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" rendered="#{!configuracaoLayoutAtaResultadosFinaisItem.layoutFixoSistema}" action="#{AtaResultadosFinaisRelControle.excluirConfiguracaoLayoutAtaResultadosFinais(configuracaoLayoutAtaResultadosFinaisItem)}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao, form"></otm:commandButton>
+													<otm:spacer width="10px" rendered="#{!configuracaoLayoutAtaResultadosFinaisItem.layoutFixoSistema}"></otm:spacer>
+													<otm:commandButton styleClass="btn btn-danger btn-excluir" value="#{msg_botoes.btn_inativar}" onclick="return confirm('#{msg.msg_confirmacao_inativacao}');" rendered="#{!configuracaoLayoutAtaResultadosFinaisItem.inativarLayout}" action="#{AtaResultadosFinaisRelControle.inativarConfiguracaoLayoutAtaResultadosFinais(configuracaoLayoutAtaResultadosFinaisItem)}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandButton>
+													<otm:commandButton styleClass="btn btn-success btn-ativar" icon="#{msg_botoes.btn_icon_cadeadoAberto_embutido}" value="#{msg_botoes.btn_ativar}" rendered="#{configuracaoLayoutAtaResultadosFinaisItem.inativarLayout}" action="#{AtaResultadosFinaisRelControle.ativarConfiguracaoLayoutAtaResultadosFinais(configuracaoLayoutAtaResultadosFinaisItem)}" render="formConfiguracao, formConfiguracao:mensagemConsultaConfiguracao"></otm:commandButton>
+												</h:panelGroup>
+											</h:panelGroup>
+										</ui:define>
+									</otm2:panel>
+								</h:panelGroup>
+							</a4j:repeat>
+						</h:panelGroup>						
+					<h:panelGroup id="mensagemConsultaConfiguracao" styleClass="row" layout="block">
+						<otm:mensagem bean="#{AtaResultadosFinaisRelControle}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formTurma:valorConsultaTurma').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_DiarioRel_consultarTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink1" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{AtaResultadosFinaisRelControle.campoConsultaTurma}">
+						<f:selectItems value="#{AtaResultadosFinaisRelControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaTurma" size="10" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{AtaResultadosFinaisRelControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AtaResultadosFinaisRelControle.listaConsultaTurma}" rows="5" var="turmaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_DiarioRel_identificador}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AtaResultadosFinaisRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AtaResultadosFinaisRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Turno" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AtaResultadosFinaisRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AtaResultadosFinaisRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AtaResultadosFinaisRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<h:form id="form">
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!AtaResultadosFinaisRelControle.existeUnidadeEnsino}">
+					<h:outputText rendered="#{!AtaResultadosFinaisRelControle.existeUnidadeEnsino}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtaResultadosFinaisRel_unidadeEnsino}" />
+					<h:selectOneMenu id="unidadeensino" styleClass="form-control camposObrigatorios" value="#{AtaResultadosFinaisRelControle.unidadeEnsinoVO.codigo}">
+						<a4j:ajax event="change" execute="panelGridForm" render="form" listener="#{AtaResultadosFinaisRelControle.limparTurma}" />
+						<f:selectItems value="#{AtaResultadosFinaisRelControle.listaSelectItemUnidadeEnsino}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_identificador}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText styleClass="form-control camposSomenteLeituraObrigatorio" size="48" readonly="true" value="#{AtaResultadosFinaisRelControle.turmaVO.identificadorTurma}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" focus="nomeTurma" alt="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosCurso" alt="Limpas Dados" action="#{AtaResultadosFinaisRelControle.limparTurma}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AtaResultadosFinaisRelControle.turmaVO.identificadorTurma ne ''}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtaResultadosFinaisRel_reconhecimentoCurso}" />
+					<h:selectOneMenu id="reconhecimentoCurso" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.reconhecimentoCurso}">
+						<f:selectItems value="#{AtaResultadosFinaisRelControle.listaSelectItemReconhecimentoCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_tipoALuno}" />
+					<h:selectOneMenu id="tipoAluno" styleClass="form-control camposObrigatorios" value="#{AtaResultadosFinaisRelControle.tipoAluno}">
+						<f:selectItems value="#{AtaResultadosFinaisRelControle.listaSelectItemTipoAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtaProva_tipoLayout}" />
+					<h:selectOneMenu id="layout" styleClass="form-control camposObrigatorios" value="#{AtaResultadosFinaisRelControle.tipoLayout}">
+						<a4j:ajax execute="panelGridForm" render="panelGridForm" />
+						 <f:selectItems value="#{AtaResultadosFinaisRelControle.listaTipoLayout}" />
+						 <a4j:ajax event="change" render="form" execute="@form" listener="#{AtaResultadosFinaisRelControle.carregarDadosLayout}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AtaResultadosFinaisRelControle.layout == 'Layout3'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_dataApuracao}" rendered="#{AtaResultadosFinaisRelControle.layout == 'Layout3'}" />
+					<otm:calendar id="dataCompetencia" rendered="#{AtaResultadosFinaisRelControle.layout == 'Layout3'}" value="#{AtaResultadosFinaisRelControle.dataApuracao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{AtaResultadosFinaisRelControle.isApresentarAno}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtaResultadosFinaisRel_ano}" rendered="#{AtaResultadosFinaisRelControle.isApresentarAno}" />
+					<h:inputText onkeypress="aceitarSomenteValorNumerico(this)" styleClass="form-control camposObrigatorios" size="4" value="#{AtaResultadosFinaisRelControle.ano}" rendered="#{AtaResultadosFinaisRelControle.isApresentarAno}" maxlength="4" onkeydown="aceitarSomenteValorNumerico(this)" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{AtaResultadosFinaisRelControle.isApresentarAno}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtaResultadosFinaisRel_semestre}" rendered="#{AtaResultadosFinaisRelControle.isApresentarSemestre}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{AtaResultadosFinaisRelControle.semestre}" rendered="#{AtaResultadosFinaisRelControle.isApresentarSemestre}">
+						<f:selectItems value="#{EnumControle.comboboxSemestreEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_TrazerAlunoTransferencia}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="trazerAlunosComTransferenciaMatriz" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.trazerAlunosComTransferenciaMatriz}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_apresentarDisciplinaComposta}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox styleClass="form-control campos" id="apresentarDisciplinaComposta" value="#{AtaResultadosFinaisRelControle.apresentarDisciplinaComposta }" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{AtaResultadosFinaisRelControle.tipoLayout1}">
+					<h:outputText rendered="#{AtaResultadosFinaisRelControle.tipoLayout1}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtaResultadosFinais_apresentarDataTransferencia}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="apresentarDataTransferencia" rendered="#{AtaResultadosFinaisRelControle.tipoLayout1}" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.apresentarDataTransferencia}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" style="margin-top:10px">
+					<h:outputText styleClass="title" value="#{msg_aplic.prt_FiltroRelatorioAcademico_titulo}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:panelGroup id="panelMarcarDesmarcarSituacaoAcademica">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{AtaResultadosFinaisRelControle.isApresentarTextoCheckBoxMarcarDesmarcarTodosFormacaoAcademica}" style="position:relative; bottom:0px; left: 0px; font-size:11px" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.marcarTodasSituacoesAcademicas}">
+									<a4j:ajax event="click" execute="@all" listener="#{AtaResultadosFinaisRelControle.realizarSelecaoCheckboxMarcarDesmarcarTodosSituacaoAcademica}" render="panelMarcarDesmarcarSituacaoAcademica, panelSituacaoAcademica" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup id="panelSituacaoAcademica">
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_ativo}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.ativo}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_preMatricula}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.preMatricula}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_preMatriculaCancelada}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.preMatriculaCancelada}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_trancado}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.trancado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_cancelado}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.cancelado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_concluido}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.concluido}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_transferenciaInterna}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.transferenciaInterna}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_transferenciaSaida}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.transferenciaExterna}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_formado}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.formado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_abandonoCurso}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.abandonado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_jubilado}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.jubilado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<hr class="col-md-12" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" style="margin-top:10px">
+					<h:outputText styleClass="title" value="#{msg_aplic.prt_FiltroRelatorioAcademico_situacaoParcelaMatricula}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_pendenteFinanceiro}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.pendenteFinanceiro}">
+								<a4j:ajax event="click" execute="@this" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_confirmado}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox value="#{AtaResultadosFinaisRelControle.filtroRelatorioAcademicoVO.confirmado}">
+								<a4j:ajax event="click" execute="@this" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<hr class="col-md-12" />
+				</h:panelGroup>
+				<!-- Assinar digitalmente -->
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_assinarDigitalmente}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.assinarDigitalmente}">
+							<a4j:ajax event="change" execute="@form" render="@form" oncomplete="colorPicker();" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8" >
+					<h:panelGroup layout="block" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente and not empty AtaResultadosFinaisRelControle.comboboxProvedorAssinaturaPadrao}" styleClass="col-md-4" style="padding-left: 0px !IMPORTANT">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProvedorAssinatura}" />
+						<h:selectOneMenu id="provedorPadrao" styleClass="form-control camposObrigatorios" value="#{AtaResultadosFinaisRelControle.provedorDeAssinaturaEnum}">
+							<f:selectItems value="#{AtaResultadosFinaisRelControle.comboboxProvedorAssinaturaPadrao}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+					
+				</h:panelGroup>
+				
+				
+				<!-- 				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}"> -->
+				<!-- 					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_alinhamentoAssinaturaDigital}" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}" /> -->
+				<!-- 					<h:selectOneMenu id="alinhamentoAssinaturaDigitalEnum" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.alinhamentoAssinaturaDigital }" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}"> -->
+				<!-- 						<f:selectItems value="#{EnumControle.listaSelectAlinhamentoAssinaturaDigitalEnum}" /> -->
+				<!-- 					</h:selectOneMenu> -->
+				<!-- 				</h:panelGroup> -->
+				<!-- 				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}"> -->
+				<!-- 					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_alturaAssinatura}" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}" /> -->
+				<!-- 					<h:inputText size="10" maxlength="10" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.alturaAssinatura}" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}"> -->
+				<!-- 						<f:converter converterId="FormatadorNumerico" /> -->
+				<!-- 					</h:inputText> -->
+				<!-- 				</h:panelGroup> -->
+				<!-- 				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}"> -->
+				<!-- 					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_larguraAssinatura}" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}" /> -->
+				<!-- 					<h:inputText size="10" maxlength="10" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.larguraAssinatura}" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}"> -->
+				<!-- 						<f:converter converterId="FormatadorNumerico" /> -->
+				<!-- 					</h:inputText> -->
+				<!-- 				</h:panelGroup> -->
+				<!-- 				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}"> -->
+				<!-- 					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_corAssinaturaDigital}" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}" /> -->
+				<!-- 					<h:inputText maxlength="6" size="6" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.corAssinaturaDigitalmente}" rendered="#{AtaResultadosFinaisRelControle.assinarDigitalmente}" /> -->
+				<!-- 				</h:panelGroup> -->
+				<!-- FUNCIONÁRIO PRINCIPAL -->
+				<h:panelGroup layout="block" styleClass="col-md-6 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiplomaAlunoRel_funcionarioPrincipal}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="funcionarioMatriculaPrincipal" size="18" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.funcionarioPrincipalVO.matricula}">
+							<a4j:ajax event="change" focus="imprimirPDF" listener="#{AtaResultadosFinaisRelControle.consultarFuncionarioPrincipal}" render="form" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="funcionarioNomePrincipal" size="42" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{AtaResultadosFinaisRelControle.funcionarioPrincipalVO.pessoa.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosFuncionarioPrincipal" alt="Localizar Funcionario" render="formFuncionarioPrincipal" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.show();" action="#{AtaResultadosFinaisRelControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosFuncionarioPrincipal" alt="Limpar Dados" action="#{AtaResultadosFinaisRelControle.limparDadosFuncionarioPrincipal}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<!-- FUNCIONÁRIO SECUNDÁRIO -->
+				<h:panelGroup layout="block" styleClass="col-md-6 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiplomaAlunoRel_funcionarioSecundario}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="funcionarioMatriculaSecundario" size="18" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.funcionarioSecundarioVO.matricula}">
+							<a4j:ajax event="change" focus="imprimirPDF" listener="#{AtaResultadosFinaisRelControle.consultarFuncionarioSecundario}" render="form" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="funcionarioNomeSecundario" size="42" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{AtaResultadosFinaisRelControle.funcionarioSecundarioVO.pessoa.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosFuncionarioSecundario" alt="Localizar Funcionario" render="formFuncionarioSecundario" oncomplete="#{rich:component('panelFuncionarioSecundario')}.show();" action="#{AtaResultadosFinaisRelControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosFuncionarioSecundario" alt="Limpar Dados" action="#{AtaResultadosFinaisRelControle.limparDadosFuncionarioSecundario}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup columns="1" width="100%" style="background-color: transparent;">
+				<h:panelGroup columns="1" width="100%" columnClasses="colunaEsquerda">
+					<h:outputText styleClass="field control-label mensagem col-md-12" value="#{AtaResultadosFinaisRelControle.mensagem}" />
+					<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{AtaResultadosFinaisRelControle.mensagemDetalhada}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton render="form" oncomplete="#{AtaResultadosFinaisRelControle.download}" action="#{AtaResultadosFinaisRelControle.imprimirPDF}" id="imprimirPDF" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger dark" value="Imprimir Relátorio (PDF)" accesskey="4" />
+			</h:panelGroup>
+		</h:form>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionarioSecundario" shadowOpacity="true" width="580" onshow="document.getElementById('formFuncionarioSecundario:valorConsultaFuncionarioSecundario').focus()" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_funcionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink2">
+						<rich:componentControl target="panelFuncionarioSecundario" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionarioSecundario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionarioSecundario" value="#{AtaResultadosFinaisRelControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{AtaResultadosFinaisRelControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionarioSecundario" size="10" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formFuncionarioSecundario:mensagemConsultaFuncionarioSecundario, formFuncionarioSecundario:resultadoConsultaFuncionarioSecundario, formFuncionarioSecundario:scResultadoFuncionarioSecundario" action="#{AtaResultadosFinaisRelControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaFuncionarioSecundario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AtaResultadosFinaisRelControle.listaConsultaFuncionario}" rows="5" var="funcionarioSecundario">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AtaResultadosFinaisRelControle.selecionarFuncionarioSecundario}" render="form" oncomplete="#{rich:component('panelFuncionarioSecundario')}.hide(), setFocus(form,'form:nomeFuncionarioSecundario');" value="#{funcionarioSecundario.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AtaResultadosFinaisRelControle.selecionarFuncionarioSecundario}" render="form" oncomplete="#{rich:component('panelFuncionarioSecundario')}.hide(), setFocus(form,'form:nomeFuncionarioSecundario');" value="#{funcionarioSecundario.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AtaResultadosFinaisRelControle.selecionarFuncionarioSecundario}" render="form" oncomplete="#{rich:component('panelFuncionarioSecundario')}.hide(), setFocus(form,'form:nomeFuncionarioSecundario');" value="#{funcionarioSecundario.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AtaResultadosFinaisRelControle.selecionarFuncionarioSecundario}" render="form" oncomplete="#{rich:component('panelFuncionarioSecundario')}.hide(), setFocus(form,'form:nomeFuncionarioSecundario');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formFuncionarioSecundario:resultadoConsultaFuncionarioSecundario" maxPages="10" id="scResultadoFuncionarioSecundario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFuncionarioSecundario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AtaResultadosFinaisRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionarioPrincipal" shadowOpacity="true" width="580" onshow="document.getElementById('formFuncionarioPrincipal:valorConsultaFuncionarioPrincipal').focus()" height="350">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_funcionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink">
+						<rich:componentControl target="panelFuncionarioPrincipal" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionarioPrincipal">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionarioPrincipal" value="#{AtaResultadosFinaisRelControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{AtaResultadosFinaisRelControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionarioPrincipal" size="10" styleClass="form-control campos" value="#{AtaResultadosFinaisRelControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formFuncionarioPrincipal:mensagemConsultaFuncionarioPrincipal, formFuncionarioPrincipal:resultadoConsultaFuncionarioPrincipal, formFuncionarioPrincipal:scResultadoFuncionarioPrincipal" action="#{AtaResultadosFinaisRelControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaFuncionarioPrincipal" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AtaResultadosFinaisRelControle.listaConsultaFuncionario}" rows="5" var="funcionarioPrincipal">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AtaResultadosFinaisRelControle.selecionarFuncionarioPrincipal}" render="form" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.hide(), setFocus(form,'form:nomeFuncionarioPrincipal');" value="#{funcionarioPrincipal.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AtaResultadosFinaisRelControle.selecionarFuncionarioPrincipal}" render="form" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.hide(), setFocus(form,'form:nomeFuncionarioPrincipal');" value="#{funcionarioPrincipal.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AtaResultadosFinaisRelControle.selecionarFuncionarioPrincipal}" render="form" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.hide(), setFocus(form,'form:nomeFuncionarioPrincipal');" value="#{funcionarioPrincipal.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AtaResultadosFinaisRelControle.selecionarFuncionarioPrincipal}" render="form" oncomplete="#{rich:component('panelFuncionarioPrincipal')}.hide(), setFocus(form,'form:nomeFuncionarioPrincipal');" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formFuncionarioPrincipal:resultadoConsultaFuncionarioPrincipal" maxPages="10" id="scResultadoFuncionarioPrincipal" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFuncionarioPrincipal" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AtaResultadosFinaisRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

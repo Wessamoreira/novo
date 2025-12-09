@@ -1,0 +1,1 @@
+alter table procseletivo add column if not exists informardadosbancarios boolean default false;

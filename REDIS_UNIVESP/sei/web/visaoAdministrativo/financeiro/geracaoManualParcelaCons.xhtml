@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<h:head>
+	<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Gerar Parcelas por Unidade" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<script>
+			window.onload = function() {
+				document.getElementById("form:alunoMatricula").focus();
+			}
+		</script>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelGeracaoManualEmProcessamento" show="#{GeracaoManualParcelasControle.apresentarProgressBar}" shadowOpacity="true" width="600" height="400">
+			<h:form id="formGeracaoManualEmProcessamento">
+				<a4j:poll id="poolFechar" interval="5000" rendered="#{GeracaoManualParcelasControle.apresentarProgressBar}" enabled="#{GeracaoManualParcelasControle.apresentarProgressBar}" action="#{GeracaoManualParcelasControle.realizarFinalizacaoLista}" render="form, formGeracaoManualEmProcessamento" oncomplete="#{GeracaoManualParcelasControle.oncompleteModal}" />
+				<rich:dataTable id="items" rowKeyVar="row" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GeracaoManualParcelasControle.geracaoManualParcelaEmProcessamentoVOs}" rows="10" var="geracaoManualParcelaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ControleCobranca_unidadeEnsino}" />
+						</f:facet>
+						<h:outputText id="nomeUnidade" value="#{geracaoManualParcelaItem.unidadeEnsino.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_GeracaoManualParcela_dataInicioProcessamento}" />
+						</f:facet>
+						<h:outputText id="dataInicioProcessamento" value="#{geracaoManualParcelaItem.dataInicioProcessamento}">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+						</h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_GeracaoManualParcela_statusProcessamento}" />
+						</f:facet>
+						<otm2:progressBar id="progress#{row}" bean="#{GeracaoManualParcelasControle}" item="#{geracaoManualParcelaItem}" modal="false" action="consultarGeracaoManualParcelasEmProcessamentoCons" interval="5000" render="formGeracaoManualEmProcessamento">
+						</otm2:progressBar>
+					</rich:column>
+				</rich:dataTable>
+				<otm:commandButton render="form" rendered="#{!GeracaoManualParcelasControle.apresentarProgressBar}" styleClass="btn btn-primary dark btn-fechar" oncomplete="#{rich:component('panelGeracaoManualEmProcessamento')}.hide()" />
+			</h:form>
+		</rich:popupPanel>
+		<h:form id="form">
+			<h:commandLink action="#{GeracaoManualParcelasControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="dadosConsultaAlunos">
+				<h:panelGroup id="buscaUnidade">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_unidadeEnsino}" />
+						<h:selectOneMenu id="unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.unidadeEnsino.codigo}">
+							<f:selectItems value="#{GeracaoManualParcelasControle.listaSelectItemUnidadeEnsino}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EnvelopeRel_curso}" />
+						<h:inputText id="curso" size="50" styleClass="form-control campos" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.curso.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EnvelopeRel_turma}" />
+						<h:inputText id="turma" size="30" styleClass="form-control campos" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.turma.identificadorTurma}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_periodoDe}" />
+						<otm:calendar id="valorConsultaDataInicio" value="#{GeracaoManualParcelasControle.controleConsultaOtimizado.dataIni}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Período Fim" />
+						<otm:calendar id="valorConsultaDataFim" value="#{GeracaoManualParcelasControle.controleConsultaOtimizado.dataFim}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GeracaoManualParcela_situacao}" />
+						<h:selectOneMenu id="situacao" styleClass="form-control campos" value="#{GeracaoManualParcelasControle.geracaoManualParcelaVO.situacaoProcessamentoGeracaoManualParcela}">
+							<f:selectItems value="#{GeracaoManualParcelasControle.listaSelectItemSituacao}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" id="btns" styleClass="row text-center">
+					<a4j:commandLink id="consultar" type="submit" value="#{msg_botoes.btn_consultar}" action="#{GeracaoManualParcelasControle.consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2" style="position:relative; top:-1px;">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"> </span>
+						<f:setPropertyActionListener for="consultar" target="#{GeracaoManualParcelasControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener for="consultar" target="#{GeracaoManualParcelasControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" id="resultado" columns="1" style="background-color: transparent;" width="100%">
+					<rich:dataTable id="items" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{GeracaoManualParcelasControle.controleConsultaOtimizado}" rows="10" var="geracaoManualParcelaItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GeracaoManualParcela_unidadeEnsino}" />
+							</f:facet>
+							<h:commandLink id="unidadeCons" action="#{GeracaoManualParcelasControle.editar}">
+								<h:outputText value="#{geracaoManualParcelaItem.unidadeEnsino.nome}" />
+							</h:commandLink>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GeracaoManualParcela_curso}" />
+							</f:facet>
+							<h:commandLink id="cursoCons" action="#{GeracaoManualParcelasControle.editar}">
+								<h:outputText value="#{geracaoManualParcelaItem.curso.nome}" />
+							</h:commandLink>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GeracaoManualParcela_turma}" />
+							</f:facet>
+							<h:commandLink id="turmaCons" action="#{GeracaoManualParcelasControle.editar}">
+								<h:outputText value="#{geracaoManualParcelaItem.turma.identificadorTurma}" />
+							</h:commandLink>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Data" />
+							</f:facet>
+							<h:commandLink id="dataCons" action="#{GeracaoManualParcelasControle.editar}">
+								<h:outputText value="#{geracaoManualParcelaItem.dataInicioProcessamento}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+								</h:outputText>
+							</h:commandLink>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Período" />
+							</f:facet>
+							<h:commandLink id="periodoCons" action="#{GeracaoManualParcelasControle.editar}">
+								<h:outputText rendered="#{geracaoManualParcelaItem.gerarTodasParcelas}" value="Todas as Parcelas">
+								</h:outputText>
+								<h:outputText rendered="#{!geracaoManualParcelaItem.gerarTodasParcelas}" value="#{geracaoManualParcelaItem.mesReferencia}/#{geracaoManualParcelaItem.anoReferencia}">
+								</h:outputText>
+							</h:commandLink>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GeracaoManualParcela_situacao}" />
+							</f:facet>
+							<h:commandLink id="sitCons" action="#{GeracaoManualParcelasControle.editar}">
+								<h:outputText value="#{geracaoManualParcelaItem.situacaoProcessamentoGeracaoManualParcela.valorApresentar}" />
+							</h:commandLink>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GeracaoManualParcela_responsavel}" />
+							</f:facet>
+							<h:commandLink id="respCons" action="#{GeracaoManualParcelasControle.editar}">
+								<h:outputText value="#{geracaoManualParcelaItem.usuario.nome}" />
+							</h:commandLink>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{GeracaoManualParcelasControle.editar}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_editar} iconePequeno" />
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller id="scrool" scrollListener="#{GeracaoManualParcelasControle.paginarConsulta}" for="items" page="#{GeracaoManualParcelasControle.controleConsultaOtimizado.page}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" id="panelGridMensagens" styleClass="row">
+				<otm:mensagem bean="#{GeracaoManualParcelasControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton id="novo" action="#{GeracaoManualParcelasControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" alt="#{msg.msg_novo_dados}" accesskey="1" />
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

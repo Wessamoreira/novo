@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="conteudo">
+		<!-- 			<ui:include src="richPanelImagem.xhtml" /> -->
+		<h:form id="form">
+			<h1 class="title1">Empréstimos</h1>
+			<h:panelGroup id="pgFiltros">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText value="Valor Consulta" styleClass="field control-label tituloCampos" />
+					<h:inputText id="valorConsulta" styleClass="form-control campos" size="60" value="#{EmprestimoControle.controleConsulta.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText value="Apenas Empréstimos em Aberto" styleClass="field control-label tituloCampos" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="somenteEmprestimosEmAberto" value="#{EmprestimoControle.apenasEmprestimosEmAberto}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton id="buscar" value="#{msg_botoes.btn_consultar}" action="#{EmprestimoControle.executarConsultaTelaBuscaEmprestimoEmAberto}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="2" />
+				</h:panelGroup>
+				<otm:spacer height="10px" />
+				<rich:dataTable id="listaConsulta" style="width:100%" rendered="#{! empty EmprestimoControle.listaConsulta }" value="#{EmprestimoControle.listaConsulta}" var="itemEmprestimoItens" rows="10" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento">
+					<rich:column style="text-align:center">
+						<f:facet name="header">
+							<h:outputText value="Tombo" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{itemEmprestimoItens.exemplar.codigoBarra}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Emprestimo_catalogo}"></h:outputText>
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{itemEmprestimoItens.exemplar.catalogo.titulo}" />
+					</rich:column>
+					<rich:column style="text-align:center">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Emprestimo_dataPrevistaDevolucao}" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{itemEmprestimoItens.dataPrevisaoDevolucao_Apresentar}" />
+					</rich:column>
+					<rich:column style="text-align:center" rendered="#{EmprestimoControle.isApresentarColunaDataDevolucao }">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Emprestimo_dataDevolucao}" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{EmprestimoControle.dataDevolucao_Apresentar}" />
+					</rich:column>
+					<rich:column style="text-align:center">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Emprestimo_valorMulta}" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{itemEmprestimoItens.valorMulta}">
+							<f:convertNumber pattern="###,##0.00" />
+						</h:outputText>
+					</rich:column>
+					<rich:column style="text-align:center">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Emprestimo_situacao}" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{itemEmprestimoItens.situacao_Apresentar_FichaAluno}" />
+					</rich:column>
+					<rich:column style="text-align:center">
+						<f:facet name="header">
+							<h:outputText value="Opção" />
+						</f:facet>
+						<otm:commandIcon rendered="#{itemEmprestimoItens.situacao_Apresentar ne 'Devolvido'}" render="@form" id="renovar" tooltip="Renovar" icon="#{msg_botoes.btn_icon_atualizar} iconePequeno" image="#{resource['/imagens/botaoRenovar.png']}" action="#{EmprestimoControle.registarRenovacaoEmprestimoVisaoAlunoProfessorFuncionario}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="listaConsulta" limitRender="5" align="center" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" rendered="#{!empty EmprestimoControle.listaCatalogosReservados}" id="panelReservados" style="width:100%;margin-top:10px;">
+					<h1 class="title1">
+						<h:outputText value="Reservas" />
+						<h:panelGroup layout="block" style="float:right;position:relative;top:-5px">
+							<otm:commandButton rendered="#{!empty EmprestimoControle.listaCatalogosReservados}" render="form" oncomplete="#{EmprestimoControle.download}" action="#{EmprestimoControle.imprimirTicketReservaPDF}" style="margin-bottom: 10px" id="imprimirPDF" value="Imprimir Ticket" accesskey="4" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_imprimir_embutido}" />
+						</h:panelGroup>
+					</h1>
+					<h:outputText rendered="#{empty EmprestimoControle.listaCatalogosReservados}" styleClass="field control-label mensagem col-md-12" value="#{msg.msg_NaoExistemCatalogosReservados}" />
+					<rich:dataTable id="dtCatalogosReservados" rendered="#{!empty EmprestimoControle.listaCatalogosReservados}" style="width:325px" headerClass="consulta" value="#{EmprestimoControle.listaCatalogosReservados}" var="reservaCatalogo">
+						<rich:column style="text-align:left" width="175px">
+							<f:facet name="header">
+								<h:outputText value="Biblioteca_titulo" />
+							</f:facet>
+							<h:outputText id="bibliotecaReservados" value="#{reservaCatalogo.bibliotecaVO.nome}" />
+						</rich:column>
+						<rich:column style="text-align:left" width="175px">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Catalogo_titulo}" />
+							</f:facet>
+							<h:outputText id="tituloReservados" value="#{reservaCatalogo.catalogo.titulo}" />
+							<rich:tooltip followMouse="true" direction="topRight" style="width:400px;height:150px;" target="tituloReservados" showDelay="500">
+								<h:panelGroup columns="2" styleClass="tabForm">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_codigo}" />
+									<h:inputText size="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{reservaCatalogo.catalogo.codigo}" />
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_classificacao}" />
+									<h:inputText size="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{reservaCatalogo.catalogo.classificacaoBibliografica}" />
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_cutterPha}" />
+									<h:inputText size="15" maxlength="30" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{reservaCatalogo.catalogo.cutterPha}" />
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_edicao}" />
+									<h:inputText size="10" maxlength="7" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{reservaCatalogo.catalogo.edicao}" />
+								</h:panelGroup>
+							</rich:tooltip>
+						</rich:column>
+						<rich:column style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Reserva_validaAte}" />
+							</f:facet>
+							<h:outputText value="#{reservaCatalogo.dataTerminoReserva}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</rich:column>
+						<rich:column style="text-align:center">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Emprestimo_exemplaresDisponiveis}" />
+							</f:facet>
+							<h:outputText value="#{reservaCatalogo.nrExemplaresDisponiveisDesseCatalogo}" />
+						</rich:column>
+					</rich:dataTable>
+				</h:panelGroup>
+				<otm:spacer height="10px" />
+				<h:panelGroup rendered="#{! empty EmprestimoControle.configuracaoBibliotecaVO.listaBibliotecaExternaVO }" layout="block" style="width:100%">
+					<h1 class="title1">
+						<h:outputText value="Bibliotecas Externas" />
+					</h1>
+					<rich:dataTable id="listaBibliotecasExternas" rendered="#{! empty EmprestimoControle.configuracaoBibliotecaVO.listaBibliotecaExternaVO }" value="#{EmprestimoControle.configuracaoBibliotecaVO.listaBibliotecaExternaVO}" var="bibliotecaExternaItens" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento">
+						<rich:column>
+							<a4j:commandLink id="link" onclick="abrirPopup3('#{bibliotecaExternaItens.urlApresentar}')">
+								<h:outputText value="#{bibliotecaExternaItens.url}" />
+							</a4j:commandLink>
+						</rich:column>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagens" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{EmprestimoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

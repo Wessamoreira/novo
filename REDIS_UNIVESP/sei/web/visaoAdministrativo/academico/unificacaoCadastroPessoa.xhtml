@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm"> <h:head>
+</h:head> <ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Unificação Cadastro Pessoa" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style>
+			.labelUsuarioPermanecer {
+				position: absolute;
+			    top: 13.5%;
+			    background-color: white;
+			    padding-right: 5px;
+			    padding-left: 5px;
+			}
+			.borderPanelUsuarioManter {
+				border: 1px solid #c5c1c1 !important;
+			}
+			#formUnificacaoUsuario .border-bottom {
+				border-color: #c5c1c1 !important;
+			}
+			#formUnificacaoUsuario .border {
+				border-color: #c5c1c1 !important;
+			}
+			#formUnificacaoUsuario .barra-btn-flutuante-modal-80 {
+			    bottom: 4%;
+			}
+			@media ( max-width : 500px) {
+				.labelUsuarioPermanecer {
+					position: relative !important;
+					top: 13.5%;
+				    background-color: white;
+				    padding-right: 5px;
+				    padding-left: 5px;
+				}
+			}
+		</style>
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelAvisoUnificacao" shadowOpacity="true" width="600" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Aviso" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAvisoUnificacao">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<span class="#{msg_botoes.btn_icon_aviso_embutido} text-warning fs15 mr5" />
+					<h:outputText styleClass="tituloCampos font-weight-bold" value="Tem certeza que deseja unificar o(s) cadastro(s)? Caso realize a operação não será mais possível reverter o mesmo." escape="false" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton render="formAvisoUnificacao, form:panelGridConteudo, panelUnificacaoUsuario, formUnificacaoUsuario" action="#{UnificacaoCadastroPessoaControle.realizarUnificacaoPessoa}" oncomplete="#{rich:component('panelAvisoUnificacao')}.hide()" icon="#{msg_bt.btn_icon_gravar_embutido}" styleClass="btn btn-dark" value="Confirmar Unificação" accesskey="4" id="unificarAluno" />
+					<otm:spacer width="5px" />
+					<otm:commandButton render="form" oncomplete="#{rich:component('panelAvisoUnificacao')}.hide()" value="Fechar" icon="#{msg_bt.btn_icon_fechar_embutido}" styleClass="btn btn-danger dark btn-fechar" title="Fechar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	
+		<rich:popupPanel styleClass="modalMaximizado" id="panelPessoaManter" onshow="document.getElementById('formPessoaUnificar:valorConsultaPessoa').focus()" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Consultar Pessoa"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPessoa" />
+					<rich:componentControl target="panelPessoaManter" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPessoaManter">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAluno" value="#{UnificacaoCadastroPessoaControle.campoConsultaPessoa}">
+						<f:selectItems value="#{UnificacaoCadastroPessoaControle.tipoConsultaComboPessoaUnificar}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaPessoa" size="30" styleClass="form-control campos" value="#{UnificacaoCadastroPessoaControle.valorConsultaPessoa}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formPessoaManter, formPessoaManter:mensagemConsultaPessoaManter, formPessoaManter:resultadoConsultaPessoaManter, formPessoaManter:scResultadoPessoaManter" action="#{UnificacaoCadastroPessoaControle.consultarPessoaManter}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaPessoaManter" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{UnificacaoCadastroPessoaControle.listaConsultaPessoaVOs}" rows="7" var="pessoaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{UnificacaoCadastroPessoaControle.selecionarPessoaManter}" render="form:panelGridConteudo" oncomplete="#{rich:component('panelPessoaManter')}.hide();" value="#{pessoaItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{UnificacaoCadastroPessoaControle.selecionarPessoaManter}" render="form:panelGridConteudo" oncomplete="#{rich:component('panelPessoaManter')}.hide();" value="#{pessoaItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="CPF" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{UnificacaoCadastroPessoaControle.selecionarPessoaManter}" render="form:panelGridConteudo" oncomplete="#{rich:component('panelPessoaManter')}.hide();" value="#{pessoaItens.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="RG" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{UnificacaoCadastroPessoaControle.selecionarPessoaManter}" render="form:panelGridConteudo" oncomplete="#{rich:component('panelPessoaManter')}.hide();" value="#{pessoaItens.RG}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="E-mail" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{UnificacaoCadastroPessoaControle.selecionarPessoaManter}" render="form:panelGridConteudo" oncomplete="#{rich:component('panelPessoaManter')}.hide();" value="#{pessoaItens.email}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{UnificacaoCadastroPessoaControle.selecionarPessoaManter}" render="form" oncomplete="#{rich:component('panelPessoaManter')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important"> <rich:dataScroller align="center" for="formPessoaManter:resultadoConsultaPessoaManter" maxPages="10" id="scResultadoPessoaManter" boundaryControls="auto" stepControls="auto" fastControls="hide" /> </div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaPessoaManter" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{UnificacaoCadastroPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelUnificacaoUsuario" show="#{UnificacaoCadastroPessoaControle.unificarUsuarioPessoa}" shadowOpacity="true" width="600" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Aviso" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUnificacaoUsuario">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center mb10">
+					<span class="#{msg_botoes.btn_icon_aviso_embutido} text-warning fs15 mr5" />
+					<h:outputText styleClass="tituloCampos font-weight-bold" value="Foram encontrados usuários duplicados, favor realize a unificação desses usuários duplicados para prosseguir." />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mn border rounded p5 mt10">
+					<h:panelGroup layout="block" styleClass="row mn border-bottom mb5 p5">
+						<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+							<h:outputText styleClass="tituloCampos font-weight-bold" value="Username" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+							<h:outputText styleClass="tituloCampos font-weight-bold" value="Tipo de Usuário" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 text-center">
+							<h:outputText styleClass="tituloCampos font-weight-bold" value="Permanecer/Unificar" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row mn p5 borderPanelUsuarioManter bg-gray" rendered="#{UnificacaoCadastroPessoaControle.usuarioManter.codigo > 0}">
+						<rich:tooltip target="panelMensagemIconUsuarioSelecionado" value="Usuário selecionado para ser mantido na unificação" zindex="10000" />
+						<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+							<h:outputText styleClass="tituloCampos font-weight-bold btn-block" value="#{UnificacaoCadastroPessoaControle.usuarioManter.username}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+							<h:outputText styleClass="tituloCampos font-weight-bold" value="#{UnificacaoCadastroPessoaControle.usuarioManter.tipoUsuario_Apresentar}" />
+						</h:panelGroup>
+						<h:panelGroup id="panelMensagemIconUsuarioSelecionado" layout="block" styleClass="col-md-2 text-center">
+							<span class="#{msg_botoes.btn_icon_selecionar_embutido} tituloCampos" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<otm:commandButton value="remover usuário" styleClass="btn btn-danger pr20 pl20 float-right" icon="#{msg_botoes.btn_icon_fechar_embutido}" action="#{UnificacaoCadastroPessoaControle.removerUsuarioPermanecer}" render="formUnificacaoUsuario" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<a4j:repeat id="listaUsuarios" rowKeyVar="index" value="#{UnificacaoCadastroPessoaControle.usuarioVOs}" var="usuarioItens" rendered="#{!empty UnificacaoCadastroPessoaControle.usuarioVOs}">
+						<h:panelGroup layout="block" styleClass="row mn p5 bg-gray-100 #{(usuarioItens.codigo eq UnificacaoCadastroPessoaControle.usuarioVOs[UnificacaoCadastroPessoaControle.usuarioVOs.size() -1].codigo) ? '' : 'border-bottom'}" rendered="#{(UnificacaoCadastroPessoaControle.usuarioManter.codigo == 0) or (UnificacaoCadastroPessoaControle.usuarioManter.codigo != 0 and UnificacaoCadastroPessoaControle.usuarioManter.codigo != usuarioItens.codigo and UnificacaoCadastroPessoaControle.usuarioManter.tipoUsuario eq usuarioItens.tipoUsuario)}">
+							<rich:tooltip target="formUnificacaoUsuario:listaUsuarios:#{index}:panelMensagemIcon" value="#{usuarioItens.selecionado ? 'Usuário selecionado para a unificação ao usuário que será mantido' : 'Usuário não selecionado'}" zindex="10000" />
+							<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+								<h:outputText styleClass="tituloCampos font-weight-bold" value="#{usuarioItens.username}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4 text-center">
+								<h:outputText styleClass="tituloCampos font-weight-bold" value="#{usuarioItens.tipoUsuario_Apresentar}" />
+							</h:panelGroup>
+							<h:panelGroup id="panelMensagemIcon" layout="block" styleClass="col-md-2 text-center">
+								<span class="#{usuarioItens.selecionado ? msg_botoes.btn_icon_atualizar_embutido : msg_botoes.btn_icon_fechar_embutido} tituloCampos" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<otm:commandButton value="#{UnificacaoCadastroPessoaControle.usuarioManter.codigo > 0 and usuarioItens.selecionado ? 'desmarcar usuário' : UnificacaoCadastroPessoaControle.usuarioManter.codigo > 0 ? 'selecionar usuário' : 'usuário manter'}" styleClass="btn #{usuarioItens.selecionado ? 'btn-warning' : 'btn-info'} pr10 pl10 float-right" icon="#{usuarioItens.selecionado ? msg_botoes.btn_icon_marcarTodos_embutido : msg_botoes.btn_icon_desmarcarTodos_embutido}" action="#{UnificacaoCadastroPessoaControle.selecionarUsuario}" render="formUnificacaoUsuario" tooltip="#{UnificacaoCadastroPessoaControle.usuarioManter.codigo eq 0 ? 'Clique para selecionar o usuário que permanecerá na unificação' : ''}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</a4j:repeat>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton value="unificar usuários" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_gravar_embutido}" render="formUnificacaoUsuario, form" action="#{UnificacaoCadastroPessoaControle.realizarUnificacaoUsuarios}" oncomplete="#{UnificacaoCadastroPessoaControle.oncompleteModal}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<title>
+		<h:outputText value="#{msg_aplic.prt_TipoAdvertencia_tituloForm} #{msg.msg_separador_titulo_paginas}#{msg.msg_titulo_paginas}" /></title>
+		<h:form id="form">
+			<h:commandLink action="#{UnificacaoCadastroPessoaControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridConteudo">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="Pessoa Permanecer" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="alunoPermanecer" disabled="true" readonly="true" size="40" styleClass="form-control camposObrigatorios camposSomenteLeitura" value="#{UnificacaoCadastroPessoaControle.pessoaVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosPessoaUnificar" action="#{UnificacaoCadastroPessoaControle.limparDadosModalPessoaUnificar}" tooltip="Localizar Pessoa" render="formPessoaManter" oncomplete="#{rich:component('panelPessoaManter')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosPessoa" tooltip="Limpas Dados" action="#{UnificacaoCadastroPessoaControle.limparDadosPessoa}" render="form:panelGridConteudo" icon="#{msg_botoes.btn_icon_limpar_embutido}" /> </span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="CPF Aluno" />
+					<h:inputText id="CPFAlunoUnificar" readonly="true" onkeypress="return mascara(this.form, 'form:fiadorCPF', '999.999.999-99', event);" size="14" maxlength="14" styleClass="form-control camposSomenteLeitura" value="#{UnificacaoCadastroPessoaControle.pessoaVO.CPF}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Aluno" />
+					<h:inputText id="isAluno" readonly="true" size="40" styleClass="form-control camposSomenteLeitura" value="#{UnificacaoCadastroPessoaControle.pessoaVO.isAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="Quantidade Conta Receber Vinculado à Pessoa como Aluno" />
+					<h:inputText id="quantidadeContaReceberPessoaComoAluno" disabled="true" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{UnificacaoCadastroPessoaControle.pessoaVO.quantidadeContaReceberPessoaComoAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="Quantidade Conta Receber Vinculado à Pessoa como Responsável Financeiro" />
+					<h:inputText id="quantidadeContaReceberPessoaComoResponsavelFinanceiro" disabled="true" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{UnificacaoCadastroPessoaControle.pessoaVO.quantidadeContaReceberPessoaComoResponsavelFinanceiro}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="Funcionário" />
+					<h:inputText id="isFuncionario" readonly="true" size="40" styleClass="form-control camposSomenteLeitura" value="#{UnificacaoCadastroPessoaControle.pessoaVO.isFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					<h:selectOneMenu styleClass="form-control campos" id="consultaUnificarAluno" value="#{UnificacaoCadastroPessoaControle.campoConsultaAlunoUnificar}">
+						<f:selectItems value="#{UnificacaoCadastroPessoaControle.tipoConsultaComboPessoaUnificar}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="Valor consulta" />
+					<h:inputText id="valorConsultaUnificarAluno" size="50" styleClass="form-control campos" value="#{UnificacaoCadastroPessoaControle.valorConsultaAlunoUnificar}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton id="consultarPessoaUnificar" render="form:resultadoConsultaUnificarAluno" styleClass="btn btn-default btn-consultar" action="#{UnificacaoCadastroPessoaControle.consultarPessoaUnificacao}" value="#{msg_botoes.btn_consultar}" accesskey="4" />
+				</h:panelGroup>
+				<h:panelGroup columns="1" styleClass="colunaEsquerda" width="100%">
+					<rich:dataTable id="resultadoConsultaUnificarAluno" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento,colunaAlinhamento" value="#{UnificacaoCadastroPessoaControle.listaConsultaAlunoUnificarVOs}" rows="10" var="pessoaUnificarItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink id="botaoSelecionarAlunoUnificarNome" value="#{pessoaUnificarItens.nome}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Prospects_cpf}" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink id="botaoSelecionarFuncionarioUnificarCpf" value="#{pessoaUnificarItens.CPF}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Aluno" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink id="alunoSim" rendered="#{pessoaUnificarItens.aluno}" value="Sim" />
+								<a4j:commandLink id="alunoNao" rendered="#{!pessoaUnificarItens.aluno}" value="Não" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Funcionário" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink id="funcionarioSim" rendered="#{pessoaUnificarItens.funcionario}" value="Sim" />
+								<a4j:commandLink id="funcionarioNao" rendered="#{!pessoaUnificarItens.funcionario}" value="Não" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Quant. Contas Vinculadas à Pessoa como Aluno" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink id="quantidadeContaReceberPessoaComoAluno" value="#{pessoaUnificarItens.quantidadeContaReceberPessoaComoAluno}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Quant. Contas Vinculadas à Pessoa como Responsável Financeiro" />
+							</f:facet>
+							<h:panelGroup>
+								<a4j:commandLink id="quantidadeContaReceberPessoaComoResponsavelFinanceiro" value="#{pessoaUnificarItens.quantidadeContaReceberPessoaComoResponsavelFinanceiro}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_selecionar}" />
+							</f:facet>
+							<otm:selectBooleanCheckbox id="alunoSelecionadoUnificar" style="position:relative; top:1px" value="#{pessoaUnificarItens.selecionado}">
+								<a4j:ajax event="click" execute="@none" />
+							</otm:selectBooleanCheckbox>
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller boundaryControls="auto" fastControls="hide" stepControls="auto" for="resultadoConsultaUnificarAluno" limitRender="10" align="center" />
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<h:panelGroup id="mensagem">
+						<otm:mensagem bean="#{UnificacaoCadastroPessoaControle}"></otm:mensagem>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<otm:commandButton style="margin-right:5px" render="formAvisoUnificacaoAluno" oncomplete="#{rich:component('panelAvisoUnificacao')}.show()" icon="#{msg_botoes.btn_icon_gravar_embutido}" image="#{resource['imagens/botaoUnificarCadastro.png']}" styleClass="btn btn-dark" value="Unificar dados" accesskey="4" id="unificarAluno" />
+						<otm:commandButton id="novo" render="form" styleClass="btn btn-info btn-novo" action="#{UnificacaoCadastroPessoaControle.novo}" value="#{msg_botoes.btn_novo}" accesskey="1" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<script>
+			document.getElementById("form:descricao").focus();
+		</script>
+	</ui:define>
+</ui:composition> </html>

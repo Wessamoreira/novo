@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<header> <script type="text/javascript">
+	
+	
+		(function($) {
+		    $(window).ready(function () {
+		    	if(#{session != null and session.getAttribute("LoginControle") != null
+		    		and session.getAttribute("LoginControle").getUsuarioLogado() != null
+		    		and session.getAttribute("LoginControle").getUsuarioLogado().getCodigo() > 0
+		    		and !session.getAttribute("LoginControle").getUsuarioLogado().getIsApresentarVisaoAdministrativa()
+		    	}) {
+		    		$(location).attr('href', '../acessoRestrito.xhtml?faces-redirect=true');
+		    	}	    	
+		    });
+		    
+		    fecharPopup = function(nomeJanela){
+	    		if(#{session != null and session.getAttribute("LoginControle") != null and session.getAttribute("LoginControle").popupAberto(nomeJanela)}) {
+	    			fecharPopupEspecifico(nomeJanela);	
+		    	}			    	
+	    	};
+		    		    
+		}(jQuery));
+		</script> </header>
+
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+
+	<ui:define name="tituloNavegador">
+		SEI - Visão Professor
+	</ui:define>
+
+	<ui:define name="subTituloPagina">
+		<h:form id="formTitulo">
+			<h:panelGroup layout="block" styleClass="col-md-12 mb5">
+				<h:panelGroup layout="block" styleClass="col-md-9 pn">
+					<h:outputText value="Você Está Acessando Pelo Perfil"></h:outputText>
+					<h:selectOneMenu styleClass="form-control  fs12 bg-transparent form-control-input-table" id="consulta" value="#{LoginControle.usuario.tipoNivelEducacionalLogado}">
+						<a4j:ajax event="change" execute="@this" render="form" oncomplete="focus('formTitulo:ano')" listener="#{LoginControle.adicionarPerfilProfessor}" />
+						<f:selectItems value="#{LoginControle.listaSelectItemPerfilProfessorGraduacaoPos}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText value="Ano/Semestre" styleClass="btn-block"></h:outputText>
+					<h:panelGroup layout="block" styleClass="col-md-6 pn">
+						<h:inputText styleClass="form-control  pn fs12 bg-transparent form-control-input-table" onkeyup="aceitarSomenteValorNumerico(this)" value="#{VisaoProfessorControle.ano}" id="ano">
+							<a4j:ajax event="change" execute="@form" render="formTitulo, form, formMensagemGoogleMeet" listener="#{VisaoProfessorControle.realizarAtualizacaoTelaInicialVisaoProfessorPorAnoSemestre}"  oncomplete="focus('formTitulo:semestre');#{VisaoProfessorControle.modalCalendario}" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6 ">
+						<h:selectOneMenu styleClass="form-control  fs12 bg-transparent form-control-input-table" id="semestre" value="#{VisaoProfessorControle.semestre}">
+							<f:selectItems value="#{VisaoProfessorControle.listaSelectItemSemestre}" />
+							<a4j:ajax event="change" execute="@form" render="formTitulo, form, formMensagemGoogleMeet" listener="#{VisaoProfessorControle.realizarAtualizacaoTelaInicialVisaoProfessorPorAnoSemestre}" oncomplete="#{VisaoProfessorControle.modalCalendario}"/>
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+
+		</h:form>
+	</ui:define>
+
+	<ui:define name="modal">
+
+		<a4j:jsFunction name="verificarModal" oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}" />
+
+		<rich:popupPanel id="panelPrimeiroAcesso"  styleClass="modalMaximizado50" domElementAttachment="parent" width="650" height="350" headerClass="consulta" show="#{VisaoProfessorControle.apresentarModalResetarSenha}" autosized="false" shadowOpacity="true" rendered="#{!VisaoProfessorControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Primeiro Acesso"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formPrimeiroAcesso">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="Bem Vindo! Esse é seu primeiro acesso ao portal, altere sua senha de acesso abaixo!" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row mt-2">
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+						<h:inputText id="usernamePrimeiroAcesso" size="20" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{VisaoProfessorControle.usuarioLogado.username}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Usuario_senha}" />
+						<h:inputSecret id="senhaPrimeiroAcesso" size="20" styleClass="form-control camposObrigatorios" value="#{VisaoProfessorControle.senha}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2 ">
+						<otm:spacer width="100%" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Nível Segurança" />
+						<div id="page-wrap"></div>
+					</h:panelGroup>
+				</h:panelGroup>
+				<otm:mensagem bean="#{VisaoProfessorControle}"></otm:mensagem>
+
+
+				<h:panelGroup layout="block" styleClass="row ">
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<otm:commandButton id="alterarSenhaPrimeiroAcesso" styleClass="btn btn-dark" action="#{VisaoProfessorControle.alterarSenhaPrimeiroAcesso}" render="formPrimeiroAcesso, panelPrimeiroAcesso" accesskey="2" value="Gravar" icon="#{msg_botoes.btn_icon_gravar_embutido}" />
+
+						<otm:commandButton id="logout" styleClass="btn btn-default ml-3" action="#{LoginControle.logoutVisao}" render="formMensagem, formPrimeiroAcesso, panelMensagem, panelPrimeiroAcesso" accesskey="2" value="Sair" icon="fas fa-sign-out-alt" />
+					</h:panelGroup>
+				</h:panelGroup>
+
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelRequisicoes" styleClass="modalMaximixado" domElementAttachment="parent" show="#{LoginControle.apresentarRequisicoes}" shadowOpacity="true" width="850" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Questionário Requisição" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer;margin-top:3px" id="hidelink3">
+						<rich:componentControl target="panelRequisicoes" operation="hide" event="click"  />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formRequisicoes">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<rich:dataTable id="items" width="100%" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{LoginControle.requisicoesVOs}" var="requisicaoItemVOItens">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Requisicao_codigo}" />
+								</f:facet>
+								<h:outputText value="#{requisicaoItemVOItens.codigo}" />
+							</rich:column>
+
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Responsável" />
+								</f:facet>
+								<h:outputText value="#{requisicaoItemVOItens.responsavelRequisicao.nome}" />
+							</rich:column>
+
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Solicitante" />
+								</f:facet>
+								<h:outputText value="#{requisicaoItemVOItens.solicitanteRequisicao.nome}" />
+							</rich:column>
+
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Requisicao_dataRequisicao}" />
+								</f:facet>
+								<h:outputText value="#{requisicaoItemVOItens.dataRequisicao_Apresentar}" />
+							</rich:column>
+
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Requisicao_categoriaProduto}" />
+								</f:facet>
+								<h:outputText value="#{requisicaoItemVOItens.categoriaProduto.nome}" />
+							</rich:column>
+
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Requisicao_unidadeEnsino}" />
+								</f:facet>
+								<h:outputText value="#{requisicaoItemVOItens.unidadeEnsino.nome}" />
+							</rich:column>
+
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_Requisicao_departamento}" />
+								</f:facet>
+								<h:outputText value="#{requisicaoItemVOItens.departamento.nome}" />
+							</rich:column>
+
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon id="btnResponder" action="#{LoginControle.selecionarRequisicao}" render="formQuestionarioFechamento" oncomplete="#{LoginControle.acaoModalQuestionario}" tooltip="#{msg_botoes.btn_responder}" icon="#{msg_botoes.btn_icon_responder_embutido} btn btn-info iconePequeno " />
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelQuestionarioFechamento" styleClass="modalMaximixado"  shadowOpacity="false" width="900" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Questionario_tituloForm}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelQuestionarioFechamento">
+						<rich:componentControl target="panelQuestionarioFechamento" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formQuestionarioFechamento">
+				<otm2:questionarioResposta bean="#{LoginControle}" objetoOrigem="#{LoginControle.requisicaoVO.questionarioRespostaOrigemFechamentoVO}" />
+
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="mensagem" value="#{LoginControle.mensagem}" />
+						<h:outputText styleClass="mensagemDetalhada" value="#{LoginControle.mensagemDetalhada}" />
+						<otm:commandButton value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" render="formQuestionarioFechamento, panelRequisicoes" action="#{LoginControle.gravarRequisicaoComQuestionario}" oncomplete="#{LoginControle.acaoModalQuestionario}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelMensagem" zindex="3000" maxHeight="600" minHeight="500" minWidth="750" maxWidth="800" autosized="true" top="10" moveable="true" headerClass="consulta" domElementAttachment="parent" show="#{ComunicacaoInternaControle.abrirRichModalMensagem}" onshow="document.getElementById('formAluno:valorConsultaAlunoModal').focus();" controlsClass="aba" shadowOpacity="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Comunicação"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMensagem">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" rendered="#{ComunicacaoInternaControle.lerComunicado}" styleClass="col-md-12">
+						<otm:editor readonly="true" contents="height: calc(100vh - 180px) !important; " id="mensagemResposta2" value="#{ComunicacaoInternaControle.comunicacaoInternaVO.mensagem}">
+
+						</otm:editor>
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{ComunicacaoInternaControle.responderComunicado}" styleClass="col-md-12">
+						<otm:editor contents="height: calc(100vh - 180px) !important; " rendered="#{ComunicacaoInternaControle.responderComunicado}" id="mensagemResposta" value="#{ComunicacaoInternaControle.comunicacaoInternaResposta.mensagem}">
+
+						</otm:editor>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" id="paMensagemMsg" rendered="#{ComunicacaoInternaControle.responderComunicado}">
+					<otm:mensagem bean="#{ComunicacaoInternaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup id="paMensagem" styleClass="barra-btn-flutuante-modal-100" layout="block" rendered="#{!VisaoProfessorControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<h:commandLink id="gravarRecadoRespostaMsg" oncomplete="verificarModal()" rendered="#{ComunicacaoInternaControle.responderComunicado}" action="#{ComunicacaoInternaControle.responderLeituraObrigatoriaOuMarketing}" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing, form" accesskey="2" styleClass="btn btn-info" value="Enviar Resposta" icon="#{msg_botoes.btn_icon_responder_embutido}">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</h:commandLink>
+						<h:commandLink render="formMensagem, form" rendered="#{ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}" action="#{ComunicacaoInternaControle.inicializarDadosResponderComunicado}" value="Reponder" icon="#{msg_botoes.btn_icon_responder_embutido}" styleClass="btn btn-primary">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</h:commandLink>
+						<otm:commandButton styleClass="btn btn-info" id="reMarcarLidas" oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}" action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}" rendered="#{!ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}" execute="@this" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" accesskey="1" value="Marcar como Lida" icon="#{msg_botoes.btn_icon_responder_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup styleClass="barra-btn-flutuante-modal-100" layout="block" rendered="#{VisaoProfessorControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<otm:commandButton value="Fechar" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}" oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}" execute="@this" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelMarketing" top="10" moveable="true" zindex="2000" headerClass="consulta" domElementAttachment="parent" show="#{ComunicacaoInternaControle.abrirRichModalMarketing}" controlsClass="aba" shadowOpacity="true">
+
+			<h:form id="formAnexoMarketing">
+				<h:panelGroup layout="block" styleClass="row">
+
+
+					<h:panelGroup layout="block" rendered="#{ComunicacaoInternaControle.comunicacaoInternaVO.existeArquivo  and ComunicacaoInternaControle.lerComunicado}" styleClass="col-md-12 text-center">
+						<h:graphicImage styleClass="imagem-comunicao-mural" value="#{ComunicacaoInternaControle.paintArquivoMarketing1}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{ComunicacaoInternaControle.responderComunicado}" styleClass="col-md-12">
+						<otm:editor rendered="#{ComunicacaoInternaControle.responderComunicado}" id="mensagemRespostaMarketing" value="#{ComunicacaoInternaControle.comunicacaoInternaResposta.mensagem}">
+
+						</otm:editor>
+					</h:panelGroup>
+
+				</h:panelGroup>
+
+				<h:panelGroup id="paMensagemMarke" rendered="#{ComunicacaoInternaControle.responderComunicado}" layout="block">
+					<otm:mensagem bean="#{ComunicacaoInternaControle}"></otm:mensagem>
+
+				</h:panelGroup>
+				<h:panelGroup id="paBotaoMarketing" styleClass="barra-btn-flutuante-modal-100" layout="block" rendered="#{!VisaoProfessorControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<otm:commandButton styleClass="btn btn-info" oncomplete="verificarModal()" id="gravarRecadoRespostaMarke" rendered="#{ComunicacaoInternaControle.responderComunicado}" action="#{ComunicacaoInternaControle.responderLeituraObrigatoriaOuMarketing}" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" accesskey="2" value="Enviar Resposta" icon="#{msg_botoes.btn_icon_responder_embutido}">
+
+						</otm:commandButton>
+						<otm:commandButton styleClass="btn btn-primary" render="panelMarketing, formAnexoMarketing, panelMensagem" rendered="#{ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}" action="#{ComunicacaoInternaControle.inicializarDadosResponderComunicado}" value="#{msg_bt.btn_responder}" icon="#{msg_botoes.btn_icon_responder_embutido}" />
+
+						<otm:commandButton styleClass="btn btn-info" id="reMarcarLidasMar" action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}" rendered="#{!ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}" execute="@this" render="formMensagem, formAnexoMarketing, panelMarketing" accesskey="1" value="Marcar Como Lida" icon="#{msg_botoes.btn_icon_responder_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup styleClass="barra-btn-flutuante-modal-100" layout="block" rendered="#{VisaoProfessorControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<otm:commandButton value="Fechar" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}" oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}" execute="@this" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelQRCodeLogin" width="400" domElementAttachment="parent" height="410">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="QR Code Login - Aplicativo SEI" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelQRCodeLogin">
+						<rich:componentControl target="panelQRCodeLogin" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formQRCodeLogin">
+				<h:panelGrid columns="1" style="height:100%;margin: 0 auto;">
+					<h:inputText id="qrcodetext" style="display: none;" value="#{VisaoProfessorControle.qrCode}" />
+					<div id="qrcode"></div>
+					<script type="text/javascript">
+					var qrcode = new QRCode(
+							document.getElementById("qrcode"),
+							{
+								text : document
+										.getElementById("formQRCodeLogin:qrcodetext").value,
+								width : 360,
+								height : 360,
+								colorDark : "#000000",
+								colorLight : "#ffffff",
+								correctLevel : QRCode.CorrectLevel.H
+							});
+				</script>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelGoogleMeet" styleClass="modalMaximizado100" shadowOpacity="true" >
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Google For Education" styleClass="field control-label tituloCampos" />
+				</h:panelGroup>
+			</f:facet>			
+			<h:form id="formGoogleMeet">
+				<h:panelGrid columns="1" width="100%" columnClasses="colunaAlinhamento" styleClass="tabForm">
+					<h:panelGrid id="panelGoogleMeetProgramacaoAula" width="100%" cellpadding="5" cellspacing="5" columnClasses="colunaEsquerda" rendered="#{!VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.googleMeetAvulso}">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText value="Horário" styleClass="field control-label tituloCampos" />
+								<h:inputText size="20" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{VisaoProfessorControle.agendaAlunoRSVO.periodoRealizacaoApresentar}" />							
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText value="Turma" styleClass="field control-label tituloCampos" />
+								<h:inputText size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{VisaoProfessorControle.agendaAlunoRSVO.turmaApresentar}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText value="Disciplina" styleClass="field control-label tituloCampos" />
+								<h:inputText size="73" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{VisaoProfessorControle.agendaAlunoRSVO.disciplinaApresentar}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText value="Incluir o Evento em Aulas Subsequentes" styleClass="field control-label tituloCampos" rendered="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo eq 0}" />
+								<h:outputText value="Excluir o Evento em Aulas Subsequentes" styleClass="field control-label tituloCampos" rendered="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo ne 0}" />
+								<otm:selectBooleanCheckbox id="eventoAulasSubsequentes" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.eventoAulasSubsequentes}" style="position:relative; top:5px;" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGrid>
+					
+					<h:panelGrid id="panelGoogleMeetAvulso" width="100%" cellpadding="5" cellspacing="5" columnClasses="colunaEsquerda" rendered="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.googleMeetAvulso}">
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText value="Dia do Evento" styleClass="field control-label tituloCampos" />								
+								<otm:calendar id="dataInicioEvento" inputClass="form-control camposObrigatorios" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.diaEvento}" disabled="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo ne 0}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText value="Horário" styleClass="field control-label tituloCampos" />
+									<h:inputText id="horarioInicialEvento" size="6" maxlength="5" styleClass="form-control camposObrigatorios" onchange="return validarHora(this.value, this.id)" onkeypress="return mascara(this.formGoogleMeet, this.id, '99:99', event);" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.horarioInicio}" disabled="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo ne 0}">
+										<a4j:ajax event="change" focus="formGoogleMeet:horarioFinalEvento" execute="formGoogleMeet" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText value="até" styleClass="field control-label tituloCampos" />	
+									<h:inputText id="horarioFinalEvento" size="6" maxlength="5" styleClass="form-control camposObrigatorios" onchange="return validarHora(this.value, this.id)" onkeypress="return mascara(this.formGoogleMeet, this.id, '99:99', event);" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.horarioTermino}" disabled="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo ne 0}">
+										<a4j:ajax event="change" focus="formGoogleMeet:anoGoogle" execute="formGoogleMeet" />
+									</h:inputText>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row" rendered="#{VisaoProfessorControle.isApresentarAno}">
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="field control-label tituloCampos" value="Ano"  />
+								<h:inputText id="anoGoogle" size="4" maxlength="4" value="#{VisaoProfessorControle.ano}" styleClass="form-control camposObrigatorios" disabled="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo ne 0}">
+									<a4j:ajax event="change" focus="formGoogleMeet:semestre2" listener="#{VisaoProfessorControle.montarListaSelectItemTurmaGoogleMeet}" render="formGoogleMeet" execute="formGoogleMeet" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{VisaoProfessorControle.isApresentarSemestre}">
+								<h:outputText styleClass="field control-label tituloCampos" value="Semestre"  />
+								<h:selectOneMenu id="semestre2" styleClass="form-control campos" value="#{VisaoProfessorControle.semestre}" rendered="#{VisaoProfessorControle.isApresentarSemestre}" disabled="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo ne 0}">
+									<a4j:ajax event="change" focus="formGoogleMeet:turmas" listener="#{VisaoProfessorControle.montarListaSelectItemTurmaGoogleMeet}" render="formGoogleMeet" execute="formGoogleMeet" />
+									<f:selectItems value="#{EnumControle.comboboxSemestreEnum}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</h:panelGroup>
+							
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_turma}" />
+								<h:selectOneMenu id="turmas" styleClass="form-control camposObrigatorios" value="#{VisaoProfessorControle.turmaVO.codigo}" disabled="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo ne 0}">
+									<a4j:ajax event="change" focus="formGoogleMeet:disicplina" listener="#{VisaoProfessorControle.preencherDadosTurmaGoogleMeet}" execute="formGoogleMeet" render="formGoogleMeet" />
+									<f:selectItems value="#{VisaoProfessorControle.listaSelectItemTurmaProfessor}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row" rendered="#{VisaoProfessorControle.turmaVO.codigo ne 0}">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_HistoricoTurma_periodoLetivo}"  />
+								<h:inputText maxlength="50" id="periodoLetivoNotaAluno" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{VisaoProfessorControle.turmaVO.peridoLetivo.descricao}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row" rendered="#{VisaoProfessorControle.turmaVO.codigo ne 0}">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_disciplina}"  />
+								<h:selectOneMenu id="disicplina" styleClass="form-control camposObrigatorios" value="#{VisaoProfessorControle.disciplinaVO.codigo}" disabled="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo ne 0}">
+									<f:selectItems value="#{VisaoProfessorControle.listaSelectItemDisciplinasTurma}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGrid>
+					<h:panelGroup layout="block" style="text-align: center !important">
+						<otm:commandButton style="margin-right:5px" id="botaoGravarGoogleMeet" action="#{VisaoProfessorControle.persistirGoogleMeet}" render="form, formGoogleMeet" styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" value="Gravar" rendered="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo eq 0}" />
+						<a4j:commandButton style="margin-right:5px" id="btnEntrarClassRoom" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.linkClassroom}" title="Entrar Classroom" onclick="navegacaoGoogleMeet('#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.linkClassroom}')" image="#{resource['/imagens/botaoEntrarClassroom.png']}" styleClass="btn btn-default"/>
+						<otm:commandButton style="margin-right:5px" id="btnBuscarAlunoClassRoom" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.linkClassroom}" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Buscar Alunos Classroom" oncomplete="#{rich:component('panelClassroomGoogleAlunos')}.show()" render="formClassroomGoogle, formClassroomGoogleAlunos" action="#{VisaoProfessorControle.realizarBuscaAlunoClassroom}" styleClass="btn btn-default" />
+						<otm:commandButton style="margin-right:5px" id="btnExcluirGoogleMeet" value="Excluir" oncomplete="#{rich:component('panelExcluirGoogleMeet')}.show()" render="formExcluirGoogleMeet" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_remver_embutido}" rendered="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.codigo ne 0}" />
+						<otm:commandButton style="margin-right:5px" id="botaoFecharGoogleMeet" action="#{VisaoProfessorControle.fecharModalGoogleMeet}" oncomplete="#{rich:component('panelGoogleMeet')}.hide()" render="form:panelGroupCalendarioProfessor" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" />
+					</h:panelGroup>
+					<rich:dataTable id="tableChoqueHorarioAluno" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.listaChoqueHorarioAluno}" render="sctableChoqueHorarioAluno" rows="10" headerClass="consulta" width="100%" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.listaChoqueHorarioAluno}" var="choqueHorarioAlunoItens">
+						<f:facet name="header">
+							<rich:columnGroup styleClass="consulta">
+								<rich:column colspan="3">
+									<h:outputText value="Choque Horário Aluno" />
+								</rich:column>
+								<rich:column breakRowBefore="true">
+									<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+								</rich:column>
+								<rich:column>
+									<h:outputText value="Aluno(a)" />
+								</rich:column>
+								<rich:column>
+									<h:outputText value="Disciplina" />
+								</rich:column>
+							</rich:columnGroup>
+						</f:facet>
+						<rich:column>
+							<h:outputText styleClass="field control-label tituloCampos" value="#{choqueHorarioAlunoItens.matricula.matricula}" />
+						</rich:column>
+						<rich:column>
+							<h:outputText styleClass="field control-label tituloCampos" value="#{choqueHorarioAlunoItens.matricula.aluno.nome}" />
+						</rich:column>
+						<rich:column colspan="2">
+							<rich:dataTable cellpadding="0" rowKeyVar="row" style="padding:0px;margin:0px;border:none" cellspacing="0" rowClasses="columnSubtable, columnSubtable " columnClasses="columnSubtable, columnSubtable " value="#{choqueHorarioAlunoItens.turmaDisciplinaVOs}" var="turmaDisciplinaItens">
+								<rich:column width="150px">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{turmaDisciplinaItens.disciplina.nome}" />
+								</rich:column>
+							</rich:dataTable>
+						</rich:column>
+						<f:facet name="footer">
+							<rich:columnGroup styleClass="consulta">
+								<rich:column style="text-align:center" colspan="6">
+									<h:outputText value="Total de Aluno Com Choque de Horário: #{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.qtdeChoqueHorarioAlunoVOs}" />
+								</rich:column>
+							</rich:columnGroup>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup layout="block" style="text-align: center !important">
+						<rich:dataScroller for="tableChoqueHorarioAluno" stepControls="auto" fastControls="hide" boundaryControls="auto" limitRender="10" id="sctableChoqueHorarioAluno" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.listaChoqueHorarioAluno}" />
+					</h:panelGroup>
+
+					<rich:dataTable id="tableChoqueHorarioProfessor" width="100%" columnClasses="colunaAlinhamento" rows="10" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.listaTurmaDisciplinaChoqueHorarioProfessor}" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.listaTurmaDisciplinaChoqueHorarioProfessor}" var="turmaDisciplinaItens">
+						<f:facet name="header">
+							<h:outputText value="Choque Horário Professor" />
+						</f:facet>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Turma" />
+							</f:facet>
+							<h:outputText value="#{turmaDisciplinaItens.turmaDescricaoVO.identificadorTurma}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Disciplina" />
+							</f:facet>
+							<h:outputText value="#{turmaDisciplinaItens.disciplina.nome}" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="">
+								<rich:dataScroller align="center" for="formGoogleMeet:tableChoqueHorarioProfessor" id="paginadortableChoqueHorarioProfessor" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.listaTurmaDisciplinaChoqueHorarioProfessor}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGrid columns="1" width="100%" styleClass="tabMensagens" id="tabMensagens">
+						<h:panelGrid columns="1" id="panelGridMensagens" width="100%" columnClasses="colunaEsquerda">
+							<h:outputText styleClass="mensagem" value="#{VisaoProfessorControle.mensagem}" />
+							<h:outputText styleClass="mensagemDetalhada" value="#{VisaoProfessorControle.mensagemDetalhada}" />
+						</h:panelGrid>
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelExcluirGoogleMeet" shadowOpacity="true" width="400">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Excluir"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluirGoogleMeet">
+				<h:panelGrid columns="1" width="100%" columnClasses="colunaEsquerda" styleClass="tabForm">
+					<h:outputText value="A opção de excluir eventos subsequente não foi informada sendo assim será excluído somente o horário das #{VisaoProfessorControle.agendaAlunoRSVO.periodoRealizacaoApresentar}" styleClass="field control-label tituloCampos" rendered="#{!VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.eventoAulasSubsequentes}" />
+					<h:outputText value="A opção de excluir eventos subsequente foi informada sendo assim será excluído todos os horários  do período #{VisaoProfessorControle.agendaAlunoRSVO.periodoRealizacaoApresentar}" styleClass="field control-label tituloCampos" rendered="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.eventoAulasSubsequentes}" />
+					<h:outputText value="Confirma a Exclusão?" styleClass="field control-label tituloCampos" />
+					<otm:spacer heigth="20px" />
+					<h:panelGroup layout="block" styleClass="row mt10 mb10 text-center">
+						<otm:commandButton value="Sim" render="form:panelGroupCalendarioProfessor,formGoogleMeet,formMensagemGoogleMeet, formExcluirGoogleMeet" oncomplete="#{VisaoProfessorControle.modalCalendario}" styleClass="btn btn-danger btn-sim" icon="#{msg_botoes.btn_icon_remver_embutido}" action="#{VisaoProfessorControle.realizarExclusaoGoogleMeet}" alt="Continuar" />
+						<otm:commandButton value="Não" render="form:panelGroupCalendarioProfessor,formGoogleMeet,formMensagemGoogleMeet" oncomplete="#{rich:component('panelExcluirGoogleMeet')}.hide();" styleClass="btn btn-dark btn-nao ml10" icon="#{msg_botoes.btn_icon_cancelar_embutido}" alt="Não Continuar" />
+					</h:panelGroup>					
+				</h:panelGrid>
+				<h:panelGrid columns="1" width="100%" styleClass="tabMensagens" id="tabMensagens">
+					<h:panelGrid columns="1" id="panelGridMensagens" width="100%" columnClasses="colunaEsquerda">
+						<h:outputText styleClass="mensagem" value="#{VisaoProfessorControle.mensagem}" />
+						<h:outputText styleClass="mensagemDetalhada" value="#{VisaoProfessorControle.mensagemDetalhada}" />
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelClassroomGoogleAlunos" shadowOpacity="true" width="600" height="650">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Classroom Google"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formClassroomGoogleAlunos">
+				<h:panelGrid columns="1" width="100%" columnClasses="colunaEsquerda" styleClass="tabForm">
+					<rich:dataTable id="listaClassroomStudents" width="100%" columnClasses="colunaAlinhamento" rows="10" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.classroomStudentVOs}" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.classroomStudentVOs}" var="classroomStudentVOItens">
+						<f:facet name="header">
+							<h:outputText value="Lista dos Estudantes" />
+						</f:facet>
+						<rich:column filterType="custom" filter="#{FilterFactory.filter('matricula', 'matricula', 'TEXTO')}">							
+							<f:facet name="header">
+								<h:panelGroup layout="block" style="width:100%">
+									<h:outputText value="#{msg_aplic.prt_MatriculaPeriodo_matricula}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" style="width:100%">
+									<h:inputText styleClass="form-control campos" size="12" value="#{FilterFactory.filter('matricula', 'matricula', 'TEXTO').filtro}">
+										<a4j:ajax event="change" execute="@this" render="listaClassroomStudents, paginadorListaClassroomStudents" />
+									</h:inputText>
+									<a4j:commandButton render="listaClassroomStudents, paginadorListaClassroomStudents" styleClass="botoes" image="#{resource['/imagens/limpar.gif']}" action="#{FilterFactory.limparFiltro('matricula')}" value="Limpar">
+										<rich:tooltip value="Limpar Filtro" />
+									</a4j:commandButton>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText value="#{classroomStudentVOItens.matricula}" />
+						</rich:column>
+						<rich:column filterType="custom" filter="#{FilterFactory.filter('pessoaVO_nome', 'pessoaVO.nome', 'TEXTO')}">
+							<f:facet name="header">
+								<h:panelGroup layout="block" style="width:100%">
+									<h:outputText value="#{msg_aplic.prt_MatriculaPeriodo_aluno}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" style="width:100%">
+									<h:inputText styleClass="form-control campos" size="12" value="#{FilterFactory.filter('pessoaVO_nome', 'pessoaVO.nome', 'TEXTO').filtro}">
+										<a4j:ajax event="change" execute="@this" render="listaClassroomStudents, paginadorListaClassroomStudents" />
+									</h:inputText>
+									<a4j:commandButton render="listaClassroomStudents, paginadorListaClassroomStudents" styleClass="botoes" image="#{resource['/imagens/limpar.gif']}" action="#{FilterFactory.limparFiltro('pessoaVO_nome')}" value="Limpar">
+										<rich:tooltip value="Limpar Filtro" />
+									</a4j:commandButton>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText value="#{classroomStudentVOItens.pessoaVO.nome}" />
+						</rich:column>
+						<rich:column filterType="custom" filter="#{FilterFactory.filter('email', 'email', 'TEXTO')}">							
+							<f:facet name="header">
+								<h:panelGroup layout="block" style="width:100%">
+									<h:outputText value="#{msg_aplic.prt_Filiacao_email}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" style="width:100%">
+									<h:inputText styleClass="form-control campos" size="12" value="#{FilterFactory.filter('email', 'email', 'TEXTO').filtro}">
+										<a4j:ajax event="change" execute="@this" render="listaClassroomStudents, paginadorListaClassroomStudents" />
+									</h:inputText>
+									<a4j:commandButton render="listaClassroomStudents, paginadorListaClassroomStudents" styleClass="botoes" image="#{resource['/imagens/limpar.gif']}" action="#{FilterFactory.limparFiltro('email')}" value="Limpar">
+										<rich:tooltip value="Limpar Filtro" />
+									</a4j:commandButton>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText value="#{classroomStudentVOItens.email}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:panelGroup layout="block">
+									<h:outputText value="Alunos Confirmados" />
+									<h:commandButton id="helpAlunosConfirmados" image="#{resource['V2/imagens/70.png']}" />
+									<rich:tooltip followMouse="true" style="width:350px; height:100px;z-index:1000; " target="helpAlunosConfirmados" showDelay="500">
+										<h:panelGrid columns="1" columnClasses="colunaEsquerda, tituloCamposReduzidos">
+											<h:panelGroup layout="block">
+												<otm:spacer width="1px" />
+												<h:outputText styleClass="tituloCamposReduzidos" value="Caso algum alunos não esteja na sala do classroom você poderá enviar um convite manualmente para que ele participe da sala." />
+											</h:panelGroup>
+										</h:panelGrid>
+									</rich:tooltip>
+								</h:panelGroup>
+							</f:facet>
+							<h:outputText value="#{classroomStudentVOItens.pessoaGuiteClassroom}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<a4j:commandButton action="#{VisaoProfessorControle.realizarEnvioConviteAlunoClassroom}" render="formClassroomGoogleAlunos" styleClass="botoes" image="#{resource['/imagens/envelopeFechadoMenor.jpg']}" title="Enviar Convite Para o Aluno" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="">
+								<rich:dataScroller align="center" for="formClassroomGoogleAlunos:listaClassroomStudents" id="paginadorListaClassroomStudents" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.classroomStudentVOs}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup layout="block" style="text-align:center;">
+						<otm:commandButton id="btnFecharClassroomGoogle" oncomplete="#{rich:component('panelClassroomGoogleAlunos')}.hide()" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" />
+					</h:panelGroup>
+					<h:panelGrid columns="1" width="100%" styleClass="tabMensagens">
+						<h:panelGrid columns="1" width="100%" columnClasses="colunaEsquerda">
+							<h:outputText styleClass="mensagem" value="#{VisaoProfessorControle.mensagem}" />
+							<h:outputText styleClass="mensagemDetalhada" value="#{VisaoProfessorControle.mensagemDetalhada}" />
+						</h:panelGrid>
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelClassroomGoogle" shadowOpacity="true" styleClass="modalMaximizado100">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Classroom Google"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelClassroomGoogle" />
+					<rich:componentControl target="panelClassroomGoogle" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formClassroomGoogle">
+				<h:panelGrid columns="1" width="100%" columnClasses="colunaEsquerda" styleClass="tabForm">
+					<h:panelGroup layout="block" styleClass="row" rendered="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.codigo ne 0}">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText value="Código do Classroom" styleClass="field control-label tituloCampos" />
+							<h:inputText size="72" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.idTurma}" />
+						</h:panelGroup>						
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText value="Turma:" styleClass="field control-label tituloCampos" />
+							<h:inputText size="72" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.turmaVO.identificadorTurma}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText value="Disciplina:" styleClass="field control-label tituloCampos" />
+							<h:inputText size="72" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.disciplinaVO.nome}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<otm:spacer height="1px" />
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<otm:commandImage id="btnGravarClassroomGoogle" action="#{VisaoProfessorControle.realizarGeracaoClassroom}" oncomplete="#{VisaoProfessorControle.modalCalendario}" render="formClassroomGoogle, form, formMensagemGoogleMeet"  value="Gerar Classroom Turma" rendered="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.codigo eq 0}" styleClass="btn btn-default" image="#{resource['/imagens/classroom.png']}" style="margin-left:5px" />
+						<otm:commandImage id="btnEntrarClassRoom" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.linkClassroom}" value="Entrar Classroom" onclick="navegacaoGoogleMeet('#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.linkClassroom}')"  styleClass="btn btn-default" image="#{resource['/imagens/classroom.png']}" style="margin-left:5px" />
+						<otm:commandButton id="btnBuscarAlunoClassRoom" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.linkClassroom}" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Buscar Alunos Classroom" oncomplete="#{rich:component('panelClassroomGoogleAlunos')}.show()" render="formClassroomGoogle, formClassroomGoogleAlunos" action="#{VisaoProfessorControle.realizarBuscaAlunoClassroom}"  styleClass="btn btn-default" style="margin-left:5px" />
+						<otm:commandButton id="btnAtualizarClassroom" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.linkClassroom}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" tooltip="Realizar a Atualização dos Dados do Classroom"  value ="Atualizar" render="formClassroomGoogle" action="#{VisaoProfessorControle.realizarAtualizacaoClassroom}" styleClass="btn btn-default" style="margin-left:5px" />
+						<otm:commandButton id="btnAtualizarAlunosClassroom" rendered="#{!empty VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.linkClassroom}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" tooltip="Realizar a Atualização dos Dados dos Alunos do Classroom" value="Atualizar Alunos" render="formClassroomGoogle, form" action="#{VisaoProfessorControle.realizarAtualizacaoAlunoClassroom}" styleClass="btn btn-default btn-atualizar" style="margin-left:10px" />
+						<otm:commandButton id="btnExcluirClassroomGoogle" value="Excluir" oncomplete="#{rich:component('panelExcluirClassroomGoogle')}.show()" render="formExcluirClassroomGoogle" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_remver_embutido}" rendered="#{VisaoProfessorControle.agendaAlunoRSVO.googleMeetVO.classroomGoogleVO.codigo ne 0}" style="margin-left:5px" />
+					</h:panelGroup>
+					<h:panelGrid columns="1" width="100%" styleClass="tabMensagens">
+						<h:panelGrid columns="1" width="100%" columnClasses="colunaEsquerda">
+							<h:outputText styleClass="mensagem" value="#{VisaoProfessorControle.mensagem}" />
+							<h:outputText styleClass="mensagemDetalhada" value="#{VisaoProfessorControle.mensagemDetalhada}" />
+						</h:panelGrid>
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel id="panelExcluirClassroomGoogle" shadowOpacity="true" width="400">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Excluir"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluirClassroomGoogle">
+				<h:panelGrid columns="1" width="100%" styleClass="tabFormSubordinada">
+					<h:outputText value="Ao excluir o Classroom todos os seus eventos da agenda também será excluida." styleClass="field control-label tituloCampos" />
+					<h:outputText value="Confirma a Exclusão?" styleClass="field control-label tituloCampos" />
+					<otm:spacer heigth="20px" />
+				</h:panelGrid>
+				<h:panelGrid columns="1" width="100%" columnClasses="colunaAlinhamento" styleClass="tabForm">
+					<h:panelGroup layout="block" styleClass="row mt10 mb10 text-center">
+						<otm:commandButton value="Sim" render="formClassroomGoogle, form" oncomplete="#{rich:component('panelExcluirClassroomGoogle')}.hide()" styleClass="btn btn-danger btn-sim" icon="#{msg_botoes.btn_icon_remver_embutido}" action="#{VisaoProfessorControle.excluirClassroom}" alt="Continuar" />
+						<otm:commandButton value="Não" render="formClassroomGoogle, form" oncomplete="#{rich:component('panelExcluirClassroomGoogle')}.hide();" styleClass="btn btn-dark btn-nao ml10" icon="#{msg_botoes.btn_icon_cancelar_embutido}" alt="Não Continuar" />
+					</h:panelGroup>
+				</h:panelGrid>
+
+			</h:form>
+		</rich:popupPanel>
+
+
+		
+
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:panelGroup layout="block" rendered="#{!LoginControle.appMovel}" id="dragDropDashs">
+			<rich:dragIndicator id="FAVORITOS_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+				<i class="#{VisaoProfessorControle.dashboardFavorito.icone} fs16"></i>
+			</rich:dragIndicator>
+			<rich:dragIndicator id="HORARIO_PROFESSOR_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+				<i class="#{VisaoProfessorControle.dashboardCalendario.icone} fs16"></i>
+			</rich:dragIndicator>
+			<rich:dragIndicator id="TUTORIA_ONLINE_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+				<i class="#{VisaoProfessorControle.dashboardTutoriaOnline.icone} fs16"></i>
+			</rich:dragIndicator>
+			<rich:dragIndicator id="BANNER_MATRICULA_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+				<i class="#{VisaoProfessorControle.dashboardMatricular.icone} fs16"></i>
+			</rich:dragIndicator>
+			<rich:dragIndicator id="TWITTER_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+				<i class="#{VisaoProfessorControle.dashboardTwitter.icone} fs16"></i>
+			</rich:dragIndicator>
+			<rich:dragIndicator id="BANNER_MARKETING_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+				<i class="#{VisaoCoordenadorControle.dashboardBannerMarketing.icone} fs16"></i>
+			</rich:dragIndicator>
+			<rich:dragIndicator id="LINKS_UTEIS_DRAG" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+				<i class="#{LoginControle.dashboardLinksUteis.icone} fs16"></i>
+			</rich:dragIndicator>
+		</h:panelGroup>
+		<h:form id="form" styleClass="w-100">
+			<h:panelGroup layout="block" id="menuTopo" styleClass="row pt-2 pb-2 pl-3 pr-3">
+				
+<!-- 				<h:panelGroup style="order:#{VisaoProfessorControle.dashboardCalendario.ordem}" id="panelIconHorarioOculto" layout="block" rendered="#{LoginControle.permissaoAcessoMenuVO.meusHorarios and VisaoProfessorControle.dashboardCalendario.ocultar}" styleClass="p-2 border rounded bg-secundary text-center mr-2"> -->
+<!-- 					<a4j:commandLink action="#{VisaoProfessorControle.persistirDashboard(VisaoProfessorControle.dashboardCalendario)}" render=":form:menuTopo, :form:panelGeral"> -->
+<!-- 						<f:setPropertyActionListener value="false" target="#{VisaoProfessorControle.dashboardCalendario.ocultar}"></f:setPropertyActionListener> -->
+<!-- 						<i class="#{VisaoProfessorControle.dashboardCalendario.icone}"></i> -->
+<!-- 					</a4j:commandLink> -->
+<!-- 					<rich:tooltip rendered="#{!LoginControle.appMovel}" followMouse="true" target="panelIconHorarioOculto" value="Apresentar #{VisaoProfessorControle.dashboardCalendario.titulo}"></rich:tooltip> -->
+<!-- 				</h:panelGroup> -->
+				
+<!-- 				<h:panelGroup style="order:#{VisaoProfessorControle.dashboardTutoriaOnline.ordem}" id="panelIconTutoriaOnlineOculto" layout="block" rendered="#{VisaoProfessorControle.dashboardTutoriaOnline.ocultar}" styleClass="p-2 border rounded bg-secundary text-center mr-2"> -->
+<!-- 					<a4j:commandLink action="#{VisaoProfessorControle.persistirDashboard(VisaoProfessorControle.dashboardTutoriaOnline)}" render=":form:menuTopo, :form:panelGeral"> -->
+<!-- 						<f:setPropertyActionListener value="false" target="#{VisaoProfessorControle.dashboardTutoriaOnline.ocultar}"></f:setPropertyActionListener> -->
+<!-- 						<i class="#{VisaoProfessorControle.dashboardTutoriaOnline.icone}"></i> -->
+<!-- 					</a4j:commandLink> -->
+<!-- 					<rich:tooltip rendered="#{!LoginControle.appMovel}" followMouse="true" target="panelIconTutoriaOnlineOculto" value="Apresentar #{VisaoProfessorControle.dashboardTutoriaOnline.titulo}"></rich:tooltip> -->
+<!-- 				</h:panelGroup> -->
+
+<!-- 				<h:panelGroup style="order:#{VisaoProfessorControle.dashboardMatricular.ordem}" id="panelIconBanner" rendered="#{!empty VisaoProfessorControle.caminhoArquivoBanner and VisaoProfessorControle.dashboardMatricular.ocultar}" styleClass="p-2 border rounded bg-secundary text-center mr-2"> -->
+<!-- 					<a4j:commandLink action="#{VisaoProfessorControle.persistirDashboard(VisaoProfessorControle.dashboardMatricular)}" render=":form:menuTopo, :form:panelGeral"> -->
+<!-- 						<f:setPropertyActionListener value="false" target="#{VisaoProfessorControle.dashboardMatricular.ocultar}"></f:setPropertyActionListener> -->
+<!-- 						<i class="#{VisaoProfessorControle.dashboardMatricular.icone}"></i> -->
+<!-- 					</a4j:commandLink> -->
+<!-- 					<rich:tooltip rendered="#{!LoginControle.appMovel}" followMouse="true" target="panelIconBanner" value="Apresentar #{VisaoProfessorControle.dashboardMatricular.titulo}"></rich:tooltip> -->
+<!-- 				</h:panelGroup> -->
+				
+<!-- 				<h:panelGroup style="order:#{LoginControle.dashboardLinksUteis.ordem}" id="panelLinksUteis" rendered="#{LoginControle.dashboardLinksUteis.ocultar}" styleClass="p-2 border rounded bg-secundary text-center mr-2"> -->
+<!-- 					<a4j:commandLink action="#{LoginControle.persistirDashboard(LoginControle.dashboardLinksUteis)}" render=":form:menuTopo, :form:panelGeral"> -->
+<!-- 						<f:setPropertyActionListener value="false" target="#{LoginControle.dashboardLinksUteis.ocultar}"></f:setPropertyActionListener> -->
+<!-- 						<i class="#{LoginControle.dashboardLinksUteis.icone}"></i> -->
+<!-- 					</a4j:commandLink> -->
+<!-- 					<rich:tooltip rendered="#{!LoginControle.appMovel}" followMouse="true" target="panelLinksUteis" value="Apresentar #{LoginControle.dashboardLinksUteis.titulo}"></rich:tooltip> -->
+<!-- 				</h:panelGroup> -->
+
+<!-- 				<h:panelGroup style="order:#{VisaoProfessorControle.dashboardFavorito.ordem}" id="panelIconVagaEmp" rendered="#{VisaoProfessorControle.dashboardFavorito.ocultar}" styleClass="p-2 border rounded bg-secundary text-center mr-2"> -->
+<!-- 					<a4j:commandLink action="#{VisaoProfessorControle.persistirDashboard(VisaoProfessorControle.dashboardFavorito)}" render=":form:menuTopo, :form:panelGeral"> -->
+<!-- 						<f:setPropertyActionListener value="false" target="#{VisaoProfessorControle.dashboardFavorito.ocultar}"></f:setPropertyActionListener> -->
+<!-- 						<i class="#{VisaoProfessorControle.dashboardFavorito.icone}"></i> -->
+<!-- 					</a4j:commandLink> -->
+<!-- 					<rich:tooltip rendered="#{!LoginControle.appMovel}" followMouse="true" target="panelIconVagaEmp" value="Apresentar #{VisaoProfessorControle.dashboardFavorito.titulo}"></rich:tooltip> -->
+<!-- 				</h:panelGroup> -->
+
+<!-- 				<h:panelGroup style="order:#{VisaoProfessorControle.dashboardTwitter.ordem}" id="panelIconTwitter" rendered="#{LoginControle.configuracaoGeralSistemaVO.apresentarCodigoTwitts and VisaoProfessorControle.dashboardTwitter.ocultar}" styleClass="p-2 border rounded bg-secundary text-center mr-2"> -->
+<!-- 					<a4j:commandLink action="#{VisaoProfessorControle.persistirDashboard(VisaoProfessorControle.dashboardTwitter)}" render=":form:menuTopo, :form:panelGeral"> -->
+<!-- 						<f:setPropertyActionListener value="false" target="#{VisaoProfessorControle.dashboardTwitter.ocultar}"></f:setPropertyActionListener> -->
+<!-- 						<i class="#{VisaoProfessorControle.dashboardTwitter.icone}"></i> -->
+<!-- 					</a4j:commandLink> -->
+<!-- 					<rich:tooltip rendered="#{!LoginControle.appMovel}" followMouse="true" target="panelIconTwitter" value="Apresentar #{VisaoProfessorControle.dashboardTwitter.titulo}"></rich:tooltip> -->
+<!-- 				</h:panelGroup> -->
+<!-- 				<h:panelGroup style="order:#{VisaoProfessorControle.dashboardBannerMarketing.ordem}" id="panelIconBannerMarketing" rendered="#{!empty LoginControle.bannerMarketing and VisaoProfessorControle.dashboardBannerMarketing.ocultar}" styleClass="p-2 border rounded bg-secundary text-center mr-2"> -->
+<!-- 						<a4j:commandLink action="#{VisaoProfessorControle.persistirDashboard(VisaoProfessorControle.dashboardBannerMarketing)}" render=":form:menuTopo, :form:panelGeral"> -->
+<!-- 							<f:setPropertyActionListener value="false" target="#{VisaoProfessorControle.dashboardBannerMarketing.ocultar}"></f:setPropertyActionListener> -->
+<!-- 							<i class="#{VisaoProfessorControle.dashboardBannerMarketing.icone}"></i> -->
+<!-- 						</a4j:commandLink> -->
+<!-- 						<rich:tooltip rendered="#{!LoginControle.appMovel}" followMouse="true" target="panelIconBannerMarketing" value="Apresentar #{VisaoProfessorControle.dashboardBannerMarketing.titulo}"></rich:tooltip> -->
+<!-- 					</h:panelGroup> -->
+			</h:panelGroup>
+			<h:panelGroup layout="block" id="panelGeral" styleClass="row" style="display:flex !important">
+			
+				<otm:favoritos bean="#{VisaoProfessorControle}" dashboardFavorito="#{VisaoProfessorControle.dashboardFavorito}"  height="300px"></otm:favoritos>
+
+				<otm:bannerMatricula bean="#{VisaoProfessorControle}" dashboardMatricula="#{VisaoProfessorControle.dashboardMatricular}" height="300px"></otm:bannerMatricula>
+				
+				<otm:bannerMarketing bean="#{VisaoProfessorControle}" dashboardMarketing="#{VisaoProfessorControle.dashboardBannerMarketing}" height="300px"></otm:bannerMarketing>
+
+				<otm:linksUteis bean="#{LoginControle}" dashboardLinksUteis="#{LoginControle.dashboardLinksUteis}" height="300px"></otm:linksUteis>
+	
+				<otm:twitter bean="#{VisaoProfessorControle}"></otm:twitter>
+
+				<h:panelGroup id="HORARIO_PROFESSOR" style="order:#{VisaoProfessorControle.dashboardCalendario.ordem}" rendered="#{LoginControle.permissaoAcessoMenuVO.meusHorarios and !VisaoProfessorControle.dashboardCalendario.ocultar}" layout="block" styleClass="col-md-6  ">
+					<rich:dropTarget dropValue="#{VisaoProfessorControle.dashboardCalendario}" render=":form:panelGeral" dropListener="#{VisaoProfessorControle.registrarPosicaoDashboard}" acceptedTypes="DASHBOARDS" />
+					<rich:dragSource type="DASHBOARDS" dragIndicator="HORARIO_PROFESSOR_DRAG" dragValue="#{VisaoProfessorControle.dashboardCalendario}">
+					</rich:dragSource>
+					<ui:include src="calendarioProfessor.xhtml" />
+				</h:panelGroup>
+				
+				<h:panelGroup id="TUTORIA_ONLINE" style="order:#{VisaoProfessorControle.dashboardTutoriaOnline.ordem}" rendered="#{!VisaoProfessorControle.dashboardTutoriaOnline.ocultar}" layout="block" styleClass="col-md-6  ">
+					<rich:dropTarget dropValue="#{VisaoProfessorControle.dashboardTutoriaOnline}" render=":form:panelGeral" dropListener="#{VisaoProfessorControle.registrarPosicaoDashboard}" acceptedTypes="DASHBOARDS" />
+					<rich:dragSource type="DASHBOARDS" dragIndicator="TUTORIA_ONLINE_DRAG" dragValue="#{VisaoProfessorControle.dashboardTutoriaOnline}">
+					</rich:dragSource>
+					<h:panelGroup id="panelGroupTutoriaOnline" layout="block">
+						<otm2:dashpanel id="dashboardTutoriaOnline" styleClass="p-0" cols="12">
+							<ui:define name="header">
+								<i class="#{VisaoProfessorControle.dashboardTutoriaOnline.icone} mr-2 fonteHeaderDashboard"></i>
+								<h:outputText value="#{VisaoProfessorControle.dashboardTutoriaOnline.titulo}" styleClass="fonteHeaderDashboard" />
+<!-- 								<a4j:commandLink action="#{VisaoProfessorControle.persistirDashboard(VisaoProfessorControle.dashboardTutoriaOnline)}" rendered="#{!VisaoProfessorControle.dashboardTutoriaOnline.maximizado}" styleClass="float-right p-0" render="panelGeral, TUTORIA_ONLINE"> -->
+<!-- 									<i class="fas fa-angle-down text-center fonteHeaderDashboard mr-2" /> -->
+<!-- 									<f:setPropertyActionListener value="true" target="#{VisaoProfessorControle.dashboardTutoriaOnline.maximizado}"></f:setPropertyActionListener> -->
+<!-- 								</a4j:commandLink> -->
+<!-- 								<a4j:commandLink action="#{VisaoProfessorControle.persistirDashboard(VisaoProfessorControle.dashboardTutoriaOnline)}" rendered="#{VisaoProfessorControle.dashboardTutoriaOnline.maximizado}" styleClass="float-right p-0" render="panelGeral, TUTORIA_ONLINE"> -->
+<!-- 									<i class="fas fa-angle-up text-center fonteHeaderDashboard mr-2" /> -->
+<!-- 									<f:setPropertyActionListener value="false" target="#{VisaoProfessorControle.dashboardTutoriaOnline.maximizado}"></f:setPropertyActionListener> -->
+<!-- 								</a4j:commandLink> -->
+<!-- 								<a4j:commandLink id="ocultarClassroomTutoriaOline" action="#{VisaoProfessorControle.persistirDashboard(VisaoProfessorControle.dashboardTutoriaOnline)}" render=":form:menuTopo, :form:panelGeral" styleClass="border-0 bg-transparent float-right p-0" title="Ocultar Gráfico"> -->
+<!-- 									<i class="fas fa-compress-arrows-alt text-center fonteHeaderDashboard mr-2" /> -->
+<!-- 									<f:setPropertyActionListener value="true" target="#{VisaoProfessorControle.dashboardTutoriaOnline.ocultar}"></f:setPropertyActionListener> -->
+<!-- 								</a4j:commandLink> -->
+							</ui:define>
+							<h:panelGroup layout="block" style="text-align: center; padding-top: 10px;">
+								<otm:commandIcon execute="@form" render="formMensagemGoogleMeet, formGoogleMeet" action="#{VisaoProfessorControle.realizarNovoGoogleMeetAvulso}" oncomplete="#{VisaoProfessorControle.modalCalendario}" rendered="#{VisaoProfessorControle.permitirGeracaoEventoGoogleMeet}" tooltip="Realizar Lançamento de Eventos do Google Meet para Turmas do EAD." icon="#{msg_botoes.btn_icon_ficha_aluno_embutido}" />
+								<otm:spacer width="15px;" />
+								<h:outputText value="Classroom Tutoria Online" />
+							</h:panelGroup>
+							<ui:define name="body">
+								<h:panelGroup id="panelGroupDadosTutoriaOline" rendered="#{VisaoProfessorControle.dashboardTutoriaOnline.maximizado and !empty VisaoProfessorControle.programacaoTutoriaOnlineProfessorVO.listaTutoriaOnlineSalaAulaIntegracaoVO}" layout="block" styleClass="w-100 p-2" style="overflow:auto;max-height:600px">
+									<rich:panel style="padding:0px;background-color:transparent; border-style: none; width:100%; height:100%; min-height:6px; max-height: 312px; overflow: auto;">
+										<rich:dataTable id="listaDadosTutoriaOline" width="100%" style="border:none;" value="#{VisaoProfessorControle.programacaoTutoriaOnlineProfessorVO.listaTutoriaOnlineSalaAulaIntegracaoVO}" var="tutoriaOnlineSalaAulaIntegracao">
+											<rich:column style="border:none; text-align: left;">
+												<h:panelGrid layout="block" width="100%" cellpadding="0" cellspacing="0" columnClasses="colunaEsquerda">
+													<f:facet name="header">
+														<h:panelGroup layout="block">
+															<h1 class="tituloHorarios" />
+															<a4j:commandButton id="classroomVisualizarLinkTutoriaOnline" render="formMensagemGoogleMeet, formClassroomGoogle" action="#{VisaoProfessorControle.realizarVisualizacaoClassroomTutoriaOnline}" oncomplete="#{rich:component('panelClassroomGoogle')}.show()" execute="@form" rendered="#{VisaoProfessorControle.permitirGeracaoEventoClassroom}" image="#{resource['/imagens/classroom.png']}" style="float:right;margin:0px; width:20px; height:20px;" title="Gerar Google Classroom." />
+															<a4j:commandButton render="formMensagemGoogleMeet, formGoogleMeet" action="#{VisaoProfessorControle.realizarNovoGoogleMeetPorTutoriaOnline}" oncomplete="#{VisaoProfessorControle.modalCalendario}" execute="@form" rendered="#{VisaoProfessorControle.permitirGeracaoEventoGoogleMeet}" style="float:right;margin:0px; width:16px; height:16px;" image="#{resource['/imagens/biblioteca/adicionarGuia.png']}" title="Google Meet" />
+															<otm:spacer height="5px" />
+														</h:panelGroup>
+													</f:facet>
+													<h:panelGrid columns="4" cellpadding="2" styleClass="colunaVerticalmenteEsquerda, colunaVerticalmenteEsquerda" width="100%">
+														<h:outputText value="Disciplina:" styleClass="field control-label tituloCampos" />
+														<h:outputText value="#{tutoriaOnlineSalaAulaIntegracao.disciplinaVO.nome}" />
+														<h:outputText value="Ano" styleClass="field control-label tituloCampos" />
+														<h:outputText value="#{tutoriaOnlineSalaAulaIntegracao.ano}" />
+														<h:outputText value="Turma:" styleClass="field control-label tituloCampos" />
+														<h:outputText value="#{tutoriaOnlineSalaAulaIntegracao.turmaVO.identificadorTurma}" />
+														<h:outputText value="Semestre:" styleClass="field control-label tituloCampos" />
+														<h:outputText value="#{tutoriaOnlineSalaAulaIntegracao.semestre}" />
+													</h:panelGrid>
+													<h:panelGroup layout="block" styleClass="row">
+														<h:panelGroup layout="block" styleClass="col-md-12 text-left" style="line-height: 32px;" >
+															<h:panelGroup layout="block" rendered="#{!empty tutoriaOnlineSalaAulaIntegracao.salaAulaBlackboardVO.linkSalaAulaBlackboard}">
+																<h:graphicImage value="#{resource['/imagens/blackboard_logo.png']}" style="cursor:pointer;width:20px; height:20px;" title="Ir para Blackboard" onclick="navegacaoIde('#{tutoriaOnlineSalaAulaIntegracao.salaAulaBlackboardVO.linkSalaAulaBlackboard}')" />
+																<h:outputLink styleClass="tituloCampos" onclick="navegacaoIde('#{tutoriaOnlineSalaAulaIntegracao.salaAulaBlackboardVO.linkSalaAulaBlackboard}')" >Entrar Blackboard</h:outputLink>
+																<otm:spacer width="15"></otm:spacer>
+															</h:panelGroup>
+															
+															<h:panelGroup layout="block"  rendered="#{!empty tutoriaOnlineSalaAulaIntegracao.classroomGoogleVO.linkClassroom}">
+																<h:graphicImage value="#{resource['/imagens/classroom.png']}" style="cursor:pointer;width:20px; height:20px;" title="Ir para Google Classroom" onclick="navegacaoGoogleMeet('#{tutoriaOnlineSalaAulaIntegracao.classroomGoogleVO.linkClassroom}')" />
+																<h:outputLink styleClass="tituloCampos" onclick="navegacaoGoogleMeet('#{tutoriaOnlineSalaAulaIntegracao.classroomGoogleVO.linkClassroom}')" rendered="#{!empty tutoriaOnlineSalaAulaIntegracao.classroomGoogleVO.linkClassroom}">Entrar Classroom</h:outputLink>
+															</h:panelGroup>
+														</h:panelGroup>
+													</h:panelGroup>
+												</h:panelGrid>
+											</rich:column>
+										</rich:dataTable>
+									</rich:panel>
+								</h:panelGroup>				
+							</ui:define>
+						</otm2:dashpanel>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+
+
+
+		</h:form>
+
+		<script >
+(function($) {
+    $(document).ready(function() {	
+    	focus('preferencia:btnIconPreferencia');
+    });
+    
+})(jQuery);
+</script>
+		
+		
+	</ui:define>
+</ui:composition>
+</html>

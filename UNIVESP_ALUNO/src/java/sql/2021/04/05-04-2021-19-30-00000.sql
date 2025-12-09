@@ -1,0 +1,1 @@
+update registroexecucaojob set datatermino = datainicio  where nome ilike ('%Gsuite%') and datatermino  is null;

@@ -1,0 +1,1 @@
+select create_constraint('ALTER TABLE IF EXISTS filiacao ADD CONSTRAINT validarAlunoIgualPai CHECK (aluno != pais) NOT VALID;');

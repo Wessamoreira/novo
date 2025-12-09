@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Atividade Discursiva" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<!-- 			<ui:include src="richPanelImagem.xhtml" /> -->
+
+		<h:form id="form">
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" style="float:right" id="panelPendencia">
+					<i class="fas fa-exclamation-triangle" style="font-size: 18px"></i>
+					<otm:spacer width="8px" />
+					<a4j:commandLink value="Você possui #{VisaoProfessorControle.qtdeInteracoesAlunosAtividadeDiscursiva} pendência(s)" action="#{AtividadeDiscursivaControle.listarTodasAtividadesDiscursivasNaoRespondidas}" styleClass="field control-label tituloCampos" render="form" />
+				</h:panelGroup>
+				<h:commandLink action="#{AtividadeDiscursivaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 pn">
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{AtividadeDiscursivaControle.isApresentarAnoVisaoProfessorCoordenador}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_ano}" />
+					<h:inputText rendered="#{AtividadeDiscursivaControle.isApresentarAnoVisaoProfessorCoordenador}" styleClass="form-control camposObrigatorios" value="#{AtividadeDiscursivaControle.atividadeDiscursivaVO.ano}" size="4" maxlength="4" onkeydown="aceitarSomenteValorNumerico(this)">
+						<a4j:ajax event="change" listener="#{AtividadeDiscursivaControle.montarListaSelectItemTurmaProfessor}" render="form" execute="form" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{AtividadeDiscursivaControle.isApresentarSemestreVisaoProfessorCoordenador}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_semestre}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{AtividadeDiscursivaControle.atividadeDiscursivaVO.semestre}">
+						<a4j:ajax event="change" listener="#{AtividadeDiscursivaControle.montarListaSelectItemTurmaProfessor}" render="form" execute="form" />
+						<f:selectItems value="#{AtividadeDiscursivaControle.campoSemestreTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_turma}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{AtividadeDiscursivaControle.atividadeDiscursivaVO.turmaVO.codigo}">
+						<f:selectItems value="#{AtividadeDiscursivaControle.listaSelectItemTurma}" />
+						<a4j:ajax event="change" listener="#{AtividadeDiscursivaControle.montarListaDisciplinaTurmaVisaoProfessor}" render="form" execute="form" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AtividadeDiscursivaControle.atividadeDiscursivaVO.turmaVO.codigo ne 0}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_disciplina}" />
+					<h:selectOneMenu id="disciplinasTurma" styleClass="form-control camposObrigatorios" value="#{AtividadeDiscursivaControle.atividadeDiscursivaVO.disciplinaVO.codigo}">
+						<f:selectItems value="#{AtividadeDiscursivaControle.listaSelectItemDisciplinasTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row mt10 mb10 text-center">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<otm:commandButton id="consultar" render="tabela, form:panelGridMensagens" value="#{msg_botoes.btn_consultar}" action="#{AtividadeDiscursivaControle.consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2" />
+					<otm:spacer width="5px" />
+					<otm:commandButton id="novo" action="#{AtividadeDiscursivaControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" title="#{msg.msg_novo_dados}" accesskey="1" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup styleClass="row" layout="block" id="tabela">
+				<rich:dataTable id="atividadeDiscursivaVOs" rendered="#{!empty AtividadeDiscursivaControle.controleConsulta.listaConsulta}" headerClass="consulta" rowKeyVar="row" value="#{AtividadeDiscursivaControle.controleConsulta.listaConsulta}" rows="10" var="atividadeItens">
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_aplic.prt_AtividadeDiscursiva_codigo}" />
+						</f:facet>
+						<h:outputText style="text-align:center !important; font-size: 11px !important;" value="#{atividadeItens.codigo}" />
+						<rich:tooltip value="Código: #{atividadeItens.codigo}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_aplic.prt_Questao_enunciado}" />
+						</f:facet>
+						<h:panelGroup style="width:100px;" layout="block">
+							<a4j:commandLink render="form:panelGridMensagens" style=" font-size: 11px !important;" action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" title="#{msg_botoes.btn_editar}" value="#{atividadeItens.enunciado}" />
+						</h:panelGroup>
+						<rich:tooltip value="#{msg_aplic.prt_Questao_enunciado}: #{atividadeItens.enunciado}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_aplic.prt_AtividadeDiscursiva_turma}" />
+						</f:facet>
+						<a4j:commandLink style=" font-size: 11px !important;" render="form:panelGridMensagens" action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" title="#{msg_botoes.btn_editar}" value="#{atividadeItens.turmaVO.identificadorTurma}" />
+						<rich:tooltip value="#{msg_aplic.prt_AtividadeDiscursiva_turma}: #{atividadeItens.turmaVO.identificadorTurma}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_aplic.prt_AtividadeDiscursiva_disciplina}" />
+						</f:facet>
+						<a4j:commandLink style=" font-size: 11px !important;" render="form:panelGridMensagens" action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" title="#{msg_botoes.btn_editar}" value="#{atividadeItens.disciplinaVO.nome}" />
+						<rich:tooltip value="#{msg_aplic.prt_AtividadeDiscursiva_disciplina}: #{atividadeItens.disciplinaVO.nome}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="Ano/ Semestre" />
+						</f:facet>
+						<a4j:commandLink style=" font-size: 11px !important;" render="form:panelGridMensagens" action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" title="#{msg_botoes.btn_editar}" value="#{atividadeItens.anoSemestre}" />
+						<rich:tooltip value="Ano/ Semestre: #{atividadeItens.anoSemestre}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_aplic.prt_AtividadeDiscursiva_datalimiteentrega}" />
+						</f:facet>
+						<h:outputText value="#{atividadeItens.dataLimiteEntrega}" style=" font-size: 11px !important;">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+						</h:outputText>
+						<rich:tooltip value="#{msg_aplic.prt_AtividadeDiscursiva_datalimiteentrega}: #{atividadeItens.dataLimiteEntrega}" >
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+						</rich:tooltip>
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_aplic.prt_AtividadeDiscursiva_qtdenaorespondido}" />
+						</f:facet>
+						<a4j:commandLink render="form:panelGridMensagens" style=" font-size: 11px !important;" action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" title="#{msg_botoes.btn_editar}" value="#{atividadeItens.quantidadeNaoRespondido}" />
+						<rich:tooltip value="#{msg_aplic.prt_AtividadeDiscursiva_qtdenaorespondido}: #{atividadeItens.quantidadeNaoRespondido}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_aplic.prt_AtividadeDiscursiva_qtdeaguardavalprof}" />
+						</f:facet>
+						<a4j:commandLink render="form:panelGridMensagens" style=" font-size: 11px !important;" action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" title="#{msg_botoes.btn_editar}" value="#{atividadeItens.quantidadeAguardandoAvalProfessor}" />
+						<rich:tooltip value="#{msg_aplic.prt_AtividadeDiscursiva_qtdeaguardavalprof}: #{atividadeItens.quantidadeAguardandoAvalProfessor}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_aplic.prt_AtividadeDiscursiva_qtdenovaresp}" />
+						</f:facet>
+						<a4j:commandLink render="form:panelGridMensagens" style=" font-size: 11px !important;" action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" title="#{msg_botoes.btn_editar}" value="#{atividadeItens.quantidadeNovaResposta}" />
+						<rich:tooltip value="#{msg_aplic.prt_AtividadeDiscursiva_qtdenovaresp}: #{atividadeItens.quantidadeNovaResposta}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_aplic.prt_AtividadeDiscursiva_qtdeavaliado}" />
+						</f:facet>
+						<a4j:commandLink render="form:panelGridMensagens" style=" font-size: 11px !important;" action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" title="#{msg_botoes.btn_editar}" value="#{atividadeItens.quantidadeAvaliado}" />
+						<rich:tooltip value="#{msg_aplic.prt_AtividadeDiscursiva_qtdeavaliado}: #{atividadeItens.quantidadeAvaliado}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;border-right: solid 1px #848484 !important;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="Qtde Novas Interações" />
+						</f:facet>
+						<a4j:commandLink render="form:panelGridMensagens" style=" font-size: 11px !important;" action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" title="#{msg_botoes.btn_editar}" value="#{atividadeItens.quantidadeInteracao}" />
+						<rich:tooltip value="Qtde Novas Interações: #{atividadeItens.quantidadeInteracao}" />
+					</rich:column>
+					<rich:column style="text-align:center !important;vertical-align:middle;width: 8.3% !important;">
+						<f:facet name="header">
+							<h:outputText style="font-size: 11px !important;" value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AtividadeDiscursivaControle.editar}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+						<otm:commandIcon action="#{AtividadeDiscursivaControle.montarDadosAtividadeDiscursivasRespostaAluno}" icon="#{msg_botoes.btn_icon_corrigir} iconePequeno" tooltip="Corrigir" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="form:atividadeDiscursivaVOs" render="atividadeDiscursivaVOs, panelGridMensagens" id="scResultadoConsulta" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+			</h:panelGroup>
+			<h:panelGroup id="panelGridMensagens" layout="block" styleClass="pn col-md-12 text-left mt10 mb10">
+				<otm:mensagem bean="#{AtividadeDiscursivaControle}"></otm:mensagem>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

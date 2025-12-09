@@ -1,0 +1,1 @@
+ ALTER TABLE IF EXISTS curso  add COLUMN if not exists ativarMatriculaAposAssinaturaContrato  BOOLEAN DEFAULT FALSE;

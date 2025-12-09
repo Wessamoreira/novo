@@ -1,0 +1,1 @@
+alter table documentacaoged add column lote varchar;

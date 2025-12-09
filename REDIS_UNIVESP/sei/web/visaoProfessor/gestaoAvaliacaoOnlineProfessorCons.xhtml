@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Gestão Avaliação On-line" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style type="text/css">
+.rich-dtascroller-table {
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.rich-datascr-button {
+	border: none;
+}
+
+.rich-datascr-button-dsbld {
+	background-color: transparent;
+}
+</style>
+		<h:form id="form">
+			<h:commandLink action="#{GestaoAvaliacaoOnlineControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" id="panelGridForm" styleClass="row">
+				<!-- <h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_unidadeEnsino}" rendered="#{GestaoAvaliacaoOnlineControle.filtroUnidadeEnsino}" />
+					<h:panelGroup layout="block" style="margin-top:2px;" rendered="#{GestaoAvaliacaoOnlineControle.filtroUnidadeEnsino}">
+						<h:selectOneMenu styleClass="form-control camposObrigatorios" id="unidadeEnsino" style="width:380px;" value="#{GestaoAvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.matriculaPeriodoTurmaDisciplinaVO.matriculaObjetoVO.unidadeEnsino.codigo}">
+							<f:selectItems value="#{GestaoAvaliacaoOnlineControle.listaSelectItemUnidadeEnsino}" />
+							<a4j:ajax event="change" listener="#{GestaoAvaliacaoOnlineControle.montarListaSelectItemDisciplinasUnidadeEnsinoProfessor}" render="form" execute="form" />
+						</h:selectOneMenu>
+					</h:panelGroup> -->
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioMatriculaAluno_filtrarPor}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{GestaoAvaliacaoOnlineControle.tipoFiltroConsulta}">
+						<f:selectItems value="#{GestaoAvaliacaoOnlineControle.tipoFiltroConsultaAvaliacaOnline}" />
+						<a4j:ajax event="change" listener="#{GestaoAvaliacaoOnlineControle.apresentarFiltros}" render="form" execute="form" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{GestaoAvaliacaoOnlineControle.isApresentarAno}">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_ano}" />
+					<h:inputText styleClass="form-control camposObrigatorios" value="#{GestaoAvaliacaoOnlineControle.ano}" size="4" maxlength="4" onkeydown="aceitarSomenteValorNumerico(this)">
+						<a4j:ajax event="change" listener="#{GestaoAvaliacaoOnlineControle.montarListaDisciplinasTurma}" render="form" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{GestaoAvaliacaoOnlineControle.isApresentarSemestre}">
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_semestre}" />
+					<h:selectOneMenu styleClass="form-control  camposObrigatorios" value="#{GestaoAvaliacaoOnlineControle.semestre}">
+						<a4j:ajax event="change" listener="#{GestaoAvaliacaoOnlineControle.montarListaDisciplinasTurma}" render="form" />
+						<f:selectItems value="#{GestaoAvaliacaoOnlineControle.campoSemestreTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{GestaoAvaliacaoOnlineControle.filtroCurso}">
+					<h:outputText styleClass="tituloCampos" value="Curso" />
+					<h:selectOneMenu id="selectItemCurso" styleClass="form-control  camposObrigatorios" value="#{GestaoAvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.matriculaPeriodoTurmaDisciplinaVO.matriculaObjetoVO.curso.codigo}">
+						<f:selectItems value="#{GestaoAvaliacaoOnlineControle.listaSelectItemCursos}" />
+						<a4j:ajax event="change" listener="#{GestaoAvaliacaoOnlineControle.montarListaSelectItemDisciplinasCursoProfessor}" render="form" execute="form" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{GestaoAvaliacaoOnlineControle.filtroTurma}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_turma}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{GestaoAvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.matriculaPeriodoTurmaDisciplinaVO.turma.codigo}">
+						<f:selectItems value="#{GestaoAvaliacaoOnlineControle.listaSelectItemTurma}" />
+						<a4j:ajax event="change" listener="#{GestaoAvaliacaoOnlineControle.montarListaSelectItemDisciplinasTurmaProfessor}" render="form" execute="form" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="#{(GestaoAvaliacaoOnlineControle.tipoFiltroConsulta eq 'disciplina') ? 'col-md-6' : 'col-md-4'}" rendered="#{GestaoAvaliacaoOnlineControle.filtroDisciplina}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Disciplina" />
+					<h:selectOneMenu id="selectItemDisciplina" styleClass="form-control  camposObrigatorios" value="#{GestaoAvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.matriculaPeriodoTurmaDisciplinaVO.disciplina.codigo}">
+						<f:selectItems value="#{GestaoAvaliacaoOnlineControle.listaSelectItemDisciplinasAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{GestaoAvaliacaoOnlineControle.filtroDisciplina}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioMatriculaAluno_tipoAtividade}" rendered="#{GestaoAvaliacaoOnlineControle.filtroDisciplina}" />
+					<h:selectOneMenu id="selectItemTipoAtividade" styleClass="form-control campos" value="#{GestaoAvaliacaoOnlineControle.tipoCalendarioAtividade}">
+						<a4j:ajax execute="form" render="form" listener="#{GestaoAvaliacaoOnlineControle.limparTituloRea}" />
+						<f:selectItems value="#{GestaoAvaliacaoOnlineControle.listaSelectItemTipoCalendarioAtividade}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{GestaoAvaliacaoOnlineControle.apresentarTituloRea}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UnidadeConteudo_titulo} REA" />
+					<h:inputText id="tituloRea" styleClass="form-control campos" value="#{GestaoAvaliacaoOnlineControle.tituloRea}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{GestaoAvaliacaoOnlineControle.filtroDisciplina}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Situação" />
+					<h:selectOneMenu id="selectItemSituacao" styleClass="form-control camposObrigatorios" value="#{GestaoAvaliacaoOnlineControle.situacaoAvaliacao}">
+						<f:selectItems value="#{GestaoAvaliacaoOnlineControle.listaSelectItemSituacaoAtividadeOnline}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{GestaoAvaliacaoOnlineControle.filtroDisciplina}">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioMatriculaAluno_periodo}" />
+						<otm:calendar id="periodoInicio" inputClass="form-control camposObrigatorios" value="#{GestaoAvaliacaoOnlineControle.periodoInicio}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CalendarioMatriculaAluno_ate}" rendered="#{GestaoAvaliacaoOnlineControle.filtroDisciplina}" />
+						<otm:calendar id="periodoFim" inputClass="form-control camposObrigatorios" value="#{GestaoAvaliacaoOnlineControle.periodoFim}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<rich:dataTable id="items" style="margin-top:10px" rendered="#{!empty GestaoAvaliacaoOnlineControle.listaConsultaCalendario}" headerClass="consulta" rowKeyVar="row" value="#{GestaoAvaliacaoOnlineControle.listaConsultaCalendario}" width="100%" rows="10" var="calendario">
+						<rich:column style="text-align:center;vertical-align:middle">
+							<f:facet name="header">
+								<h:panelGroup style="background-color:#ffffff">
+									<otm:selectBooleanCheckbox value="#{GestaoAvaliacaoOnlineControle.marcarTodosCalendarios}">
+										<a4j:ajax event="change" listener="#{GestaoAvaliacaoOnlineControle.realizarSelecaoCheckboxMarcarDesmarcarTodosCalendarios}" render="form" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</f:facet>
+							<otm:selectBooleanCheckbox value="#{calendario.selecionarAtividade}" rendered="#{!calendario.avaliacaoOnlineMatriculaVO.isAvaliacaoRealizada}" />
+						</rich:column>
+						<rich:column style="text-align:center;vertical-align:middle" filterType="custom" filter="#{FilterFactory.filter('matricula', 'matriculaVO.matricula', 'TEXTO')}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_CalendarioMatriculaAluno_matricula}" />
+								<otm:spacer width="2px" />
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('matricula', 'matriculaVO.matricula', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="items" />
+								</h:inputText>
+							</f:facet>
+							<h:outputText style="text-align:left;font-size: 11px;" value="#{calendario.matriculaVO.matricula}" />
+							<rich:tooltip value="#{calendario.matriculaVO.matricula}" />
+						</rich:column>
+						<rich:column style="text-align:center;vertical-align:middle" filterType="custom" filter="#{FilterFactory.filter('nomeAluno', 'matriculaVO.aluno.nome', 'TEXTO')}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_BibliotecaEmprestimo_aluno}" />
+								<otm:spacer width="2px" />
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('nomeAluno', 'matriculaVO.aluno.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="items" />
+								</h:inputText>
+							</f:facet>
+							<h:outputText style="text-align:left;font-size: 11px;" value="#{calendario.matriculaVO.aluno.nome}" />
+							<rich:tooltip value="#{calendario.matriculaVO.aluno.nome}" />
+						</rich:column>
+						<rich:column style="text-align:center;vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_AbonoFalta_disciplina}" />
+							</f:facet>
+							<h:outputText style="text-align:left;font-size: 11px;" value="#{calendario.matriculaPeriodoTurmaDisciplinaVO.disciplina.nome}" />
+							<rich:tooltip value="#{calendario.matriculaPeriodoTurmaDisciplinaVO.disciplina.nome}" />
+						</rich:column>
+						<rich:column style="text-align:center;vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_BibliotecaEmprestimo_situacao}" />
+							</f:facet>
+							<h:outputText style="text-align:left;font-size: 11px;" value="#{calendario.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum_Apresentar}" />
+							<rich:tooltip value="#{calendario.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum_Apresentar}" />
+						</rich:column>
+						<rich:column style="text-align:center;vertical-align:middle" filterType="custom" filter="#{FilterFactory.filter('descricaoCalendario', 'descricao', 'TEXTO')}">
+							<f:facet name="header">
+								<h:outputText value="Descrição/Calendário" />
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('descricaoCalendario', 'descricao', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="items" />
+								</h:inputText>
+							</f:facet>
+							<h:outputText id="tipoCalendarioAtividade" style="text-align:left;font-size: 11px;" value="#{calendario.descricao}" />
+							<rich:tooltip target="tipoCalendarioAtividade" style="text-align:center" styleClass="panelTooltipConteudo" followMouse="true" direction="auto" horizontalOffset="-10" verticalOffset="20" showDelay="10" rendered="#{calendario.apresentarConteudoUnidadePaginaRecursoEducacional}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{calendario.conteudoUnidadePaginaRecursoEducacionalVO.conteudoUnidadePagina.unidadeConteudo.ordem}.#{calendario.conteudoUnidadePaginaRecursoEducacionalVO.conteudoUnidadePagina.pagina} - #{calendario.conteudoUnidadePaginaRecursoEducacionalVO.conteudoUnidadePagina.titulo} - Rea: #{calendario.conteudoUnidadePaginaRecursoEducacionalVO.titulo}" />
+							</rich:tooltip>
+						</rich:column>
+						<rich:column style="text-align:center;vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText value="Situação Acadêmico" />
+							</f:facet>
+							<h:outputText style="text-align:left;font-size: 11px;" value="#{calendario.matriculaPeriodoTurmaDisciplinaVO.matriculaPeriodoObjetoVO.situacao_Apresentar}" />
+						</rich:column>
+						<rich:column style="text-align:center;vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ResultadoDisciplinaProcSeletivo_nota}" />
+							</f:facet>
+							<h:outputText style="text-align:left;font-size: 11px;" value="#{calendario.avaliacaoOnlineMatriculaVO.nota}" />
+						</rich:column>
+						<rich:column style="text-align:center;vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Inscricao_data}" />
+							</f:facet>
+							<h:outputText style="text-align:left;font-size: 11px;" value="#{calendario.avaliacaoOnlineMatriculaVO.dataInicio}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" locale="pt_BR" />
+							</h:outputText>
+							<rich:tooltip>
+								<h:outputText value="#{calendario.avaliacaoOnlineMatriculaVO.dataInicio}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" locale="pt_BR" />
+								</h:outputText>
+							</rich:tooltip>
+						</rich:column>
+						<rich:column style="text-align:center;vertical-align:middle">
+							<f:facet name="header">
+								<h:outputText value="Opções" />
+							</f:facet>
+							<otm:commandIcon action="#{GestaoAvaliacaoOnlineControle.visualizarGabarito}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" render="form, form:items" rendered="#{calendario.avaliacaoOnlineMatriculaVO.isApresentarBotaVisualizarGabaritoVisaoAdministrativa}" />
+							<otm:commandIcon action="#{GestaoAvaliacaoOnlineControle.selecionarCalendarioParaExclusao}" tooltip="#{msg_botoes.btn_excluir}" icon="#{msg_botoes.btn_icon_excluir} iconePequeno" render="formExcluir,form:panelGridMensagens" oncomplete="#{rich:component('panelExcluir')}.show();" rendered="#{!calendario.avaliacaoOnlineMatriculaVO.isAvaliacaoRealizada}" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="form:items" render="itens, panelGridMensagens" id="scResultadoConsulta" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="pn col-md-12 text-left mt10 mb10">
+						<otm:mensagem bean="#{GestaoAvaliacaoOnlineControle}"></otm:mensagem>
+					</h:panelGroup>
+					<h:panelGroup styleClass="col-md-12 text-center m20" layout="block" rendered="#{GestaoAvaliacaoOnlineControle.botaoConsultar}">
+						<otm:commandButton id="consultar" render="form, form:panelGridMensagens" value="#{msg_botoes.btn_consultar}" action="#{GestaoAvaliacaoOnlineControle.consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2" />
+						<otm:commandButton id="excluir" render="formExcluir, form:panelGridMensagens" style="margin-left:5px" oncomplete="#{GestaoAvaliacaoOnlineControle.abrirModalExcluir}" action="#{GestaoAvaliacaoOnlineControle.selecionarTodosCalendarioMarcadoParaExclusao}" rendered="#{GestaoAvaliacaoOnlineControle.botaoConsultar}" value="#{msg_botoes.btn_excluir}" styleClass="btn btn-danger btn-excluir" alt="Excluir todas as Avaliações Online Marcadas" title="Excluir todas as Avaliações Online Marcadas" accesskey="3" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelExcluir" shadowOpacity="true" width="500" height="320">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Excluir"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluir">
+				<h:panelGrid columns="1" columnClasses="colunaAlinhamento" styleClass="tabForm">
+					<h:outputText value="#{msg.msg_GestaoAvaliacaoOnlineControle_confirmaExclusao}" styleClass="tituloCamposNegrito" />
+					<otm:spacer width="20px" />
+					<otm:spacer width="20px" />
+					<otm:spacer width="20px" />
+					<h:panelGroup>
+						<otm:commandButton value="Sim" render="form" oncomplete="#{rich:component('panelExcluir')}.hide();" styleClass="btn btn-dark btn-sim" action="#{GestaoAvaliacaoOnlineControle.excluir}" alt="#{msg.msg_excluir_dados}" />
+						<otm:spacer width="5px" />
+						<otm:commandButton value="Não" oncomplete="#{rich:component('panelExcluir')}.hide();" styleClass="btn btn-danger btn-nao" alt="Não Gravar" />
+					</h:panelGroup>
+				</h:panelGrid>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

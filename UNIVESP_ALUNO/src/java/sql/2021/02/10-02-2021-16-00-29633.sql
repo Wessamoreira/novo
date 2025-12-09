@@ -1,0 +1,1 @@
+alter table categoriadespesa add column if not exists informarmanualmenteidentificadorcategoriadespesa boolean default false;

@@ -1,0 +1,3 @@
+ALTER TABLE IF EXISTS matricula ADD COLUMN IF NOT EXISTS tipoMobilidadeAcademica VARCHAR(20) DEFAULT 'NENHUMA';
+ALTER TABLE IF EXISTS matricula ADD COLUMN IF NOT EXISTS mobilidadeAcademicaNacionalIESDestino VARCHAR(15) DEFAULT '';
+ALTER TABLE IF EXISTS matricula ADD COLUMN IF NOT EXISTS mobilidadeAcademicaInternacionalPaisDestino VARCHAR(5) DEFAULT '';

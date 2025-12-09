@@ -1,0 +1,1991 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Agenda" />
+	</ui:define>
+	<ui:define name="ajuda">
+		<a4j:region>
+			<a4j:commandLink id="ajuda" type="submit" title="Ajuda" style="float:right;border:none" oncomplete="abrirPopup('../../ajudaCons.xhtml', 'Ajuda', 945, 490);">
+				<h:graphicImage value="#{resource['/imagens/209.png']}" />
+				<f:setPropertyActionListener target="#{AjudaControle.moduloConsulta}" value="CRM/CRM/AGENDA" />
+			</a4j:commandLink>
+		</a4j:region>
+	</ui:define>
+	<ui:define name="conteudo">
+		<style>
+.header {
+	font-weight: bold;
+}
+
+.rich-calendar-header {
+	text-align: center;
+}
+
+.organizer-cell {
+	width: 90px;
+	height: 90px;
+	overflow: hidden;
+}
+
+.rich-panel {
+	border: none;
+	padding: none;
+}
+
+.rich-panel-body {
+	padding: 0px;
+}
+
+.rf-p {
+	background-color: #FFFFFF;
+	color: #C4C0B9;
+	border-width: 1px;
+	border-style: none;
+	border-radius: 0px;
+	padding: 1px;
+}
+</style>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCompromissoFuturo" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Compromisso Futuro Existente"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formCompromissoFuturo">
+				<h:panelGroup columns="1" width="100%">
+					<h:outputText styleClass="field control-label tituloCampos" value="Prezado usuário, existe um compromisso futuro agendado para esse prospect" />
+					<rich:dataTable id="resultadoConsultaCompromissoFuturo" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.listaCompromissoFuturo}" rows="5" var="compromissoFuturoItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Descrição" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{compromissoFuturoItens.descricao}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Data" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{compromissoFuturoItens.dataCompromisso_Apresentar}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Hora" />
+							</f:facet>
+							<h:panelGroup>
+								<h:outputText value="#{compromissoFuturoItens.hora}" />
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Opções" />
+							</f:facet>
+							<h:panelGroup>
+								<otm:commandIcon id="removercompromissofuturo" render="form, formCompromisso, formCompromissoFuturo, form:panelGridMensagens" action="#{AgendaPessoaControle.removerCompromissoFuturo}" rendered="#{compromissoFuturoItens.permitirAlteracaoCompromisso}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Compromisso Futuro" />
+							</h:panelGroup>
+						</rich:column>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton style="margin-right:5px" value="Iniciar Matrícula" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" image="#{resource['/imagens/botaoIniciarMatricula.png']}" action="#{AgendaPessoaControle.iniciarMatriculaAluno}" oncomplete="#{rich:component('panelCompromissoFuturo')}.hide(); #{AgendaPessoaControle.popUpMatricula}" render="form:panelGridMensagens, form:mensagemCursoInteresse, mensagemCompromissoFuturo, panelMensagemErro, formMensagemErro, formCompromissoFuturo" />
+					<otm:commandButton oncomplete="#{rich:component('panelCompromissoFuturo')}.hide();" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemCompromissoFuturo" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelIniciarMatricula" shadowOpacity="true" width="750" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Iniciar Matrícula"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formIniciarMatricula">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_unidadeEnsino}" />
+					<h:selectOneMenu id="unidadeEnsino" styleClass="form-control campos" value="#{AgendaPessoaControle.interacaoWorkflowVO.unidadeEnsino.codigo}">
+						<f:selectItems value="#{AgendaPessoaControle.listaSelectItemUnidadeEnsino}" />
+						<a4j:ajax event="change" listener="#{AgendaPessoaControle.montarListaSelectItemTurno}" render="formIniciarMatricula" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_tituloForm}" />
+					<h:selectOneMenu id="curso" styleClass="form-control campos" value="#{AgendaPessoaControle.interacaoWorkflowVO.curso.codigo}">
+						<f:selectItems value="#{AgendaPessoaControle.listaSelectItemCursoInteresse}" />
+						<a4j:ajax event="change" listener="#{AgendaPessoaControle.montarListaSelectItemTurno}" render="formIniciarMatricula,form:this" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Turno_tituloForm}" />
+					<h:selectOneMenu id="turno" styleClass="form-control campos" value="#{AgendaPessoaControle.interacaoWorkflowVO.turno.codigo}">
+						<f:selectItems value="#{AgendaPessoaControle.listaSelectItemTurno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton style="margin-right:5px" value="Iniciar Matrícula" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" image="#{resource['/imagens/botaoIniciarMatricula.png']}" action="#{AgendaPessoaControle.iniciarMatriculaAluno}" oncomplete="#{AgendaPessoaControle.popUpMatricula}; #{rich:component('panelIniciarMatricula')}.hide();" render="mensagemIniciarMatricula, form:panelGridMensagens, form:mensagemCursoInteresse, panelMensagemErro, formMensagemErro, formCompromissoFuturo" />
+					<otm:commandButton oncomplete="#{rich:component('panelIniciarMatricula')}.hide();" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemIniciarMatricula" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelGerarAgenda" shadowOpacity="true" width="300" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Adiar Agenda"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink7" />
+					<rich:componentControl target="panelGerarAgenda" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formGerarAgenda">
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText value="#{msg_aplic.prt_Campanha_considerarSabado}" styleClass="field control-label tituloCampos" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="considerarSabado" value="#{AgendaPessoaControle.considerarSabado}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText value="#{msg_aplic.prt_Campanha_considerarFeriados}" styleClass="field control-label tituloCampos" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="considerarFeriados" value="#{AgendaPessoaControle.considerarFeriados}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<otm:spacer height="10" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton action="#{AgendaPessoaControle.realizarRemarcacaoCompromisso}" value="Remarcar Compromissos" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_marcar}" oncomplete="#{rich:component('panelGerarAgenda')}.hide()" render="formContatosPendentesNaoFinalizados, form:painelVisaoDia, form:dadosMiniCalendario" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelNovaInteracao" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formHistoricoFollowUp:observacao').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Nova Interação" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkNovaInteracao" />
+					<rich:componentControl target="panelNovaInteracao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNovaInteracao">
+				<h:outputText value="#{msg.msg_Prospects_NovaInteracao}" styleClass="field control-label mensagem col-md-12" />
+				<otm:spacer height="5" />
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText value="#{msg_aplic.prt_FollowUp_nome}" styleClass="field control-label tituloCampos" />
+					<h:inputText value="#{AgendaPessoaControle.interacaoWorkflowVO.prospect.nome}" styleClass="form-control camposSomenteLeitura" size="55" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText value="#{msg_aplic.prt_FollowUp_curso}" styleClass="field control-label tituloCampos" />
+					<h:inputText value="#{AgendaPessoaControle.interacaoWorkflowVO.curso.nome}" styleClass="form-control camposSomenteLeitura" id="curso" size="55" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText value="#{msg_aplic.prt_FollowUp_email}" styleClass="field control-label tituloCampos" />
+					<h:inputText value="#{AgendaPessoaControle.interacaoWorkflowVO.prospect.emailPrincipal}" styleClass="form-control camposSomenteLeitura" size="55" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText value="#{msg_aplic.prt_FollowUp_telefoneResidencial}" styleClass="field control-label tituloCampos" />
+					<h:inputText value="#{AgendaPessoaControle.interacaoWorkflowVO.prospect.telefoneResidencial}" id="telefoneRes" maxlength="14" styleClass="form-control camposSomenteLeitura" size="14" onchange="return mascara(this.form, 'form:telefoneRes', '(99)9999-9999', event);" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText value="#{msg_aplic.prt_FollowUp_telefoneComercial}" styleClass="field control-label tituloCampos" />
+					<h:inputText value="#{AgendaPessoaControle.interacaoWorkflowVO.prospect.telefoneComercial}" id="telefoneComer" maxlength="14" styleClass="form-control camposSomenteLeitura" size="14" onchange="return mascara(this.form, 'form:telefoneComer', '(99)9999-9999', event);" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText value="#{msg_aplic.prt_FollowUp_telefoneRecado}" styleClass="field control-label tituloCampos" />
+					<h:inputText value="#{AgendaPessoaControle.interacaoWorkflowVO.prospect.telefoneRecado}" styleClass="form-control camposSomenteLeitura" maxlength="14" id="telefoneRec" size="14" onchange="return mascara(this.form, 'form:telefoneRec', '(99)9999-9999', event);" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText value="#{msg_aplic.prt_FollowUp_celular}" styleClass="field control-label tituloCampos" />
+					<h:inputText value="#{AgendaPessoaControle.interacaoWorkflowVO.prospect.celular}" maxlength="14" styleClass="form-control camposSomenteLeitura" size="14" id="celular" onchange="return mascara(this.form, 'form:celular', '(99)9999-9999', event);" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_data}" styleClass="field control-label tituloCampos" />
+					<rich:calendar id="dataInicioInteracao" value="#{AgendaPessoaControle.interacaoWorkflowVO.dataInicio}" inputSize="10" inputClass="camposSomenteLeitura" oninputblur="blurinput(this);" oninputfocus="focusinput(this);" oninputchange="validarData(this.value,this.id);" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" datePattern="dd/MM/yyyy" enableManualInput="true" zindex="2" showWeeksBar="false" readonly="true" disabled="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_hora}" styleClass="field control-label tituloCampos" />
+					<h:inputText id="horaInicioInteracao" size="5" maxlength="5" styleClass="form-control camposSomenteLeitura" value="#{AgendaPessoaControle.interacaoWorkflowVO.horaInicio}" onkeypress="return mascara(this.form, this.id, '99:99', event);" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_observacao}" styleClass="field control-label tituloCampos" />
+					<h:inputTextarea id="observacao" styleClass="form-control" value="#{AgendaPessoaControle.interacaoWorkflowVO.observacao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FollowUp_responsavel}" />
+					<h:inputText styleClass="form-control camposSomenteLeitura" value="#{AgendaPessoaControle.interacaoWorkflowVO.responsavel.pessoa.nome}" size="40" readonly="true" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton action="#{AgendaPessoaControle.gravarNovaInteracao}" render="form" oncomplete="#{AgendaPessoaControle.abrirFecharModalInteracao}" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" value="Gravar Nova Interacao" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemHistoricoFollowUp" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAdicionarProspect" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formAdicionarProspect:tipoProspect').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_adicionarProspect}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkAdicionarProspect" />
+					<rich:componentControl target="panelAdicionarProspect" operation="hide" event="click">
+						<a4j:ajax listener="#{AgendaPessoaControle.limparDadosReferenteProspect}" />
+					</rich:componentControl>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAdicionarProspect" onkeydown="fecharModal('panelAdicionarProspect',event);">
+				<h:panelGroup id="pgProspects">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_tipoProspect}" />
+						<h:selectOneMenu id="tipoProspect" styleClass="form-control campos" value="#{AgendaPessoaControle.prospectsVO.tipoProspect}">
+							<f:selectItems value="#{EnumControle.comboboxTipoProspectEnum}" />
+							<a4j:ajax event="change" execute="@this" render="formAdicionarProspect:pgProspects" listener="#{AgendaPessoaControle.limparDadosReferenteTipoProspect}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AgendaPessoaControle.prospectsVO.juridico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_cnpj}" rendered="#{AgendaPessoaControle.prospectsVO.juridico}" />
+						<h:inputText id="CNPJ" size="18" maxlength="18" styleClass="form-control campos" value="#{AgendaPessoaControle.prospectsVO.cnpj}" rendered="#{AgendaPessoaControle.prospectsVO.juridico}" onkeypress="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:CNPJ', '99.999.999/9999-99', event);">
+							<a4j:ajax event="change" oncomplete="#{AgendaPessoaControle.abrirModalProspect}" listener="#{AgendaPessoaControle.consultarTipoProspect}" render="formAdicionarProspect" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AgendaPessoaControle.prospectsVO.fisico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_cpf}" rendered="#{AgendaPessoaControle.prospectsVO.fisico}" />
+						<h:inputText id="CPF" size="14" maxlength="14" styleClass="form-control campos" value="#{AgendaPessoaControle.prospectsVO.cpf}" onkeypress="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:CPF', '999.999.999-99', event);" rendered="#{AgendaPessoaControle.prospectsVO.fisico}">
+							<a4j:ajax event="change" oncomplete="#{AgendaPessoaControle.abrirModalProspect}" listener="#{AgendaPessoaControle.consultarTipoProspect}" render="formAdicionarProspect" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_nome}" />
+						<h:inputText id="nome" size="58" maxlength="100" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.prospectsVO.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_razaoSocial}" rendered="#{AgendaPessoaControle.prospectsVO.juridico}" />
+						<h:inputText id="razaoSocial" size="58" maxlength="100" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.prospectsVO.razaoSocial}" rendered="#{AgendaPessoaControle.prospectsVO.juridico}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AgendaPessoaControle.prospectsVO.fisico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_dataNascimento}" rendered="#{AgendaPessoaControle.prospectsVO.fisico}" />
+						<rich:calendar id="dataNascimento" value="#{AgendaPessoaControle.prospectsVO.dataNascimento}" inputSize="10" inputClass="campos" oninputblur="blurinput(this);" oninputfocus="focusinput(this);" oninputchange="validarData(this.value,this.id);" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" datePattern="dd/MM/yyyy" enableManualInput="true" zindex="2" showWeeksBar="false" />
+						<h:message for="dataNascimento" styleClass="field control-label mensagemDetalhada col-md-12" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AgendaPessoaControle.prospectsVO.fisico}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_sexo}" />
+						<h:selectOneMenu id="sexo" styleClass="form-control campos" value="#{AgendaPessoaControle.prospectsVO.sexo}">
+							<f:selectItems value="#{EnumControle.comboboxSexoEnum}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_telefoneComercial}" />
+						<h:inputText id="telefoneComercial" size="14" maxlength="14" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.prospectsVO.telefoneComercial}" onchange="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:telefoneComercial', '(99)9999-9999', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_telefoneResidencial}" />
+						<h:inputText id="telefoneResidencial" size="14" maxlength="14" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.prospectsVO.telefoneResidencial}" onchange="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:telefoneResidencial', '(99)9999-9999', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_telefoneRecado}" />
+						<h:inputText id="telefoneRecado" size="14" maxlength="14" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.prospectsVO.telefoneRecado}" onchange="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:telefoneRecado', '(99)9999-9999', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_celular}" />
+						<h:inputText id="celular" size="14" maxlength="14" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.prospectsVO.celular}" onchange="return mascara(this.formAdicionarProspect, 'formAdicionarProspect:celular', '(99)9999-9999', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_emailPrincipal}" />
+						<h:inputText id="emailPrincipal" size="58" maxlength="100" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.prospectsVO.emailPrincipal}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_unidadeEnsino}" />
+						<h:selectOneMenu id="unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.prospectsVO.unidadeEnsino.codigo}">
+							<f:selectItems value="#{AgendaPessoaControle.listaSelectItemUnidadeEnsino}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaProspect" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton id="salvarProspect" action="#{AgendaPessoaControle.incluirProspect}" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" value="Salvar Prospect" accesskey="2" render="formAdicionarProspect, form:panelGridMensagens" oncomplete="#{AgendaPessoaControle.isRichModalProspectAberto}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProspect" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formProspect:valorConsultarProspect').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_consultarProspect}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkProspect" />
+					<rich:componentControl target="panelProspect" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProspect" onkeydown="fecharModal('panelProspect',event);">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:selectOneMenu styleClass="form-control campos" id="consultarProspect" value="#{AgendaPessoaControle.campoConsultarProspect}">
+							<f:selectItems value="#{EnumControle.tipoConsultaComboProspectsEnum}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="valorConsultarProspect" styleClass="form-control campos" value="#{AgendaPessoaControle.valorConsultarProspect}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="btnConsultarProspect" render="formProspect:resultadoConsultaProspect, formProspect" action="#{AgendaPessoaControle.consultarProspect}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaProspect" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.listaConsultarProspect}" rows="5" var="prospectsItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Prospects_nome}" />
+						</f:facet>
+						<h:outputText id="nome" value="#{prospectsItens.nome}" />
+						<otm:spacer width="5" />
+						<h:graphicImage url="#{resource['/imagens/erro.gif']}" style="position:relative; top:2px;" title="INATIVO" rendered="#{prospectsItens.inativo}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Prospects_razaoSocial}" />
+						</f:facet>
+						<h:outputText id="razaoSocial" value="#{prospectsItens.razaoSocial}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Prospects_cpf}" />
+						</f:facet>
+						<h:outputText id="cpf" value="#{prospectsItens.cpf}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Prospects_cnpj}" />
+						</f:facet>
+						<h:outputText id="cnpj" value="#{prospectsItens.cnpj}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Prospects_unidadeEnsino}" />
+						</f:facet>
+						<h:outputText id="unidadeEnsino" value="#{prospectsItens.unidadeEnsino.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Prospects_tipoProspect}" />
+						</f:facet>
+						<h:outputText id="tipoProspect" value="#{prospectsItens.tipoProspect_Apresentar}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AgendaPessoaControle.selecionarProspect}" focus="prospects" render="formCompromisso, formProspect" oncomplete="#{rich:component('panelProspect')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formProspect:resultadoConsultaProspect" maxPages="10" id="scResultadoProspect" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaProspect" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCampanha" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formCampanha:valorConsultarCampanha').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_consultarCampanha}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkCampanha" />
+					<rich:componentControl target="panelCampanha" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCampanha" onkeydown="fecharModal('panelCampanha',event);">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:selectOneMenu styleClass="form-control campos" id="consultarCampanha" value="#{AgendaPessoaControle.campoConsultarCampanha}">
+							<f:selectItems value="#{AgendaPessoaControle.tipoConsultaComboCampanha}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="valorConsultarCampanha" styleClass="form-control campos" value="#{AgendaPessoaControle.valorConsultarCampanha}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="btnConsultarCampanha" render="formCampanha:mensagemConsultarCampanha, formCampanha:resultadoConsultaCampanha , formCampanhascResultadoCampanha , formCampanha" action="#{AgendaPessoaControle.consultarCampanha}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaCampanha" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.listaConsultarCampanha}" rows="5" var="campanhaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Campanha_descricao}" />
+						</f:facet>
+						<h:outputText id="descricao" value="#{campanhaItens.descricao}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Campanha_unidade}" />
+						</f:facet>
+						<h:outputText id="unidadeensino" value="#{campanhaItens.unidadeEnsino.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Campanha_curso}" />
+						</f:facet>
+						<h:outputText id="curso" value="#{campanhaItens.curso.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Campanha_situacao}" />
+						</f:facet>
+						<h:outputText id="situacao" value="#{campanhaItens.situacao_Apresentar}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AgendaPessoaControle.selecionarCampanha}" focus="campanha" render="formCompromisso, formCampanha" oncomplete="#{rich:component('panelCampanha')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCampanha:resultadoConsultaCampanha" maxPages="10" id="scResultadoCampanha" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCampanha" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelResponsavel" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formFuncionario:valorConsultaFuncionario').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_RelatorioReciboComissoes_funcionario}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink" />
+					<rich:componentControl target="panelResponsavel" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionario" value="#{AgendaPessoaControle.campoConsultaFuncionario}">
+							<f:selectItems value="#{AgendaPessoaControle.tipoConsultaComboFuncionario}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="valorConsultaFuncionario" size="10" styleClass="form-control campos" value="#{AgendaPessoaControle.valorConsultaFuncionario}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<otm:commandButton id="btnConsultar" render="formFuncionario:mensagemConsultaFuncionario, formFuncionario:resultadoConsultaFuncionario, formFuncionario:scResultadoFuncionario" action="#{AgendaPessoaControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaFuncionario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.listaConsultaFuncionario}" rows="5" var="funcionarioItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AgendaPessoaControle.selecionarFuncionario}" focus="nomeFuncionario" render="formCompromisso:responsavelCompromisso" oncomplete="#{rich:component('panelResponsavel')}.hide();" value="#{funcionarioItens.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_CPF} " />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{AgendaPessoaControle.selecionarFuncionario}" focus="nomeFuncionario" render="formCompromisso:responsavelCompromisso" oncomplete="#{rich:component('panelResponsavel')}.hide();" value="#{funcionarioItens.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{AgendaPessoaControle.selecionarFuncionario}" focus="nomeFuncionario" render="formCompromisso:responsavelCompromisso" oncomplete="#{rich:component('panelResponsavel')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formFuncionario:resultadoConsultaFuncionario" maxPages="10" id="scResultadoFuncionario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelMatriculaProspect" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Matrícula(s) do Prospect"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkMatriculaProspect" />
+					<rich:componentControl target="panelMatriculaProspect" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMatriculaProspect">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_prospect}" />
+					<h:inputText size="50" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.prospect.nome}" />
+				</h:panelGroup>
+				<rich:dataTable id="resultadoConsultaMatriculaProspect" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.matriculaVOs}" rows="5" var="matriculaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{matriculaItens.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_data}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{matriculaItens.data}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_unidadeEnsino}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{matriculaItens.unidadeEnsino.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_curso}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{matriculaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_turno}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{matriculaItens.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_situacao}" />
+						</f:facet>
+						<h:panelGroup>
+							<h:outputText value="#{matriculaItens.situacao_Apresentar}" />
+						</h:panelGroup>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" for="formMatriculaProspect:resultadoConsultaMatriculaProspect" maxPages="10" id="scResultadoMatriculaProspect" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaMatriculaProspect" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelNovoCompromisso" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formCompromisso:descricao').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkCompromisso" />
+					<rich:componentControl target="panelNovoCompromisso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCompromisso">
+				<style>
+input[type=checkbox], input[type=radio] {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 2px;
+}
+</style>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_tipoCompromisso}" />
+					<h:selectOneRadio id="tipoCompromisso" styleClass="form-control" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.tipoCompromisso}" style="float:left">
+						<f:selectItems value="#{EnumControle.comboboxTipoCompromissoEnum}" />
+					</h:selectOneRadio>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_descricao}" />
+					<h:inputText id="descricao" size="50" maxlength="100" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.descricao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_campanha}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="campanha" size="40" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.campanha.descricao}" />
+						<span class="append-icon right"> <otm:commandIcon action="#{AgendaPessoaControle.limparMensagem}" oncomplete="#{rich:component('panelCampanha')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_consultarCampanha}" render="formCampanha" /> <otm:commandIcon id="limparCampanha" immediate="true" action="#{AgendaPessoaControle.limparCampoCampanha}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="campanha" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_prospect}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="prospect" size="40" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.prospect.nome}" />
+						<span class="append-icon right"> <otm:commandIcon action="#{AgendaPessoaControle.limparMensagem}" oncomplete="#{rich:component('panelProspect')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" tooltip="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_consultarProspect}" render="formProspect" /> <otm:commandIcon id="limparProspect" immediate="true" action="#{AgendaPessoaControle.limparCampoProspect}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="prospect" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{AgendaPessoaControle.permitirAlterarDataCompromisso}">
+					<h:outputText rendered="#{AgendaPessoaControle.permitirAlterarDataCompromisso}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_dataCompromisso}" />
+					<otm:calendar id="dataCadastro" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.dataCompromisso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{AgendaPessoaControle.permitirAlterarDataCompromisso}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+					<h:inputText id="hora" size="5" maxlength="5" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.hora}" onkeypress="return mascara(this.form, this.id, '23:59', event);">
+						<!-- 						<a4j:ajax event="change" render="formCompromisso, formCompromisso:mensagemConsultaCampanha, formCompromisso:mensagemConsultaCampanha2" /> -->
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{AgendaPessoaControle.permitirAlterarDataCompromisso}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_horaFim}" />
+					<h:inputText id="horaFim" size="5" maxlength="5" styleClass="form-control campos" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.horaFim}" onkeypress="return mascara(this.form, this.id, '99:99', event);" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!AgendaPessoaControle.permitirAlterarDataCompromisso}">
+					<h:outputText rendered="#{!AgendaPessoaControle.permitirAlterarDataCompromisso}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+					<h:inputText id="horaEditada" size="5" maxlength="5" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.hora}" onkeypress="return mascara(this.form, this.id, '99:99', event);" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_tipoContato}" />
+					<h:selectOneMenu id="tipoContato" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.tipoContato}">
+						<f:selectItems value="#{EnumControle.comboboxTipoContatoEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_urgente}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="urgente" styleClass="form-control campos" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.urgente}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_observacao}" />
+						<h:inputTextarea id="observacao" styleClass="form-control campos" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.observacao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_responsavel}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText size="40" readonly="true" id="responsavelCompromisso" value="#{AgendaPessoaControle.compromissoAgendaPessoaHorarioVO.agendaPessoaHorario.agendaPessoa.pessoa.nome}" styleClass="form-control camposSomenteLeitura" />
+							<span class="append-icon right"> <otm:commandIcon id="buscarResponsavel" oncomplete="#{rich:component('panelResponsavel')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" render="formCompromisso" rendered="#{LoginControle.permissaoAcessoMenuVO.visaoAdministradorAgendaPessoa}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCampanha" layout="block" styleClass="row">
+					<otm:mensagem id="mensagemConsultaCampanha2" bean="#{AgendaPessoaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton action="#{AgendaPessoaControle.adicionarCompromissoAgendaPessoaHorario}" render="form, formCompromisso, form:panelGridDadosEstatisticos, form:estatisticaAgendaResumo" oncomplete="#{AgendaPessoaControle.abrirRichModalCompromisso}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-info mr5" value="Adicionar Compromisso Agenda Pessoa Horario" />
+					<otm:commandButton action="#{AgendaPessoaControle.reagendarCompromisso}" render="form, formCompromisso, form:panelGridDadosEstatisticos, form:estatisticaAgendaResumo" oncomplete="#{AgendaPessoaControle.abrirRichModalCompromisso}" image="#{resource['/imagens/botaoAdicionar.png']}" icon="#{msg_botoes.btn_icon_calendario_embutido}" styleClass="btn btn-default" value="Reagendar Compromisso" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMinimizado1" id="panelCompromissoAtrasado" shadowOpacity="true" width="300" height="180">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Alerta"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" />
+					<rich:componentControl target="panelCompromissoAtrasado" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCompromissoAtrasado">
+				<h:panelGroup columns="1">
+					<h:outputText value="Data do Compromisso é diferente da data atual será necessário fazer o reagendamento." />
+					<otm:spacer width="5px" />
+					<h:outputText value="Deseja reagendar o compromisso automaticamente para a data e hora Atual?" />
+				</h:panelGroup>
+				<otm:spacer height="20px" />
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-30">
+					<otm:commandButton styleClass="btn btn-info mr5" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Sim" action="#{AgendaPessoaControle.reagendarCompromissoLigacaoAtrasada}" render="form, formCompromissoAtrasado, form:panelGridDadosEstatisticos, form:estatisticaAgendaResumo ,items" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{AgendaPessoaControle.compromissoVO.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{AgendaPessoaControle.compromissoVO.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow', 850, 720);#{rich:component('panelCompromissoAtrasado')}.hide()" />
+					<otm:commandButton styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Não" operation="hide" event="click" oncomplete="#{rich:component('panelCompromissoAtrasado')}.hide()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelExcluirCompromisso" shadowOpacity="true" width="600" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_excluir}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelExcluirCompromisso" />
+					<rich:componentControl target="panelExcluirCompromisso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluirCompromisso">
+				<h:panelGroup columns="1" columnClasses="colunaCentralizada" width="100%">
+					<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{msg.msg_Excluir_CompromissoAgendaPessoa}" />
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_Excluir_ConfirmacaoCompromissoAgendaPessoa}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<h:panelGroup>
+						<otm:commandButton oncomplete="#{rich:component('panelExcluirCompromisso')}.hide()" action="#{AgendaPessoaControle.realizarExclusaoCompromisso}" render="form, formContatosPendentesNaoFinalizados" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" value="Realizar Exclusao Compromisso" />
+						<otm:spacer width="5px" />
+						<otm:commandButton oncomplete="#{rich:component('panelExcluirCompromisso')}.hide()" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="Não" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelContatosPendentesNaoFinalizados" style="overflow:auto" shadowOpacity="true" width="790" height="600" onshow="document.getElementById('formCompromisso:descricao').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Contatos Pendentes"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelContatosPendentesNaoFinalizados" />
+					<rich:componentControl target="panelContatosPendentesNaoFinalizados" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formContatosPendentesNaoFinalizados">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-lg-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_dataCompromisso}" />
+						<otm:calendar id="dataCompromissoAdiado" value="#{AgendaPessoaControle.dataCompromissoAdiado}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="Hora Compromisso" />
+						<h:inputText id="horaCompromissoAdiado" size="5" maxlength="5" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.horaCompromissoAdiado}" onkeypress="return mascara(this.form, this.id, '99:99', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="até" />
+						<h:inputText id="horaFimCompromissoAdiado" size="5" maxlength="5" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.horaFimCompromissoAdiado}" onkeypress="return mascara(this.form, this.id, '99:99', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+						<h:inputText id="horaCompromissoAdiados" size="5" maxlength="5" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.horaCompromissoAdiado}" onkeypress="return mascara(this.form, this.id, '99:99', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Hora Intervalo" />
+						<h:inputText styleClass="form-control" id="horaIntervalo" size="5" maxlength="5" value="#{AgendaPessoaControle.horaIntevaloInicioCompromissoAdiado}" onkeypress="return mascara(this.form, this.id, '99:99', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="até" />
+						<h:inputText styleClass="form-control" id="horaFimIntervalo" size="5" maxlength="5" value="#{AgendaPessoaControle.horaIntevaloFimCompromissoAdiado}" onkeypress="return mascara(this.form, this.id, '99:99', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="Intervalo Agenda (Min)" />
+						<h:inputText id="IntervaloAgenda" size="3" maxlength="3" styleClass="form-control camposObrigatorios" value="#{AgendaPessoaControle.intervaloAgendaCompromisso}" onkeypress="return mascara(this.form, this.id, '999', event);" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataTable id="itemsContatoPendente" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" rows="5" value="#{AgendaPessoaControle.listaCompromissoAgendaContatosPendentes}" var="compromissosItens">
+						<rich:column filterType="custom" filterExpression="#{!compromissoItens.realizado}">
+							<f:facet name="header">
+								<h:panelGroup id="selecionarTodosCompromisso">
+									<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{AgendaPessoaControle.selecionarTodosCompromisso}">
+										<a4j:ajax event="click" execute="@this" listener="#{AgendaPessoaControle.realizarSelecaoTodasContatosPendentesNaoFinalizados}" render="formContatosPendentesNaoFinalizados:itemsContatoPendente" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<rich:tooltip target="selecionarTodosCompromisso" style="z-index: 10000">
+									<h:outputText value="Selecinar Todo(s) Compromisso(s)" />
+								</rich:tooltip>
+							</f:facet>
+							<h:panelGroup id="item_boolean">
+								<otm:selectBooleanCheckbox styleClass="form-control campos" value="#{compromissosItens.compromissoSelecionado}">
+									<a4j:ajax event="change" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{!compromissosItens.realizado}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_dataCompromisso}" />
+							</f:facet>
+							<h:outputText value="#{compromissosItens.dataCompromisso_Apresentar} - #{compromissosItens.hora}" />
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{!compromissosItens.realizado}">
+							<f:facet name="header">
+								<h:outputText value="Tipo Compromisso" />
+							</f:facet>
+					 		<h:outputText value="#{compromissosItens.tipoCompromisso}" />
+					 		<otm:spacer width="5px" />
+							<h:panelGroup style="z-index:10000" id="tipos_compromisso" rendered="#{!empty compromissosItens.tipoCompromisso}">
+								<span class="#{compromissosItens.imagemTipoContato}" />
+							</h:panelGroup>
+							<rich:tooltip style="z-index:10000" value="#{compromissosItens.tipoContato}" target="tipos_compromisso" />
+							<h:panelGroup style="z-index:10000" id="tipos_compromisso2" rendered="#{compromissosItens.urgente}">
+								<span class="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-danger" />
+							</h:panelGroup>
+							<rich:tooltip style="z-index:10000" value="Compromisso Urgente" target="tipos_compromisso2" />
+							<h:panelGroup style="z-index:10000" id="tipos_compromisso3" rendered="#{compromissosItens.reagendado}">
+								<span class="fas fa-user-clock text-warning" />
+							</h:panelGroup>
+							<rich:tooltip style="z-index:10000" value="Data Agenda Primeiro Contato: #{compromissosItens.dataInicialCompromisso_Apresentar} - #{compromissosItens.historicoReagendamentoCompromisso} " target="tipos_compromisso3" />
+							<h:panelGroup id="tipos_compromisso4" rendered="#{compromissosItens.tipoCompromisso eq 'TIRE_SUAS_DUVIDAS'}">
+								<span class="fas fa-question-circle text-info" />
+							</h:panelGroup>
+							<rich:tooltip style="z-index:10000" value="Dúvida: #{compromissosItens.duvida}" target="tipos_compromisso4" />
+							<h:panelGroup style="z-index:10000" id="tipos_compromisso5" rendered="#{compromissosItens.tipoCompromisso eq 'QUERO_SER_ALUNO'}">
+								<span class="fas fa-user-graduate text-success" />
+							</h:panelGroup>
+							<rich:tooltip style="z-index:10000" value="Quero Ser Aluno" target="tipos_compromisso6" />
+							
+							<h:panelGroup style="z-index:10000" id="tipos_compromisso6" rendered="#{compromissosItens.reagendado}">
+								<span class="fas fa-user-clock text-warning" />
+							</h:panelGroup>
+							<rich:tooltip value="Data Agenda Primeiro Contato: #{compromissosItens.dataInicialCompromisso_Apresentar} - #{compromissosItens.historicoReagendamentoCompromisso} " target="tipos_compromisso6" />
+							
+							<h:graphicImage url="#{resource['/imagens/botaoUrgente2.png']}" style="position:relative; top:-1px;" title="Compromisso Urgente" rendered="#{compromissoItens.urgente}" />
+							<h:graphicImage url="#{compromissosItens.imagemTipoContato}" style="position:relative; top:2px;" title="#{compromissosItens.tipoContato}" />
+<!-- 							<h:graphicImage id="helpHistorico1" rendered="#{compromissosItens.reagendado}" url="#{resource['/imagens/botaoReagendado.png']}" /> -->
+<!-- 							<rich:tooltip direction="auto" followMouse="true" target="helpHistorico1"> -->
+<!-- 								<h:panelGroup columns="1" width="100%"> -->
+<!-- 									<h:outputText styleClass="tituloCamposReduzidos" value="Data Agenda Primeiro Contato: #{compromissosItens.dataInicialCompromisso_Apresentar}" /> -->
+<!-- 									<h:outputText styleClass="tituloCamposReduzidos" value="#{compromissosItens.historicoReagendamentoCompromisso}" /> -->
+<!-- 								</h:panelGroup> -->
+<!-- 							</rich:tooltip> -->
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{!compromissosItens.realizado}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_prospect}" />
+							</f:facet>
+							<h:outputText value="#{compromissosItens.prospect.nome}" />
+							<otm:spacer width="5" />
+							<h:graphicImage url="#{resource['/imagens/erro.gif']}" style="position:relative; top:2px;" title="INATIVO" rendered="#{compromissosItens.prospect.inativo}" />
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{!compromissosItens.realizado}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_telefone}" />
+							</f:facet>
+							<h:outputText value="#{compromissosItens.prospect.telefoneResidencial}" />
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{!compromissosItens.realizado}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_email}" />
+							</f:facet>
+							<h:outputText value="#{compromissosItens.prospect.emailPrincipal}" />
+						</rich:column>
+						<rich:column filterType="custom" filterExpression="#{!compromissosItens.realizado}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_observacao}" />
+							</f:facet>
+							<h:outputText id="observacao" value="#{compromissoItens.observacao_ApresentarResumido}" />
+							<rich:tooltip followMouse="true" direction="topLeft" style="width:350px;" target="observacao" showDelay="500">
+								<h:outputText value="#{compromissosItens.observacao}" />
+							</rich:tooltip>
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formContatosPendentesNaoFinalizados:itemsContatoPendente" id="scResultadoConsulta" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+					<otm:spacer height="1" />
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton id="adiarCompromisso" render="form,formGerarAgenda,form:panelGridDadosEstatisticos, form:estatisticaAgendaResumo" action="#{AgendaPessoaControle.realizarRemarcacaoCompromisso}" oncomplete="#{AgendaPessoaControle.abrirRichModalContatosPendentesNaoFinalizados}" image="#{resource['/imagens/botaoAdiar.png']}" icon="#{msg_botoes.btn_icon_calendario_embutido}" value="Remarcar Compromisso" styleClass="btn btn-default" />
+							<otm:spacer width="5px" />
+							<otm:commandButton id="excluirCompromisso" oncomplete="#{rich:component('panelExcluirCompromisso')}.show()" icon="#{msg_botoes.btn_icon_remver_embutido}" styleClass="btn btn-danger" value="Excluir Compromisso" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup id="mensagemConsultaCampanha" columns="1" width="100%" styleClass="tabMensagens">
+						<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:panelGroup id="pagina">
+			<h:form id="form">
+				<h:panelGroup id="topoVisao">
+					<h:panelGroup id="estatisticaAgendaResumo">
+						<h:panelGroup layout="block" styleClass="row mt10" id="panelGridDadosEstatisticos">
+							<h:panelGroup layout="block" styleClass="col-md-6 pn" rendered="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia}">
+								<otm2:dashpanel name="dadosMiniCalendario" id="dadosMiniCalendario" styleClass="p-0" cols="12" styleClassHeader="bg-info p5 rounded-top mln" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+									<ui:define name="header">
+										<i class="far fa-calendar-alt mr-2 fonteHeaderDashboard"></i>
+										<h:outputText value="Calendário de Agendas" />
+									</ui:define>
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="w-100 p-2" style="overflow:auto;max-height:600px">
+											<h:panelGroup layout="block" styleClass="row">
+												<h:panelGroup styleClass="col-md-4 text-left" layout="block">
+													<otm:commandButton styleClass="botoesMiniCalendario" render="form" action="#{AgendaPessoaControle.visualizarCalendarioAnteriorMes}" value="#{AgendaPessoaControle.calendarioCompromisso.mesAnoAnteriorAbreviado}" style="background: transparent !important; border: none !important; font-weight: normal !important; font-size: 10px !important; padding-top: 5px !important; padding-bottom: 5px !important;" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4 text-center" layout="block">
+													<h:outputText id="tituloScroll" value="#{AgendaPessoaControle.calendarioCompromisso.tituloCalendarioAbreviado}" style="font-weight: 1000; font-size: 12px !important; width: 20%; padding-top: 3px !important; padding-bottom: 4px !important; color: #black;" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-4 text-right" layout="block">
+													<otm:commandButton styleClass="botoesMiniCalendario" render="form" action="#{AgendaPessoaControle.visualizarCalendarioProximoMes}" value="#{AgendaPessoaControle.calendarioCompromisso.mesPosteriorAbreviado}" style="background: transparent !important; border: none !important; font-weight: normal !important; font-size: 10px !important; padding-top: 5px !important; padding-bottom: 5px !important; height: 25px;" />
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="w-100">
+												<h:panelGroup layout="block" styleClass="row">
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+															<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+																<h:outputText value="D" />
+															</h:panelGroup>
+															<rich:list type="definitions" value="#{AgendaPessoaControle.calendarioCompromisso.calendarioHorarioAulaDomingo}" var="diaCompromissoItens">
+																<h:panelGroup layout="block" style="line-height:31px" styleClass="w-100 border-bottom text-center ">
+																	<a4j:commandLink styleClass=" rounded-circle  p5 font-weight-bold  p5 #{AgendaPessoaControle.filtroDia eq diaCompromissoItens.dataCompromisso and AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia? 'bg-success text-white' : diaCompromissoItens.styleClass}" render="panelGridAgendaDia, panelGridAgendaDia1, panelGridAgendaDia3, form:panelGridMensagens, panelGridDadosEstatisticos" action="#{AgendaPessoaControle.selecionarDiaCalendario}">
+																		<h:outputText value="#{diaCompromissoItens.dataCompromisso}">
+																			<f:convertDateTime pattern="dd" />
+																		</h:outputText>
+																	</a4j:commandLink>
+																</h:panelGroup>
+															</rich:list>
+														</h:panelGroup>
+														<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+															<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+																<h:outputText value="S" />
+															</h:panelGroup>
+															<rich:list type="definitions" value="#{AgendaPessoaControle.calendarioCompromisso.calendarioHorarioAulaSegunda}" var="diaCompromissoItens">
+																<h:panelGroup layout="block" style="line-height:31px" styleClass="w-100 border-bottom text-center ">
+																	<a4j:commandLink styleClass=" rounded-circle  p5  font-weight-bold #{AgendaPessoaControle.filtroDia eq diaCompromissoItens.dataCompromisso and AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia? 'bg-success text-white'  : diaCompromissoItens.styleClass} " render="panelGridAgendaDia, panelGridAgendaDia1, panelGridAgendaDia3, panelGridDadosEstatisticos" action="#{AgendaPessoaControle.selecionarDiaCalendario}">
+																		<h:outputText value="#{diaCompromissoItens.dataCompromisso}">
+																			<f:convertDateTime pattern="dd" />
+																		</h:outputText>
+																	</a4j:commandLink>
+																</h:panelGroup>
+															</rich:list>
+														</h:panelGroup>
+														<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+															<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+																<h:outputText value="T" />
+															</h:panelGroup>
+															<rich:list type="definitions" value="#{AgendaPessoaControle.calendarioCompromisso.calendarioHorarioAulaTerca}" var="diaCompromissoItens">
+																<h:panelGroup layout="block" style="line-height:31px" styleClass="w-100 border-bottom text-center ">
+																	<a4j:commandLink styleClass=" rounded-circle  p5  font-weight-bold #{AgendaPessoaControle.filtroDia eq diaCompromissoItens.dataCompromisso and AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia? 'bg-success text-white' : diaCompromissoItens.styleClass} " render="panelGridAgendaDia, panelGridAgendaDia1, panelGridAgendaDia3, panelGridDadosEstatisticos" action="#{AgendaPessoaControle.selecionarDiaCalendario}">
+																		<h:outputText value="#{diaCompromissoItens.dataCompromisso}">
+																			<f:convertDateTime pattern="dd" />
+																		</h:outputText>
+																	</a4j:commandLink>
+																</h:panelGroup>
+															</rich:list>
+														</h:panelGroup>
+														<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+															<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+																<h:outputText value="Q" />
+															</h:panelGroup>
+															<rich:list type="definitions" value="#{AgendaPessoaControle.calendarioCompromisso.calendarioHorarioAulaQuarta}" var="diaCompromissoItens">
+																<h:panelGroup layout="block" style="line-height:31px" styleClass="w-100 border-bottom text-center ">
+																	<a4j:commandLink styleClass=" rounded-circle  p5  font-weight-bold #{AgendaPessoaControle.filtroDia eq diaCompromissoItens.dataCompromisso and AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia? 'bg-success text-white' : diaCompromissoItens.styleClass} " render="panelGridAgendaDia, panelGridAgendaDia1, panelGridAgendaDia3, panelGridDadosEstatisticos" action="#{AgendaPessoaControle.selecionarDiaCalendario}">
+																		<h:outputText value="#{diaCompromissoItens.dataCompromisso}">
+																			<f:convertDateTime pattern="dd" />
+																		</h:outputText>
+																	</a4j:commandLink>
+																</h:panelGroup>
+															</rich:list>
+														</h:panelGroup>
+														<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+															<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+																<h:outputText value="Q" />
+															</h:panelGroup>
+															<rich:list type="definitions" value="#{AgendaPessoaControle.calendarioCompromisso.calendarioHorarioAulaQuinta}" var="diaCompromissoItens">
+																<h:panelGroup layout="block" style="line-height:31px" styleClass="w-100 border-bottom text-center ">
+																	<a4j:commandLink styleClass=" rounded-circle  p5  font-weight-bold #{AgendaPessoaControle.filtroDia eq diaCompromissoItens.dataCompromisso and AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia? 'bg-success text-white' : diaCompromissoItens.styleClass} " render="panelGridAgendaDia, panelGridAgendaDia1, panelGridAgendaDia3, panelGridDadosEstatisticos" action="#{AgendaPessoaControle.selecionarDiaCalendario}">
+																		<h:outputText value="#{diaCompromissoItens.dataCompromisso}">
+																			<f:convertDateTime pattern="dd" />
+																		</h:outputText>
+																	</a4j:commandLink>
+																</h:panelGroup>
+															</rich:list>
+														</h:panelGroup>
+														<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+															<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+																<h:outputText value="S" />
+															</h:panelGroup>
+															<rich:list type="definitions" value="#{AgendaPessoaControle.calendarioCompromisso.calendarioHorarioAulaSexta}" var="diaCompromissoItens">
+																<h:panelGroup layout="block" style="line-height:31px" styleClass="w-100 border-bottom text-center ">
+																	<a4j:commandLink styleClass=" rounded-circle  p5  font-weight-bold #{AgendaPessoaControle.filtroDia eq diaCompromissoItens.dataCompromisso and AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia? 'bg-success text-white' : diaCompromissoItens.styleClass} " render="panelGridAgendaDia, panelGridAgendaDia1, panelGridAgendaDia3, panelGridDadosEstatisticos" action="#{AgendaPessoaControle.selecionarDiaCalendario}">
+																		<h:outputText value="#{diaCompromissoItens.dataCompromisso}">
+																			<f:convertDateTime pattern="dd" />
+																		</h:outputText>
+																	</a4j:commandLink>
+																</h:panelGroup>
+															</rich:list>
+														</h:panelGroup>
+														<h:panelGroup styleClass="text-center" style="width:14.27%;float:left" layout="block">
+															<h:panelGroup layout="block" styleClass="w-100 text-center headerMiniCalendario">
+																<h:outputText value="S" />
+															</h:panelGroup>
+															<rich:list type="definitions" value="#{AgendaPessoaControle.calendarioCompromisso.calendarioHorarioAulaSabado}" var="diaCompromissoItens">
+																<h:panelGroup layout="block" style="line-height:31px" styleClass="w-100 border-bottom text-center ">
+																	<a4j:commandLink styleClass=" rounded-circle  p5  font-weight-bold #{AgendaPessoaControle.filtroDia eq diaCompromissoItens.dataCompromisso and AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia? 'bg-success' : diaCompromissoItens.styleClass} " render="panelGridAgendaDia, panelGridAgendaDia1, panelGridAgendaDia3, panelGridDadosEstatisticos" action="#{AgendaPessoaControle.selecionarDiaCalendario}">
+																		<h:outputText value="#{diaCompromissoItens.dataCompromisso}">
+																			<f:convertDateTime pattern="dd" />
+																		</h:outputText>
+																	</a4j:commandLink>
+																</h:panelGroup>
+															</rich:list>
+														</h:panelGroup>
+													</h:panelGroup>
+												</h:panelGroup>
+											</h:panelGroup>
+										</h:panelGroup>
+									</ui:define>
+								</otm2:dashpanel>
+							</h:panelGroup>
+
+							<h:panelGroup styleClass="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia ? 'col-md-6' : 'col-md-12'} pn" layout="block">
+
+								<h:panelGroup layout="block" styleClass="row" style="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia ? 'height:310px' : 'height:155px'};overflow-x:auto">
+									<h:panelGroup layout="block" styleClass="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia ? 'col-md-6' : 'col-md-4'} mt5">
+										<otm2:panel name="panelTotalProspects" renderedControl="false" styleClassHeader="bg-success p5 rounded-top mln" stylePanelHeader=" " styleClassFooter="dn" stylePanel="min-height: 105px;">
+											<ui:define name="header">
+												<h:outputText styleClass="field control-label text-white font-weight-bold" value="Novos Compromissos" />
+											</ui:define>
+											<ui:define name="body">
+
+												<h:panelGroup layout="block" styleClass="row p5" style="height:100px">
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="tituloCampos" value="TOTAL NOVOS:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.agendaPessoaVO.quantidadeNovasAgendas}  " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="tituloCampos" value="Pendentes:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.agendaPessoaVO.quantidadeNovasAgendasPendentes}  " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="tituloCampos" value="Realizados com Sucesso:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.agendaPessoaVO.quantidadeNovasAgendasRealizadas}  " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="tituloCampos" value="Realizados com Insucesso:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.agendaPessoaVO.quantidadeNovasAgendasRealizadasComInsucesso}  " />
+													</h:panelGroup>
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia ? 'col-md-6' : 'col-md-4'} mt5">
+										<otm2:panel name="panelTotalProspects3" renderedControl="false" styleClassHeader="bg-danger p5 rounded-top mln" stylePanelHeader=" " styleClassFooter="dn" stylePanel="min-height: 105px;">
+											<ui:define name="header">
+												<h:outputText styleClass="field control-label text-white font-weight-bold" value="Não Iniciados Até Hoje" />
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup layout="block" styleClass="row p5" style="height:100px">
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="tituloCampos" value="Número aceitável:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.configuracaoGeralPadraoSistema.qtdAceitavelContatosPendentesNaoIniciados}  " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="tituloCampos" value="Número limite:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.configuracaoGeralPadraoSistema.qtdLimiteContatosPendentesNaoIniciados}  " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="tituloCampos" value="Quantidade:" />
+														<h:panelGroup styleClass="float-right">
+															<h:panelGroup styleClass="fas fa-flag text-success mr5" rendered="#{AgendaPessoaControle.contatoPendentesNaoInicializadoAbaixoDoAceitavel}" />
+															<h:panelGroup styleClass="fas fa-flag text-danger mr5" rendered="#{AgendaPessoaControle.contatoPendentesNaoInicializadoAcimaDoLimite}" />
+															<h:panelGroup styleClass="fas fa-flag text-warning mr5" rendered="#{AgendaPessoaControle.contatoPendentesNaoInicializadoAceitavelPorLimite}" />
+															<a4j:commandLink styleClass="tituloCampos" action="#{AgendaPessoaControle.realizarConsultarContatosPendentesNaoInicializados}" oncomplete="#{rich:component('panelContatosPendentesNaoFinalizados')}.show();" render="formContatosPendentesNaoFinalizados, form:panelGridMensagens" value=" #{AgendaPessoaControle.agendaPessoaVO.qtdContatosPendentesNaoIniciados}" />
+														</h:panelGroup>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<otm:spacer width="20px"></otm:spacer>
+													</h:panelGroup>
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia ? 'col-md-12' : 'col-md-4'} mt5">
+										<otm2:panel name="panelTotalProspects2" renderedControl="false" styleClassHeader="bg-warning p5 rounded-top mln" stylePanelHeader=" " styleClassFooter="dn" stylePanel="min-height: 105px;">
+											<ui:define name="header">
+												<h:outputText styleClass="field control-label text-white font-weight-bold" value="Compromissos Reagendados" />
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup layout="block" styleClass="row p5" style="height:100px">
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="tituloCampos" value="TOTAL REAGENDADOS:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.agendaPessoaVO.quantidadeReagendas}  " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="tituloCampos" value="Pendentes:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.agendaPessoaVO.quantidadeReagendasPendentes}  " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="tituloCampos" value="Realizados com Sucesso:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.agendaPessoaVO.quantidadeReagendasRealizadas}  " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="tituloCampos" value="Realizados com Insucesso:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.agendaPessoaVO.quantidadeReagendasRealizadasComInsucesso}  " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="tituloCampos" value="Número aceitável:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.configuracaoGeralPadraoSistema.qtaAceitavelContatosPendentesNaoFinalizados}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="tituloCampos" value="Número limite:" />
+														<h:outputText styleClass="tituloCampos float-right" value="#{AgendaPessoaControle.configuracaoGeralPadraoSistema.qtaLimiteContatosPendentesNaoFinalizados} " />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-6">
+														<h:outputText styleClass="tituloCampos" value="Quantidade:" />
+														<h:panelGroup styleClass="float-right">
+															<h:panelGroup styleClass="fas fa-flag text-success mr5" rendered="#{AgendaPessoaControle.contatoPendentesNaoFinalizadoAbaixoDoAceitavel}" />
+															<h:panelGroup styleClass="fas fa-flag text-danger mr5" rendered="#{AgendaPessoaControle.contatoPendentesNaoFinalizadoAcimaDoLimite}" />
+															<h:panelGroup styleClass="fas fa-flag text-warning mr5" rendered="#{AgendaPessoaControle.contatoPendentesNaoFinalizadoAceitavelPorLimite}" />
+															<a4j:commandLink styleClass="tituloCampos" action="#{AgendaPessoaControle.realizarConsultarContatosPendentesNaoFinalizados}" oncomplete="#{rich:component('panelContatosPendentesNaoFinalizados')}.show();" render="formContatosPendentesNaoFinalizados, form:panelGridMensagens" value="  #{AgendaPessoaControle.agendaPessoaVO.qtdContatosPendentesNaoFinalizados} " />
+														</h:panelGroup>
+													</h:panelGroup>
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:commandLink action="#{AgendaPessoaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+				<h:panelGroup layout="block" styleClass="row" id="panelGridForm">
+					<h:panelGroup layout="block" styleClass="row row-overflow text-center pl3" id="testeCalendario" rendered="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaMes}">
+						<h:panelGroup layout="block" styleClass="col-md-12 mt10 text-center border rounded-top bg-info lh30 text-white" rendered="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaMes}">
+							<h:panelGroup styleClass="append-icon left" style="top:2px !important">
+								<otm:commandIcon id="anteriorMes" action="#{AgendaPessoaControle.realizarBuscaMesAnterior}" icon="#{msg_botoes.btn_icon_anterior} " tooltip="Mês Anterior" render="form:panelGridAgendaDia, form:panelGridMensagens, form:panelGridDadosEstatisticos, form:estatisticaAgendaResumo, panelGridForm" />
+							</h:panelGroup>
+							<!-- 											<otm:commandButton id="hojeMes" action="#{AgendaPessoaControle.realizarBuscaMesAtual}" image="#{resource['/imagens/botaoMesAtual.png']}" value="Mes atual" icon="#{msg_botoes.btn_icon_calendario}" styleClass="btn btn-default mr3" render="form:panelGridAgendaDia, form:panelGridMensagens, form:panelGridDadosEstatisticos, form:estatisticaAgendaResumo" /> -->
+							<h:outputText styleClass=" font-weight-bold text-uppercase" value="#{AgendaPessoaControle.apresentarFiltroMes_Texto}" style="font-weight: 1000; font-size: 12px !important; width: 20%; padding-top: 3px !important; padding-bottom: 4px !important; color: #black;" />
+							<h:panelGroup styleClass="append-icon right" style="top:0px !important;right:20px !important">
+								<otm:commandIcon id="proximoMes" action="#{AgendaPessoaControle.realizarBuscaProximoMes}" icon="#{msg_botoes.btn_icon_proximo} " tooltip="Próximo Mês" render="form:panelGridAgendaDia, form:panelGridMensagens, form:panelGridDadosEstatisticos, form:estatisticaAgendaResumo, panelGridForm" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="w-100 col-md-12 lh30">
+								<h:panelGroup layout="block" styleClass="float-left" style="width:14.28%; min-width:100px;">
+									<h:outputText styleClass=" font-weight-bold" value="DOMINGO" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="float-left" style="width:14.28%; min-width:100px;">
+									<h:outputText styleClass=" font-weight-bold" value="SEGUNDA-FEIRA" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="float-left" style="width:14.28%; min-width:100px;">
+									<h:outputText styleClass=" font-weight-bold" value="TERÇA-FEIRA" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="float-left" style="width:14.28%; min-width:100px;">
+									<h:outputText styleClass=" font-weight-bold" value="QUARTA-FEIRA" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="float-left" style="width:14.28%; min-width:100px;">
+									<h:outputText styleClass=" font-weight-bold" value="QUINTA-FEIRA" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="float-left" style="width:14.28%; min-width:100px;">
+									<h:outputText styleClass=" font-weight-bold" value="SEXTA-FEIRA" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="float-left" style="width:14.28%; min-width:100px;">
+									<h:outputText styleClass=" font-weight-bold" value="SÁBADO" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<a4j:repeat id="agendaPessoaHorarioMes" rowKeyVar="count" value="#{AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs}" var="agendaPessoaHorarioItens">
+							<h:panelGroup layout="block" styleClass="float-left " style="width:14.28%; min-width:100px;overflow:auto">
+								<otm2:panel layout="block" renderedControl="false" stylePanelHeader=" " styleClassHeader=" " name="panel#{agendaPessoaHorarioItens.apresentarDia}" rendered="#{agendaPessoaHorarioItens.isAtivo}">
+									<ui:define name="header">
+										<h:panelGroup layout="block" styleClass="row text-center #{agendaPessoaHorarioItens.css_Dia} border-bottom">
+											<h:outputText styleClass="btn-block fs20 font-weight-bold" value="#{agendaPessoaHorarioItens.apresentarDia}" />
+										</h:panelGroup>
+									</ui:define>
+									<ui:define name="body">
+										<h:panelGroup layout="block" styleClass="row text-center" style="height:160px;">
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center" rendered="#{agendaPessoaHorarioItens.quantidadeContatos ne 0}">
+												<h:outputText styleClass="float-left" value="Total Agendas" />
+												<h:outputText styleClass="float-right" value="#{agendaPessoaHorarioItens.quantidadeContatos}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center" rendered="#{agendaPessoaHorarioItens.quantidadeNovasAgendasRealizadas ne 0}">
+												<h:outputText styleClass="float-left" value="Agendas Realizadas" />
+												<h:outputText styleClass="float-right" value="#{agendaPessoaHorarioItens.quantidadeNovasAgendasRealizadas}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center" rendered="#{agendaPessoaHorarioItens.quantidadeNovasAgendasRealizadasComInsucesso ne 0}">
+												<h:outputText styleClass="float-left" value="Agendas c/ Insucesso" />
+												<h:outputText styleClass="float-right" value="#{agendaPessoaHorarioItens.quantidadeNovasAgendasRealizadasComInsucesso}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center" rendered="#{agendaPessoaHorarioItens.quantidadeNovasAgendasPendentes ne 0}">
+												<h:outputText styleClass="float-left" value="Agendas Pendentes" />
+												<h:outputText styleClass="float-right" value="#{agendaPessoaHorarioItens.quantidadeNovasAgendasPendentes}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center" rendered="#{agendaPessoaHorarioItens.quantidadeReagendasRealizadas ne 0}">
+												<h:outputText styleClass="float-left" value="Reagendas Realizadas" />
+												<h:outputText styleClass="float-right" value="#{agendaPessoaHorarioItens.quantidadeReagendasRealizadas}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center" rendered="#{agendaPessoaHorarioItens.quantidadeReagendasRealizadasComInsucesso ne 0}">
+												<h:outputText styleClass="float-left" value="Reagendas c/ Insucesso" />
+												<h:outputText styleClass="float-right" value="#{agendaPessoaHorarioItens.quantidadeReagendasRealizadasComInsucesso}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center" rendered="#{agendaPessoaHorarioItens.quantidadeReagendasPendentes ne 0}">
+												<h:outputText styleClass="float-left" value="Reagendas Pendentes" />
+												<h:outputText styleClass="float-right" value="#{agendaPessoaHorarioItens.quantidadeReagendasPendentes}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center" rendered="#{agendaPessoaHorarioItens.apresentarNumeroTarefas}">
+												<h:outputText value="#{agendaPessoaHorarioItens.quantidadeTarefa}" />
+												<otm:spacer width="5" />
+												<h:outputText value="#{msg_aplic.prt_AgendaPessoaHorario_quantidadeTarefa}" rendered="#{agendaPessoaHorarioItens.apresentarNumeroTarefas}" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</ui:define>
+									<ui:define name="footer">
+										<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+											<otm:commandIcon action="#{AgendaPessoaControle.realizarVisualizacaoDiaMes}" render="panelGridAgendaDia, form, estatisticaAgendaResumo" tooltip="Visualizar dia" rendered="#{agendaPessoaHorarioItens.apresentarVisualizarCompromissos}" icon="#{msg_botoes.btn_icon_lupa_embutido} " />
+											<otm:spacer width="10px" />
+											<otm:commandIcon action="#{AgendaPessoaControle.realizarPrrenchimentoCompromissoParaAgendamentoMes}" render="formCompromisso" title="Adicionar novo compromisso" rendered="#{agendaPessoaHorarioItens.apresentarAdicionarCompromisso }" oncomplete="#{rich:component('panelNovoCompromisso')}.show();" tooltip="Adicionar novo compromisso" icon="#{msg_botoes.btn_icon_adicionar_embutido} text-info" />
+										</h:panelGroup>
+									</ui:define>
+								</otm2:panel>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+					<h:panelGroup id="tabsForm" layout="block" styleClass="row" rendered="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia}">
+						<h:panelGroup layout="block" styleClass="row pl3 mb10">
+							<h:outputText styleClass="title ml5" value="Filtros"></h:outputText>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText value="#{msg_aplic.prt_InteracaoWorkflow_unidadeEnsino}" styleClass="field control-label tituloCampos col-md-4" />
+								<h:selectOneMenu styleClass="form-control campos" id="unidadeEnsino" value="#{AgendaPessoaControle.unidadeEnsinoVO.codigo}">
+									<f:selectItems value="#{AgendaPessoaControle.listaSelectItemUnidadeEnsino}" />
+									<a4j:ajax event="change" listener="#{AgendaPessoaControle.montarListaSelectItemResponsavel}" render="form:responsavel" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText value="#{msg_aplic.prt_FollowUp_campanha}" styleClass="field control-label tituloCampos col-md-3" />
+								<h:selectOneMenu styleClass="form-control campos" id="campanha" value="#{AgendaPessoaControle.campanhaVO.codigo}">
+									<f:selectItems value="#{AgendaPessoaControle.listaSelectItemCampanha}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{LoginControle.permissaoAcessoMenuVO.visaoAdministradorAgendaPessoa}">
+								<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_responsavel}" styleClass="field control-label tituloCampos col-md-3" />
+								<h:selectOneMenu styleClass="form-control campos" id="responsavel" value="#{AgendaPessoaControle.codigoResponsavel}">
+									<f:selectItems value="#{AgendaPessoaControle.listaSelectItemResponsavel}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" style="padding-top:23px">
+								<otm:commandButton id="atualizarBusca" action="#{AgendaPessoaControle.realizarBuscaPorCampanha}" styleClass="btn btn-info btn-block" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar Agenda" tooltip="Atualizar Dados" render="form:tabsForm, form:panelGridDadosEstatisticos, form:panelGridMensagens, form:estatisticaAgendaResumo" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<rich:tabPanel width="100%" id="panelGridAgendaDia" switchType="ajax">
+							<rich:tab id="tabInicio" header="Não Realizados (#{!empty AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs ? AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].qtdeContatoNaoRealizadoDia : 0})">
+								<h:panelGroup layout="block" id="painelVisaoDia" style="width:100%">
+									<rich:dataTable id="items" rows="50" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].listaCompromissoAgendaPessoaHorarioVOs}" var="compromissoItens" rendered="#{!empty AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs}">
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO')}" filterExpression="#{compromissoItens.permitirAlteracaoCompromisso and compromissoItens.compromissoNaoRealizado}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsHora')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:outputText value="#{compromissoItens.hora}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:panelGroup layout="block" styleClass="col-md-12">
+													<h:outputText value="Tipo Compromisso" />
+													<h:selectOneMenu value="#{AgendaPessoaControle.tipoCompromisso}" styleClass="form-control campos">
+														<f:selectItems value="#{AgendaPessoaControle.listaSelectItemTipoCompromissoVOs}" />
+														<a4j:ajax event="change" render="items, scResultadoItems" listener="#{AgendaPessoaControle.realizarBuscaPorCampanha}" />
+													</h:selectOneMenu>
+												</h:panelGroup>
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaCentralizada" rowClasses="linhaImpar">
+												<h:outputText value="#{compromissoItens.tipoCompromissoEnum_Apresentar}" />
+												<otm:spacer width="5" />
+												<h:panelGroup id="tipo_compromisso" rendered="#{compromissoItens.tipoCompromisso ne 'TIRE_SUAS_DUVIDAS' and compromissoItens.tipoCompromisso ne 'QUERO_SER_ALUNO'}">
+													<span class="#{compromissoItens.imagemTipoContato}" />
+												</h:panelGroup>
+												<rich:tooltip value="#{compromissoItens.tipoContato}" target="tipo_compromisso" />
+												<h:panelGroup id="tipo_compromisso2" rendered="#{compromissoItens.urgente}">
+													<span class="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-danger" />
+												</h:panelGroup>
+												<rich:tooltip value="Compromisso Urgente" target="tipo_compromisso2" />
+												<h:panelGroup id="helpHistorico2" rendered="#{compromissoItens.reagendado}">
+													<span class="fas fa-user-clock text-warning" />
+												</h:panelGroup>
+												<rich:tooltip value="Data Agenda Primeiro Contato: #{compromissoItens.dataInicialCompromisso_Apresentar} - #{compromissoItens.historicoReagendamentoCompromisso} " target="helpHistorico2" />
+												<h:panelGroup id="iconeTireSuasDuvidas" rendered="#{compromissoItens.tipoCompromisso eq 'TIRE_SUAS_DUVIDAS'}">
+													<span class="fas fa-question-circle text-info" />
+												</h:panelGroup>
+												<rich:tooltip value="Dúvida: #{compromissoItens.duvida}" target="iconeTireSuasDuvidas" />
+												<h:panelGroup id="tipo_compromisso3" rendered="#{compromissoItens.tipoCompromisso eq 'QUERO_SER_ALUNO'}">
+													<span class="fas fa-user-graduate text-success" />
+												</h:panelGroup>
+												<rich:tooltip value="Quero Ser Aluno" target="tipo_compromisso3" />
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO')}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_prospect}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsProspect')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:panelGroup layout="block" style="width:100%">
+												<h:outputText value="#{compromissoItens.prospect.nome}" />
+												<otm:spacer rendered="#{compromissoItens.prospect.inativo}" width="5" />
+												<h:graphicImage url="#{resource['/imagens/erro.gif']}" style="position:relative; top:2px;" title="INATIVO" rendered="#{compromissoItens.prospect.inativo}" />
+												<otm:spacer width="5" rendered="#{compromissoItens.possuiMatricula}" />
+												<otm:commandIcon style="position:relative;top:2px;" image="#{resource['/imagens/ok.png']}" render="formMatriculaProspect" oncomplete="#{rich:component('panelMatriculaProspect')}.show()" action="#{AgendaPessoaControle.consultarMatriculaProspect}" tooltip="Prospect Matriculado - Clique para visualizar a(s) matrícula(s)" icon="#{msg_botoes.btn_icon_lupa_embutido}" rendered="#{compromissoItens.possuiMatricula}" />
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_telefone}/#{msg_aplic.prt_CompromissoAgendaPessoaHorario_email}" />
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaAlinhamento" width="100%">
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.telefoneResidencial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneComercial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneRecado}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.celular}" />
+												</h:panelGroup>
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.emailPrincipal}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsCursoInteresse', 'cursoInteresseProspect.nome', 'TEXTO')}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CursoInteresse_tituloForm}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsCursoInteresse', 'cursoInteresseProspect.nome', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsCursoInteresse')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:outputText value="#{compromissoItens.cursoInteresseProspect.nome}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_observacao}" />
+											</f:facet>
+											<h:outputText id="observacao" value="#{compromissoItens.observacao_Apresentar}" />
+											<rich:tooltip followMouse="true" direction="bottomLeft" style="width:350px;" target="observacao" showDelay="500">
+												<h:outputText value="#{compromissoItens.observacao}" />
+											</rich:tooltip>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsResponsavel', 'agendaPessoaHorario.agendaPessoa.pessoa.nomeResumido', 'TEXTO')}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_responsavel}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsResponsavel', 'agendaPessoaHorario.agendaPessoa.pessoa.nomeResumido', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsResponsavel')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:outputText value="#{compromissoItens.agendaPessoaHorario.agendaPessoa.pessoa.nomeResumido}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_botoes.btn_opcoes}" />
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaCentralizada">
+												<h:panelGroup style="white-space:nowrap">
+													<otm:commandIcon id="iniciarcompromisso" rendered="#{(compromissoItens.isTipoCompromissoContato and !compromissoItens.verificarAgendaEstaAtrasada) and (compromissoItens.compromissoAguardandoContato and !compromissoItens.verificarAgendaEstaAtrasada) and (compromissoItens.campanha.codigo ne 0)}" icon="#{msg_botoes.btn_icon_play} iconePequeno" tooltip="Iniciar Compromisso" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow',950, 720);" />
+
+													<otm:commandIcon rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoAguardandoContato and compromissoItens.campanha.codigo eq 0 and !compromissoItens.verificarAgendaEstaAtrasada}" oncomplete="#{rich:component('panelNovaInteracao')}.show()" render="formNovaInteracao" tooltip="Iniciar Compromisso" icon="#{msg_botoes.btn_icon_play} iconePequeno" action="#{AgendaPessoaControle.inicializarDadosNovaInteracao}" />
+
+													<otm:commandIcon id="continuarcompromisso" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoParalizado}" value="Continuar" tooltip="Continuar Contato" icon="#{msg_botoes.btn_icon_proximo} iconePequeno" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow',950, 720);" />
+
+													<otm:commandIcon id="iniciarcompromissoAtrasado" rendered="#{compromissoItens.verificarAgendaEstaAtrasada}" render="panelCompromissoAtrasado , formCompromissoAtrasado" icon="fas fa-hourglass-end btn-white btn-warning iconePequeno" tooltip="Compromisso Fora da Data Clique para Alterar" oncomplete="#{rich:component('panelCompromissoAtrasado')}.show();" action="#{AgendaPessoaControle.editarCompromissoAgendaPessoaHorario}" />
+
+													<otm:commandIcon tooltip="Iniciar Matrícula" icon="fas fa-user-graduate btn-dark btn-white iconePequeno" rendered="#{compromissoItens.isTipoCompromissoContato and AgendaPessoaControle.permitirMatriculaDiretamenteAgenda}" action="#{AgendaPessoaControle.validarDadosMatricularAluno}" oncomplete="#{AgendaPessoaControle.popUpMatricula}" render="form:panelGridMensagens, form:mensagemCursoInteresse, panelMensagemErro, formMensagemErro, formCompromissoFuturo, formIniciarMatricula, panelIniciarMatricula" />
+
+													<otm:commandIcon id="finalizarTarefa" action="#{AgendaPessoaControle.persistirCompromissoRealizado}" rendered="#{compromissoItens.isTipoCompromissoTarefa}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Finalizar Compromisso" />
+
+													<otm:commandIcon id="followup" icon="#{msg_botoes.btn_icon_followup} iconePequeno" tooltip="Follow-UP Prospect" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.prospect.codigo}','FollowUP',950, 720);" rendered="#{LoginControle.permissaoAcessoMenuVO.followUpProspect}" />
+
+													<otm:commandIcon id="editarcompromisso" action="#{AgendaPessoaControle.editarCompromissoAgendaPessoaHorario}" rendered="#{compromissoItens.permitirAlteracaoCompromisso}" render="formCompromisso" oncomplete="#{rich:component('panelNovoCompromisso')}.show();" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar Compromisso" />
+
+													<otm:commandIcon id="removercompromisso" tooltip="Remover Compromisso" render="form, formCompromisso, form:panelGridMensagens" action="#{AgendaPessoaControle.removerCompromissoAgendaPessoaHorario}" rendered="#{AgendaPessoaControle.possuiPermissaoParaExcluirCompromisso and compromissoItens.permitirExcluirCompromisso}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" />
+
+													<h:panelGroup id="detalheCompromisso">
+														<span class="#{msg_botoes.btn_icon_info} border-radius-all iconePequeno"> </span>
+													</h:panelGroup>
+													<rich:tooltip target="detalheCompromisso" value="Campanha: #{compromissoItens.campanha.codigo} -  #{compromissoItens.campanha.descricao} - Unidade de Ensino: #{AgendaPessoaControle.unidadeEnsinoVO.nome}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:column>
+										<f:facet name="footer">
+											<div style="text-align: center !important">
+												<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="items" limitRender="50" align="center" />
+											</div>
+										</f:facet>
+									</rich:dataTable>
+								</h:panelGroup>
+
+
+							</rich:tab>
+							<rich:tab id="tabInicio3" header="Paralisados (#{!empty AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs ? AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].qtdeContatoParalizadoDia : 0})">
+
+								<h:panelGroup id="panelGridAgendaDia3" layout="block" styleClass="row row-overflow">
+
+
+									<rich:dataTable id="items3" rows="50" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].listaCompromissoAgendaPessoaHorarioVOs}" var="compromissoItens" rendered="#{!empty AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].listaCompromissoAgendaPessoaHorarioVOs}">
+
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO')}" filterExpression="#{compromissoItens.compromissoParalizado}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items3" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items3" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsHora')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:outputText value="#{compromissoItens.hora}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}">
+											<f:facet name="header">
+												<h:outputText value="Tipo Compromisso" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.tipoCompromissoEnum_Apresentar}" />
+											<otm:spacer width="5" />
+											<otm:commandIcon icon="#{compromissoItens.imagemTipoContato}" disabled="true" tooltip="#{compromissoItens.tipoContato}" rendered="#{compromissoItens.tipoCompromisso ne 'TIRE_SUAS_DUVIDAS' and compromissoItens.tipoCompromisso ne 'QUERO_SER_ALUNO'}" />
+											<otm:commandIcon icon="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-danger" readonly="true" tooltip="Compromisso Urgente" rendered="#{compromissoItens.urgente}" />
+											<otm:commandIcon id="helpHistorico3" rendered="#{compromissoItens.reagendado}" tooltip="Data Agenda Primeiro Contato: #{compromissoItens.dataInicialCompromisso_Apresentar} - #{compromissoItens.historicoReagendamentoCompromisso} " icon="fas fa-user-clock text-warning" />
+											<otm:commandIcon id="iconeTireSuasDuvidas2" icon="fas fa-question-circle text-info" readonly="true" tooltip="Dúvida: #{compromissoItens.duvida}" rendered="#{compromissoItens.tipoCompromisso eq 'TIRE_SUAS_DUVIDAS'}" />
+											<otm:commandIcon icon="fas fa-user-graduate text-success" tooltip="Quero Ser Aluno" rendered="#{compromissoItens.tipoCompromisso eq 'QUERO_SER_ALUNO'}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO')}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_prospect}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items3" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items3" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsProspect')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:panelGroup layout="block" style="width:100%">
+												<h:outputText value="#{compromissoItens.prospect.nome}" />
+												<otm:spacer width="5" rendered="#{compromissoItens.prospect.inativo}" />
+												<h:graphicImage url="#{resource['/imagens/erro.gif']}" style="position:relative; top:2px;" title="INATIVO" rendered="#{compromissoItens.prospect.inativo}" />
+												<otm:spacer width="5" rendered="#{compromissoItens.possuiMatricula}" />
+												<a4j:commandButton style="position:relative;top:2px;" image="#{resource['/imagens/ok.png']}" render="formMatriculaProspect" oncomplete="#{rich:component('panelMatriculaProspect')}.show()" action="#{AgendaPessoaControle.consultarMatriculaProspect}" title="Prospect Matriculado - Clique para visualizar a(s) matrícula(s)" rendered="#{compromissoItens.possuiMatricula}" />
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_telefone}/#{msg_aplic.prt_CompromissoAgendaPessoaHorario_email}" />
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaAlinhamento" width="100%">
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.telefoneResidencial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneComercial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneRecado}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.celular}" />
+												</h:panelGroup>
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.emailPrincipal}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CursoInteresse_tituloForm}" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.cursoInteresseProspect.nome}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_observacao}" />
+											</f:facet>
+											<h:outputText id="observacao" value="#{compromissoItens.observacao_Apresentar}" />
+											<rich:tooltip followMouse="true" direction="bottomLeft" style="width:350px;" target="observacao" showDelay="500">
+												<h:outputText value="#{compromissoItens.observacao}" />
+											</rich:tooltip>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" rendered="#{LoginControle.permissaoAcessoMenuVO.visaoAdministradorAgendaPessoa}">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_responsavel}" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.agendaPessoaHorario.agendaPessoa.pessoa.nomeResumido}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}">
+											<f:facet name="header">
+												<h:outputText value="#{msg_botoes.btn_opcoes}" />
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaCentralizada">
+												<h:panelGroup>
+													<otm:commandIcon id="iniciarcompromisso3" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoAguardandoContato and compromissoItens.campanha.codigo ne 0}" value="Iniciar" title="Iniciar" alt="Iniciar" style="width:18px" image="#{resource['/imagens/iconeIniciar.png']}" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow',850, 720);" />
+
+													<otm:commandIcon value="Iniciar Compromisso" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoAguardandoContato and compromissoItens.campanha.codigo eq 0}" oncomplete="#{rich:component('panelNovaInteracao')}.show()" render="formNovaInteracao" title="Iniciar" alt="Iniciar" style="width:18px" image="#{resource['/imagens/iconeIniciar.png']}" action="#{AgendaPessoaControle.inicializarDadosNovaInteracao}" />
+
+													<otm:commandIcon id="continuarcompromisso3" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoParalizado}" tooltip="Continuar" icon="#{msg_botoes.btn_icon_play} iconePequeno" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow', 850, 720);" />
+
+													<otm:commandIcon tooltip="Follow-Up Prospect" icon="#{msg_botoes.btn_icon_followup} iconePequeno" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.prospect.codigo}','FollowUP',950, 595);" rendered="#{LoginControle.permissaoAcessoMenuVO.followUpProspect}" />
+
+													<otm:commandIcon id="finalizarTarefa3" icon="#{msg_botoes.btn_icon_cancelar} iconePequeno" action="#{AgendaPessoaControle.persistirCompromissoRealizado}" rendered="#{compromissoItens.isTipoCompromissoTarefa}" tooltip="Finalizar" />
+
+													<otm:commandIcon id="editarcompromisso3" action="#{AgendaPessoaControle.editarCompromissoAgendaPessoaHorario}" rendered="#{compromissoItens.permitirAlteracaoCompromisso}" render="formCompromisso" oncomplete="#{rich:component('panelNovoCompromisso')}.show();" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar Compromisso Agenda Pessoa Horario" />
+
+													<otm:commandIcon id="removercompromisso3" action="#{AgendaPessoaControle.removerCompromissoAgendaPessoaHorario}" rendered="#{AgendaPessoaControle.possuiPermissaoParaExcluirCompromisso and compromissoItens.permitirExcluirCompromisso}" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" icon="#{msg_botoes.btn_icon_remver_embutido}" tooltip="Remover Compromisso Agenda Pessoa Horario" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:column>
+									</rich:dataTable>
+								</h:panelGroup>
+
+
+
+							</rich:tab>
+							<rich:tab id="tabInicio1" header="Concluídos (#{!empty AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs ? AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].qtdeContatoConcluidoDia : 0})">
+								<h:panelGroup layout="block" styleClass="row row-overflow" id="panelGridAgendaDia1">
+
+
+
+									<rich:dataTable id="items1" rows="50" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].listaCompromissoAgendaPessoaHorarioVOs}" var="compromissoItens">
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO')}" filterExpression="#{!compromissoItens.permitirAlteracaoCompromisso and compromissoItens.realizado}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items1" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items1" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsHora')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:outputText value="#{compromissoItens.hora}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="Tipo Compromisso" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.tipoCompromissoEnum_Apresentar}" />
+											<otm:spacer width="5" />
+											<otm:commandIcon icon="#{compromissoItens.imagemTipoContato}" disabled="true" tooltip="#{compromissoItens.tipoContato}" rendered="#{compromissoItens.tipoCompromisso ne 'TIRE_SUAS_DUVIDAS' and compromissoItens.tipoCompromisso ne 'QUERO_SER_ALUNO'}" />
+											<otm:commandIcon icon="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-danger" readonly="true" tooltip="Compromisso Urgente" rendered="#{compromissoItens.urgente}" />
+											<otm:commandIcon id="helpHistorico4" rendered="#{compromissoItens.reagendado}" tooltip="Data Agenda Primeiro Contato: #{compromissoItens.dataInicialCompromisso_Apresentar} - #{compromissoItens.historicoReagendamentoCompromisso} " icon="fas fa-user-clock text-warning" />
+											<otm:commandIcon id="iconeTireSuasDuvidas4" icon="fas fa-question-circle text-info" readonly="true" tooltip="Dúvida: #{compromissoItens.duvida}" rendered="#{compromissoItens.tipoCompromisso eq 'TIRE_SUAS_DUVIDAS'}" />
+											<otm:commandIcon icon="fas fa-user-graduate text-success" tooltip="Quero Ser Aluno" rendered="#{compromissoItens.tipoCompromisso eq 'QUERO_SER_ALUNO'}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO')}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_prospect}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items1" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items1" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsProspect')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:panelGroup layout="block" style="width:100%">
+												<h:outputText value="#{compromissoItens.prospect.nome}" />
+												<otm:spacer width="5" rendered="#{compromissoItens.prospect.inativo}" />
+												<h:graphicImage url="#{resource['/imagens/erro.gif']}" style="position:relative; top:2px;" title="INATIVO" rendered="#{compromissoItens.prospect.inativo}" />
+												<otm:spacer width="5" rendered="#{compromissoItens.possuiMatricula}" />
+												<a4j:commandButton style="position:relative;top:2px;" image="#{resource['/imagens/ok.png']}" render="formMatriculaProspect" oncomplete="#{rich:component('panelMatriculaProspect')}.show()" action="#{AgendaPessoaControle.consultarMatriculaProspect}" title="Prospect Matriculado - Clique para visualizar a(s) matrícula(s)" rendered="#{compromissoItens.possuiMatricula}" />
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filterExpression="#{!compromissoItens.permitirAlteracaoCompromisso}">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_telefone}/#{msg_aplic.prt_CompromissoAgendaPessoaHorario_email}" />
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaAlinhamento" width="100%">
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.telefoneResidencial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneComercial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneRecado}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.celular}" />
+												</h:panelGroup>
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.emailPrincipal}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CursoInteresse_tituloForm}" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.cursoInteresseProspect.nome}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_observacao}" />
+											</f:facet>
+											<h:outputText id="observacao1" value="#{compromissoItens.observacao_Apresentar}" />
+											<rich:tooltip followMouse="true" direction="bottomLeft" style="width:350px;" target="observacao1" showDelay="500">
+												<h:outputText value="#{compromissoItens.observacao}" />
+											</rich:tooltip>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" rendered="#{LoginControle.permissaoAcessoMenuVO.visaoAdministradorAgendaPessoa}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_responsavel}" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.agendaPessoaHorario.agendaPessoa.pessoa.nomeResumido}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_botoes.btn_opcoes}" />
+											</f:facet>
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+												<otm:commandIcon id="iniciarcompromisso1" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoAguardandoContato}" tooltip="Iniciar" icon="#{msg_botoes.btn_icon_play} iconePequeno" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow', 850, 720);" />
+												<otm:commandIcon id="continuarcompromisso1" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoParalizado}" tooltip="Continuar" icon="#{msg_botoes.btn_icon_play} iconePequeno" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow', 850, 720);" />
+												<otm:commandIcon tooltip="Follow-Up Prospect" icon="#{msg_botoes.btn_icon_followup} iconePequeno" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.prospect.codigo}','FollowUP',950, 595);" rendered="#{LoginControle.permissaoAcessoMenuVO.followUpProspect}" />
+												<otm:commandIcon id="finalizarTarefa1" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" action="#{AgendaPessoaControle.persistirCompromissoRealizado}" rendered="#{compromissoItens.isTipoCompromissoTarefa}" tooltip="Finalizar" />
+												<otm:commandIcon id="editarcompromisso1" action="#{AgendaPessoaControle.editarCompromissoAgendaPessoaHorario}" rendered="#{compromissoItens.permitirAlteracaoCompromisso}" render="formCompromisso,form" oncomplete="#{rich:component('panelNovoCompromisso')}.show();" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar Compromisso Agenda Pessoa Horario" styleClass="btn btn-primary" />
+												<otm:commandIcon id="removercompromisso1" action="#{AgendaPessoaControle.removerCompromissoAgendaPessoaHorario}" rendered="#{AgendaPessoaControle.possuiPermissaoParaExcluirCompromisso and compromissoItens.permitirExcluirCompromisso}" render="formCompromisso,form" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Compromisso Agenda Pessoa Horario" styleClass="btn btn-danger" />
+											</h:panelGroup>
+										</rich:column>
+										<f:facet name="footer">
+											<div style="text-align: center !important">
+												<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="items1" limitRender="50" align="center" />
+											</div>
+										</f:facet>
+									</rich:dataTable>
+
+								</h:panelGroup>
+							</rich:tab>
+							<rich:tab id="tabInicio2" header="Reagendados (#{!empty AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs ? AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].qtdeContatoReagendadoDia : 0})">
+								<h:panelGroup layout="block" styleClass="row row-overflow" id="panelGridAgendaDia2">
+									<rich:dataTable id="items4" rows="50" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].listaCompromissoAgendaPessoaHorarioVOs}" var="compromissoItens" rendered="#{!empty AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs}">
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO')}" filterExpression="#{(compromissoItens.compromissoRealizadoComRemarcacao or compromissoItens.reagendado)}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items4" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items4" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsHora')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:outputText value="#{compromissoItens.hora}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="Tipo Compromisso" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.tipoCompromissoEnum_Apresentar}" />
+											<otm:spacer width="5" />
+											<otm:commandIcon icon="#{compromissoItens.imagemTipoContato}" disabled="true" tooltip="#{compromissoItens.tipoContato}" rendered="#{compromissoItens.tipoCompromisso ne 'TIRE_SUAS_DUVIDAS' and compromissoItens.tipoCompromisso ne 'QUERO_SER_ALUNO'}" />
+											<otm:commandIcon icon="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-danger" readonly="true" tooltip="Compromisso Urgente" rendered="#{compromissoItens.urgente}" />
+											<otm:commandIcon id="helpHistorico5" rendered="#{compromissoItens.reagendado}" tooltip="Data Agenda Primeiro Contato: #{compromissoItens.dataInicialCompromisso_Apresentar} - #{compromissoItens.historicoReagendamentoCompromisso} " icon="fas fa-user-clock text-warning" />
+											<otm:commandIcon id="iconeTireSuasDuvidas5" icon="fas fa-question-circle text-info" readonly="true" tooltip="Dúvida: #{compromissoItens.duvida}" rendered="#{compromissoItens.tipoCompromisso eq 'TIRE_SUAS_DUVIDAS'}" />
+											<otm:commandIcon icon="fas fa-user-graduate text-success" tooltip="Quero Ser Aluno" rendered="#{compromissoItens.tipoCompromisso eq 'QUERO_SER_ALUNO'}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO')}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_prospect}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items4" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items4" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsProspect')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:panelGroup layout="block" style="width:100%">
+												<h:outputText value="#{compromissoItens.prospect.nome}" />
+												<otm:spacer width="5" rendered="#{compromissoItens.prospect.inativo}" />
+												<h:graphicImage url="#{resource['/imagens/erro.gif']}" style="position:relative; top:2px;" title="INATIVO" rendered="#{compromissoItens.prospect.inativo}" />
+												<otm:spacer width="5" rendered="#{compromissoItens.possuiMatricula}" />
+												<a4j:commandButton style="position:relative;top:2px;" image="#{resource['/imagens/ok.png']}" render="formMatriculaProspect" oncomplete="#{rich:component('panelMatriculaProspect')}.show()" action="#{AgendaPessoaControle.consultarMatriculaProspect}" title="Prospect Matriculado - Clique para visualizar a(s) matrícula(s)" rendered="#{compromissoItens.possuiMatricula}" />
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_telefone}/#{msg_aplic.prt_CompromissoAgendaPessoaHorario_email}" />
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaAlinhamento" width="100%">
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.telefoneResidencial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneComercial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneRecado}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.celular}" />
+												</h:panelGroup>
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.emailPrincipal}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CursoInteresse_tituloForm}" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.cursoInteresseProspect.nome}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_observacao}" />
+											</f:facet>
+											<h:outputText id="observacao4" value="#{compromissoItens.observacao_Apresentar}" />
+											<rich:tooltip followMouse="true" direction="bottomLeft" style="width:350px;" target="observacao4" showDelay="500">
+												<h:outputText value="#{compromissoItens.observacao}" />
+											</rich:tooltip>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" rendered="#{LoginControle.permissaoAcessoMenuVO.visaoAdministradorAgendaPessoa}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_responsavel}" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.agendaPessoaHorario.agendaPessoa.pessoa.nomeResumido}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_botoes.btn_opcoes}" />
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaCentralizada">
+												<h:panelGroup>
+													<otm:commandIcon id="iniciarcompromisso4" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoAguardandoContato}" tooltip="Iniciar" icon="#{msg_botoes.btn_icon_play} iconePequeno" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow', 850, 720);" />
+													<otm:commandIcon id="continuarcompromisso4" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoParalizado}" tooltip="Continuar" icon="#{msg_botoes.btn_icon_play} iconePequeno" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow', 850, 720);" />
+													<otm:commandIcon tooltip="Follow-Up Prospect" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" icon="#{msg_botoes.btn_icon_followup} iconePequeno" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.prospect.codigo}','FollowUP',950, 595);" rendered="#{LoginControle.permissaoAcessoMenuVO.followUpProspect}" />
+													<otm:commandIcon id="finalizarTarefa4" action="#{AgendaPessoaControle.persistirCompromissoRealizado}" rendered="#{compromissoItens.isTipoCompromissoTarefa}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Finalizar" />
+													<otm:commandIcon id="editarcompromisso4" action="#{AgendaPessoaControle.editarCompromissoAgendaPessoaHorario}" rendered="#{compromissoItens.permitirAlteracaoCompromisso}" render="formCompromisso,form" oncomplete="#{rich:component('panelNovoCompromisso')}.show();" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar Compromisso Agenda Pessoa Horario" />
+													<otm:commandIcon id="removercompromisso4" action="#{AgendaPessoaControle.removerCompromissoAgendaPessoaHorario}" rendered="#{AgendaPessoaControle.possuiPermissaoParaExcluirCompromisso and compromissoItens.permitirExcluirCompromisso}" render="formCompromisso,form" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Compromisso Agenda Pessoa Horario" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:column>
+										<f:facet name="footer">
+											<div style="text-align: center !important">
+												<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="items4" limitRender="50" align="center" />
+											</div>
+										</f:facet>
+									</rich:dataTable>
+
+
+								</h:panelGroup>
+							</rich:tab>
+
+							<!-- 						Trazer Compromissos Cancelado -->
+
+							<rich:tab id="tabInicio5" header="Cancelados (#{!empty AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs ? AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].qtdeContatoCanceladoDia : 0})">
+								<h:panelGroup layout="block" styleClass="row row-overflow" id="panelGridAgendaDia4">
+									<rich:dataTable id="items5" rows="50" width="100%" headerClass="consulta" styleClass="tabConsulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs[0].listaCompromissoAgendaPessoaHorarioVOs}" var="compromissoItens" rendered="#{!empty AgendaPessoaControle.agendaPessoaVO.agendaPessoaHorarioVOs}">
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO')}" filterExpression="#{(compromissoItens.cancelado)}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_hora}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsHora', 'hora', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items4" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items5" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsHora')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:outputText value="#{compromissoItens.hora}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="Tipo Compromisso" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.tipoCompromissoEnum_Apresentar}" />
+											<otm:spacer width="5" />
+											<otm:commandIcon icon="#{compromissoItens.imagemTipoContato}" disabled="true" tooltip="#{compromissoItens.tipoContato}" rendered="#{compromissoItens.tipoCompromisso ne 'TIRE_SUAS_DUVIDAS' and compromissoItens.tipoCompromisso ne 'QUERO_SER_ALUNO'}" />
+											<otm:commandIcon icon="#{msg_botoes.btn_icon_alerta_triangulo_embutido} text-danger" readonly="true" tooltip="Compromisso Urgente" rendered="#{compromissoItens.urgente}" />
+											<otm:commandIcon id="helpHistorico6" rendered="#{compromissoItens.reagendado}" tooltip="Data Agenda Primeiro Contato: #{compromissoItens.dataInicialCompromisso_Apresentar} - #{compromissoItens.historicoReagendamentoCompromisso} " icon="fas fa-user-clock text-warning" />
+											<otm:commandIcon id="iconeTireSuasDuvidas6" icon="fas fa-question-circle text-info" readonly="true" tooltip="Dúvida: #{compromissoItens.duvida}" rendered="#{compromissoItens.tipoCompromisso eq 'TIRE_SUAS_DUVIDAS'}" />
+											<otm:commandIcon icon="fas fa-user-graduate text-success" tooltip="Quero Ser Aluno" rendered="#{compromissoItens.tipoCompromisso eq 'QUERO_SER_ALUNO'}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom" filter="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO')}">
+											<f:facet name="header">
+												<h:panelGroup style="white-space:nowrap">
+													<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_prospect}" />
+													<otm:spacer width="2px" />
+													<h:panelGroup layout="block" styleClass="col-md-12 pn">
+														<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('itemsProspect', 'prospect.nome', 'TEXTO').filtro}">
+															<a4j:ajax event="change" execute="@this" render="items4" />
+														</h:inputText>
+														<span class="append-icon right"> <otm:commandIcon render="items5" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('itemsProspect')}" tooltip="Limpar" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</f:facet>
+											<h:panelGroup layout="block" style="width:100%">
+												<h:outputText value="#{compromissoItens.prospect.nome}" />
+												<otm:spacer width="5" rendered="#{compromissoItens.prospect.inativo}" />
+												<h:graphicImage url="#{resource['/imagens/erro.gif']}" style="position:relative; top:2px;" title="INATIVO" rendered="#{compromissoItens.prospect.inativo}" />
+												<otm:spacer width="5" rendered="#{compromissoItens.possuiMatricula}" />
+												<a4j:commandButton style="position:relative;top:2px;" image="#{resource['/imagens/ok.png']}" render="formMatriculaProspect" oncomplete="#{rich:component('panelMatriculaProspect')}.show()" action="#{AgendaPessoaControle.consultarMatriculaProspect}" title="Prospect Matriculado - Clique para visualizar a(s) matrícula(s)" rendered="#{compromissoItens.possuiMatricula}" />
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_telefone}/#{msg_aplic.prt_CompromissoAgendaPessoaHorario_email}" />
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaAlinhamento" width="100%">
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.telefoneResidencial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneComercial}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.telefoneRecado}" />
+													<otm:spacer width="8" />
+													<h:outputText value="#{compromissoItens.prospect.celular}" />
+												</h:panelGroup>
+												<h:panelGroup>
+													<h:outputText value="#{compromissoItens.prospect.emailPrincipal}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CursoInteresse_tituloForm}" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.cursoInteresseProspect.nome}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_observacao}" />
+											</f:facet>
+											<h:outputText id="observacao5" value="#{compromissoItens.observacao_Apresentar}" />
+											<rich:tooltip followMouse="true" direction="bottomLeft" style="width:350px;" target="observacao5" showDelay="500">
+												<h:outputText value="#{compromissoItens.observacao}" />
+											</rich:tooltip>
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" rendered="#{LoginControle.permissaoAcessoMenuVO.visaoAdministradorAgendaPessoa}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_aplic.prt_CompromissoAgendaPessoaHorario_responsavel}" />
+											</f:facet>
+											<h:outputText value="#{compromissoItens.agendaPessoaHorario.agendaPessoa.pessoa.nomeResumido}" />
+										</rich:column>
+										<rich:column styleClass="#{compromissoItens.possuiMatricula?'backgroundVerde':'backgroundBranco'}" filterType="custom">
+											<f:facet name="header">
+												<h:outputText value="#{msg_botoes.btn_opcoes}" />
+											</f:facet>
+											<h:panelGroup columns="1" columnClasses="colunaCentralizada">
+												<h:panelGroup>
+													<otm:commandIcon id="iniciarcompromisso5" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoAguardandoContato}" tooltip="Iniciar" icon="#{msg_botoes.btn_icon_play} iconePequeno" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow', 850, 720);" />
+
+													<otm:commandIcon id="continuarcompromisso5" rendered="#{compromissoItens.isTipoCompromissoContato and compromissoItens.compromissoParalizado}" tooltip="Continuar" icon="#{msg_botoes.btn_icon_play} iconePequeno" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.codigo}&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=#{compromissoItens.etapaWorkflowVO.codigo}&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=false','InteracaoWorkFollow', 850, 720);" />
+
+													<otm:commandIcon styleClass="botoes" tooltip="Follow-UP Prospect" icon="#{msg_botoes.btn_icon_followup} iconePequeno" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigo&amp;valor=#{compromissoItens.prospect.codigo}','FollowUP',950, 595);" rendered="#{LoginControle.permissaoAcessoMenuVO.followUpProspect}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:column>
+										<f:facet name="footer">
+											<div style="text-align: center !important">
+												<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="items5" limitRender="50" align="center" />
+											</div>
+										</f:facet>
+									</rich:dataTable>
+
+								</h:panelGroup>
+							</rich:tab>
+						</rich:tabPanel>
+					</h:panelGroup>
+					<h:panelGroup id="panelGridMensagens" layout="block" styleClass="row">
+						<otm:mensagem bean="#{AgendaPessoaControle}"></otm:mensagem>
+					</h:panelGroup>
+					<h:panelGroup layout="block" id="barraBotoes" styleClass="barraFlutuanteInferior">
+						<otm:commandButton id="dia" action="#{AgendaPessoaControle.realizarAlteracaoVisaoDia}" rendered="#{!AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia}" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-success" value="Agenda do Dia" render="form:tabsForm, form:panelGridDadosEstatisticos, form:panelGridMensagens, form:estatisticaAgendaResumo, form:barraBotoes, panelGridForm" />
+						<otm:commandButton id="mes" action="#{AgendaPessoaControle.realizarAlteracaoVisaoMes}" rendered="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia}" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-success" value="Agenda Mês" render="form:tabsForm, form:panelGridDadosEstatisticos, form:panelGridMensagens, form:estatisticaAgendaResumo, form:barraBotoes, panelGridForm" />
+						<otm:spacer width="5" rendered="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia}" />
+						<otm:commandButton id="adiarNaoRealizados" rendered="#{AgendaPessoaControle.agendaPessoaVO.isVisaoAgendaDia}" icon="#{msg_botoes.btn_icon_calendario_embutido}" styleClass="btn btn-warning" value="Reagendar Compromissos" action="#{AgendaPessoaControle.executarInicializacaoDadosAdiarCompromissoVisaoDia}" oncomplete="#{rich:component('panelContatosPendentesNaoFinalizados')}.show();" render="formContatosPendentesNaoFinalizados" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="compromisso" action="#{AgendaPessoaControle.limparCompromisso}" oncomplete="#{rich:component('panelNovoCompromisso')}.show();" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" value="Novo Compromisso" render="formCompromisso, form:panelGridMensagens" />
+						<otm:spacer width="5" />
+						<otm:commandButton id="iniciarprospect" value="Novo Prospect" icon="#{msg_botoes.btn_icon_gravar_embutido}" styleClass="btn btn-dark" oncomplete="abrirPopupMaximizado2('../../ConverteGetParaPostServletInteracao?pagina=visaoAdministrativo/crm/interacaoWorkflowForm.xhtml&amp;param=codigo&amp;valor=0&amp;paramEtapaAtual=etapaAtual&amp;valorEtapaAtual=0&amp;paramNovoProspect=novoProspect&amp;valorNovoProspect=true','InteracaoWorkFollow', 850, 720);" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</h:panelGroup>
+	</ui:define>
+</ui:composition>
+</html>

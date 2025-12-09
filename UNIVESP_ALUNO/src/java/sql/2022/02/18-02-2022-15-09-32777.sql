@@ -1,0 +1,1 @@
+	alter table configuracaoacademico add column if not exists mascaraNumeroRegistroDiploma varchar(100) ;

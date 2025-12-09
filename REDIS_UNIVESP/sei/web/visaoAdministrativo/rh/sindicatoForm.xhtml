@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<h:head>
+	<script type="text/javascript">
+		window.onload = function() {
+			document.getElementById("form:descricao").focus();
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Sindicato_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{SindicatoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="row" id="panelDadosTodos">
+				<h:panelGroup id="pnlParceiro">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_parceiro}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="parceiro" maxlength="100" readonly="true" size="50" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.parceiroVO.nome}" />
+							<span class="append-icon right"> <otm:commandIcon tooltip="Consultar Parceiro" id="consultaParceiro" render="formConsultaParceiro" oncomplete="#{rich:component('panelParceiro')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon tooltip="Limpar Dados" action="#{SindicatoControle.limparCampoParceiro}" id="limparParceiro" render="pnlParceiro" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" id="panelTipoEntidadeSindical">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_TipoEntidadeSindical}" />
+					<h:selectOneMenu id="tipoTipoEntidadeSindical" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.tipoEntidadeSocial}">
+						<f:selectItems value="#{EnumControle.comboboxTipoEntidadeSindicalEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+			</h:panelGroup>
+			<rich:tabPanel id="tabPanel">
+				<!-- Tab VT -->
+				<rich:tab header="#{msg_aplic.prt_TextoPadrao_valetransporte}" id="primeiraTab">
+					<h:panelGroup layout="block" styleClass="row" id="panelVT">
+						<h:panelGroup id="pnlVT">
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_percentualDescontoValeTransporte}" />
+								<h:inputText id="valeTransporet" maxlength="10" onkeydown="aceitarSomenteValorDecimalComVirgula(this, 2)" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.percentualDescontoVT}">
+									<a4j:ajax event="change" execute="@this" render="@this" />
+									<f:converter converterId="FormatadorNumerico" />
+								</h:inputText>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- Tab Ferias -->
+				<rich:tab header="#{msg_aplic.prt_TextoPadrao_ferias}" id="segundaTab">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="row" id="panelDadosEventosDeFerias">
+							<h:panelGroup layout="block" styleClass="col-md-6" id="groupAdiantamento">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoAdiantamento}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:inputText id="eventoAdiantamento" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.eventoAdiantamentoFerias.identificador}">
+										<a4j:ajax event="change" execute="@this" render="groupAdiantamento" listener="#{SindicatoControle.consultarEventoParaAdiantamentoPorIdentificador()}" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6 pn">
+									<h:inputText id="eventoDescricaoAdiantamento" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{SindicatoControle.sindicatoVO.eventoAdiantamentoFerias.descricao}" />
+									<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.setEventoAdiantamento()}" id="consultaDadosEventoAdiantamento" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEventoAdiantamento" tooltip="Limpas Dados" action="#{SindicatoControle.limparDadosEventoAdiantamento}" render="groupAdiantamento" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+									</span>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6" id="groupEventoDesconto">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoDescontoAdiantamento}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:inputText id="eventoIdentificadorDesconto" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.eventoDescontoAdiantamentoFerias.identificador}">
+										<a4j:ajax event="change" execute="@this" render="groupEventoDesconto" listener="#{SindicatoControle.consultarEventoParaDescontoDoAdiantamentoPorIdentificador()}" oncomplete="document.getElementById('form:eventoIdentificadorMedia').focus();" />
+									</h:inputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6 pn">
+									<h:inputText id="eventoDescricaoDesconto" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{SindicatoControle.sindicatoVO.eventoDescontoAdiantamentoFerias.descricao}" />
+									<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.setEventoDesconto()}" id="consultaDadosEventoDesconto" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEventoDesconto" tooltip="Limpas Dados" action="#{SindicatoControle.limparDadosEventoDescontoAdiantamento}" render="groupEventoDesconto" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+									</span>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row" id="panelDadosEventosDeMediaFerias">
+							<rich:panel style="margin-top: 20px;">
+								<f:facet name="header">#{msg_aplic.prt_Sindicato_eventoMedia}</f:facet>
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-6" id="groupEventoMedia">
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoMedia}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<h:inputText id="eventoIdentificadorMedia" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoMediaFeriasVO.eventoMediaVO.identificador}">
+												<a4j:ajax event="change" execute="@this" render="groupEventoMedia" listener="#{SindicatoControle.consultarEventoDeMediaPorIdentificador()}" oncomplete="document.getElementById('form:grupoMedia').focus();" />
+											</h:inputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6 pn">
+											<h:inputText id="eventoDescricaoMedia" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{SindicatoControle.sindicatoMediaFeriasVO.eventoMediaVO.descricao}" />
+											<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.setEventoMedia()}" id="consultaDadosEventoMedia" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEventoMedia" tooltip="Limpas Dados" action="#{SindicatoControle.limparDadosEventoMedia}" render="groupEventoMedia" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+											</span>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_grupo}" />
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:inputText id="grupoMedia" maxlength="50" size="20" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoMediaFeriasVO.grupo}" />
+											<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.adicionarMediaFerias}" id="adicionar" image="#{resource['imagens/botaoAdicionarLista.png']}" render="form" tooltip="Adicionar Media Ferias" icon="#{msg_botoes.btn_icon_adicionar_embutido}" />
+											</span>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<rich:dataTable id="grupoEventoMedia" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{SindicatoControle.sindicatoVO.mediaDasFerias}" var="media" style="margin-top: 15px">
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_TextoPadrao_grupo}" />
+										</f:facet>
+										<h:outputText value="#{media.grupo}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_evento}" />
+										</f:facet>
+										<h:outputText value="#{media.eventoMediaVO.identificador}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_descricao}" />
+										</f:facet>
+										<h:outputText style="float:left" value="#{media.eventoMediaVO.descricao}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_botoes.btn_opcoes}" />
+										</f:facet>
+										<otm:commandIcon id="remover" action="#{SindicatoControle.removerItem(media)}" render="form" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Item(media)" />
+									</rich:column>
+								</rich:dataTable>
+							</rich:panel>
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- Tab 13 -->
+				<rich:tab header="#{msg_aplic.prt_TextoPadrao_decimoTerceiro}" id="terceiraTab">
+					<h:panelGroup layout="block" styleClass="row" id="panelDadosEventosDe13">
+						<h:panelGroup layout="block" styleClass="col-md-6" id="groupPrimeiraParcela13">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoPrimeiraParcela13}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText id="eventoParcela1" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.eventoPrimeiraParcela13.identificador}">
+									<a4j:ajax event="change" execute="@this" render="groupPrimeiraParcela13" listener="#{SindicatoControle.consultarEventoPrimeiraParcela13PorIdentificador()}" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6 pn">
+								<h:inputText id="eventoDescricaoPrimeiraParcela13" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{SindicatoControle.sindicatoVO.eventoPrimeiraParcela13.descricao}" />
+								<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.setEventoPrimeiraParcela13()}" id="consultaDadosEventoPrimeiraParcela" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEventoPrimeiraParcela13" tooltip="Limpas Dados" action="#{SindicatoControle.limparDadosEventoPrimeiraParcela}" render="groupPrimeiraParcela13" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" id="groupDescontoParcela13">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoDescontoPrimeiraParcela13}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText id="eventoDescontoParcela1" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.eventoDescontoPrimeiraParcela13.identificador}">
+									<a4j:ajax event="change" execute="@this" render="groupDescontoParcela13" listener="#{SindicatoControle.consultarEventoDescontoPrimeiraParcela13PorIdentificador()}" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6 pn">
+								<h:inputText id="eventoDescricaoDescontoPrimeiraParcela13" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{SindicatoControle.sindicatoVO.eventoDescontoPrimeiraParcela13.descricao}" />
+								<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.setEventoDescontoPrimeiraParcela13()}" id="consultaDadosEventoDescontoPrimeiraParcela" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEventoDescontoPrimeiraParcela13" tooltip="Limpas Dados" action="#{SindicatoControle.limparDadosEventoDescontoPrimeiraParcela}" render="groupDescontoParcela13" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row" id="panelDadosEventosDeMedia13">
+						<rich:panel style="margin-top: 20px;">
+							<f:facet name="header">#{msg_aplic.prt_Sindicato_eventoMedia}</f:facet>
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6" id="groupEventoMedia13">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoMedia}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:inputText id="eventoIdentificadorMedia13" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoMedia13VO.eventoMediaVO.identificador}">
+											<a4j:ajax event="change" execute="@this" render="groupEventoMedia13" listener="#{SindicatoControle.consultarEventoDeMedia13PorIdentificador()}" oncomplete="document.getElementById('form:grupoMedia13').focus();" />
+										</h:inputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:inputText id="eventoDescricaoMedia13" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{SindicatoControle.sindicatoMedia13VO.eventoMediaVO.descricao}" />
+										<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.setEventoMedia13()}" id="consultaDadosEventoMedia13" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEventoMedia13" tooltip="Limpas Dados" action="#{SindicatoControle.limparDadosEventoMedia13}" render="groupEventoMedia13" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_grupo}" />
+									<h:inputText id="grupoMedia13" maxlength="50" size="20" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoMedia13VO.grupo}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+									<otm:commandButton action="#{SindicatoControle.adicionarMedia13}" id="adiciona13" image="#{resource['imagens/botaoAdicionarLista.png']}" render="form" value="Adicionar Media" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" />
+								</h:panelGroup>
+								<rich:dataTable id="grupoEventoMedia13" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{SindicatoControle.sindicatoVO.media13}" var="media13" style="margin-top: 15px">
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_TextoPadrao_grupo}" />
+										</f:facet>
+										<h:outputText value="#{media13.grupo}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_evento}" />
+										</f:facet>
+										<h:outputText value="#{media13.eventoMediaVO.identificador}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_descricao}" />
+										</f:facet>
+										<h:outputText style="float:left" value="#{media13.eventoMediaVO.descricao}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_botoes.btn_opcoes}" />
+										</f:facet>
+										<otm:commandIcon id="remover" action="#{SindicatoControle.removerItem13(media13)}" render="form" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Item13(media13)" />
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+						</rich:panel>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- TAB Faltas -->
+				<rich:tab header="#{msg_aplic.prt_TextoPadrao_falta}" id="quartaTab">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup id="panelValidacaoDeFaltas">
+							<h:panelGroup layout="block" styleClass="col-md-3" id="panelDadosEventosDeFaltas">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_considerarFaltasFerias}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox id="considerarFaltasFerias" value="#{SindicatoControle.sindicatoVO.considerarFaltasFerias}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3" id="panelDadosMarcacaoFerias">
+								<otm:outputHelp tooltip="#{msg.msg_Sindicato_infoValidarFaltas}" id="Sindicato_validarFaltas" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_validarFaltas}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<otm:selectBooleanCheckbox id="validarFaltas" value="#{SindicatoControle.sindicatoVO.validarFaltas}">
+										<a4j:ajax event="change" execute="@this" render="panelDadosLancamentoFerias panelDadosDSRPerdida" listener="#{SindicatoControle.considerarFaltaDeFerias()}" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row" id="panelDadosLancamentoFerias">
+							<h:panelGroup rendered="#{SindicatoControle.sindicatoVO.validarFaltas}" columns="2" width="100%" columnClasses="colunaVerticalmenteCentralizado, colunaVerticalmenteCentralizado">
+								<h:panelGroup layout="block" styleClass="col-md-6" id="groupEventoFalta" rendered="#{SindicatoControle.sindicatoVO.validarFaltas}">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoLancamentoFalta}" rendered="#{SindicatoControle.sindicatoVO.validarFaltas}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:inputText id="eventoIdentificadorFalta" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.eventoLancamentoFalta.identificador}">
+											<a4j:ajax event="change" execute="@this" render="groupEventoFalta" listener="#{SindicatoControle.consultarEventoLancamentoFaltaPorIdentificador()}" oncomplete="document.getElementById('form:eventoIdentificadorDSRPerdida').focus();" />
+										</h:inputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 pn">
+										<h:inputText id="eventoFaltaDescricao" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{SindicatoControle.sindicatoVO.eventoLancamentoFalta.descricao}" />
+										<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.setEventoFalta()}" id="consultaDadosEventoFalta" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEventoFalta" tooltip="Limpas Dados" action="#{SindicatoControle.limparDadosEventoFalta}" render="groupEventoFalta" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup id="panelDadosDSRPerdida">
+									<h:panelGroup layout="block" styleClass="col-md-6" id="groupEventoDSRPerdida" rendered="#{SindicatoControle.sindicatoVO.validarFaltas}">
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoDSRPerdida}" rendered="#{SindicatoControle.sindicatoVO.validarFaltas}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<h:inputText id="eventoIdentificadorDSRPerdida" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.eventoDSRPerdida.identificador}">
+												<a4j:ajax event="change" execute="@this" render="groupEventoDSRPerdida" listener="#{SindicatoControle.consultarEventoLancamentoDSRPorIdentificador()}" />
+											</h:inputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6 pn">
+											<h:inputText id="eventoDescricaoDSRPerdida" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{SindicatoControle.sindicatoVO.eventoDSRPerdida.descricao}" />
+											<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.setEventoDSR()}" id="consultaDadosEventoDSRPerdida" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEventoDSRPerdida" tooltip="Limpas Dados" action="#{SindicatoControle.limparDadosEventoDSRPerdida}" render="groupEventoDSRPerdida" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+											</span>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6" id="groupEventoDevolucaoFalta" rendered="#{SindicatoControle.sindicatoVO.validarFaltas}">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoDevolucaoDeFalta}" rendered="#{SindicatoControle.sindicatoVO.validarFaltas}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:inputText id="eventoDevolucaoFalta" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoVO.eventoDevolucaoFalta.identificador}">
+											<a4j:ajax event="change" execute="@this" render="groupEventoDevolucaoFalta" listener="#{SindicatoControle.consultarDevolucaoFaltaPorIdentificador()}" />
+										</h:inputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6 pn">
+										<h:inputText id="eventoDescricaoEventoDevolucaoFalta" readonly="true" size="60" styleClass="form-control camposSomenteLeitura" value="#{SindicatoControle.sindicatoVO.eventoDevolucaoFalta.descricao}" />
+										<span class="append-icon right"> <otm:commandIcon id="consultaDadosEventoDevolucaoFalta" accesskey="2" action="#{SindicatoControle.setEventoDevolucaoFalta()}" tooltip="Localizar Evento da Folha de Pagamento" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelEvento')}.show();" render="form, formEvento" /> <otm:commandIcon id="limparDadosEventoDevolucaoFalta" action="#{SindicatoControle.limparDadosEventoDevolucaoFalta}" tooltip="Limpas Dados" icon="#{msg_botoes.btn_icon_limpar_embutido}" render="groupEventoDevolucaoFalta" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- TAB Rescisão -->
+				<rich:tab header="#{msg_aplic.prt_TextoPadrao_rescisao}" id="quintaTab">
+					<h:panelGroup layout="block" styleClass="row" id="panelDadosEventosDeMediaRescisao">
+						<rich:panel style="margin-top: 20px;">
+							<f:facet name="header">#{msg_aplic.prt_Sindicato_eventoMedia}</f:facet>
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-6" id="groupEventoMediaRescisao">
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Sindicato_eventoMedia}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:inputText id="eventoIdentificadorMediaRescisao" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoMediaRescisaoVO.eventoFolhaPagamento.identificador}">
+											<a4j:ajax event="change" execute="@this" render="groupEventoMediaRescisao" listener="#{SindicatoControle.consultarEventoDeMediaRescisaoPorIdentificador()}" />
+										</h:inputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:inputText id="eventoDescricaoMediaRescisao" size="60" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{SindicatoControle.sindicatoMediaRescisaoVO.eventoFolhaPagamento.descricao}" />
+										<span class="append-icon right"> <otm:commandIcon action="#{SindicatoControle.setEventoMediaRescisao()}" id="consultaDadosEventoMediaRescisao" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEventoMediaRescisao" tooltip="Limpas Dados" action="#{SindicatoControle.limparDadosEventoMediaRescisao}" render="groupEventoMediaRescisao" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_grupo}" />
+									<h:inputText id="grupoMediaRescisao" maxlength="30" size="20" styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoMediaRescisaoVO.grupo}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_tipoEventoMedia}" />
+									<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{SindicatoControle.sindicatoMediaRescisaoVO.tipoEventoMediaRescisao}" id="lancamentoPeriodo">
+										<f:selectItems value="#{EnumControle.comboboxTipoEventoMediaRescisao}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+									<otm:commandButton action="#{SindicatoControle.adicionarMediaRescisao}" id="adicionaRescisao" image="#{resource['imagens/botaoAdicionarLista.png']}" render="form" value="Adicionar Media Rescisao" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" />
+								</h:panelGroup>
+								<rich:dataTable id="grupoEventoMediaRescisao" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{SindicatoControle.sindicatoVO.sindicatoMediaRescisaoVOs}" var="mediaRescisao" style="margin-top: 15px">
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_TextoPadrao_grupo}" />
+										</f:facet>
+										<h:outputText value="#{mediaRescisao.grupo}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_evento}" />
+										</f:facet>
+										<h:outputText value="#{mediaRescisao.eventoFolhaPagamento.identificador}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_TextoPadrao_tipoEventoMedia}" />
+										</f:facet>
+										<h:outputText value="#{mediaRescisao.tipoEventoMediaRescisao.getValorApresentar()}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_botoes.btn_opcoes}" />
+										</f:facet>
+										<otm:commandIcon id="remover" action="#{SindicatoControle.removerItemRescisao(mediaRescisao)}" render="panelDadosEventosDeMediaRescisao" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Item Rescisao (Média Rescisão)" />
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+						</rich:panel>
+					</h:panelGroup>
+				</rich:tab>
+			</rich:tabPanel>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{SindicatoControle}"></otm:mensagem>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<h:panelGroup>
+						<otm:commandButton accesskey="1" action="#{SindicatoControle.novo}" id="novo" styleClass="btn btn-info btn-novo" immediate="true" value="#{msg_botoes.btn_novo}" />
+						<otm:spacer width="5" />
+						<otm:commandButton accesskey="1" action="#{SindicatoControle.persistir}" id="salvar" styleClass="btn btn-dark btn-gravar" render="form" value="#{msg_botoes.btn_gravar}" />
+						<otm:spacer width="5" />
+						<otm:commandButton accesskey="2" action="#{SindicatoControle.excluir}" id="excluir" styleClass="btn btn-danger btn-excluir" onclick="return confirm('#{msg.msg_confirmacao_excluxao_itens}');" render="form" value="#{msg_botoes.btn_excluir}" />
+						<otm:spacer width="5" />
+						<otm:commandButton accesskey="3" action="#{SindicatoControle.inicializarConsultar}" id="consultar" styleClass="btn btn-default btn-consultar" immediate="true" value="#{msg_botoes.btn_consultar}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelParceiro" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Parceiro_consultarParceiro}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink1" />
+					<rich:componentControl target="panelParceiro" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formParceiro">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaParceiro" value="#{SindicatoControle.campoConsultaParceiro}">
+						<f:selectItems value="#{EnumControle.tipoConsultaComboProgressaoSalarial}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFormula" size="10" styleClass="form-control campos" value="#{SindicatoControle.valorConsultaParceiro}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton action="#{SindicatoControle.consultarParceiro}" alt="#{msg.msg_consultar_dados}" id="btnConsultar" styleClass="btn btn-default btn-consultar" render="formParceiro" value="#{msg_bt.btn_consultar}" />
+				</h:panelGroup>
+				<rich:dataTable columnClasses="colunaAlinhamento" id="resultadoConsultaParceiro" headerClass="consulta" rowClasses="linhaImpar, linhaPar" rows="5" width="100%" value="#{SindicatoControle.listaParceiros}" var="parceiroVO">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TextoPadrao_descricao}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{SindicatoControle.selecionarParceiro}" focus="nomeCurso" render="form" oncomplete="#{rich:component('panelParceiro')}.hide()" value="#{parceiroVO.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_TextoPadrao_razaoSocial}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{SindicatoControle.selecionarParceiro}" focus="nomeCurso" render="form" oncomplete="#{rich:component('panelParceiro')}.hide()" value="#{parceiroVO.razaoSocial}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon id="botaoEditar" action="#{SindicatoControle.selecionarParceiro}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" render="form" oncomplete="#{rich:component('panelParceiro')}.hide()" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formParceiro:resultadoConsultaParceiro" maxPages="10" id="scResultadoParceiro" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemParceiro" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{SindicatoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Consulta Evento da Folha de Pagamento -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelEvento" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaFolhaPagamento_consultarEventoGrupo}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelEvento" />
+					<rich:componentControl target="panelEvento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formEvento">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaEvento" value="#{SindicatoControle.campoConsultaEventoFP}">
+						<f:selectItems value="#{SindicatoControle.tipoConsultaComboEvento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaEvento" size="30" styleClass="form-control campos" value="#{SindicatoControle.valorConsultaEventoFP}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarFuncionario" render="formEvento:mensagemConsultaEvento, formEvento:gridEventoTab, formEvento:scResultadoEvento" action="#{SindicatoControle.consultarEvento}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{SindicatoControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{SindicatoControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup id="gridEventoTab" columns="1" width="100%">
+					<rich:dataTable id="eventoItem" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{SindicatoControle.listaEventoFP}" rendered="#{fn:length(SindicatoControle.listaEventoFP) > 0}" rows="10" var="eventoItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_identificador}" />
+							</f:facet>
+							<a4j:commandLink id="identificador" action="#{SindicatoControle.selecionarEvento}" value="#{eventoItem.identificador}" render="form" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_descricao}" />
+							</f:facet>
+							<a4j:commandLink id="nome" action="#{SindicatoControle.selecionarEvento}" value="#{eventoItem.descricao}" render="form" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_tipoLancamento}" />
+							</f:facet>
+							<a4j:commandLink id="tipoLancamento" action="#{SindicatoControle.selecionarEvento}" value="#{eventoItem.tipoLancamento.valor}" render="form" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_bt.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="botaoEditar" action="#{SindicatoControle.selecionarEvento}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" render="form" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formEvento:eventoItem" maxPages="10" id="scResultadoEvento" page="#{SindicatoControle.controleConsultaOtimizado.page}" scrollListener="#{SindicatoControle.scrollerListener}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaEvento" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{SindicatoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

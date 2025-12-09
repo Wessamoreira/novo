@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Funcionario_tituloForm}" />
+	</ui:define>
+
+	<ui:define name="modal">
+		<ui:include src="../../visaoAdministrativo/administrativo/funcionarioFormModal.xhtml" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+
+		<h:form id="form">
+			<h:panelGroup id="panelGridForm" layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-1 text-center">
+						<h:panelGroup layout="block" id="imagem">
+							<h:panelGroup layout="block" rendered="#{FuncionarioControle.pessoaVO.existeImagem}">
+								<h:graphicImage rendered="#{FuncionarioControle.pessoaVO.existeImagem}" id="foto1" alt="Alterar Foto" value="#{FuncionarioControle.caminhoFotoUsuario}" style="width:64px; height:64px">
+									<a4j:ajax event="click" execute="@this" render="formImagem, formWebCam" oncomplete="Webcam.reset(); #{rich:component('panelImagem')}.show()" />
+								</h:graphicImage>
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{!FuncionarioControle.pessoaVO.existeImagem}">
+								<otm:commandIcon rendered="#{!FuncionarioControle.pessoaVO.existeImagem}" tooltip="Adicionar Foto Aluno" icon="fa fa-user" styleIcon="font-size:64px;color: #CCCCCC  !important;" oncomplete="Webcam.reset(); #{rich:component('panelImagem')}.show();"></otm:commandIcon>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="#{FuncionarioControle.funcionarioVO.informarMatricula ? 'col-md-3' : 'col-md-4'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nome}" />
+						<h:inputText id="nome" size="70" maxlength="100" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.nome}">
+							<a4j:ajax event="change" listener="#{FuncionarioControle.setarNomeBatismo}" render="form:nomeBatismo" />
+						</h:inputText>
+						<h:message for="nome" styleClass="field control-label mensagemDetalhada col-md-12" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="#{FuncionarioControle.funcionarioVO.informarMatricula ? 'col-md-3' : 'col-md-4'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nomeBatismo}" />
+						<h:inputText id="nomeBatismo" size="70" maxlength="100" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.nomeBatismo}">
+							<a4j:ajax event="change" listener="#{FuncionarioControle.setarNomeSocial}" render="form:nome" execute="form:nome" />
+						</h:inputText>
+						<h:message for="nomeBatismo" styleClass="field control-label mensagemDetalhada col-md-12" />
+					</h:panelGroup>
+					<h:panelGroup id="grupoMatricula" rendered="#{FuncionarioControle.isMostrarCampoMatricula}">
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{FuncionarioControle.funcionarioVO.informarMatricula}">
+							<h:outputText id="matriculaTexto" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_matricula}" />
+							<h:panelGroup layout="block" styleClass="pn col-md-12">
+								<h:inputText id="matricula" size="20" maxlength="30" styleClass="form-control camposObrigatorios" readonly="#{FuncionarioControle.isInformarMatricula}" value="#{FuncionarioControle.funcionarioVO.matricula}" />
+							</h:panelGroup>
+							<h:message for="matricula" styleClass="field control-label mensagemDetalhada col-md-12" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Funcionario_informarMatricula}" />
+							<h:panelGroup layout="block" styleClass="pn col-md-12">
+								<otm:selectBooleanCheckbox id="informarMatricula" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioVO.informarMatricula}">
+									<a4j:ajax event="click" render="form:panelGridForm" listener="#{FuncionarioControle.limparMatricula}" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:tabPanel width="100%" id="richTabFuncionario" headerAlignment="center" activeItem="#{FuncionarioControle.abaAtiva}" switchType="ajax">
+					<rich:tab id="tabDadosPessoais" name="tabDadosPessoais" header="Dados Pessoais" styleClass="richPanel" action="funcionarioDadosPessoaisForm.xhtml?faces-redirect=true">
+					</rich:tab>
+
+					<rich:tab id="richTabDadosFuncionais" name="richTabDadosFuncionais" header="Dados Funcionais" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('richTabDadosFuncionais', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="richCargos" name="richCargos" header="#{msg_aplic.prt_FuncionarioCargo_tituloForm}" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('richCargos', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="tabFormacaoAcademica" name="tabFormacaoAcademica" header="#{msg_aplic.prt_FormacaoAcademica_tituloForm}" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('tabFormacaoAcademica', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="tabFiliacao" name="tabFiliacao" header="#{msg_aplic.prt_Filiacao_tituloForm}" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('tabFiliacao', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="tabDependentes" name="tabDependentes" header="#{msg_aplic.prt_Dependentes_tituloForm}" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('tabDependentes', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab header="#{msg_aplic.prt_Funcionario_financeiro}" name="financeiro" id="financeiro" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('financeiro', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab header="#{msg_aplic.prt_DisciplinasInteresse_tituloForm}" name="tabDisciplinaInteresse" rendered="#{FuncionarioControle.controladorTela}" styleClass="richPanel" id="tabDisciplinaInteresse" action="#{FuncionarioControle.navegarAba('tabDisciplinaInteresse', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab header="Horários Disponíveis/Indisponíveis" name="tabHorariosDisponiveisIndisponiveis" rendered="#{FuncionarioControle.controladorTela}" render="form" styleClass="richPanel" id="tabHorariosDisponiveisIndisponiveis" action="#{FuncionarioControle.navegarAba('tabHorariosDisponiveisIndisponiveis', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="tabDocumentacaoProfessor" styleClass="richPanel" name="tabDocumentacaoProfessor" header="Documentação GED" action="documentoProfessorForm.xhtml?faces-redirect=true">
+					</rich:tab>					
+
+					<rich:tab id="tabAssinaturaFuncionario" styleClass="richPanel" name="tabAssinaturaFuncionario" header="Assinatura Funcionário">
+						<h:panelGroup layout="block" styleClass="row">
+							<otm2:panel name="panelDados_AssinaturaFuncionari" styleClassFooter="dn" opened="#{FuncionarioControle.pessoaVO.maximixado}">
+								<ui:define name="header">
+									<i class="fas fa-id-card mr5"></i>
+									<h:outputText value="Dados Assinatura Funcionário" />
+								</ui:define>
+								<ui:define name="body">
+									<h:panelGroup styleClass="row" layout="block">
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_tipoAssinaturaDocumentoEnum}" />
+											<h:selectOneMenu id="tipoAssinaturaDocumentoEnum" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.tipoAssinaturaDocumentoEnum}">
+												<f:selectItems value="#{EnumControle.comboboxTipoAssinaturaDocumentoEnum}"></f:selectItems>
+											</h:selectOneMenu>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup styleClass="row" layout="block">
+										<h:panelGrid columns="1" id="assinatura" width="100%" headerClass="consulta" style="background-color: transparent;">
+											<h:panelGrid columns="1" width="100%" headerClass="consulta" style="background-color: transparent;">
+												<f:facet name="header">
+													<h:outputText value="Selecione a imagem referente a assinatura de email" styleClass="tituloCamposNegrito" />
+												</f:facet>
+												<h:panelGrid columns="2" width="50%" headerClass="consulta" style="background-color: transparent;">
+													<rich:fileUpload listHeight="100" noDuplicate="true" fileUploadListener="#{FuncionarioControle.upLoadArquivo}" addLabel="Selecionar Arquivo" acceptedTypes="gif, png, jpg, jpeg, bmp, JPEG, JPG, PNG, GIF, BMP" maxFilesQuantity="1" doneLabel="Pronto" progressLabel="Enviando" uploadLabel="Enviar" clearAllLabel="Limpar lista" serverErrorLabel="Falha de Transmissão" immediateUpload="true" id="uploadConteudoIndex" onbeforedomupdate="return validarTamanhoUploadArquivoExtensao(event, 'form:uploadConteudoIndex', #{FuncionarioControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}, 'gif, png, jpg, jpeg, bmp, JPEG, JPG, PNG, GIF, BMP');" clearLabel="Cancelar" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{FuncionarioControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB.">
+														<a4j:ajax event="uploadcomplete" render="assinatura" />
+													</rich:fileUpload>
+													<h:graphicImage id="graphicImageAssinaturaFuncionario" rendered="#{!empty FuncionarioControle.funcionarioVO.arquivoAssinaturaVO.nome}" style="max-height:170px" value="#{FuncionarioControle.configuracaoGeralPadraoSistema.urlExternoDownloadArquivo}/#{FuncionarioControle.funcionarioVO.arquivoAssinaturaVO.pastaBaseArquivo}/#{FuncionarioControle.funcionarioVO.arquivoAssinaturaVO.nome}" width="250" height="100" />
+												</h:panelGrid>
+											</h:panelGrid>
+										</h:panelGrid>
+									</h:panelGroup>
+								</ui:define>
+							</otm2:panel>
+						</h:panelGroup>
+					</rich:tab>
+				</rich:tabPanel>
+
+				<h:panelGrid columns="1" width="100%" styleClass="tabMensagens" id="tabMensagens">
+					<otm:mensagem bean="#{FuncionarioControle}"></otm:mensagem>
+					<h:panelGroup styleClass="barraFlutuanteInferior " layout="block">
+						<h:panelGroup styleClass="btn-group btn-group-lg col-xs-12" layout="block">
+							<otm:commandButton id="novo" immediate="true" action="#{FuncionarioControle.novo}" value="#{msg_bt.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+							<otm:commandButton style="margin-left:5px" id="salvar" action="#{FuncionarioControle.gravar}" value="#{msg_bt.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" oncomplete="#{FuncionarioControle.apresentarModalCriarUsuario}" render="form, formUsuarioFuncionario" />
+							<otm:commandButton style="margin-left:5px" id="excluir" action="#{FuncionarioControle.excluir}" value="#{msg_bt.btn_excluir}" accesskey="3" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" styleClass="btn btn-danger btn-excluir" />
+							<otm:commandButton style="margin-left:5px" id="consultar" immediate="true" action="#{FuncionarioControle.inicializarConsultar}" value="#{msg_bt.btn_consultar}" accesskey="4" styleClass="btn btn-default btn-consultar" />
+							<otm:commandButton style="margin-left:5px" id="unificarProspect" oncomplete="#{rich:component('panelUnificarProspects')}.show();" styleClass="btn btn-success" icon="#{msg_botoes.btn_icon_unificar_embutido}" value="Unificar dados de funcionários" accesskey="4" render="formUnificarProspects" rendered="#{!FuncionarioControle.funcionarioVO.novoObj and FuncionarioControle.permitirUnificarFuncionariosDuplicados}" />
+							<otm:commandButton style="margin-left:5px" id="criarUsuario" onclick="#{FuncionarioControle.cadastroUsuarioAutomatico}" value="Criar Usuario" accesskey="5" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_usuario_embutido}" rendered="#{FuncionarioControle.apresentarCriarUsuario}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGrid>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

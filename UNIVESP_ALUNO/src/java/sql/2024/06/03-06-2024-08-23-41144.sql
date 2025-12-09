@@ -1,0 +1,1 @@
+alter table if exists requerimento alter column cid type text;

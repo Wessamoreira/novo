@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAluno/template/visaoAluno.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText  value="#{msg_aplic.prt_VisaoAluno_minhasFaltas}" />
+	</ui:define>
+	
+	<ui:define name="conteudo">
+		<h:outputScript name="autoresize.js" library="script" />
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFaltas" top="5px" shadowOpacity="true" width="750" height="500">
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal"  style="cursor:pointer" id="hidelinkfalta" />
+					<rich:componentControl target="panelFaltas" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Minhas Faltas"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFaltas">
+				<h:panelGroup styleClass="autoresize" layout="block" style="width:100%; overflow:auto;">
+					<h:panelGroup columns="1" width="100%" styleClass="tabForm">
+						<rich:dataTable id="mihasFaltasDetalhadas" width="100%" columnClasses="colunaCentralizada" headerClass="consulta" rowClasses="linhaImpar, linhaPar" value="#{VisaoAlunoControle.listaDetalhesMinhasFaltasVOs}" var="faltasItens">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Data" />
+								</f:facet>
+								<h:outputText value="#{faltasItens.data}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Horário" />
+								</f:facet>
+								<h:outputText value="#{faltasItens.horario}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Dia da Semana" />
+								</f:facet>
+								<h:outputText value="#{faltasItens.diaSemana_Apresentar}">
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Situação Frequência" />
+								</f:facet>
+								<h:outputText value="#{faltasItens.situacaoAbonoFalta}">
+								</h:outputText>
+							</rich:column>
+						</rich:dataTable>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		<h:form id="form">			
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText rendered="#{VisaoAlunoControle.isApresentarCampoAno and VisaoAlunoControle.isApresentarCampoSemestre}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_anoSemestre}" />
+					<h:outputText rendered="#{VisaoAlunoControle.isApresentarCampoAno and !VisaoAlunoControle.isApresentarCampoSemestre}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_ano}" />
+					<h:selectOneMenu id="selectItemAnoSemestre1" rendered="#{VisaoAlunoControle.isApresentarCampoAno}" styleClass="form-control campos" value="#{VisaoAlunoControle.filterAnoSemestre}">
+						<f:selectItems value="#{VisaoAlunoControle.listaSelectItemAnoSemestre}" />
+						<a4j:ajax event="change" render="form:pgPrincipal, form" listener="#{VisaoAlunoControle.consultarFaltasAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup  id="pgPrincipal" layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-12 mt10">
+					<rich:list  type="definitions" var="listaSecundaria" value="#{VisaoAlunoControle.listaFaltas}">
+						<h:panelGroup rendered="#{empty VisaoAlunoControle.filterAnoSemestre or VisaoAlunoControle.filterAnoSemestre eq listaSecundaria[0].anoSemestreApresentar}" layout="block" style="width:100%">
+							<h:panelGroup rendered="#{VisaoAlunoControle.isApresentarCampoAno}" layout="block" styleClass="field control-label tituloCampos">
+								<h:outputText rendered="#{VisaoAlunoControle.isApresentarCampoAno}" value="#{listaSecundaria[0].ano}" />
+								<h:outputText value="/" rendered="#{VisaoAlunoControle.isApresentarCampoSemestre}" />
+								<h:outputText value="#{listaSecundaria[0].semestre}" rendered="#{VisaoAlunoControle.isApresentarCampoSemestre}" />
+							</h:panelGroup>
+							<rich:dataTable id="faltas" width="100%" headerClass="consulta" style="background-color: transparent; width:100%" columnClasses="colunaAlinhamento" value="#{listaSecundaria}" var="faltasItens">
+								<rich:column width="30%" style="text-align: center !important">
+									<f:facet name="header">
+										<h:outputText value="Disciplina" />
+									</f:facet>
+									<h:outputText value="#{faltasItens.disciplina.nome}" />
+								</rich:column>
+								<rich:column width="27%" style="text-align: center !important">
+									<f:facet name="header">
+										<h:outputText value="Turma" />
+									</f:facet>
+									<h:outputText value="#{faltasItens.turma.identificadorTurma}" />
+								</rich:column>
+								<rich:column width="28%" rendered="#{!VisaoAlunoControle.configuracaoGeralPadraoSistema.naoApresentarProfessorVisaoAluno}" style="text-align: center !important">
+									<f:facet name="header">
+										<h:outputText value="Professor" />
+									</f:facet>
+									<h:outputText value="#{faltasItens.professor.nome}" />
+								</rich:column>
+								<rich:column style="text-align: center !important">
+									<f:facet name="header">
+										<h:outputText value="Qtd. Faltas" />
+									</f:facet>
+									<h:outputText value="#{faltasItens.qtdFaltas}" />
+								</rich:column>
+								<rich:column style="text-align: center !important">
+									<f:facet name="header">
+										<h:outputText value="Opções" />
+									</f:facet>
+									<otm:commandIcon id="visualizarFaltas" execute="@this" render="formFaltas" action="#{VisaoAlunoControle.visualizarFaltas}" oncomplete="#{rich:component('panelFaltas')}.show();" tooltip="Visualizar Faltas" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" />
+								</rich:column>
+							</rich:dataTable>
+							<otm:spacer height="10px" />
+						</h:panelGroup>
+					</rich:list>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

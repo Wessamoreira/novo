@@ -1,0 +1,1 @@
+alter table integracaomestregr add column if not exists nivelEducacional varchar(50) default 'SUPERIOR';

@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS tiporequerimento ADD COLUMN IF NOT EXISTS situacaoMatriculaJubilado boolean DEFAULT (TRUE);

@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_DiarioRel_tituloRel}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style>
+.bordaDireita {
+	border-right: 1px solid #C4C0C9;
+}
+
+.semBorda {
+	border-right: none;
+	vertical-align: middle;
+}
+</style>
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelOkDiario" shadowOpacity="true" width="300" autosized="true" minHeight="120">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_DiarioRel_imprimirVerso}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formOk">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_imprimirVersoDiario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton id="btnOk" render="form" oncomplete="#{DiarioRelControle.download}; #{rich:component('panelOkDiario')}.hide()" action="#{DiarioRelControle.imprimirObjetoDiarioVersoPDFVisaoFuncionario}" icon="#{msg_botoes.btn_icon_ok_embutido}" value="OK" styleClass="btn btn-primary mr5" />
+					<otm:commandButton id="btnCancelar" render="form" oncomplete="#{rich:component('panelOkDiario')}.hide()" action="#{DiarioRelControle.limparDadosMemoria}" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formTurma:valorConsultaTurma').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_DiarioRel_consultarTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink1" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{DiarioRelControle.campoConsultaTurma}">
+						<f:selectItems value="#{DiarioRelControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-7">
+					<h:inputText id="valorConsultaTurma" size="10" styleClass="form-control campos" value="#{DiarioRelControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{DiarioRelControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{DiarioRelControle.listaConsultaTurma}" rows="5" var="turmaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_DiarioRel_identificador}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{DiarioRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{DiarioRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Turno" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{DiarioRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{DiarioRelControle.selecionarTurma}" focus="nomeTurma" render="form" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{DiarioRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelConfirmarAssinatura" shadowOpacity="true" width="580" height="250">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Assinar Digitalmente o Documento Selecionado" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkAssinar">
+						<rich:componentControl target="panelConfirmarAssinatura" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConfirmarAssinatura">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+					<h:outputText styleClass="tituloCampas" value="Confirma a assinatura digital do documento selecionado ? " />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton styleClass="btn btn-info mr5" value="Sim" icon="#{msg_botoes.btn_icon_gostar_embutido}" action="#{DiarioRelControle.realizarRegistroAssinaturaDocumento}" render="formDiariosAssinado" oncomplete="#{rich:component('panelConfirmarAssinatura')}.hide()" />
+					<otm:commandButton styleClass="btn btn-danger" value="Não" icon="#{msg_botoes.btn_icon_desgostar_embutido}" oncomplete="#{rich:component('panelConfirmarAssinatura')}.hide()" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaAssinatura" layout="block" styleClass="row mn">
+					<otm:mensagem bean="#{DiarioRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDiariosAssinado" shadowOpacity="true" width="1000" height="550">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_menu.Menu_mapaDocumentacaoAssinadoPessoa}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelDiariosAssinado" />
+					<rich:componentControl target="panelDiariosAssinado" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDiariosAssinado">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="documentosAssinados" value="#{DiarioRelControle.listaDocumentosAssinados}" var="documentoAssinadoItem" headerClass="consulta" style="width:100%" rows="10">
+						<f:facet name="header">
+							<rich:columnGroup>
+								<rich:column rowspan="2">
+									<h:outputText value="Código" />
+								</rich:column>
+								<rich:column rowspan="2">
+									<h:outputText value="Unidade Ensino" />
+								</rich:column>
+								<rich:column rowspan="2">
+									<h:outputText value="Data Registro" />
+								</rich:column>
+								<rich:column rowspan="2">
+									<h:outputText value="Descrição" />
+								</rich:column>
+								<rich:column colspan="3" rowspan="1">
+									<h:outputText value="Assinaturas" />
+								</rich:column>
+								<rich:column rowspan="2" colspan="1">
+									<h:outputText value="Opções" />
+								</rich:column>
+								<rich:column breakRowBefore="true" style="width:200px" colspan="1" rowspan="1">
+									<h:outputText value="Responsável" />
+								</rich:column>
+								<rich:column colspan="1" style="width:80px" rowspan="1">
+									<h:outputText value="Situação" />
+								</rich:column>
+								<rich:column colspan="1" style="width:120px" rowspan="1">
+									<h:outputText value="Data" />
+								</rich:column>
+							</rich:columnGroup>
+						</f:facet>
+						<rich:column>
+							<h:outputText value="#{documentoAssinadoItem.codigo}" />
+						</rich:column>
+						<rich:column>
+							<h:outputText value="#{documentoAssinadoItem.unidadeEnsinoVO.nome}" />
+						</rich:column>
+						<rich:column>
+							<h:outputText value="#{documentoAssinadoItem.dataRegistro}">
+								<f:convertDateTime pattern="dd/MM/yyyy"></f:convertDateTime>
+							</h:outputText>
+						</rich:column>
+						<rich:column>
+							<h:outputText value="#{documentoAssinadoItem.descricaoPersonalizada}" />
+						</rich:column>
+						<rich:column colspan="3" width="400px" style="padding:0px !important">
+							<rich:list type="definitions" rowKeyVar="row2" style="width:100%; padding:0px !important; margin:0px !important" value="#{documentoAssinadoItem.listaDocumentoAssinadoPessoa}" var="pessoaItem">
+								<h:panelGroup cellpadding="0" cellspacing="0" columns="3" columnClasses="bordaDireita,bordaDireita, semBorda" style="width:100%;#{row2 ne 0 ? 'border-top:1px solid #C4C0C9;' : '' }">
+									<h:panelGroup layout="block" style="width:200px; text-align:left;min-height:20px">
+										<h:outputText value="#{pessoaItem.pessoaVO.nome}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" style="width:80px; text-align:center;min-height:20px;">
+										<h:outputText value="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum.descricao}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" style="width:120px;text-align:center;min-height:20px;">
+										<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'ASSINADO'}" value="#{pessoaItem.dataAssinatura}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm"></f:convertDateTime>
+										</h:outputText>
+										<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'REJEITADO'}" value="#{pessoaItem.dataRejeicao}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm"></f:convertDateTime>
+										</h:outputText>
+										<h:outputText rendered="#{pessoaItem.situacaoDocumentoAssinadoPessoaEnum eq 'PENDENTE'}" value="#{pessoaItem.dataSolicitacao}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm"></f:convertDateTime>
+										</h:outputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</rich:list>
+						</rich:column>
+						<rich:column>
+							<otm:commandButton id="dwl" style="width:16px" oncomplete="#{DiarioRelControle.urlDonloadSV}" title="Download Arquivo" image="#{resource['/imagens/botaoDownloadResumido.png']}" action="#{DiarioRelControle.realizarDownloadArquivo(documentoAssinadoItem.arquivo)}" />
+							<otm:commandButton id="assinar" rendered="#{documentoAssinadoItem.getUsuarioPodeAssinarDocumento(DiarioRelControle.usuarioLogado)}" style="width:16px" render="formConfirmarAssinatura" oncomplete="#{rich:component('panelConfirmarAssinatura')}.show()" title="Assinar Arquivo" image="#{resource['/imagens/iconeEdicao.png']}" action="#{DiarioRelControle.selecionarDocumentoAssinado}" />
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller for="documentosAssinados" id="scrolldocumentosAssinados" boundaryControls="auto" stepControls="auto" fastControls="hide" scrollListener="#{DiarioRelControle.paginarDocumentosAssinados}" />
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{DiarioRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!DiarioRelControle.existeUnidadeEnsino}">
+				<h:outputText rendered="#{!DiarioRelControle.existeUnidadeEnsino}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_unidadeEnsino}" />
+				<h:selectOneMenu id="unidadeensino" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.unidadeEnsinoVO.codigo}" rendered="#{!DiarioRelControle.existeUnidadeEnsino}">
+					<a4j:ajax event="change" focus="form:turma" render="form" listener="#{DiarioRelControle.limparIdentificador}" execute="form" />
+					<f:selectItems value="#{DiarioRelControle.listaSelectItemUnidadeEnsino}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_identificador}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText size="52" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.turmaVO.identificadorTurma}">
+						<a4j:ajax event="change" listener="#{DiarioRelControle.montarTurma}" render="form" execute="form" />
+					</h:inputText>
+					<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" focus="nomeTurma" alt="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="Curso" />
+				<h:inputText size="60" maxlength="60" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{DiarioRelControle.turmaVO.curso.nome}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="Turno" />
+				<h:inputText size="60" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{DiarioRelControle.turmaVO.turno.nome}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_periodoLetivo}" />
+				<h:inputText size="25" maxlength="30" id="perioLetivo" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{DiarioRelControle.turmaVO.peridoLetivo.descricao}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_tipoLayout}" />
+				<h:selectOneMenu id="tipoLayoutDiario" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.tipoLayout}">
+					<a4j:ajax event="change" execute="form" render="form" listener="#{DiarioRelControle.montarFiltroPorNota}" />
+					<f:selectItems value="#{DiarioRelControle.listaTipoLayout}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_filtrarAulasPor}" />
+				<h:selectOneMenu id="filtrarPor" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.tipoFiltroPeriodo}">
+					<a4j:ajax event="change" execute="form" render="form" />
+					<f:selectItems value="#{DiarioRelControle.listaTipoFiltroPeriodo}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_disciplina}" />
+				<h:selectOneMenu id="disciplina" styleClass="form-control campos" value="#{DiarioRelControle.disciplina}">
+					<f:selectItems value="#{DiarioRelControle.listaSelectItemDisciplina}" />
+					<a4j:ajax event="change" listener="#{DiarioRelControle.executarVerificacaoPossuiDiversidadeConfiguracaoAcademico}" execute="form" render="form" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{DiarioRelControle.turmaVO.curso.nivelEducacionalPosGraduacao and !DiarioRelControle.apresentarLayoutEtiqueta}">
+				<h:outputText styleClass="field control-label tituloCampos" value="Tipo de Diário" rendered="#{DiarioRelControle.turmaVO.curso.nivelEducacionalPosGraduacao and !DiarioRelControle.apresentarLayoutEtiqueta}" />
+				<h:selectOneMenu id="tipoDiario" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.tipoDiario}" rendered="#{DiarioRelControle.turmaVO.curso.nivelEducacionalPosGraduacao and !DiarioRelControle.apresentarLayoutEtiqueta}">
+					<a4j:ajax event="change" render="form" listener="#{DiarioRelControle.setarTipoLayout}" execute="form" />
+					<f:selectItems value="#{DiarioRelControle.listaTipoRelPos}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{DiarioRelControle.isApresentarCampoAno}">
+				<h:outputText rendered="#{DiarioRelControle.isApresentarCampoAno}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_ano}" />
+				<h:inputText rendered="#{DiarioRelControle.isApresentarCampoAno}" value="#{DiarioRelControle.ano}" styleClass="form-control camposObrigatorios" onkeypress="aceitarSomenteValorNumerico(this)" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{DiarioRelControle.isApresentarCampoSemestre}">
+				<h:outputText rendered="#{DiarioRelControle.isApresentarCampoSemestre}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_semestre}" />
+				<h:selectOneMenu rendered="#{DiarioRelControle.isApresentarCampoSemestre}" id="semestre" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.semestre}">
+					<f:selectItems value="#{EnumControle.comboboxSemestreEnum}" />
+					<a4j:ajax event="change" render="mes" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{DiarioRelControle.apresentarComboBoxProfessorTurmaDisciplina}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_professor}" rendered="#{DiarioRelControle.apresentarComboBoxProfessorTurmaDisciplina}" />
+				<h:selectOneMenu value="#{DiarioRelControle.professorDisciplinaTurmaVO.professor.codigo}" styleClass="form-control camposObrigatorios" id="professorDisciplinaTurma" rendered="#{DiarioRelControle.apresentarComboBoxProfessorTurmaDisciplina}">
+					<f:selectItems value="#{DiarioRelControle.listaSelectItemProfessorDisciplinaTurmaVOs}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{DiarioRelControle.possuiDiversidadeConfiguracaoAcademico}">
+				<h:outputText rendered="#{DiarioRelControle.possuiDiversidadeConfiguracaoAcademico}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ConfiguracaoAcademico_tituloForm}" />
+				<h:selectOneMenu rendered="#{DiarioRelControle.possuiDiversidadeConfiguracaoAcademico}" id="configuracaoAcademico" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.configuracaoAcademico}">
+					<f:selectItems value="#{DiarioRelControle.listaSelectItemConfiguracaoAcademico}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}">
+				<h:outputText rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="field control-label tituloCampos" value="Tipo de Aluno" />
+				<h:selectOneMenu rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}" id="tipoAluno" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.tipoAluno}">
+					<f:selectItems value="#{DiarioRelControle.listaSelectItemTipoAluno}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{DiarioRelControle.isApresentarFiltro and !DiarioRelControle.apresentarLayoutEtiqueta}" value="#{msg_aplic.prt_DiarioRel_mostrarAlunos}">
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{DiarioRelControle.isApresentarFiltro and !DiarioRelControle.apresentarLayoutEtiqueta}" value="#{msg_aplic.prt_DiarioRel_mostrarAlunos}" />
+				<h:selectOneMenu id="tipoFiltroAluno" styleClass="form-control camposObrigatorios" rendered="#{DiarioRelControle.isApresentarFiltro and !DiarioRelControle.apresentarLayoutEtiqueta}" value="#{DiarioRelControle.filtroTipoCursoAluno}">
+					<f:selectItems value="#{DiarioRelControle.tipoFiltroComboAluno}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{DiarioRelControle.tipoFiltroPeriodo eq 'porPeriodoData'}">
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{DiarioRelControle.tipoFiltroPeriodo eq 'porPeriodoData'}" value="Período de Data" />
+				<otm:calendar id="valorConsultaDataInicio" styleClass="form-control campos" inputSize="10" value="#{DiarioRelControle.dataInicio}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{DiarioRelControle.tipoFiltroPeriodo eq 'porPeriodoData'}">
+				<h:outputText styleClass="field control-label tituloCampos" value=" até " />
+				<otm:calendar id="valorConsultaDataFim" styleClass="form-control campos" inputSize="10" value="#{DiarioRelControle.dataFim}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta and DiarioRelControle.tipoFiltroPeriodo eq 'porMes'}" id="mes">
+				<h:outputText rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta and DiarioRelControle.tipoFiltroPeriodo eq 'porMes'}" styleClass="field control-label tituloCampos" value="Mês" />
+				<h:selectOneMenu id="listaMes" styleClass="form-control campos" style="width:387px;" value="#{DiarioRelControle.mes}">
+					<f:selectItems value="#{DiarioRelControle.listaSelectItemMes}" />
+					<a4j:ajax event="change" render="form" execute="form" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{DiarioRelControle.turmaVO.curso.periodicidade eq 'IN'}">
+				<h:outputText rendered="#{DiarioRelControle.turmaVO.curso.periodicidade eq 'IN'}" styleClass="field control-label tituloCampos" value="Ano" />
+				<h:inputText rendered="#{DiarioRelControle.turmaVO.curso.periodicidade eq 'IN'}" size="4" maxlength="4" styleClass="form-control campos" value="#{DiarioRelControle.anoMes}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 mt10" rendered="#{DiarioRelControle.utilizarFiltroPorNota}">
+				<h:outputText rendered="#{DiarioRelControle.utilizarFiltroPorNota}" styleClass="title" value="#{msg_aplic.prt_DiarioRel_filtrarNotas}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12">
+				<h:panelGroup id="panelMarcarDesmarcarBimestres" rendered="#{DiarioRelControle.utilizarFiltroPorNota}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{DiarioRelControle.isApresentarTextoCheckBoxMarcarDesmarcarTodosBimestres}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox value="#{DiarioRelControle.marcarTodos}">
+								<a4j:ajax event="click" execute="panelFiltroPorNota, panelMarcarDesmarcarBimestres" listener="#{DiarioRelControle.marcarDesmarcarTodosBimestres}" render="panelFiltroPorNota, panelMarcarDesmarcarBimestres" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{DiarioRelControle.utilizarFiltroPorNota}" id="panelFiltroPorNota">
+					<h:selectManyCheckbox disabledClass="tituloCampos ml5 mr10" enabledClass="tituloCampos ml5 mr10" id="listaBimestreSemestre" styleClass="field control-label tituloCampos" value="#{DiarioRelControle.filtroNotaBimestreSelecionados}">
+						<f:selectItems value="#{DiarioRelControle.filtroNotaBimestre}" />
+						<a4j:ajax event="click" execute="panelFiltroPorNota, panelMarcarDesmarcarBimestres" listener="#{DiarioRelControle.verificarSelecaoBimestre}" render="panelFiltroPorNota, panelMarcarDesmarcarBimestres" />
+					</h:selectManyCheckbox>
+				</h:panelGroup>
+				<hr class="col-md-12" />
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{DiarioRelControle.permitirGerarDiarioAssinado}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_assinarDigitalmente}" rendered="#{DiarioRelControle.permitirGerarDiarioAssinado}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="assinarDigitalmente" styleClass="form-control campos" value="#{DiarioRelControle.assinarDigitalmente}" rendered="#{DiarioRelControle.permitirGerarDiarioAssinado}">
+							<a4j:ajax event="click" execute="@form" render="form"></a4j:ajax>
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{DiarioRelControle.assinarDigitalmente and not empty DiarioRelControle.comboboxProvedorAssinaturaPadrao}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProvedorAssinatura}" />
+					<h:selectOneMenu id="provedorPadrao" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.provedorDeAssinaturaEnum}">
+						<f:selectItems value="#{DiarioRelControle.comboboxProvedorAssinaturaPadrao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_tituloRelatorio}" />
+					<h:inputText size="54" styleClass="form-control campos" value="#{DiarioRelControle.tituloRelatorio}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_observacoesRelatorio}" />
+					<h:inputTextarea cols="46" rows="3" styleClass="form-control campos" value="#{DiarioRelControle.observacoesRelatorio}" />
+				</h:panelGroup>
+				<hr class="col-md-12" />
+			</h:panelGroup>
+			<otm2:panel name="panel_dadosAdicionais" styleClassBody="row mn p5" styleClassHeader="row mn rounded-top p10 bg-gray" stylePanel=" " styleClassFooter="dn" renderedControl="false" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}">
+				<ui:define name="header">
+					<h:outputText styleClass="tituloCampos font-weight-bold" value="Dados Adicionais" />
+				</ui:define>
+				<ui:define name="body">
+					<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}">
+						<h:outputText rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_apresentarSituacaoMatricula}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="apresentarSituacaoMatricula" value="#{DiarioRelControle.apresentarSituacaoMatricula}" disabled="#{!DiarioRelControle.permitirAlterarApresentarSituacaoMatricula}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}">
+						<h:outputText rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_apresentarAulasNaoRegistradas}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="apresentarAulasNaoRegistradas" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}" value="#{DiarioRelControle.apresentarAulasNaoRegistradas}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}">
+						<h:outputText rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_TrazerAlunoTransferencia}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="trazerAlunoTransferencia" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}" value="#{DiarioRelControle.trazerAlunoTransferencia}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DiarioRel_apresentarVersoDiarioInformacoesPraticaSupervisionada}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="apresentarVersoDiarioInformacoesPraticaSupervisionada" styleClass="form-control campos" value="#{DiarioRelControle.apresentarVersoDiarioInformacoesPraticaSupervisionada}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" id="panelCargaHorariaFormatado">
+						<h:outputText styleClass="field control-label tituloCampos" id="CargaHorariaFormatado" value="#{msg_aplic.prt_DiarioRel_apresentarConteudoFormatoInteiro}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox styleClass="form-control campos" id="booleanCargaHorariaFormatado" value="#{DiarioRelControle.apresentarCargaHorariaFormatoInteiro}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" id="panelversoAgrupado">
+						<h:outputText styleClass="field control-label tituloCampos" id="versoAgrupado" value="#{msg_aplic.prt_DiarioRel_apresentarVersoAgrupado}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox styleClass="form-control campos" id="booleanversoAgrupado" value="#{DiarioRelControle.apresentarVersoAgrupado}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</ui:define>
+			</otm2:panel>
+			<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+			<otm2:panel name="panel_situacaoAcademica" styleClassBody="row mn p5" styleClassHeader="row mn rounded-top p10 bg-gray" stylePanel=" " styleClassFooter="dn" renderedControl="false" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}">
+				<ui:define name="header">
+					<h:panelGroup id="panelMarcarDesmarcarSituacaoAcademica">
+						<h:outputText styleClass="tituloCampos font-weight-bold mr5" value="#{msg_aplic.prt_FiltroRelatorioAcademico_titulo} - #{DiarioRelControle.isApresentarTextoCheckBoxMarcarDesmarcarTodosFormacaoAcademica}" />
+						<otm:selectBooleanCheckbox value="#{DiarioRelControle.marcarTodasSituacoesAcademicas}">
+							<a4j:ajax event="click" execute="@this" listener="#{DiarioRelControle.realizarSelecaoCheckboxMarcarDesmarcarTodosSituacaoAcademica}" render="panelMarcarDesmarcarSituacaoAcademica, panelSituacaoAcademica" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</ui:define>
+				<ui:define name="body">
+					<h:panelGroup rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}" id="panelSituacaoAcademica">
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_ativo}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.ativo}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_preMatricula}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.preMatricula}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_preMatriculaCancelada}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.preMatriculaCancelada}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_trancado}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.trancado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_abandonoCurso}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.abandonado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_transferenciaInterna}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.transferenciaInterna}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_transferenciaSaida}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.transferenciaExterna}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_cancelado}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.cancelado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_concluido}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.concluido}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_formado}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.formado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_jubilado}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.jubilado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</ui:define>
+			</otm2:panel>
+			<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+			<otm2:panel name="panel_situacaoFinanceira" styleClassBody="row mn p5" styleClassHeader="row mn rounded-top p10 bg-gray" stylePanel=" " styleClassFooter="dn" renderedControl="false" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}">
+				<ui:define name="header">
+					<h:outputText styleClass="tituloCampos font-weight-bold" value="#{msg_aplic.prt_FiltroRelatorioAcademico_situacaoParcelaMatricula}" />
+				</ui:define>
+				<ui:define name="body">
+					<h:panelGroup rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}">
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_pendenteFinanceiro}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.pendenteFinanceiro}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_confirmado}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<otm:selectBooleanCheckbox value="#{DiarioRelControle.filtroRelatorioAcademicoVO.confirmado}">
+									<a4j:ajax event="click" execute="@this" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</ui:define>
+			</otm2:panel>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{DiarioRelControle.apresentarLayoutEtiqueta}" value="#{msg_aplic.prt_DistribuirSalaProcessoSeletivo_layoutEtiqueta}" />
+				<h:selectOneMenu rendered="#{DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.layoutEtiquetaVO.codigo}">
+					<a4j:ajax event="change" render="form" listener="#{DiarioRelControle.inicializarDadosLayoutEtiqueta}" />
+					<f:selectItems value="#{DiarioRelControle.listaSelectItemlayoutEtiqueta}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo gt 0 and DiarioRelControle.apresentarLayoutEtiqueta}">
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo>0 and DiarioRelControle.apresentarLayoutEtiqueta}">
+					<h:outputText rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo gt 0 and DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DistribuirSalaProcessoSeletivo_iniciarLinha}" />
+					<h:selectOneMenu rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo gt 0 and DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.linha}">
+						<f:selectItems value="#{DiarioRelControle.listaSelectItemLinha}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo>0 and DiarioRelControle.apresentarLayoutEtiqueta}">
+					<h:outputText rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo>0 and DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DistribuirSalaProcessoSeletivo_iniciarColuna}" />
+					<h:selectOneMenu rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo > 0 and DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="form-control camposObrigatorios" value="#{DiarioRelControle.coluna}">
+						<f:selectItems value="#{DiarioRelControle.listaSelectItemColuna}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo>0 and DiarioRelControle.apresentarLayoutEtiqueta}">
+					<h:outputText rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo gt 0 and DiarioRelControle.apresentarLayoutEtiqueta}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DistribuirSalaProcessoSeletivo_numeroCopia}" />
+					<rich:inputNumberSpinner minValue="1" rendered="#{DiarioRelControle.layoutEtiquetaVO.codigo gt 0 and DiarioRelControle.apresentarLayoutEtiqueta}" value="#{DiarioRelControle.numeroCopias}" maxValue="100"></rich:inputNumberSpinner>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="msg">
+				<otm:mensagem scape="false" bean="#{DiarioRelControle}"></otm:mensagem>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton style="margin-right:5px" render="form, msg" oncomplete="#{DiarioRelControle.download}" rendered="#{!DiarioRelControle.apresentarLayoutEtiqueta}" action="#{DiarioRelControle.imprimirObjetoDiarioPDFVisaoFuncionario}" id="imprimirDiario" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger dark" value="Imprimir Diario da Turma (PDF)" accesskey="4" />
+				<otm:commandButton style="margin-right:5px" render="form, msg" oncomplete="#{DiarioRelControle.download}" rendered="#{DiarioRelControle.apresentarLayoutEtiqueta}" action="#{DiarioRelControle.realizarImpressaoEtiqueta}" id="imprimirDiario2" value="Imprimir Etiqueta Diario da Turma (PDF)" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger" accesskey="4" />
+				<otm:commandButton id="visualizarDiarioAssinado" render="formDiariosAssinado" oncomplete="#{rich:component('panelDiariosAssinado')}.show();" action="#{DiarioRelControle.visualizarDocumentosAssinados}" rendered="#{DiarioRelControle.disciplina ne 0 and DiarioRelControle.permitirGerarDiarioAssinado}" value="Visualizar Diario da Turma (PDF) Assinados" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger light" />
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

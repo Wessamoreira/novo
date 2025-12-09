@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Resultado Avaliação Institucional" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<h:outputStylesheet name="highcharts.js" library="script/highcharts" />
+		<h:outputStylesheet name="exporting.js" library="script/highcharts/modules" />
+		<script type="text/javascript" charset="UTF-8">
+			(function($) {
+				$.ajaxSetup({
+					cache : false
+				});
+				$.ajax({
+					cache : false,
+				});
+				$(document).ready(function() {
+					criarGrafico();
+				});
+			}(jQuery));
+		</script>
+		<style>
+.title1 {
+	color: #424242;
+	font-size: 14px;
+	padding-bottom: 3px;
+	margin-bottom: 15px;
+	border-bottom: 2px solid #424242;
+}
+
+.tituloCamposNegritoVerde {
+	color: #568c1f !important;
+	font-weight: bold;
+	font-size: 13px;
+}
+</style>
+		<h:panelGroup layout="block" styleClass="row mn">
+			<h:form id="form">
+				<h:commandLink action="#{AvaliacaoInstitucionalRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+				<a4j:jsFunction name="criarGrafico" action="#{AvaliacaoInstitucionalRelControle.carregarAvaliacaoPublicada}" render="form" />
+				<h:panelGroup id="panelGridForm">
+					<h:panelGroup layout="block" styleClass="row border rounded mb10" rendered="#{AvaliacaoInstitucionalRelControle.colunas > 1}">
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center mb10" rendered="#{AvaliacaoInstitucionalRelControle.colunas > 1}">
+							<h:outputText styleClass="field control-label tituloCampos" value="Selecione a Avaliação Que Deseja Visualizar" />
+						</h:panelGroup>
+						<a4j:repeat style="width:100%" rendered="#{AvaliacaoInstitucionalRelControle.colunas > 1}" columns="#{AvaliacaoInstitucionalRelControle.colunas}" value="#{AvaliacaoInstitucionalRelControle.listaConsulta}" var="avaliacaoItens">
+							<h:panelGroup layout="block" styleClass="col-md-6 text-center">
+								<a4j:commandLink style="padding:5px" disabled="#{AvaliacaoInstitucionalRelControle.avaliacao.codigo eq avaliacaoItens.codigo}" action="#{AvaliacaoInstitucionalRelControle.selecionarAvaliacao}" render="form" execute="@this">
+									<h:outputText styleClass="#{AvaliacaoInstitucionalRelControle.avaliacao.codigo eq avaliacaoItens.codigo ? 'tituloCamposNegritoVerde' : 'tituloCamposNegrito'}" value="#{avaliacaoItens.nome}" />
+								</a4j:commandLink>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+					<ui:include src="../relatorio/avaliacaoInstitucionalGraficoRel.xhtml" />
+					<h:panelGroup width="100%" columns="1" rendered="#{AvaliacaoInstitucionalRelControle.avaliacao.codigo > 0 and AvaliacaoInstitucionalRelControle.existeRelatorio}" id="btns" columnClasses="colunaCentralizada">
+						<a4j:commandLink id="botaoGerarRelatorioGraficoEmPDF" image="#{resource['/imagens/botaoGerarRelatorioGraficoEmPDF.png']}" oncomplete="#{AvaliacaoInstitucionalRelControle.abrirModalQuestionarioSelecionar}" action="#{AvaliacaoInstitucionalRelControle.consultarQuantidadeRelatorioGerar}" render="statusPanelBaixa, formQuestionarioSelecionar, msgs">
+							<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.tipoRelatorioGerar}" value="gerarRelatorioFormatoGrafico" />
+						</a4j:commandLink>
+					</h:panelGroup>
+					<h:panelGroup columns="1" id="msgs" cellpadding="0" cellspacing="0" width="100%" columnClasses="colunaEsquerda">
+						<h:outputText styleClass="field control-label mensagem col-md-12" value="#{AvaliacaoInstitucionalRelControle.mensagem}" />
+						<h:panelGroup columns="2" cellspacing="0" cellpadding="0" styleClass="middle">
+							<h:graphicImage value="#{resource['/imagens/iconeAlerta.png']}" rendered="#{AvaliacaoInstitucionalRelControle.mensagemDetalhada != ''}" />
+							<h:outputText styleClass="field control-label mensagemDetalhada col-md-12" value="#{AvaliacaoInstitucionalRelControle.mensagemDetalhada}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</h:panelGroup>
+		<!-- 		<otm2:progressBar bean="#{AvaliacaoInstitucionalRelControle}" bar="progressBarVO" id="statusPanelBaixa" oncomplete="#{AvaliacaoInstitucionalRelControle.abrirModalQuestionarioSelecionar}" render="formQuestionarioSelecionar, form:msgs"> -->
+		<!-- 		</otm2:progressBar> -->
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelGraficoPergunta" style="overflow:auto;" shadowOpacity="false" width="400" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Gráfico Avaliação Pergunta"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkGraficoPergunta" />
+					<rich:componentControl target="panelGraficoPergunta" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formGraficoPergunta">
+				<rich:dataScroller align="center" for="formGraficoPergunta:respostas" maxPages="100" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoCurso" />
+				<rich:dataGrid id="respostas" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" columns="1" value="#{AvaliacaoInstitucionalRelControle.perguntaRelVO.respostaTexto}" var="resposta">
+					<h:panelGroup columns="2">
+						<h:panelGroup>
+							<h:outputText value="#{resposta.nomeResposta}:" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText style="align:left" value="#{resposta.quantidadePessoa}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:dataGrid>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<h:outputText value="Total de respostas: #{AvaliacaoInstitucionalRelControle.perguntaRelVO.totalPessoas}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelQuestionarioSelecionar" shadowOpacity="false" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Selecionar Relatório que Deseje Visualizar"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkAvaliacaoSelecionar" />
+					<rich:componentControl target="panelQuestionarioSelecionar" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formQuestionarioSelecionar">
+				<h:outputText styleClass="tituloCamposReduzido" value="Caso existam mais de 10 relatórios a serem gerados, o sistema irá disponibilizar um arquivo no formato .zip com todos os relatórios gerados, dentro deste zip existirá uma arquivo com o nome Indice.pdf, ao abrir este arquivo existirá diversos link onde ao clicar irá abrir o pdf correspondente." />
+				<rich:dataTable render="formQuestionarioSelecionar" id="questionarioRelVOs" value="#{AvaliacaoInstitucionalRelControle.questionarioRelVOs}" width="100%" var="questionarioItem" styleClass="consulta" rows="10">
+					<rich:column filterType="custom" filter="#{FilterFactory.filter('questionarioRelVOs', 'nomeUnidadeEnsino', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_UnidadeEnsino_tituloForm}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('questionarioRelVOs', 'nomeUnidadeEnsino', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="questionarioRelVOs" />
+								</h:inputText>
+								<span class="append-icon right"> <otm:commandIcon render="questionarioRelVOs" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('questionarioRelVOs')}" tooltip="Limpar Filtro" />
+								</span>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{questionarioItem.nomeUnidadeEnsino}" />
+					</rich:column>
+					<rich:column filterType="custom" filter="#{FilterFactory.filter('questionarioRelVOs2', 'nomeCurso', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_tituloForm}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('questionarioRelVOs2', 'nomeCurso', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="questionarioRelVOs" />
+								</h:inputText>
+								<span class="append-icon right"> <otm:commandIcon render="questionarioRelVOs" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('questionarioRelVOs2')}" tooltip="Limpar Filtro" />
+								</span>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{questionarioItem.nomeCurso}" />
+					</rich:column>
+					<rich:column rendered="#{AvaliacaoInstitucionalRelControle.tipoRelatorioGerar eq 'gerarRelatorioPorRespondentePDF'}" filterType="custom" filter="#{FilterFactory.filter('questionarioRelVOs3', 'nomeDisciplina', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Disciplina_tituloForm}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:inputText styleClass="form-control campos" size="20" value="#{FilterFactory.filter('questionarioRelVOs3', 'nomeDisciplina', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="questionarioRelVOs" />
+								</h:inputText>
+								<span class="append-icon right"> <otm:commandIcon render="questionarioRelVOs" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('questionarioRelVOs3')}" tooltip="Limpar Filtro" />
+								</span>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{questionarioItem.nomeDisciplina}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Qtde de Relatório" />
+						</f:facet>
+						<h:outputText value="#{questionarioItem.qtdeRelatorio}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Qtde de Respondentes" />
+						</f:facet>
+						<h:outputText value="#{questionarioItem.qtdeRespondentes}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<a4j:region>
+							<otm:commandIcon id="botaoGerarRelatorioEmPDF4" icon="#{msg_botoes.btn_icon_gerar_relatorio} iconePequeno" image="#{resource['/imagens/botaoGerarRelatorio2.png']}" oncomplete="#{rich:component('panelQuestionarioSelecionar')}.hide()" action="#{AvaliacaoInstitucionalRelControle.selecionarRelatorioPorQuestionario}" render="statusPanelBaixa, formQuestionarioSelecionar" />
+						</a4j:region>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller stepControls="auto" fastControls="hide" boundaryControls="auto" for="questionarioRelVOs" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<a4j:commandLink value="Gerar Relatório" styleClass="btn btn-primary" id="botaoGerarRelatorioEmPDF4" image="#{resource['/imagens/botaoGerarRelatorio2.png']}" oncomplete="#{rich:component('panelQuestionarioSelecionar')}.hide()" action="#{AvaliacaoInstitucionalRelControle.inicializarProgressBar}" render="statusPanelBaixa">
+						<span class="#{msg_botoes.btn_icon_gerar_relatorio_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;" />
+						<f:setPropertyActionListener target="#{AvaliacaoInstitucionalRelControle.gerarRelatorioQuestionarioSelecionado}" value="false" />
+					</a4j:commandLink>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

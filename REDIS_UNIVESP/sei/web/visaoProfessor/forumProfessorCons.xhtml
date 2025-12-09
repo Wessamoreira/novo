@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Fórum" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style type="text/css">
+.rich-dtascroller-table {
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.rich-datascr-button {
+	border: none;
+}
+
+.rich-datascr-button-dsbld {
+	background-color: transparent;
+}
+
+.rich-list-item {
+	display: block;
+}
+
+.mceLayout {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+.cke_top {
+	display: none !important;
+}
+
+.cke_reset {
+	background-color: transparent !important;
+	height: 60px !important;
+}
+
+.cke_reset:hover {
+	height: auto !important;;
+}
+
+.interacaoForum {
+	background-color: #fff;
+}
+
+.interacaoForum:hover {
+	background-color: #ededed;
+}
+</style>
+		<h:form id="form">
+			<h:panelGroup id="panelGridForm" layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" style="float:right" id="panelPendencia">
+						<i class="fas fa-exclamation-triangle" style="font-size: 18px"></i>
+						<otm:spacer width="8px" />
+						<a4j:commandLink value="Você possui #{VisaoProfessorControle.qtdeAtualizacaoForum} pendência(s)" action="#{ForumControle.listarTodosForumsNaoRespondidos}" styleClass="field control-label tituloCampos" render="form" />
+					</h:panelGroup>
+					<h:commandLink action="#{AtividadeDiscursivaControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_publicoAlvo}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ForumControle.forum.publicoAlvoForumEnum}">
+						<f:selectItems value="#{EnumControle.listaSelectPublicoAlvoForumEnum}" />
+						<a4j:ajax event="change" listener="#{ForumControle.limparCampoRestricaoPublicoAlvo}" render="panelGridForm" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_restricaoPublicoAlvo}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ForumControle.forum.restricaoPublicoAlvoForumEnum}">
+						<f:selectItems value="#{EnumControle.listaSelectRestricaoPublicoAlvoForumEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_areaConhecimento}" />
+					<h:selectOneMenu id="areaConhecimento" styleClass="form-control campos" value="#{ForumControle.forum.areaConhecimentoVO.codigo}">
+						<f:selectItems value="#{ForumControle.listaSelectItemAreaConhecimento}" />
+						<a4j:ajax event="change" render="form:panelGridForm" listener="#{ForumControle.carregarDadosCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup id="panelPeriodo">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Curso_periodicidade}" />
+						<h:selectOneMenu id="periodicidade" readonly="#{ForumControle.forum.cursoVO.codigo > 0 or ForumControle.forum.turma.codigo > 0}" disabled="#{ForumControle.forum.cursoVO.codigo > 0 or ForumControle.forum.turma.codigo > 0}" styleClass="form-control campos" value="#{ForumControle.periodicidade}">
+							<a4j:ajax event="change" render="form:panelPeriodo, form:curso, form:turma, form:disciplinasTurma" listener="#{ForumControle.montarListaCursoEturmaPorPeriodicidade}" />
+							<f:selectItems value="#{ForumControle.listaSelectItemPeriodicidade}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ForumControle.apresentarAno}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AlunosPorUnidadeCursoTurnoTurmaRel_ano}" />
+						<h:inputText onkeypress="aceitarSomenteValorNumerico(this)" id="ano" style="margin-right:5px" styleClass="form-control camposObrigatorios" size="5" maxlength="4" value="#{ForumControle.ano}">
+							<a4j:ajax event="blur" render="form:panelGridForm" listener="#{ForumControle.montarListaSelectItemTurmaDisciplina}" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ForumControle.apresentarSemestre}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AlunosPorUnidadeCursoTurnoTurmaRel_semestre}" />
+						<h:selectOneMenu id="semestre" styleClass="form-control camposObrigatorios" value="#{ForumControle.semestre}">
+							<f:selectItems value="#{ForumControle.listaSelectItemSemestre}" />
+							<a4j:ajax event="change" render="form:panelGridForm" listener="#{ForumControle.montarListaSelectItemTurmaDisciplina}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_curso}" />
+					<h:selectOneMenu id="curso" styleClass="form-control campos" value="#{ForumControle.forum.cursoVO.codigo}">
+						<f:selectItems value="#{ForumControle.listaSelectItemCurso}" />
+						<a4j:ajax event="change" render="form:panelGridForm" listener="#{ForumControle.setarPeriodicidade}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_turma}" />
+					<h:selectOneMenu id="turma" styleClass="form-control campos" value="#{ForumControle.forum.turma.codigo}">
+						<f:selectItems value="#{ForumControle.listaSelectItemTurma}" />
+						<a4j:ajax event="change" listener="#{ForumControle.montarListaSelectItemTurmaDisciplina}" render="form:disciplinasTurma , form:panelPeriodo" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_disciplina}" />
+					<h:selectOneMenu id="disciplinasTurma" styleClass="form-control camposObrigatorios" value="#{ForumControle.forum.disciplina.codigo}">
+						<f:selectItems value="#{ForumControle.listaSelectItemDisciplina}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_avaliado}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ForumControle.forum.filtroForumAvaliado}">
+						<f:selectItems value="#{EnumControle.listaSelectFiltroBooleanEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Forum_situacao}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ForumControle.forum.situacaoForum}">
+						<f:selectItems value="#{EnumControle.listaSelectSituacaoForumEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Ordenar Por" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ForumControle.opcaoOrdenacaoForum}">
+						<a4j:ajax event="change" render="items, panelGridMensagens" listener="#{ForumControle.consultarForumVisaoProfessor}" />
+						<f:selectItems value="#{ForumControle.listaSelectItemOpcaoOrdenacaoForum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup id="panelGridMensagens" layout="block" styleClass="pn col-md-12 text-left mt10 mb10">
+					<otm:mensagem bean="#{ForumControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup styleClass="row navbar navbar-fixed-bottom barraFlutuanteInferior text-center" layout="block">
+					<a4j:commandLink id="consultar" style="margin-left:10px" render="form:panelGridForm" action="#{ForumControle.consultarForumVisaoProfessor(true)}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="1">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"> </span>
+						<f:setPropertyActionListener target="#{ForumControle.controleConsultaOtimizado.page}" value="0" />
+						<f:setPropertyActionListener target="#{ForumControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+					</a4j:commandLink>
+					<otm:commandButton id="novo" action="#{ForumControle.novo}" style="margin-left:5px" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" title="#{msg.msg_novo_dados}" accesskey="2" />
+				</h:panelGroup>
+				<otm:spacer height="5px" />
+				<h:panelGroup layout="block" styleClass="row" style="margin-top:15px">
+					<rich:list id="items" type="definitions" rowKeyVar="row" value="#{ForumControle.controleConsultaOtimizado}" rows="10" var="forumItens">
+						<h:panelGroup id="grid" styleClass="row border rounded ml5 interacaoForum">
+							<a4j:commandLink style="cursor:pointer;z-index:1000;" action="#{ForumControle.editar}">
+								<h:panelGroup layout="block" style="height:45px;width:45px;" styleClass="float-left text-center mr10 mt5">
+									<h:graphicImage rendered="#{ForumControle.forum.responsavelCriacao.pessoa.existeImagem}" style="width: 24px;" value="#{ForumControle.caminhoBaseFoto}/imagem/#{ForumControle.forum.responsavelCriacao.pessoa.arquivoImagem.nome}" />
+									<h:panelGroup rendered="#{!ForumControle.forum.responsavelCriacao.pessoa.existeImagem}" styleClass="fa fa-user fs24 text-gray-700 mt10">
+									</h:panelGroup>
+								</h:panelGroup>
+							</a4j:commandLink>
+							<h:panelGroup layout="block" styleClass="float-left p10" style="text-align:left;float:left;width:calc(100% - 60px);height:100%;">
+								<a4j:commandLink style="cursor:pointer;z-index:1000;" action="#{ForumControle.editar}">
+									<h:panelGroup layout="block" style="text-align:left;width:80%;float:left;">
+										<h:panelGroup style="text-align:left;width:100%;float:left;">
+											<h:outputText styleClass="field control-label tituloCampos font-weight-bold" value="#{msg_aplic.prt_Forum_criadoPor}: " />
+											<h:outputText styleClass="field control-label tituloCampos" value="#{forumItens.responsavelCriacao.pessoa.nome}" />
+										</h:panelGroup>
+										<h:panelGroup style="text-align:left;width:100%;float:left;">
+											<h:outputText styleClass="field control-label tituloCampos font-weight-bold" value="Disciplina: " />
+											<h:outputText styleClass="field control-label tituloCampos" value="#{forumItens.disciplina.nome}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</a4j:commandLink>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<a4j:commandLink style="cursor:pointer;z-index:1000;" action="#{ForumControle.editar}">
+									<otm:editor id="editor" value="#{forumItens.tema}" readonly="true" autoResize="true" />
+								</a4j:commandLink>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6 text-left mb5 ">
+								<a4j:commandLink style="cursor:pointer;z-index:1000;" action="#{ForumControle.editar}">
+									<i class="#{msg_botoes.btn_icon_alerta_triangulo_embutido} #{forumItens.qtdeAtualizacao > 0 ? 'text-warning' : 'tituloCampos'} ml10 mr5"></i>
+									<h:outputText styleClass="#{forumItens.qtdeAtualizacao > 0 ? 'text-warning' : 'tituloCampos'}  fs14" value="Existem #{forumItens.qtdeAtualizacao} novas Interações"></h:outputText>
+								</a4j:commandLink>
+							</h:panelGroup>
+							<!-- 								<otm:commandIcon rendered="#{forumItens.qtdeAtualizacao > 0}" tooltip="Existe(m) #{forumItens.qtdeAtualizacao} nova(s) interacão(ões)" icon="#{msg_botoes.btn_icon_atualizar_embutido}" alt="#{msg_botoes.btn_entrar_forum}" action="#{ForumControle.editar}" value="#{forumItens.qtdeAtualizacao}" /> -->
+							<h:panelGroup layout="block" styleClass="col-md-6 text-right mb5">
+								<otm:commandButton value="Acessar Forúm " id="EntrarForum" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_entrar_embutido}" tooltip="Entrar Forum" alt="#{msg_bt.btn_entrar_forum}" action="#{ForumControle.editar}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:list>
+				</h:panelGroup>
+				<rich:dataScroller align="center" for="form:items" render="items" id="paginador" scrollListener="#{ForumControle.scrollListener}" rendered="#{ForumControle.controleConsultaOtimizado.apresentarDatascroller}" boundaryControls="auto" stepControls="auto" fastControls="hide" maxPages="10" />
+				<!-- 				<h:panelGroup id="paginador" layout="block" style="width:100%; height: auto; float:left;padding-top:5px; padding-left:5px;text-align: center; "> -->
+				<!-- 					<rich:dataScroller align="center" for="form:items" style="border:none;text-align: center; background-color:transparent; margin-top:5px" render="items" id="scResultadoConsulta" scrollListener="#{ForumControle.scrollListener}" rendered="#{ForumControle.controleConsultaOtimizado.apresentarDatascroller}" selectedStyle="border:none;background-color:transparent;" pagesVar="pages" boundaryControls="hide" fastControls="hide" maxPages="10" inactiveStyle="border:none; background-color:transparent;"> -->
+				<!-- 						<f:facet name="previous"> -->
+				<!-- 							<h:outputText style="width:100px;text-align:center;display:block;" styleClass="scrollLast" value="Anterior" /> -->
+				<!-- 						</f:facet> -->
+				<!-- 						<f:facet name="next"> -->
+				<!-- 							<h:outputText style="width:100px;display:block;text-align:center;" styleClass="scrollNext" value="Mais" /> -->
+				<!-- 						</f:facet> -->
+				<!-- 						<f:facet name="pages"> -->
+				<!-- 							<h:outputText style="width:200px;display:block;text-align:center;" styleClass="tituloCamposResultado" value="#{ForumControle.controleConsultaOtimizado.paginaAtual}/#{ForumControle.controleConsultaOtimizado.totalPaginas}" /> -->
+				<!-- 						</f:facet> -->
+				<!-- 					</rich:dataScroller> -->
+				<!-- 				</h:panelGroup> -->
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

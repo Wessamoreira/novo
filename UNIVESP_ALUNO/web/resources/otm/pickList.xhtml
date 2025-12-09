@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:p="http://primefaces.org/ui" xmlns:h="http://java.sun.com/jsf/html"
+ xmlns:f="http://java.sun.com/jsf/core"
+ xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:component>
+
+	<c:if test="#{empty id}">
+		<c:set var="id" value="panelPickList"></c:set>
+	</c:if>
+	<c:if test="#{empty update}">
+		<c:set var="update" value="form"></c:set>
+	</c:if>
+	<c:if test="#{empty selecionar}">
+		<c:set var="selecionar" value="selecionar"></c:set>
+	</c:if>
+	<c:if test="#{empty label}">
+		<c:set var="label" value="nome"></c:set>
+	</c:if>
+	<c:if test="#{empty height}">
+		<c:set var="height" value="calc(40vh)"></c:set>
+	</c:if>
+
+	<h:panelGroup layout="block" styleClass="row" id="#{id}">
+		<style>
+.ui-dataview-header {
+	display: none;
+}
+
+body .ui-dataview.ui-dataview-list .ui-dataview-row {
+	border: none !important;
+}
+</style>
+		<h:panelGroup layout="block" id="PICK_NAO_SEL_2_#{id}" styleClass="col-md-6  p5">
+			<h:panelGroup layout="block" styleClass="col-md-12 border rounded p5" style="min-height: #{height} !important;">
+				<h:outputText styleClass="tituloCampos col-md-12" value="Não Selecionados" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center mb5">
+					<div class="ui-inputgroup">
+						<p:inputText styleClass="form-control" value="#{PickList.pick(id, value , label, selecionar, bean, labelSelecionado).filtroNaoSelecionado}">
+							<p:ajax event="change" update="#{id}"></p:ajax>
+						</p:inputText>
+						<p:commandLink styleClass="ui-inputgroup-addon btn-info" oncomplete="#{onselect}" value=" " update="#{id}, #{update}" action="#{PickList.selecionarGeral(id, true)}">
+							<span class="#{msg_botoes.btn_icon_setaRightDupla_embutido} pull-right" style="position: relative; top: 4px; font-size: 14px;" />
+						</p:commandLink>
+					</div>
+				</h:panelGroup>
+
+				<p:droppable for="PICK_NAO_SEL_2_#{id}" datasource="LIST_PICK_SEL_#{id}" rendered="#{!LoginControle.appMovel}" tolerance="pointer">
+					<p:ajax oncomplete="#{onselect}" listener="#{PickList.pick(id, value , label, selecionar, bean, labelSelecionado).dragDropNaoSelecionar}" update="#{id}, #{update}"></p:ajax>
+				</p:droppable>
+				<p:dataView id="LIST_PICK_NOT_SEL_#{id}" layout="list" var="pickItens" value="#{PickList.pick(id, value , label, selecionar, bean, labelSelecionado).value}">
+					<p:dataViewListItem>
+						<h:panelGroup id="PICK_NAO_SEL_#{id}" layout="block" styleClass="row mn border-bottom" rendered="#{!pickItens[selecionar] and PickList.filtrar(id, pickItens, false)}">
+							<p:draggable for="PICK_NAO_SEL_#{id}" rendered="#{!LoginControle.appMovel}" cursor="pointer" revert="true" zindex="800">
+							</p:draggable>
+							<h:panelGroup layout="block" styleClass="row ml5 mb5">
+								<h:outputText value="#{PickList.pick(id, value , label, selecionar, bean, labelSelecionado).getTitulo(pickItens)}" styleClass="tituloCampos col-md-11" />
+
+								<p:commandLink styleClass="col-md-1 text-center pt5" oncomplete="#{onselect}" update="#{id}, #{update}" action="#{PickList.selecionarEspecifico(id, pickItens, true)}">
+									<span class="#{msg_botoes.btn_icon_setaRight_embutido}" style="font-size: 16px !important;" />
+								</p:commandLink>
+
+							</h:panelGroup>
+						</h:panelGroup>
+					</p:dataViewListItem>
+				</p:dataView>
+
+			</h:panelGroup>
+		</h:panelGroup>
+		<h:panelGroup id="PICK_SEL_2_#{id}" layout="block" styleClass="col-md-6 p5">
+			<h:panelGroup layout="block" styleClass="col-md-12 border rounded p5" style="min-height: #{height} !important;">
+				<p:droppable for="PICK_SEL_2_#{id}" datasource="LIST_PICK_NOT_SEL_#{id}" rendered="#{!LoginControle.appMovel}" tolerance="pointer">
+					<p:ajax oncomplete="#{onselect}" listener="#{PickList.pick(id, value , label, selecionar, bean, labelSelecionado).dragDropSelecionar}" update="#{id}, #{update}"></p:ajax>
+				</p:droppable>
+				<h:outputText styleClass="tituloCampos col-md-12" value="Selecionados" />
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center mb5">
+					<div class="ui-inputgroup">
+						<p:commandLink styleClass="ui-inputgroup-addon btn-info" oncomplete="#{onselect}" value=" " update="#{id}, #{update}" action="#{PickList.selecionarGeral(id, false)}">
+							<span class="#{msg_botoes.btn_icon_setaLeftDupla_embutido} pull-left" style="position: relative; top: 4px; font-size: 14px;" />
+						</p:commandLink>
+						<p:inputText styleClass="form-control" value="#{PickList.pick(id, value , label, selecionar, bean, labelSelecionado).filtroSelecionado}">
+							<p:ajax  event="change" update="#{id}"></p:ajax>
+						</p:inputText>
+					</div>
+				</h:panelGroup>
+
+				<p:dataView id="LIST_PICK_SEL_#{id}" layout="list" var="pickItens" value="#{PickList.pick(id, value , label, selecionar, bean, labelSelecionado).value}">
+					<p:dataViewListItem>
+						<h:panelGroup id="PICK_SEL_#{id}" layout="block" styleClass="row mn border-bottom" rendered="#{pickItens[selecionar] and PickList.filtrar(id, pickItens, true)}">
+							<p:draggable for="PICK_SEL_#{id}" rendered="#{!LoginControle.appMovel}" cursor="pointer" revert="true" zindex="800">
+							</p:draggable>
+							<h:panelGroup layout="block" styleClass="row ml5 mb5">
+								<p:commandLink styleClass="col-md-1 text-center pt5" oncomplete="#{onselect}" update="#{id}, #{update}" action="#{PickList.selecionarEspecifico(id, pickItens, false)}">
+									<span class="#{msg_botoes.btn_icon_setaLeft_embutido}" style="font-size: 16px !important;" />
+								</p:commandLink>
+								<h:outputText value="#{PickList.pick(id, value , label, selecionar, bean, labelSelecionado).getTitulo(pickItens)}" styleClass="tituloCampos col-md-11" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</p:dataViewListItem>
+				</p:dataView>
+			</h:panelGroup>
+		</h:panelGroup>
+
+	</h:panelGroup>
+</ui:component>
+
+</html>

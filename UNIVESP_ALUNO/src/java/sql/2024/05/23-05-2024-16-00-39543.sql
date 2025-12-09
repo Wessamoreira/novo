@@ -1,0 +1,1 @@
+ ALTER TABLE IF EXISTS curso  add COLUMN if not exists permitirOutraMatriculaMesmoAluno  BOOLEAN DEFAULT FALSE;

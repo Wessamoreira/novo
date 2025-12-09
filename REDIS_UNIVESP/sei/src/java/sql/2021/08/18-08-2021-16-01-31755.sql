@@ -1,0 +1,1 @@
+alter table agentenegativacaocobrancacontareceber add column if not exists negativarnegociacoesvencidasemparcelarecebida boolean default false;

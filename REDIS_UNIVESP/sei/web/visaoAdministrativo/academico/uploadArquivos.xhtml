@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_UploadArquivos_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelProfessor" onshow="document.getElementById('formProfessor:valorConsultarProfessor').focus()" shadowOpacity="true" top="0" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_consultaProfessor}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkProfessor" />
+					<rich:componentControl target="panelProfessor" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formProfessor">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaProfessor" value="#{ArquivoControle.campoConsultaProfessor}">
+						<a4j:ajax event="change" render="formProfessor" />
+						<f:selectItems value="#{ArquivoControle.tipoConsultaComboProfessor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultarProfessor" size="10" styleClass="form-control campos" rendered="#{!ArquivoControle.apresentarCampoCpf}" value="#{ArquivoControle.valorConsultaProfessor}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ArquivoControle.apresentarCampoCpf}">
+					<h:inputText id="cpf" rendered="#{ArquivoControle.apresentarCampoCpf}" size="14" maxlength="14" onkeypress="return mascara(this.formProfessor, 'formProfessor:cpf', '999.999.999-99', event);" styleClass="form-control camposObrigatorios" value="#{ArquivoControle.valorConsultaProfessor}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formProfessor:mensagemConsultarProfessor, formProfessor:resultadoConsultarProfessor, formProfessor:scResultadoProfessor" action="#{ArquivoControle.consultarProfessor}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultarProfessor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ArquivoControle.listaConsultaProfessor}" rows="5" var="professorItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_professor}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ArquivoControle.selecionarProfessor}" focus="professor" render="form, formUploadArquivo" oncomplete="#{rich:component('panelProfessor')}.hide()" value="#{professorItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_cpf}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ArquivoControle.selecionarProfessor}" focus="professor" render="form, formUploadArquivo" oncomplete="#{rich:component('panelProfessor')}.hide()" value="#{professorItens.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ArquivoControle.selecionarProfessor}" focus="professor" render="form, formUploadArquivo" oncomplete="#{rich:component('panelProfessor')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formProfessor:resultadoConsultarProfessor" maxPages="10" id="scResultadoProfessor" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultarProfessor" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ArquivoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplina" shadowOpacity="true" width="750" onshow="document.getElementById('formDisciplina:valorConsultaDisciplina').focus();" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_UploadArquivos_consultarDisciplina}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink2" />
+					<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaDisciplina" value="#{ArquivoControle.campoConsultarDisciplina}">
+						<f:selectItems value="#{ArquivoControle.tipoConsultarComboDisciplina}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaDisciplina" size="20" styleClass="form-control campos" value="#{ArquivoControle.valorConsultarDisciplina}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formDisciplina:mensagemConsultaDisciplina, formDisciplina:resultadoConsultaDisciplina, formDisciplina:scResultadoDisciplina" action="#{ArquivoControle.consultarDisciplina}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaDisciplina" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ArquivoControle.listaConsultarDisciplina}" rows="5" var="disciplinaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ArquivoControle.selecionarDisciplina}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="#{disciplinaItens.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ArquivoControle.selecionarDisciplina}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide()" value="#{disciplinaItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ArquivoControle.selecionarDisciplina}" render="form:disciplinaNome" oncomplete="#{rich:component('panelDisciplina')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formDisciplina:resultadoConsultaDisciplina" maxPages="10" id="scResultadoDisciplina" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaDisciplina" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ArquivoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formTurma:valorConsultaTurma').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_HistoricoTurmaRel_consultarTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink" />
+					<rich:componentControl target="panelTurma" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{ArquivoControle.campoConsultaTurma}">
+						<f:selectItems value="#{ArquivoControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaTurma" size="10" styleClass="form-control campos" value="#{ArquivoControle.valorConsultaTurma}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{ArquivoControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ArquivoControle.listaConsultaTurma}" rows="5" var="turmaItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_HistoricoTurmaRel_identificador}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ArquivoControle.selecionarTurma}" focus="nomeTurma" render="form, formUploadArquivo" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Curso" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ArquivoControle.selecionarTurma}" focus="nomeTurma" render="form, formUploadArquivo" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Turno" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ArquivoControle.selecionarTurma}" focus="nomeTurma" render="form, formUploadArquivo" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ArquivoControle.selecionarTurma}" focus="nomeTurma" render="form, formUploadArquivo" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTurma" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ArquivoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelUploadArquivo" shadowOpacity="true" width="600" height="430" domElementAttachment="parent">
+			<f:facet name="header">
+				<h:outputText value="#{msg_aplic.prt_Disciplina_uploadArquivos}" />
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkUploadArquivo" />
+					<rich:componentControl target="panelUploadArquivo" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUploadArquivo">
+				<style>
+.rf-fu-btns-rgh {
+	text-align: right;
+	width: 108px;
+}
+</style>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{ArquivoControle.tamanhoMaximoUpload}" rendered="#{ArquivoControle.permitirUsuarioRealizarUpload}" />
+					<rich:fileUpload listHeight="15" listWidth="390" noDuplicate="true" allowFlash="false" fileUploadListener="#{ArquivoControle.upLoadArquivo}" maxFilesQuantity="1" addLabel="Upar Arquivo" clearLabel="Cancelar" doneLabel="Pronto" sizeExceededLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{ArquivoControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB."  uploadLabel="Enviar" clearAllLabel="Limpar" immediateUpload="true" id="upload" rendered="#{ArquivoControle.permitirUsuarioRealizarUpload}">
+						<a4j:ajax event="typerejected" execute="@formUploadArquivo, @form" oncomplete="alert('Arquivo não Enviado. Formato inválido do arquivo');" render="upload, formUploadArquivo, pgUpload" />
+						<a4j:ajax event="uploadcomplete" render="formUploadArquivo" execute="@formUploadArquivo" />
+						<a4j:ajax event="clear" execute="@formUploadArquivo, @form" render="upload, formUploadArquivo" />
+					</rich:fileUpload>
+				</h:panelGroup>	
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText id="upload_arquivo" styleClass="field control-label tituloCampos" value="#{ArquivoControle.arquivoVO.descricao}" />
+				</h:panelGroup>		
+					
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_turma}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="turma" styleClass="form-control camposSomenteLeitura" readonly="true" size="52" value="#{ArquivoControle.arquivoVO.turma.identificadorTurma}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" focus="nomeTurma" alt="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" alt="Limpas Dados" action="#{ArquivoControle.limparCampoTurma}" render="form, formUploadArquivo" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisponibilidadeHorario_professor}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="professor" styleClass="form-control camposSomenteLeitura" readonly="true" size="52" value="#{ArquivoControle.arquivoVO.professor.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosProfessor" focus="nomeProfessor" alt="Localizar Professor" render="formProfessor" oncomplete="#{rich:component('panelProfessor')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosProfessor" alt="Limpas Dados" action="#{ArquivoControle.limparCampoProfessor}" render="form, formUploadArquivo" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UploadArquivo_agrupador}" />
+					<h:inputText id="agrupador" styleClass="form-control campos" size="45" value="#{ArquivoControle.arquivoVO.agrupador}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UploadArquivos_dataUpload}" />
+					<h:inputText id="dataUpload" styleClass="form-control camposSomenteLeitura" readonly="true" size="52" value="#{ArquivoControle.arquivoVO.dataUpload_Apresentar}" />
+				</h:panelGroup>
+				<h:panelGroup id="datas" rendered="#{ArquivoControle.arquivoVO.apresentarDeterminadoPeriodo and ArquivoControle.permitirUsuarioRealizarUpload}">
+					<h:panelGroup layout="block" styleClass="col-md-2 h36">
+						<h:outputText rendered="#{ArquivoControle.arquivoVO.apresentarDeterminadoPeriodo and ArquivoControle.permitirUsuarioRealizarUpload}" value="#{msg_aplic.prt_UploadArquivos_disponivelDe}" styleClass="tituloCampos" />
+						<otm:calendar id="valorConsultaDataDisp" oninputkeypress="return mascara(this.form, this.id, '99/99/9999 99:99', event);" onchanged="return renderData(this.id)" showApplyButton="true" showWeekDaysBar="false" showWeeksBar="false" oninputchange="validarDataHora(this.value,this.id)" inputSize="16" enableManualInput="false" datePattern="dd/MM/yyyy HH:mm" inputClass="form-control campos" value="#{ArquivoControle.arquivoVO.dataDisponibilizacao}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2 h36">
+						<h:outputText value="#{msg_aplic.prt_UploadArquivos_ate}" styleClass="tituloCampos" />
+						<otm:calendar id="valorConsultaDataIndisp" oninputkeypress="return mascara(this.form, this.id, '99/99/9999 99:99', event);" onchanged="return renderData(this.id)" showApplyButton="true" showWeekDaysBar="false" showWeeksBar="false" oninputchange="validarDataHora(this.value,this.id)" inputSize="16" enableManualInput="false" datePattern="dd/MM/yyyy HH:mm" inputClass="form-control campos" value="#{ArquivoControle.arquivoVO.dataIndisponibilizacao}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ArquivoControle.permitirUsuarioRealizarUpload}">
+					<h:outputText rendered="#{ArquivoControle.permitirUsuarioRealizarUpload}" value="#{msg_aplic.prt_UploadArquivos_manterDisponivel}" styleClass="field control-label tituloCampos" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="checarManterDisponibilizacao" value="#{ArquivoControle.arquivoVO.manterDisponibilizacao}" styleClass="form-control campos">
+							<a4j:ajax event="change" execute="formUploadArquivo" render="formUploadArquivo" listener="#{ArquivoControle.marcarDesmacarCampoPeriodoDisponibilizacao}">
+							</a4j:ajax>
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{ArquivoControle.arquivoVO.apresentarDeterminadoPeriodo and ArquivoControle.permitirUsuarioRealizarUpload}" />
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ArquivoControle.permitirUsuarioRealizarUpload}">
+					<h:outputText rendered="#{!ArquivoControle.arquivoVO.manterDisponibilizacao}" value="#{msg_aplic.prt_Arquivo_apresentarDeterminadoPeriodo}" styleClass="field control-label tituloCampos" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox rendered="#{!ArquivoControle.arquivoVO.manterDisponibilizacao}" id="apresentarDeterminadoPeriodo" value="#{ArquivoControle.arquivoVO.apresentarDeterminadoPeriodo}" styleClass="form-control campos">
+							<a4j:ajax event="change" execute="formUploadArquivo" render="formUploadArquivo" listener="#{ArquivoControle.limparCampoDataIndisponibilizacao}" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="#{ArquivoControle.arquivoVO.apresentarDeterminadoPeriodo and ArquivoControle.permitirUsuarioRealizarUpload ? 'col-md-10' : 'col-md-12'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UploadArquivos_descricao}" />
+					<h:inputTextarea id="descricaoCont" styleClass="form-control camposObrigatorios" value="#{ArquivoControle.arquivoVO.descricaoArquivo}" onkeyup="#{ArquivoControle.exibirQtdeCaractereLimiteDownloadMaterial}" />
+					<h:inputText id="contador" maxlength="10" size="12" readonly="true" styleClass="camposSomenteLeitura" style="position:relative;top:-8px; left:6px;border:0px; background-color:transparent; color:red; text-align:left; font: 8pt 'Trebuchet MS', verdana, arial, helvetica, sans-serif;" rendered="#{ArquivoControle.qtdeCaractereLimiteDownloadMaterial ne 0}" />
+				</h:panelGroup>
+				<otm:spacer height="10" />
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton style="margin-right:5px" id="adicionar" action="#{ArquivoControle.adicionarArquivoLista}" value="Adicionar" icon="#{msg_botoes.btn_icon_adicionar_embutido}" render="formUploadArquivo, form" oncomplete="#{ArquivoControle.onCompletePanelUpload}" styleClass="btn btn-primary dark" />
+					<otm:commandButton id="fecharPanelUploadArquivo" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" oncomplete="#{rich:component('panelUploadArquivo')}.hide()" render="form" styleClass="btn btn-danger dark btn-fechar" />
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ArquivoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelExcluir" shadowOpacity="true" width="300" height="250">
+			<f:facet name="header">
+				<h:outputText value="#{msg_aplic.prt_Exclusao_confirmarExclusao}" />
+			</f:facet>
+			<h:form id="formExcluir">
+				<h:panelGroup columns="1" width="100%" columnClasses="colunaAlinhamento" styleClass="tabForm">
+					<h:outputText value="#{msg_aplic.prt_UploadArquivo_confirmarExclusao}" styleClass="tituloCamposNegrito" />
+					<otm:spacer width="40" />
+					<h:panelGroup columns="2" columnClasses="colunaCentralizada">
+						<otm:commandButton value="Sim" rendered="#{!ArquivoControle.excluindoArquivoFilho}" render="form" styleClass="btn btn-dark btn-sim" oncomplete="#{rich:component('panelExcluir')}.hide()" action="#{ArquivoControle.excluirArquivo}" alt="Excluir" />
+						<otm:commandButton value="Sim" rendered="#{ArquivoControle.excluindoArquivoFilho}" render="form" styleClass="btn btn-dark btn-sim" oncomplete="#{rich:component('panelExcluir')}.hide()" action="#{ArquivoControle.excluirArquivoFilho}" alt="Excluir" />
+						<otm:commandButton value="Não" immediate="true" render="panelLinkArquivo" oncomplete="#{rich:component('panelExcluir')}.hide()" styleClass="btn btn-danger btn-nao" alt="Não Excluir" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:form id="form">
+			<h:commandLink action="#{ArquivoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGeral">
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_UploadArquivos_Disciplina}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="disciplinaNome" size="60" styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" value="#{ArquivoControle.disciplinaVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosDisciplina" alt="Localizar Disciplina" render="formDisciplina" oncomplete="#{rich:component('panelDisciplina')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosDisciplina" alt="Limpas Dados" action="#{ArquivoControle.limparCampoDisciplina}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MatriculaPeriodo_turma}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="turma" styleClass="form-control camposSomenteLeitura" readonly="true" size="60" value="#{ArquivoControle.turmaVO.identificadorTurma}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" focus="nomeTurma" alt="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" alt="Limpas Dados" action="#{ArquivoControle.limparTurma}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DisponibilidadeHorario_professor}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="professor" styleClass="form-control camposSomenteLeitura" readonly="true" size="60" value="#{ArquivoControle.professorVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosProfessor" focus="nomeProfessor" alt="Localizar Professor" render="formProfessor" oncomplete="#{rich:component('panelProfessor')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosProfessor" alt="Limpas Dados" action="#{ArquivoControle.limparCampoProfessor}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4 pn mt10">
+					<h:panelGroup layout="block" styleClass="row mn border rounded pb5">
+						<h:panelGroup layout="block" styleClass="col-md-12 border-bottom bg-gray">
+							<h:outputText styleClass="tituloCampos font-weight-bold mr10" value="Período do Upload" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="tituloCampos" value="Ano" />
+							<h:inputText style="width: 100px" id="anoPeriodoUpload" size="4" maxlength="4" value="#{ArquivoControle.anoPeriodoUpload}" styleClass="form-control camposObrigatorios" onkeydown="aceitarSomenteValorNumerico(this)">
+								<a4j:ajax event="change" listener="#{ArquivoControle.montarListaSelectItemTurmaProfessor}" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="tituloCampos" value="Semestre" />
+							<h:selectOneMenu style="width: 100px" id="semestrePeriodoUpload" styleClass="form-control campos" value="#{ArquivoControle.semestrePeriodoUpload}">
+								<a4j:ajax event="change" listener="#{ArquivoControle.montarListaSelectItemTurmaProfessor}" />
+								<f:selectItems value="#{ArquivoControle.listaSelectSemestre}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4 mt10">
+					<h:panelGroup layout="block" styleClass="row mn border rounded pb5">
+						<h:panelGroup layout="block" styleClass="col-md-12 border-bottom bg-gray">
+							<h:outputText styleClass="tituloCampos font-weight-bold mr10" value="#{msg_aplic.prt_UploadArquivos_Periodo_do_Disponibilizacao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="tituloCampos" value="Ano" />
+							<h:inputText style="width: 100px" id="anoPeriodoDisponibilizacao" size="4" maxlength="4" value="#{ArquivoControle.anoPeriodoDisponibilizacao}" styleClass="form-control camposObrigatorios" onkeydown="aceitarSomenteValorNumerico(this)">
+								<a4j:ajax event="change" listener="#{ArquivoControle.montarListaSelectItemTurmaProfessor}" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="tituloCampos" value="Semestre" />
+							<h:selectOneMenu style="width: 100px" id="semestrePeriodoDisponibilizacao" styleClass="form-control campos" value="#{ArquivoControle.semestrePeriodoDisponibilizacao}">
+								<a4j:ajax event="change" listener="#{ArquivoControle.montarListaSelectItemTurmaProfessor}" />
+								<f:selectItems value="#{ArquivoControle.listaSelectSemestre}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_UploadArquivos_Situacao}" />
+							<h:selectOneMenu styleClass="form-control campos" id="situacaoArquivo" value="#{ArquivoControle.campoConsultaSituacao}">
+								<f:selectItems value="#{ArquivoControle.tipoConsultaComboSituacao}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton style="margin-right:5px" id="consultarArquivos" alt="Consultar Arquivos" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar Arquivos" render="form" styleClass="btn btn-default btn-consultar" action="#{ArquivoControle.consultaArquivos}" />
+					<otm:commandButton action="#{ArquivoControle.carregarDadosPanelUpload}" id="adicionarArquivos" render="form, formUploadArquivo" icon="#{msg_botoes.btn_icon_adicionar_embutido}" value="Adicionar Arquivo" styleClass="btn btn-primary dark btn-consultar" image="#{resource['/imagens/botaoAdicionarArquivo.png']}" oncomplete="#{ArquivoControle.onCompletePanelUpload}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<otm:spacer height="10" />
+			<h:panelGroup id="panelGridArquivos" styleClass="tabForm" columns="1" width="100%">
+				<rich:dataTable rows="1" style="border:none" width="100%" border="none" rowClasses="linhaSemBorda" columnClasses="columnSemBorda" id="arquivoDisciplinaTurmaProfessorVOs" value="#{ArquivoControle.arquivoVOs}" var="arquivoDisciplinaTurmaProfessorItens">
+					<rich:column>
+						<rich:dataTable style="border:none" width="100%" border="none" rowClasses="linhaSemBorda" columnClasses="columnSemBorda" id="arquivoVOs" value="#{arquivoDisciplinaTurmaProfessorItens.arquivoFilhoVOs}" var="arquivoItens">
+							<rich:column>
+								<f:facet name="header">
+									<h:panelGroup columns="2" width="100%">
+										<h:panelGroup layout="block" styleClass="col-md-6 text-left">
+											<h:outputText styleClass="field control-label tituloCampos" value="Turma: #{arquivoDisciplinaTurmaProfessorItens.turma.identificadorTurma}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6 text-right">
+											<h:outputText styleClass="field control-label tituloCampos" value="Professor(a): #{arquivoDisciplinaTurmaProfessorItens.professor.nome}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</f:facet>
+								<rich:dragIndicator id="unidadeIndicator" />
+								<rich:dragSource type="#{arquivoDisciplinaTurmaProfessorItens.keyAgrupadorTurmaDisciplinaProfessor}Agrupamento" dragIndicator="unidadeIndicator" dragValue="#{arquivoItens}">
+								</rich:dragSource>
+								<rich:dropTarget dropValue="#{arquivoItens}" render="form" dropListener="#{ArquivoControle.alterarOrdemArquivo}" acceptedTypes="#{arquivoDisciplinaTurmaProfessorItens.keyAgrupadorTurmaDisciplinaProfessor}Agrupamento" />
+								<h:panelGroup title="Arraste e solte para alterar a ordem do arquivo" columns="1" style="background-color:#E0E0E0; border-bottom:1px solid #E0E0E0" width="100%">
+									<h:panelGroup>
+										<h:outputText styleClass="field control-label tituloCampos" style="float:left;" value="#{arquivoItens.indiceAgrupador} - " />
+										<h:outputText style="text-decoration:none;margin-left:5px; float: left;" styleClass="field control-label tituloCampos" rendered="#{!empty arquivoItens.arquivoFilhoVOs}" value="#{arquivoItens.agrupador}" />
+										<h:outputText style="text-decoration:none;margin-left:5px; float: left;" styleClass="field control-label tituloCampos" rendered="#{empty arquivoItens.arquivoFilhoVOs}" value="#{arquivoItens.descricaoApresentar}" />
+										<h:panelGroup style="float:right;">
+											<h:outputText rendered="#{empty arquivoItens.arquivoFilhoVOs}" value="Disponibilizado em: #{arquivoItens.dataUpload_Apresentar}" styleClass="field control-label tituloCampos" />
+											<otm:spacer width="5px" />
+											<a4j:commandLink rendered="#{arquivoItens.indiceAgrupador > 1}" render="form:panelGridArquivos, form:panelGridMensagens" action="#{ArquivoControle.alterarOrdemArquivo}">
+												<span class="#{msg_botoes.btn_icon_subir_embutido} iconePequeno"></span>
+												<f:setPropertyActionListener value="true" target="#{ArquivoControle.subir}" />
+												<rich:tooltip value="Clique para subir ou clique sobre o título e arraste e solte"></rich:tooltip>
+											</a4j:commandLink>
+											<a4j:commandLink rendered="#{arquivoItens.indiceAgrupador lt fn:length(arquivoDisciplinaTurmaProfessorItens.arquivoFilhoVOs)}" render="form:panelGridArquivos, form:panelGridMensagens" action="#{ArquivoControle.alterarOrdemArquivo}" >
+												<span class="#{msg_botoes.btn_icon_descer_embutido} iconePequeno"></span>
+												<f:setPropertyActionListener value="false" target="#{ArquivoControle.subir}" />
+												<rich:tooltip value="Clique para descer ou clique sobre o título e arraste e solte"></rich:tooltip>
+											</a4j:commandLink>
+											<a4j:commandLink rendered="#{empty arquivoItens.arquivoFilhoVOs}" action="#{ArquivoControle.editar}" oncomplete="#{rich:component('panelUploadArquivo')}.show()" render="formUploadArquivo, form" tooltip="#{msg.msg_editar_dados}" >
+												<span class="#{msg_botoes.btn_icon_editar_embutido} iconePequeno"></span>
+												<rich:tooltip value="#{msg.msg_editar_dados}"></rich:tooltip>
+											</a4j:commandLink>
+											<h:commandLink rendered="#{empty arquivoItens.arquivoFilhoVOs}" action="#{ArquivoControle.selecionarArquivoParaDownload}" style="position:relative;" target="#{arquivoItens.servidorArquivoOnline ne 'APACHE' ? '_blank' : '' }" title="Download Arquivo">
+												<span class="#{msg_botoes.btn_icon_download_embutido} iconePequeno"></span>
+											</h:commandLink>
+											<a4j:commandLink rendered="#{empty arquivoItens.arquivoFilhoVOs}" render="formExcluir" oncomplete="#{rich:component('panelExcluir')}.show()">
+												<span class="#{msg_botoes.btn_icon_remover_embutido} iconePequeno"></span>
+												<f:setPropertyActionListener value="#{arquivoItens}" target="#{ArquivoControle.arquivoExcluirVO}" />
+												<f:setPropertyActionListener value="false" target="#{ArquivoControle.excluindoArquivoFilho}" />
+												<rich:tooltip value="#{msg_botoes.btn_excluir}"></rich:tooltip>
+											</a4j:commandLink>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</rich:column>
+							<rich:collapsibleSubTable id="arquivoFilhoVOs" value="#{arquivoItens.arquivoFilhoVOs}" var="arquivoFilhoVOItens">
+								<rich:column title="Arraste e solte para alterar a ordem do arquivo" style="padding-left:30px;text-align:left">
+									<rich:dragSource type="#{arquivoDisciplinaTurmaProfessorItens.keyAgrupadorTurmaDisciplinaProfessor}ArquivoFilho" dragIndicator="unidadeIndicator" dragValue="#{arquivoFilhoVOItens}">
+									</rich:dragSource>
+									<rich:dropTarget dropValue="#{arquivoFilhoVOItens}" render="form:arquivoDisciplinaTurmaProfessorVOs,  form:panelGridMensagens" dropListener="#{ArquivoControle.alterarOrdemArquivoFilho}" acceptedTypes="#{arquivoDisciplinaTurmaProfessorItens.keyAgrupadorTurmaDisciplinaProfessor}ArquivoFilho" />
+									<h:panelGroup title="Arrate e solte para alterar a ordem do arquivo" columns="1" width="100%">
+										<h:panelGroup>
+											<h:outputText styleClass="itemIndicePagina" style="text-decoration:none;margin-left:5px" value="#{arquivoItens.indiceAgrupador}.#{arquivoFilhoVOItens.indice} - #{arquivoFilhoVOItens.descricaoApresentar}" />
+											<h:panelGroup style="float:right;">
+												<h:outputText value="Disponibilizado em: #{arquivoFilhoVOItens.dataUpload_Apresentar}" styleClass="field control-label tituloCampos" />
+												<otm:spacer width="5px" />
+												<a4j:commandLink rendered="#{arquivoFilhoVOItens.indice gt 1}" render="form:arquivoDisciplinaTurmaProfessorVOs, form:panelGridMensagens" action="#{ArquivoControle.alterarOrdemArquivoFilho}" value="#{msg_botoes.btn_subir}" image="#{resource['/imagens/ead/iconeSubir.png']}" title="Clique para subir ou clique sobre o título e arraste e solte">
+													<span class="#{msg_botoes.btn_icon_subir_embutido} iconePequeno"></span>
+													<f:setPropertyActionListener value="true" target="#{ArquivoControle.subir}" />
+													<rich:tooltip value="Clique para subir ou clique sobre o título e arraste e solte"></rich:tooltip>
+												</a4j:commandLink>
+												<a4j:commandLink rendered="#{arquivoFilhoVOItens.indice lt fn:length(arquivoItens.arquivoFilhoVOs)}" render="form:arquivoDisciplinaTurmaProfessorVOs, form:panelGridMensagens" action="#{ArquivoControle.alterarOrdemArquivoFilho}" value="#{msg_botoes.btn_descer}" image="#{resource['/imagens/ead/iconeDescer.png']}" title="Clique para descer ou clique sobre o tiítulo e arraste e solte">
+													<span class="#{msg_botoes.btn_icon_descer_embutido} iconePequeno"></span>	
+													<f:setPropertyActionListener value="false" target="#{ArquivoControle.subir}" />
+													<rich:tooltip value="Clique para descer ou clique sobre o título e arraste e solte"></rich:tooltip>
+												</a4j:commandLink>
+												<a4j:commandLink action="#{ArquivoControle.editarArquivoFilho}" oncomplete="#{rich:component('panelUploadArquivo')}.show()" render="formUploadArquivo, form" title="#{msg.msg_editar_dados}" >
+													<span class="#{msg_botoes.btn_icon_editar_embutido} iconePequeno"></span>
+													<rich:tooltip value="Editar"></rich:tooltip>
+												</a4j:commandLink>
+												<h:commandLink action="#{ArquivoControle.selecionarArquivoFilhoParaDownload}" style="position:relative;" target="#{arquivoFilhoVOItens.servidorArquivoOnline ne 'APACHE' ? '_blank' : '' }" title="Download Arquivo">
+													<span class="#{msg_botoes.btn_icon_download_embutido} iconePequeno"></span>
+												</h:commandLink>
+												<a4j:commandLink render="formExcluir" oncomplete="#{rich:component('panelExcluir')}.show()" value="#{msg_botoes.btn_excluir}" image="#{resource['/imagens/ead/iconeExcluir.png']}" title="#{msg_botoes.btn_excluir}">
+													<span class="#{msg_botoes.btn_icon_remover_embutido} iconePequeno"></span>
+													<f:setPropertyActionListener value="#{arquivoFilhoVOItens}" target="#{ArquivoControle.arquivoFilhoExcluirVO}" />
+													<f:setPropertyActionListener value="#{arquivoItens}" target="#{ArquivoControle.arquivoExcluirVO}" />
+													<f:setPropertyActionListener value="true" target="#{ArquivoControle.excluindoArquivoFilho}" />
+													<rich:tooltip value="Editar"></rich:tooltip>
+												</a4j:commandLink>
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+								</rich:column>
+							</rich:collapsibleSubTable>
+						</rich:dataTable>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="arquivoDisciplinaTurmaProfessorVOs" />
+							</div>
+						</f:facet>
+					</rich:column>
+				</rich:dataTable>
+			</h:panelGroup>
+			<h:panelGroup id="panelGridMensagens" columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{ArquivoControle}"></otm:mensagem>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

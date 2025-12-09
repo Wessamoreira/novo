@@ -1,0 +1,1 @@
+alter table if exists tiporequerimento add column if not exists considerarTodasMatriculasAlunoValidacaoAberturaSimultanea boolean default false;

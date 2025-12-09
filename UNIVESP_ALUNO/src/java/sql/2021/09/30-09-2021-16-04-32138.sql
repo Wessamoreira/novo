@@ -1,0 +1,1 @@
+ alter table registronegativacaocobrancacontareceberitem add column if not exists jsonintegracaoexclusao text;

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_DevolucaoCheque_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:outputScript name="jquery.color.js" library="script/crop" />
+		<h:outputScript name="jquery.Jcrop.js" library="script/crop" />
+		<h:outputStylesheet name="jquery.Jcrop.css" library="script/crop" />
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCheque" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Cheque_tituloForm}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3" />
+					<rich:componentControl target="panelCheque" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCheque" execute="@this">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consulta" value="#{DevolucaoChequeControle.camposConsultaCheque}">
+						<f:selectItems value="#{DevolucaoChequeControle.tipoConsultaComboCheque}" />
+						<a4j:ajax event="change" render="formCheque" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{!DevolucaoChequeControle.campoConsultaChequeData}">
+					<h:inputText rendered="#{!DevolucaoChequeControle.campoConsultaChequeData}" id="valorConsulta" styleClass="form-control campos" value="#{DevolucaoChequeControle.valorConsultaCheque}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{DevolucaoChequeControle.campoConsultaChequeData}">
+					<otm:calendar id="dataEmissao" value="#{DevolucaoChequeControle.controleConsulta.dataIni}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="consultar" render="formCheque" value="#{msg_botoes.btn_consultar}" action="#{DevolucaoChequeControle.consultarCheque}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{DevolucaoChequeControle.listaConsultaCheque}" rows="5" var="chequeItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_DevolucaoCheque_emitente}" />
+						</f:facet>
+						<a4j:commandLink render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="sacadoCheque" value="#{chequeItens.sacado}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cheque_banco}" />
+						</f:facet>
+						<a4j:commandLink rendered="#{chequeItens.chequeProprio}" render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="bancoProprio" value="#{chequeItens.contaCorrente.agencia.banco.nome}" />
+						<a4j:commandLink rendered="#{!chequeItens.chequeProprio}" render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="banco" value="#{chequeItens.banco}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cheque_agencia}" />
+						</f:facet>
+						<a4j:commandLink rendered="#{chequeItens.chequeProprio}" render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="agenciaProprio" value="#{chequeItens.contaCorrente.agencia.numeroAgencia}-#{chequeItens.contaCorrente.agencia.digito}" />
+						<a4j:commandLink rendered="#{!chequeItens.chequeProprio}" render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="agencia" value="#{chequeItens.agencia}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cheque_contaCorrente}" />
+						</f:facet>
+						<a4j:commandLink rendered="#{chequeItens.chequeProprio}" render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="contaCorrenteProprio" value="#{chequeItens.contaCorrente.numero}" />
+						<a4j:commandLink rendered="#{!chequeItens.chequeProprio}" render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="contaCorrente" value="#{chequeItens.numeroContaCorrente}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cheque_numero}" />
+						</f:facet>
+						<a4j:commandLink render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="numero" value="#{chequeItens.numero}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cheque_dataPrevisao}" />
+						</f:facet>
+						<a4j:commandLink render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="dataPrevisao" value="#{chequeItens.dataPrevisao_Apresentar}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Cheque_valor}" />
+						</f:facet>
+						<a4j:commandLink render="form" oncomplete="#{rich:component('panelCheque')}.hide()" action="#{DevolucaoChequeControle.selecionarCheque}" id="valor">
+							<h:outputText value="#{chequeItens.valor}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+						</a4j:commandLink>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{DevolucaoChequeControle.selecionarCheque}" focus="nomeCurso" render="form" oncomplete="#{rich:component('panelCheque')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" alt="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller stepControls="auto" fastControls="hide" boundaryControls="auto" for="formCheque:items" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup layout="block" styleClass="row">
+					<otm:mensagem bean="#{DevolucaoChequeControle}" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<title><h:outputText value="#{msg_aplic.prt_DevolucaoCheque_tituloForm}" /></title>
+		<h:form id="form">
+			<h:commandLink action="#{DevolucaoChequeControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-12 pn">
+				<h:panelGroup layout="block" styleClass="col-md-1">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_codigo}" />
+					<h:inputText id="codigo" size="10" maxlength="10" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{DevolucaoChequeControle.devolucaoChequeVO.codigo}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6 pn">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_data}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+							<otm:calendar id="data" inputSize="9" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" value="#{DevolucaoChequeControle.devolucaoChequeVO.data}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_responsavel}" />
+				<h:inputText size="50" maxlength="50" readonly="true" id="responsavel" styleClass="form-control camposSomenteLeitura" value="#{DevolucaoChequeControle.devolucaoChequeVO.responsavel.nome}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_unidadeEnsino}" />
+				<h:selectOneMenu id="unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{DevolucaoChequeControle.devolucaoChequeVO.unidadeEnsino.codigo}">
+					<a4j:ajax event="change" listener="#{DevolucaoChequeControle.montarListaSelectItemCaixa}" render="form" />
+					<f:selectItems value="#{DevolucaoChequeControle.listaSelectItemUnidadeEnsino}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{DevolucaoChequeControle.devolucaoChequeVO.existeUnidadeEnsino}">
+				<h:outputText rendered="#{DevolucaoChequeControle.devolucaoChequeVO.existeUnidadeEnsino}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_caixa}" />
+				<h:panelGroup layout="block" styleClass="pn col-md-12">
+					<h:selectOneMenu rendered="#{DevolucaoChequeControle.devolucaoChequeVO.existeUnidadeEnsino}" id="caixa" styleClass="form-control camposObrigatorios" value="#{DevolucaoChequeControle.devolucaoChequeVO.contaCaixa.codigo}">
+						<f:selectItems value="#{DevolucaoChequeControle.listaSelectItemCaixa}" />
+					</h:selectOneMenu>
+					<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_caixa" action="#{DevolucaoChequeControle.montarListaSelectItemCaixa}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" rendered="#{DevolucaoChequeControle.devolucaoChequeVO.existeUnidadeEnsino}" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_centroReceita}" />
+				<h:panelGroup layout="block" styleClass="pn col-md-12">
+					<h:selectOneMenu id="centroReceita" styleClass="form-control camposObrigatorios" value="#{DevolucaoChequeControle.devolucaoChequeVO.centroReceita.codigo}">
+						<f:selectItems value="#{DevolucaoChequeControle.listaSelectItemCentroReceita}" />
+					</h:selectOneMenu>
+					<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_centroReceita" action="#{DevolucaoChequeControle.montarListaSelectItemCentroReceita}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6 pn">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_cheque}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:inputText id="cheque" size="12" readonly="true" maxlength="15" styleClass="form-control camposSomenteLeitura" value="#{DevolucaoChequeControle.devolucaoChequeVO.cheque.numero}">
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-8">
+					<h:inputText size="40" maxlength="50" readonly="true" id="sacados" styleClass="form-control camposSomenteLeitura" value="#{DevolucaoChequeControle.devolucaoChequeVO.nomeApresentar}" />
+					<span class="append-icon right"> <otm:commandIcon id="consultarCentroResultadoUnidadeEnsino" render="formCheque" action="#{UnidadeEnsinoControle.inicializarUnidadeEnsinoCentroResultadoConsulta}" icon="#{msg_botoes.btn_icon_lupa_embutido}" oncomplete="#{rich:component('panelCheque')}.show();" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_emitente}" />
+				<h:inputText id="cliente" readonly="true" size="50" maxlength="50" styleClass="form-control camposSomenteLeitura" value="#{DevolucaoChequeControle.devolucaoChequeVO.cheque.sacado}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="Origem Devolução #{msg_aplic.prt_Cheque_banco}" />
+				<h:inputText size="50" maxlength="50" readonly="true" id="bancoLocal" styleClass="form-control camposSomenteLeitura" value="#{DevolucaoChequeControle.devolucaoChequeVO.contaCorrente.agencia.banco.nome}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" rendered="#{!ChequeControle.chequeVO.localizacaoCheque.contaCaixa}" value="#{msg_aplic.prt_Cheque_agencia}" />
+				<h:inputText size="30" maxlength="50" rendered="#{!ChequeControle.chequeVO.localizacaoCheque.contaCaixa}" readonly="true" id="agenciaLocal" styleClass="form-control camposSomenteLeitura" value="#{DevolucaoChequeControle.devolucaoChequeVO.contaCorrente.agencia.numeroAgencia}-#{DevolucaoChequeControle.devolucaoChequeVO.contaCorrente.agencia.digito}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Cheque_contaCorrente}" />
+				<h:inputText size="30" maxlength="50" readonly="true" id="contaCorrenteLocal" styleClass="form-control camposSomenteLeitura" value="#{DevolucaoChequeControle.devolucaoChequeVO.contaCorrente.numero}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="#{DevolucaoChequeControle.devolucaoChequeVO.existeUnidadeEnsino ? 'col-md-12' : 'col-md-6'}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_motivo}" />
+				<h:inputTextarea id="motivo" cols="70" rows="3" styleClass="form-control campos" value="#{DevolucaoChequeControle.devolucaoChequeVO.motivo}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{DevolucaoChequeControle.devolucaoChequeVO.cheque.situacao eq 'BA' or DevolucaoChequeControle.devolucaoChequeVO.codigo gt 0}">
+				<otm:outputHelp tooltip="#{msg.help_DevolucaoCheque_mensagemDesconsiderarConciliacaoBancaria}" id="desconsiderarConciliacaoBancariaAjuda" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_desconsiderarConciliacaoBancaria}" style="position:relative; top:8px; left:0px;" />
+				<otm:selectBooleanCheckbox id="desconsiderarConciliacaoBancaria" styleClass="form-control campos" value="#{DevolucaoChequeControle.devolucaoChequeVO.desconsiderarConciliacaoBancaria}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" id="mensagem">
+				<h:panelGroup layout="block" styleClass="row">
+					<otm:mensagem bean="#{DevolucaoChequeControle}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup styleClass="barraFlutuanteInferior" layout="block">
+				<otm:commandButton style="margin-left:10px" id="novo" immediate="true" action="#{DevolucaoChequeControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" alt="#{msg.msg_novo_dados}" accesskey="1" />
+				<otm:commandButton style="margin-left:10px" id="salvar" action="#{DevolucaoChequeControle.gravar}" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" alt="#{msg.msg_gravar_dados}" accesskey="2" />
+				<otm:commandButton style="margin-left:10px" id="consultar" immediate="true" action="#{DevolucaoChequeControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="4" />
+			</h:panelGroup>
+		</h:form>
+		<script>
+			document.getElementById("form:data").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

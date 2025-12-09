@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText styleClass="tituloFormulario" value="#{msg_aplic.prt_GestaoPatrimonio_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
+		<script type="text/javascript">
+			var js7_2 = $.noConflict(true);
+		</script>
+		<script src="https://code.highcharts.com/stock/highstock.js"></script>
+		<script src="http://code.highcharts.com/highcharts.js"></script>
+		<script src="http://code.highcharts.com/highcharts-more.js"></script>
+		<script src="http://code.highcharts.com/modules/exporting.js"></script>
+		<rich:popupPanel styleClass="modalMinimizado1" id="panelExcluir" top="10" shadowOpacity="true" width="400" height="100">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Confirmar Exclusão"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelExcluir" />
+					<rich:componentControl target="panelExcluir" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluir">
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_confirmacao_excluxao}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-30">
+					<otm:commandButton id="btnSimFinalizarOcorrencia" oncomplete="#{rich:component('panelExcluir')}.hide(), gerarTimeLine()" render="form" icon="#{msg_botoes.btn_icon_confirmar_embutido}" action="#{OcorrenciaPatrimonioReservaRelControle.excluir}" accesskey="2" styleClass="btn btn-info" value="Sim" />
+					<otm:spacer width="5px" />
+					<otm:commandButton id="btnNaoFinalizarOcorrencia" oncomplete="#{rich:component('panelExcluir')}.hide()" icon="#{msg_botoes.btn_icon_cancelar_embutido}" accesskey="2" styleClass="btn btn-danger" value="Não" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelLocalReservado" top="10" shadowOpacity="true" width="600" height="300" onshow="document.getElementById('formLocalArmazenamentoDestino:valorConsultaLocal').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_LocalArmazenamento_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelLocalReservado" />
+					<rich:componentControl target="panelLocalReservado" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLocalReservado">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultalocalArmazenamentoVOs" required="true" value="#{OcorrenciaPatrimonioReservaRelControle.consultarLocalArmazenamentoPor}">
+						<f:selectItems value="#{OcorrenciaPatrimonioReservaRelControle.listaSelectItemOpcaoConsultaLocalArmazenamento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaLocal" styleClass="form-control campos" value="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaLocalArmazenamento.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarlocalArmazenamentoVOs" render="formLocalReservado" action="#{OcorrenciaPatrimonioReservaRelControle.consultarLocalArmazenamento}" accesskey="2" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaLocalArmazenamento.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaLocalArmazenamento.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="localAReservarVOs" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaLocalArmazenamento}" rendered="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaLocalArmazenamento.apresentarListaConsulta}" rows="7" var="localAReservarVO">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_LocalArmazenamento_localArmazenamento}" />
+						</f:facet>
+						<a4j:commandLink action="#{OcorrenciaPatrimonioReservaRelControle.selecionarLocalASerRervado}" oncomplete="#{rich:component('panelLocalReservado')}.hide(), gerarTimeLine()" render="form:localReservado, form:msg" id="localArmazenamentoCons" value="#{localAReservarVO.localArmazenamento}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_LocalArmazenamento_localArmazenamentoSuperior}" />
+						</f:facet>
+						<a4j:commandLink action="#{OcorrenciaPatrimonioReservaRelControle.selecionarLocalASerRervado}" oncomplete="#{rich:component('panelLocalReservado')}.hide(), gerarTimeLine()" render="form:localReservado, form:msg" id="localArmazenamentoSuperiorCons" value="#{localAReservarVO.localArmazenamentoSuperiorVO.localArmazenamento}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{OcorrenciaPatrimonioReservaRelControle.selecionarLocalASerRervado}" oncomplete="#{rich:component('panelLocalReservado')}.hide(), gerarTimeLine()" render="form:localReservado, form:msg" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" render="msglocalArmazenamentoCons" stepControls="auto" fastControls="auto" boundaryControls="auto" for="localAReservarVOs" id="paginadorlocalReservado" page="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaLocalArmazenamento.page}" scrollerListener="#{OcorrenciaPatrimonioReservaRelControle.realizarPaginacaoConsultaLocalArmazenamento}" rendered="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaLocalArmazenamento.apresentarPaginador}" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup columns="1" id="msglocalArmazenamentoCons" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{OcorrenciaPatrimonioReservaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" top="10" shadowOpacity="true" width="600" height="300">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Funcionario_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelFuncionario" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionario" required="true" value="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaFuncionario.campoConsulta}">
+						<f:selectItems value="#{OcorrenciaPatrimonioReservaRelControle.listaSelectItemOpcaoConsultaFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaFuncionario" styleClass="form-control campos" value="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaFuncionario.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarFuncionario" render="formFuncionario" action="#{OcorrenciaPatrimonioReservaRelControle.consultarSolicitanteEmprestimo}" accesskey="2" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaFuncionario.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaFuncionario.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="funcionarioVOs" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaFuncionario.listaConsulta}" rendered="#{OcorrenciaPatrimonioReservaRelControle.controleConsultaFuncionario.apresentarListaConsulta}" rows="7" var="funcionarioVOitem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Funcionario_matricula}" />
+						</f:facet>
+						<a4j:commandLink action="#{OcorrenciaPatrimonioReservaRelControle.selecionarSolicitanteEmprestimo}" oncomplete="#{rich:component('panelFuncionario')}.hide()" render="form, form:msg" id="matriculaFuncCons" value="#{funcionarioVOitem.matricula}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Funcionario_nome}" />
+						</f:facet>
+						<a4j:commandLink action="#{OcorrenciaPatrimonioReservaRelControle.selecionarSolicitanteEmprestimo}" oncomplete="#{rich:component('panelFuncionario')}.hide()" render="form, form:msg" id="nomeFuncCons" value="#{funcionarioVOitem.pessoa.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{OcorrenciaPatrimonioReservaRelControle.selecionarSolicitanteEmprestimo}" oncomplete="#{rich:component('panelFuncionario')}.hide()" render="form, form:msg" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<rich:dataScroller align="center" render="msgFuncionarioCons" stepControls="auto" fastControls="auto" boundaryControls="auto" for="funcionarioVOs" id="paginadorFuncionario" />
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup columns="1" id="msgFuncionarioCons" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{OcorrenciaPatrimonioReservaRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<title><h:outputText value="#{msg_aplic.prt_GestaoPatrimonio_tituloForm} #{msg.msg_separador_titulo_paginas}#{msg.msg_titulo_paginas}" /></title>
+		<h:form id="form">
+			<h:commandLink action="#{OcorrenciaPatrimonioReservaRelControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_MapaPatrimonioSeparadoDescarte_unidadeEnsino}" />
+				<h:selectOneMenu styleClass="form-control camposObrigatorios" id="unidadeEnsino" value="#{OcorrenciaPatrimonioReservaRelControle.unidadeEnsino.codigo}">
+					<a4j:ajax event="change" execute="@this" render="form" />
+					<f:selectItems value="#{OcorrenciaPatrimonioReservaRelControle.listaSelectItemUnidadeEnsino}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Emprestimo_Requisitante}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText id="solicitanteEmprestimo" styleClass="form-control camposSomenteLeitura" value="#{OcorrenciaPatrimonioReservaRelControle.ocorrenciaPatrimonioVO.solicitanteEmprestimo.pessoa.nome}" />
+					<span class="append-icon right"> <otm:commandIcon id="consultasolicitanteEmprestimo" oncomplete="#{rich:component('panelFuncionario')}.show()" render="formFuncionario" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparsolicitanteEmprestimo" render="solicitanteEmprestimo" action="#{OcorrenciaPatrimonioReservaRelControle.limparSolicitanteEmprestimo}" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaLocal ? 'col-md-6' : OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaUnidade ? 'col-md-6' : 'col-md-2'}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_OcorrenciaPatrimonio_tipoOcorrencia}" />
+				<h:selectOneMenu id="tipoOcorrencia" value="#{OcorrenciaPatrimonioReservaRelControle.ocorrenciaPatrimonioVO.tipoOcorrenciaPatrimonio}" styleClass="form-control camposObrigatorios">
+					<a4j:ajax event="change" render="form"></a4j:ajax>
+					<f:selectItems value="#{OcorrenciaPatrimonioReservaRelControle.listaSelectItemTipoOcorrenciaPatrimonio}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaUnidade}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_OcorrenciaPatrimonio_tipoPatrimonio}" rendered="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaUnidade}" />
+				<h:selectOneMenu id="tipoPatrimonio" styleClass="form-control campos" value="#{OcorrenciaPatrimonioReservaRelControle.ocorrenciaPatrimonioVO.tipoPatrimonioVO.codigo}" rendered="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaUnidade}">
+					<a4j:ajax event="change" render="form"></a4j:ajax>
+					<f:selectItems value="#{OcorrenciaPatrimonioReservaRelControle.listaSelectItemTipoPatrimonio }" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaLocal}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_OcorrenciaPatrimonio_local}" rendered="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaLocal}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText id="localReservado" readonly="true" styleClass="form-control camposSomenteLeitura" value="#{OcorrenciaPatrimonioReservaRelControle.ocorrenciaPatrimonioVO.localReservado.localArmazenamento}" />
+					<span class="append-icon right"> <otm:commandIcon id="consultaDadosLocalReservado" oncomplete="#{rich:component('panelLocalReservado')}.show()" render="formLocalReservado" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosLocalReservado" render="localArmazenamentoDestino" action="#{OcorrenciaPatrimonioReservaRelControle.limparLocalArmazenamentoDestino}" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="Período Início" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+					<otm:calendar id="valorConsultaDataInicio" enableManualInput="true" value="#{OcorrenciaPatrimonioReservaRelControle.dataInicialConsulta}">
+					</otm:calendar>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_OcorrenciaPatrimonio_horaInicio}" />
+				<h:inputText id="horaInicio" styleClass="form-control campos" onchange="validarHora(this.value, this.id)" onkeypress="return mascara(this.form, this.id, '99:99', event);" value="#{OcorrenciaPatrimonioReservaRelControle.horaInicialConsulta}">
+					<a4j:ajax event="change" execute="@this" />
+					<f:convertDateTime pattern="HH:mm" />
+				</h:inputText>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="Período Fim" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+					<otm:calendar id="valorConsultaDataFim" styleClass="input-group date" value="#{OcorrenciaPatrimonioReservaRelControle.dataFinalConsulta}">
+					</otm:calendar>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_OcorrenciaPatrimonio_horaTermino}" />
+				<h:inputText id="horaFim" styleClass="form-control campos" readonly="#{!OcorrenciaPatrimonioReservaRelControle.ocorrenciaPatrimonioVO.novoObj}" onchange="validarHora(this.value, this.id)" onkeypress="return mascara(this.form, this.id, '99:99', event);" value="#{OcorrenciaPatrimonioReservaRelControle.horaFinalConsulta}">
+					<a4j:ajax event="change" execute="@this" />
+					<f:convertDateTime pattern="HH:mm" />
+				</h:inputText>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center m10" id="btnsBusca">
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaUnidade}">
+					<a4j:commandLink render="form" style="margin-right:10px" id="buscarOcorrenciasUnidades" value="Gerar Reserva" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary dark" accesskey="5">
+						<span class="#{msg_botoes.btn_icon_adicionar_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						<a4j:ajax execute="@this" render="form:timeLineUnidades, form:msg" event="click" listener="#{OcorrenciaPatrimonioReservaRelControle.carregarOcorrenciasUnidadesPratrimonio}" oncomplete="gerarTimeLine()" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaLocal}">
+					<a4j:commandLink render="form" id="buscarOcorrenciasLocal" value="Gerar Reserva" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary dark" rendered="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaLocal}" accesskey="5">
+						<span class="#{msg_botoes.btn_icon_adicionar_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						<a4j:ajax execute="@this" render="form:timeLineUnidades, form:msg" event="click" listener="#{OcorrenciaPatrimonioReservaRelControle.carregarListaHorariosLocal}" oncomplete="gerarTimeLine()" />
+					</a4j:commandLink>
+					<otm:commandButton style="margin-left:5px" id="imprimirPDF" render="form" rendered="#{OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaUnidade or OcorrenciaPatrimonioReservaRelControle.isApresentarDadosReservaLocal}" oncomplete="#{OcorrenciaPatrimonioReservaRelControle.download}" action="#{OcorrenciaPatrimonioReservaRelControle.imprimirPDF}" title="Gerar Relatório" accesskey="2" value="imprimir PDF" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger btn_icon_pdf_embutido" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="timeLineUnidades">
+				<h:panelGroup>
+					<div id="container" style="min-width: 400px; margin: 0 auto"></div>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{OcorrenciaPatrimonioReservaRelControle}"></otm:mensagem>
+			</h:panelGroup>
+			<a4j:jsFunction oncomplete="#{rich:component('panelExcluir')}.show()" name="selecaoUnidadeExcluir" id="selecaoUnidadeExcluir">
+				<a4j:param name="param1" assignTo="#{OcorrenciaPatrimonioReservaRelControle.ocorrenciaPatrimonioSelecionadoExclusaoVO.codigo}" />
+			</a4j:jsFunction>
+			<a4j:jsFunction oncomplete="#{OcorrenciaPatrimonioReservaRelControle.grafico}" name="gerarTimeLine" />
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,1 @@
+alter table if exists linksuteis alter column link type varchar(300);

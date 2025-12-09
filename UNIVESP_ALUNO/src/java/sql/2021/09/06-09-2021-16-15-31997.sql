@@ -1,0 +1,1 @@
+alter table pessoa alter column deficiencia type varchar(20);

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
+<h:head>
+	<script type="text/javascript">
+		window.onload = function() {
+			document.getElementById("form:descricao").focus();
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ParametroValeTransporte_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{ParametroValeTransporteControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<rich:tabPanel>
+				<rich:tab header="Dados Básicos" id="primeiraTab">
+					<h:panelGroup layout="block" styleClass="row" id="panelDadosTodos">
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:panelGroup layout="block" styleClass="col-md-1">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_codigo}" />
+								<h:inputText id="codigo" readonly="true" styleClass="form-control campos" value="#{ParametroValeTransporteControle.parametroValeTransporte.codigo}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_descricao}" />
+								<h:inputText id="descricao" maxlength="100" styleClass="form-control camposObrigatorios" value="#{ParametroValeTransporteControle.parametroValeTransporte.descricao}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_tipoLinhaTransporte}" />
+								<h:selectOneMenu styleClass="form-control campos" id="tipoLinhaTransporte" value="#{ParametroValeTransporteControle.parametroValeTransporte.tipoLinhaTransporte.codigo}">
+									<f:selectItems value="#{ParametroValeTransporteControle.tipoLinhasTransporte}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_situacao}" />
+							<h:inputText id="situacao" maxlength="100" readonly="true" styleClass="form-control campos" value="#{ParametroValeTransporteControle.parametroValeTransporte.situacao.getValorApresentar()}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_tipoTarifa}" />
+							<h:selectOneMenu styleClass="form-control campos" id="tipoTarifa" value="#{ParametroValeTransporteControle.parametroValeTransporte.tipoTarifa}">
+								<f:selectItems value="#{ParametroValeTransporteControle.tipoTarifas}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_valor}" />
+							<h:inputText id="valor" maxlength="10" onkeydown="aceitarSomenteValorDecimal(this)" styleClass="form-control camposObrigatorios" value="#{ParametroValeTransporteControle.parametroValeTransporte.valor}">
+								<a4j:ajax event="change" execute="@this" render="@this" />
+								<f:converter converterId="FormatadorNumerico" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_inicioVigencia}" />
+							<otm:calendar id="inicioVigencia" readonly="false" value="#{ParametroValeTransporteControle.parametroValeTransporte.inicioVigencia}" enableManualInput="true" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_fimVigencia}" />
+							<otm:calendar id="fimVigencia" readonly="false" value="#{ParametroValeTransporteControle.parametroValeTransporte.fimVigencia}" enableManualInput="true" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6 pn" id="gridEvento">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_evento}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText id="eventoIdentificador" styleClass="form-control camposObrigatorios" value="#{ParametroValeTransporteControle.parametroValeTransporte.eventoFolhaPagamento.identificador}">
+									<a4j:ajax event="change" execute="@this" render="form:gridEvento" listener="#{ParametroValeTransporteControle.consultarEventoPorIdentificador()}" />
+								</h:inputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:inputText id="eventoDescricao" size="65" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{ParametroValeTransporteControle.parametroValeTransporte.eventoFolhaPagamento.descricao}" />
+								<span class="append-icon right"> <otm:commandIcon id="consultaDadosEvento" accesskey="2" tooltip="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEvento" tooltip="Limpas Dados" action="#{ParametroValeTransporteControle.limparDadosEvento}" render="gridEvento" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+								</span>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_itinerario}" />
+							<h:inputTextarea id="formula" styleClass="form-control campos" value="#{ParametroValeTransporteControle.parametroValeTransporte.itinerario}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<rich:tab header="Histórico" id="segundaTab">
+					<rich:dataTable id="faixaValores" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{ParametroValeTransporteControle.parametroValeTransporte.historicoVOs}" var="historicos">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_descricao}" />
+							</f:facet>
+							<h:outputText value="#{historicos.descricao}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_tipoLinhaTransporte}" />
+							</f:facet>
+							<h:outputText value="#{historicos.tipoLinhaTransporte.descricao}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_tipoTarifa}" />
+							</f:facet>
+							<h:outputText value="#{historicos.tipoTarifa.getValorApresentar()}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_usuarioResponsavel}" />
+							</f:facet>
+							<h:outputText value="#{historicos.usuarioResponsavelAlteracao.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_valor}" />
+							</f:facet>
+							<h:outputText value="#{historicos.valor}">
+								<f:converter converterId="FormatadorNumerico" />
+							</h:outputText>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataAlteracao}" />
+							</f:facet>
+							<h:outputText value="#{historicos.dataAlteracao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_inicioVigencia}" />
+							</f:facet>
+							<h:outputText value="#{historicos.inicioVigencia}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_fimVigencia}" />
+							</f:facet>
+							<h:outputText value="#{historicos.fimVigencia}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</rich:column>
+					</rich:dataTable>
+				</rich:tab>
+			</rich:tabPanel>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{ParametroValeTransporteControle}"></otm:mensagem>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<h:panelGroup>
+						<otm:commandButton accesskey="1" action="#{ParametroValeTransporteControle.novo}" id="novo" styleClass="btn btn-info btn-novo" immediate="true" render="form" value="#{msg_botoes.btn_novo}" />
+						<otm:spacer width="5px" />
+						<otm:commandButton accesskey="2" action="#{ParametroValeTransporteControle.persistir}" id="salvar" styleClass="btn btn-dark btn-gravar" render="form" value="#{msg_botoes.btn_gravar}" rendered="#{ParametroValeTransporteControle.parametroValeTransporte.situacao eq 'ATIVO'}" />
+						<otm:spacer width="5px" />
+						<otm:commandButton accesskey="3" action="#{ParametroValeTransporteControle.excluir}" id="excluir" styleClass="btn btn-danger btn-excluir" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" render="form" value="#{msg_botoes.btn_excluir}" />
+						<otm:spacer width="5px" />
+						<otm:commandButton accesskey="4" action="#{ParametroValeTransporteControle.inicializarConsultar}" id="consultar" styleClass="btn btn-default btn-consultar" immediate="true" value="#{msg_botoes.btn_consultar}" />
+						<otm:spacer width="5px" />
+						<otm:commandButton accesskey="5" action="#{ParametroValeTransporteControle.inativar}" rendered="#{ParametroValeTransporteControle.parametroValeTransporte.situacao eq 'ATIVO' and ParametroValeTransporteControle.parametroValeTransporte.codigo != 0}" render="form" id="inativar" image="#{resource['imagens/botaoInativar.png']}" icon="#{msg_botoes.btn_icon_inativar_embutido}" value="Inativar" styleClass="btn btn-danger" onclick="return confirm('#{msg.msg_confirmacao_inativacao}');" />
+						<otm:spacer width="5px" />
+						<otm:commandButton accesskey="6" action="#{ParametroValeTransporteControle.ativar}" rendered="#{ParametroValeTransporteControle.parametroValeTransporte.situacao eq 'INATIVO'}" onclick="return confirm('#{msg.msg_confirmacao_ativacaoEventoFolha}');" render="form" id="ativar" image="#{resource['imagens/botaoAtivar.png']}" immediate="true" icon="#{msg_botoes.btn_icon_ativar_embutido}" value="Ativar" styleClass="btn btn-primary" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<!-- Consulta Evento Grupo da Folha de Pagamento -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelEvento" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaFolhaPagamento_consultarEventoGrupo}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelEvento" />
+					<rich:componentControl target="panelEvento" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formEvento">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaEvento" value="#{ParametroValeTransporteControle.campoConsultaEvento}">
+						<f:selectItems value="#{ParametroValeTransporteControle.tipoConsultaComboEvento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaEvento" size="30" styleClass="form-control campos" value="#{ParametroValeTransporteControle.valorConsultaEvento}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarFuncionario" render="formEvento:mensagemConsultaEvento, formEvento:gridEventoTab, formEvento:scResultadoEvento" action="#{ParametroValeTransporteControle.consultarEvento}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ParametroValeTransporteControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ParametroValeTransporteControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup id="gridEventoTab" columns="1" width="100%">
+					<rich:dataTable id="eventoItem" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{ParametroValeTransporteControle.listaEventosFolhaPagamento}" rendered="#{fn:length(ParametroValeTransporteControle.listaEventosFolhaPagamento) > 0}" rows="10" var="eventoItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_identificador}" />
+							</f:facet>
+							<a4j:commandLink id="identificador" action="#{ParametroValeTransporteControle.selecionarEvento}" value="#{eventoItem.identificador}" render="form:gridEvento" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_descricao}" />
+							</f:facet>
+							<a4j:commandLink id="nome" action="#{ParametroValeTransporteControle.selecionarEvento}" value="#{eventoItem.descricao}" render="form:gridEvento" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_tipoLancamento}" />
+							</f:facet>
+							<a4j:commandLink id="tipoLancamento" action="#{ParametroValeTransporteControle.selecionarEvento}" value="#{eventoItem.tipoLancamento.valor}" render="form:gridEvento" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_bt.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="botaoEditar" action="#{ParametroValeTransporteControle.selecionarEvento}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" render="form:gridEvento" oncomplete="#{rich:component('panelEvento')}.hide()" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formEvento:eventoItem" maxPages="10" id="scResultadoEvento" page="#{ParametroValeTransporteControle.controleConsultaOtimizado.page}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaEvento" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ParametroValeTransporteControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,58 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package negocio.comuns.utilitarias.dominios;
+
+/**
+ *
+ * @author Diego
+ */
+public enum SituacaoColouGrauProgramacaoFormaturaAluno {
+
+    COLOU_GRAU("SI", "Sim"),
+    NAO_COLOU("NO", "Não"),
+    NAO_INFORMADO("NI","Não Informado");
+    
+    String valor;
+    String descricao;
+
+    SituacaoColouGrauProgramacaoFormaturaAluno(String valor, String descricao) {
+        this.valor = valor;
+        this.descricao = descricao;
+    }
+
+    public static SituacaoColouGrauProgramacaoFormaturaAluno getEnum(String valor) {
+        SituacaoColouGrauProgramacaoFormaturaAluno[] valores = values();
+        for (SituacaoColouGrauProgramacaoFormaturaAluno obj : valores) {
+            if (obj.getValor().equals(valor)) {
+                return obj;
+            }
+        }
+        return null;
+    }
+
+    public static String getDescricao(String valor) {
+        SituacaoColouGrauProgramacaoFormaturaAluno obj = getEnum(valor);
+        if (obj != null) {
+            return obj.getDescricao();
+        }
+        return valor;
+    }
+
+    public String getValor() {
+        return valor;
+    }
+
+    public void setValor(String valor) {
+        this.valor = valor;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+}

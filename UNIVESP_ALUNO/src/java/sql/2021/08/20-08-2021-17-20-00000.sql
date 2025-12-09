@@ -1,0 +1,1 @@
+alter table documetacaomatricula alter column justificativaNegacao type text;

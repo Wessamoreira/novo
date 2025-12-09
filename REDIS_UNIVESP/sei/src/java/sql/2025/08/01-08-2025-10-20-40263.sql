@@ -1,0 +1,1 @@
+ALTER TABLE integracaomestregroperacoes ADD COLUMN IF NOT EXISTS processado boolean NOT NULL DEFAULT false;

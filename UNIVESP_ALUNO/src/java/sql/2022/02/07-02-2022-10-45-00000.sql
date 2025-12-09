@@ -1,0 +1,3 @@
+alter table if exists calendarioagrupamentotcc add column if not exists classificacaoagrupamento varchar(50) default 'NENHUMA';
+update calendarioagrupamentotcc set classificacaoagrupamento = 'TCC' where 1=1;
+select create_constraint('ALTER TABLE public.calendarioagrupamentotcc ADD CONSTRAINT unique_calendarioagrupamentotcc_ano_semestre_classificacaoagrupamento UNIQUE (ano, semestre, classificacaoagrupamento)');

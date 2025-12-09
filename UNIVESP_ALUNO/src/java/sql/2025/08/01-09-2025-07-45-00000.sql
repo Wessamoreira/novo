@@ -1,0 +1,1 @@
+alter table integracaomestregroperacoes alter column bimestre type int using bimestre::integer;

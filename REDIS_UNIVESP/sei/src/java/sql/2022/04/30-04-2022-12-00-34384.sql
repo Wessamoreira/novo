@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS matricula ADD COLUMN IF NOT EXISTS informacoescensorelativoano VARCHAR(4) DEFAULT '';

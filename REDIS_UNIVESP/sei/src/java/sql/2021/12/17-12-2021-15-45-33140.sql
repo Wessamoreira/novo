@@ -1,0 +1,1 @@
+update arquivo set pastabasearquivo = '/'||pastabasearquivo where codigo in (select codigo from arquivo where origem ='PERGUNTA_RESPOSTA_ORIGEM' and pastabasearquivo ilike ('perguntaRespostaOrigemTMP%'));

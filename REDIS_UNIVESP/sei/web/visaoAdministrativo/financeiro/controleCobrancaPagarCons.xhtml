@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ControleCobrancaPagar_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<title><h:outputText value="#{msg_aplic.prt_ControleCobrancaPagar_tituloForm}" /></title>
+		<h:panelGroup layout="block" columns="1" width="100%" cellpadding="0" cellspacing="0">
+			<h:form id="form">
+				<h:commandLink action="#{ControleCobrancaPagarControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+				<h:panelGroup layout="block" id="panelGridForm" styleClass="row" width="100%">
+					<h:panelGroup layout="block" id="panelParaConsulta" styleClass="row">
+						<h:panelGroup layout="block" styleClass="row ml5">
+							<h:outputText styleClass="field control-label tituloCampos col-md-4" value="#{msg.msg_consultar_por}" />
+							<h:outputText styleClass="field control-label tituloCampos col-md-3" value="Período" rendered="#{!ControleCobrancaPagarControle.campoConsultaSomenteNumero}" />
+							<h:outputText styleClass="field control-label tituloCampos col-md-3" value=" até " rendered="#{!ControleCobrancaPagarControle.campoConsultaSomenteNumero}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:selectOneMenu styleClass="form-control campos" id="consulta" value="#{ControleCobrancaPagarControle.controleConsulta.campoConsulta}">
+								<f:selectItems value="#{ControleCobrancaPagarControle.tipoConsultaCombo}" />
+								<a4j:ajax render="panelParaConsulta" event="change" listener="#{ControleCobrancaPagarControle.limparCampoConsulta}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ControleCobrancaPagarControle.campoConsultaSomenteNumero}">
+							<h:inputText id="valorConsulta" rendered="#{ControleCobrancaPagarControle.campoConsultaSomenteNumero}" styleClass="form-control campos" value="#{ControleCobrancaPagarControle.controleConsulta.valorConsulta}" onkeypress="#{ControleCobrancaPagarControle.montarScriptParaCampoConsultaSomenteNumero}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!ControleCobrancaPagarControle.campoConsultaSomenteNumero}">
+							<otm:calendar id="valorConsultaDataInicio" value="#{ControleCobrancaPagarControle.controleConsulta.dataIni}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{!ControleCobrancaPagarControle.campoConsultaSomenteNumero}">
+							<otm:calendar id="valorConsultaDataFim" value="#{ControleCobrancaPagarControle.controleConsulta.dataFim}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<otm:commandButton id="consultar" value="#{msg_botoes.btn_consultar}" action="#{ControleCobrancaPagarControle.consultar}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="2" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ControleCobrancaPagarControle.listaConsulta}" rendered="#{ControleCobrancaPagarControle.apresentarResultadoConsulta}" rows="10" var="controleCobrancaItens">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ControleCobranca_codigo}" />
+							</f:facet>
+							<h:outputText id="codigo" value="#{controleCobrancaItens.codigo}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ControleCobranca_nomeArquivo}" />
+							</f:facet>
+							<h:outputText id="nomeArquivo" value="#{controleCobrancaItens.nomeArquivo_Apresentar}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ControleCobranca_responsavel}" />
+							</f:facet>
+							<h:outputText id="responsavel" value="#{controleCobrancaItens.responsavel.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ControleCobranca_situacao}" />
+							</f:facet>
+							<h:panelGroup id="modalProcessamento">
+								<h:outputText id="situacao" rendered="#{controleCobrancaItens.situacaoProcessamento ne 'EM_PROCESSAMENTO'}" value="#{controleCobrancaItens.situacaoProcessamento.valorApresentar}" />
+								<a4j:region>
+									<rich:progressBar render="modalProcessamento" rendered="#{controleCobrancaItens.situacaoProcessamento eq 'EM_PROCESSAMENTO'}" value="#{controleCobrancaItens.loteAtual}" label="#{ControleCobrancaPagarControle.executarAtualizacaoProcessamentoCons}" interval="10000" minValue="0" maxValue="#{controleCobrancaItens.qtdeLote}" renderAfterComplete="modalProcessamento">
+									</rich:progressBar>
+								</a4j:region>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ControleCobranca_unidadeEnsino}" />
+							</f:facet>
+							<h:outputText id="unidadeEnsino" value="#{controleCobrancaItens.unidadeEnsinoVO.nome}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_ControleCobranca_dataProcessamento}" />
+							</f:facet>
+							<h:outputText id="dataProcessamento" value="#{controleCobrancaItens.dataProcessamento_Apresentar}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_botoes.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon action="#{ControleCobrancaPagarControle.editar}" title="#{msg.msg_editar_dados}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="form:items" id="scResultadoConsulta" rendered="#{ControleCobrancaPagarControle.apresentarResultadoConsulta}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup layout="block" id="panelGridMensagens" styleClass="row">
+						<otm:mensagem bean="#{ControleCobrancaPagarControle}"></otm:mensagem>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row text-center">
+						<otm:commandButton id="novo" action="#{ControleCobrancaPagarControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" title="#{msg.msg_novo_dados}" accesskey="1" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</h:panelGroup>
+		<script>
+			document.getElementById("form:valorConsulta").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

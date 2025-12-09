@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="EmprestimoRelMapaAluno" pageWidth="585" pageHeight="878" columnWidth="585" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.7715610000000452"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="logoPadraoRelatorio" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="tituloRelatorio" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="nomeEmpresa" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="versaoSoftware" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="nomeUsuario" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="filtros" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="dataEmissao" class="java.lang.String"/>
+	<parameter name="dataPrevisao" class="java.lang.String"/>
+	<parameter name="tipoCheque" class="java.lang.String"/>
+	<parameter name="situacao" class="java.lang.String"/>
+	<parameter name="ordenarPor" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+     matricula."matricula" AS matricula_matricula,
+     matricula."aluno" AS matricula_aluno,
+     matriculaperiodoturmadisciplina."turma" AS matriculaperiodoturmadisciplina_turma,
+     matricula."curso" AS matricula_curso,
+     pessoa."nome" AS pessoa_nome
+FROM
+     "public"."matricula" matricula INNER JOIN "public"."matriculaperiodo" matriculaperiodo ON matricula."matricula" = matriculaperiodo."matricula"
+     INNER JOIN "public"."matriculaperiodoturmadisciplina" matriculaperiodoturmadisciplina ON matricula."matricula" = matriculaperiodoturmadisciplina."matricula"
+     AND matriculaperiodo."codigo" = matriculaperiodoturmadisciplina."matriculaperiodo"
+     INNER JOIN "public"."matriculaperiodo" matriculaperiodo_A ON matriculaperiodoturmadisciplina."matriculaperiodo" = matriculaperiodo_A."codigo"
+     AND matricula."matricula" = matriculaperiodo_A."matricula"
+     INNER JOIN "public"."pessoa" pessoa ON matricula."aluno" = pessoa."codigo"
+WHERE
+     pessoa.aluno = true]]>
+	</queryString>
+	<field name="unidadeEnsino" class="java.lang.String"/>
+	<field name="situacao" class="java.lang.String"/>
+	<field name="tipoPessoa" class="java.lang.String"/>
+	<field name="biblioteca" class="java.lang.String"/>
+	<field name="dataInicial" class="java.util.Date"/>
+	<field name="dataFinal" class="java.util.Date"/>
+	<field name="codigoCatalogo" class="java.lang.Integer"/>
+	<field name="catalogo" class="java.lang.String"/>
+	<field name="exemplar" class="java.lang.String"/>
+	<field name="pessoaEmprestimo" class="java.lang.String"/>
+	<field name="tipoEmprestimo" class="java.lang.String"/>
+	<field name="situacaoEmprestimo" class="java.lang.String"/>
+	<field name="dataEmprestimo" class="java.util.Date"/>
+	<field name="dataPrevDevolucao" class="java.util.Date"/>
+	<field name="responsavelEmprestimo" class="java.lang.String"/>
+	<field name="diasAtraso" class="java.lang.Integer"/>
+	<field name="valorMulta" class="java.lang.Double"/>
+	<field name="totalMultaEmprestimo" class="java.lang.Double"/>
+	<field name="isPossuiMulta" class="java.lang.Boolean"/>
+	<field name="multaPaga" class="java.lang.Boolean"/>
+	<variable name="countEmprestimos" class="java.lang.Integer" resetType="Group" resetGroup="catalogo" calculation="Count">
+		<variableExpression><![CDATA[$F{catalogo}]]></variableExpression>
+	</variable>
+	<variable name="countTotalEmprestimos" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{catalogo}]]></variableExpression>
+	</variable>
+	<variable name="countAndamentoAtrasado" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[($F{situacaoEmprestimo}.equals("Em Execução") && $F{diasAtraso} > 0) ? $F{situacao} : null]]></variableExpression>
+	</variable>
+	<variable name="countAndamentoEmdia" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[($F{situacaoEmprestimo}.equals("Em Execução") && $F{diasAtraso} <= 0) ? $F{situacao} : null]]></variableExpression>
+	</variable>
+	<variable name="countFinalizadoEmdia" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[($F{situacaoEmprestimo}.equals("Finalizado") && $F{diasAtraso} <= 0) ? $F{situacao} : null]]></variableExpression>
+	</variable>
+	<variable name="somaMultaRecebida" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{isPossuiMulta} && $F{multaPaga} ? $F{valorMulta} : 0.0]]></variableExpression>
+	</variable>
+	<variable name="somaTotalMultas" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{valorMulta}]]></variableExpression>
+	</variable>
+	<variable name="somaMultaAReceber" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{isPossuiMulta} && !$F{multaPaga} ? $F{valorMulta} : 0.0]]></variableExpression>
+	</variable>
+	<group name="catalogo">
+		<groupExpression><![CDATA[$P{ordenarPor}.equals("catalogo")? $F{catalogo}+$F{codigoCatalogo} :
+$P{ordenarPor}.equals("tombo")? $F{exemplar} :
+$P{ordenarPor}.equals("dataEmprestimo")? $F{dataEmprestimo} :
+$P{ordenarPor}.equals("dataPrevisao") || $P{ordenarPor}.equals("dataDevolucao") ? $F{dataPrevDevolucao} :
+$P{ordenarPor}.equals("pessoa")? $F{pessoaEmprestimo} : $F{catalogo}+$F{codigoCatalogo}]]></groupExpression>
+		<groupFooter>
+			<band height="20">
+				<staticText>
+					<reportElement x="2" y="0" width="136" height="20"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Quantidade Empréstimo:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="138" y="0" width="115" height="20"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{countEmprestimos}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Biblioteca">
+		<groupExpression><![CDATA[$F{biblioteca}]]></groupExpression>
+		<groupHeader>
+			<band height="34">
+				<rectangle radius="5">
+					<reportElement key="rectangle-4" positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="0" y="0" width="585" height="20" forecolor="#333333" backcolor="#FFFFFF"/>
+				</rectangle>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" isPrintRepeatedValues="false" x="374" y="0" width="211" height="20"/>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{biblioteca}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText-44" positionType="Float" x="2" y="1" width="91" height="18"/>
+					<box>
+						<pen lineWidth="0.5" lineStyle="Solid" lineColor="#666666"/>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Unidade de Ensino:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-44" positionType="Float" x="311" y="1" width="63" height="18"/>
+					<box>
+						<pen lineWidth="0.5" lineStyle="Solid" lineColor="#666666"/>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#666666"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Biblioteca:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="93" y="1" width="218" height="18"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{unidadeEnsino}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="2" y="20" width="108" height="14"/>
+					<box rightPadding="3"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Catálogo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="110" y="20" width="55" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Exemplar]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="165" y="20" width="62" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Tipo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="227" y="20" width="51" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Situação]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="283" y="20" width="46" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Dt.Emprest.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="394" y="20" width="70" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Atendente]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="333" y="20" width="58" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Dt Prev./Efetiv. Dev.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="464" y="20" width="39" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Dias Atraso]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="504" y="20" width="34" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Multa R$]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText-61" positionType="Float" x="538" y="20" width="47" height="14"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Multa Paga]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="22" splitType="Prevent">
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="2" y="0" width="108" height="20"/>
+				<box rightPadding="3"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{catalogo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="110" y="0" width="55" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{exemplar}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="165" y="0" width="62" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{tipoEmprestimo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="227" y="0" width="51" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{situacaoEmprestimo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy">
+				<reportElement positionType="Float" x="283" y="0" width="46" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{dataEmprestimo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM/yyyy">
+				<reportElement positionType="Float" x="333" y="0" width="58" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{dataPrevDevolucao}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="394" y="0" width="70" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{responsavelEmprestimo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="464" y="0" width="39" height="20">
+					<printWhenExpression><![CDATA[$F{diasAtraso} > 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{diasAtraso}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+				<reportElement positionType="Float" x="504" y="0" width="34" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{valorMulta}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="538" y="0" width="47" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[!$F{isPossuiMulta} ? "" : $F{multaPaga} ? "Sim" : "Não"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="15" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="130">
+			<rectangle radius="5">
+				<reportElement key="rectangle-4" mode="Opaque" x="165" y="29" width="245" height="90" forecolor="#333333"/>
+			</rectangle>
+			<staticText>
+				<reportElement key="staticText-61" x="172" y="61" width="123" height="13" backcolor="#D6D8DB"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Finalizado/Em Dia]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="172" y="74" width="123" height="13" backcolor="#D6D8DB"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total Multa R$ Recebida]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="172" y="87" width="123" height="13" backcolor="#D6D8DB"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total Multa R$ A Receber]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="172" y="35" width="123" height="13" backcolor="#D6D8DB"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Em Andamento/Atrasado]]></text>
+			</staticText>
+			<line>
+				<reportElement x="295" y="29" width="1" height="90"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="staticText-61" x="172" y="100" width="123" height="13" backcolor="#D6D8DB"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor Total Multa R$]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-61" x="172" y="48" width="123" height="13" backcolor="#D6D8DB"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Em Andamento/Em Dia]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="0" width="136" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Quantidade Total Empréstimo:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="138" y="0" width="115" height="20" forecolor="#000000" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{countTotalEmprestimos}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="301" y="35" width="100" height="13"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{countAndamentoAtrasado}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="301" y="48" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{countAndamentoEmdia}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="301" y="61" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{countFinalizadoEmdia}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="301" y="74" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{somaMultaRecebida}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="301" y="100" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{somaTotalMultas}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="301" y="87" width="100" height="13" forecolor="#000000" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" lineSpacing="Single" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$V{somaMultaAReceber}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

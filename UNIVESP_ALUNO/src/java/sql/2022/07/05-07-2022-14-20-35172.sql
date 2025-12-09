@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS referenciabibliografica ALTER COLUMN justificativa TYPE TEXT;

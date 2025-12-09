@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Funcionario_tituloForm}" />
+	</ui:define>
+	<ui:define name="modal">
+		<ui:include src="../../visaoAdministrativo/administrativo/funcionarioFormModal.xhtml" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<script type="text/javascript">
+			window.onload = function(){
+			    	document.getElementById("form:matricula").focus();
+		 	    }
+			</script>
+
+		<h:form id="form">
+			<h:panelGroup id="panelGridForm" layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-1 text-center">
+						<h:panelGroup layout="block">
+							<h:panelGroup layout="block" rendered="#{FuncionarioControle.pessoaVO.existeImagem}">
+								<h:graphicImage rendered="#{FuncionarioControle.pessoaVO.existeImagem}" id="foto1" alt="Alterar Foto" value="#{FuncionarioControle.caminhoFotoUsuario}" style="width:64px; height:64px">
+									<a4j:ajax event="click" execute="@this" render="formImagem, formWebCam" oncomplete="Webcam.reset(); #{rich:component('panelImagem')}.show()" />
+								</h:graphicImage>
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{!FuncionarioControle.pessoaVO.existeImagem}">
+								<otm:commandIcon tooltip="Adicionar Foto Aluno" icon="fa fa-user" styleIcon="font-size:64px;color: #CCCCCC  !important;" oncomplete="Webcam.reset(); #{rich:component('panelImagem')}.show();"></otm:commandIcon>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="#{FuncionarioControle.funcionarioVO.informarMatricula ? 'col-md-3' : 'col-md-4'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nome}" />
+						<h:inputText id="nome" size="70" maxlength="100" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.nome}">
+							<a4j:ajax event="change" listener="#{FuncionarioControle.setarNomeBatismo}" render="form:nomeBatismo" />
+						</h:inputText>
+						<h:message for="nome" styleClass="field control-label mensagemDetalhada col-md-12" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="#{FuncionarioControle.funcionarioVO.informarMatricula ? 'col-md-3' : 'col-md-4'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nomeBatismo}" />
+						<h:inputText id="nomeBatismo" size="70" maxlength="100" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.nomeBatismo}">
+							<a4j:ajax event="change" listener="#{FuncionarioControle.setarNomeSocial}" render="form:nome" execute="form:nome" />
+						</h:inputText>
+						<h:message for="nomeBatismo" styleClass="field control-label mensagemDetalhada col-md-12" />
+					</h:panelGroup>
+					<h:panelGroup id="grupoMatricula" rendered="#{FuncionarioControle.isMostrarCampoMatricula}">
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{FuncionarioControle.funcionarioVO.informarMatricula}">
+							<h:outputText id="matriculaTexto" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_matricula}" />
+							<h:inputText id="matricula" size="20" maxlength="30" styleClass="form-control camposObrigatorios" readonly="#{FuncionarioControle.isInformarMatricula}" value="#{FuncionarioControle.funcionarioVO.matricula}" />
+							<h:message for="matricula" styleClass="field control-label mensagemDetalhada col-md-12" />
+						</h:panelGroup>
+						<!-- 					<h:panelGroup layout="block" styleClass="col-md-2"> -->
+						<!-- 					</h:panelGroup> -->
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Funcionario_informarMatricula}" />
+							<h:panelGroup layout="block" styleClass="pn col-md-12">
+								<otm:selectBooleanCheckbox id="informarMatricula" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioVO.informarMatricula}">
+									<a4j:ajax event="click" render="form:panelGridForm" listener="#{FuncionarioControle.limparMatricula}" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:tabPanel styleClass="row" width="100%" id="richTabFuncionario" headerAlignment="center" activeItem="#{FuncionarioControle.abaAtiva}" switchType="ajax">
+					<rich:tab id="tabDadosPessoais" name="tabDadosPessoais" header="Dados Pessoais" styleClass="richPanel">
+						<h:panelGroup layout="block" styleClass="row">
+							<otm2:panel name="panelDados_basicos" styleClassFooter="dn" opened="#{FuncionarioControle.pessoaVO.maximixado}">
+								<ui:define name="header">
+									<i class="fas fa-id-card mr5"></i>
+									<h:outputText value="Dados Basicos" />
+								</ui:define>
+								<ui:define name="body">
+									<h:panelGroup id="panelFuncionario" dir="LTR" styleClass="row" layout="block">
+										<h:panelGroup id="panelCep" layout="block" styleClass="col-md-12 pn">
+											<h:panelGroup layout="block" styleClass="col-md-2">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_CEP}" />
+												<a4j:region id="regionCep">
+													<h:inputText id="CEP" onkeypress="return mascara(this.form, 'form:CEP', '99.999-999', event);" size="10" maxlength="10" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.CEP}">
+														<a4j:ajax event="change" listener="#{FuncionarioControle.carregarEnderecoPessoa}" oncomplete="document.getElementById('form:endereco').focus();" render="panelFuncionario" />
+													</h:inputText>
+													<a4j:status for="regionCep">
+														<f:facet name="start">
+															<h:panelGroup>
+																<h:graphicImage width="15px" value="#{resource['imagens/ajax.gif']}" />
+															</h:panelGroup>
+														</f:facet>
+													</a4j:status>
+												</a4j:region>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_endereco}" />
+											<h:inputText id="endereco" size="40" maxlength="100" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.endereco}" />
+											<h:message for="endereco" styleClass="field control-label mensagemDetalhada col-md-12" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_setor}" />
+											<h:inputText id="setor" size="15" maxlength="50" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.setor}" />
+											<h:message for="setor" styleClass="field control-label mensagemDetalhada col-md-12" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_complemento}" />
+											<h:inputText id="complemento" size="15" maxlength="100" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.complemento}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_numero}" />
+											<h:inputText id="numero" styleClass="form-control campos" size="5" maxlength="20" value="#{FuncionarioControle.pessoaVO.numero}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_cidade}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12">
+												<span class="append-icon right"> <otm:commandIcon id="consultaCidades" title="Localizar Cidade" render="form:cidade" oncomplete="#{rich:component('panelCidade')}.show();document.getElementById('cidade').focus();" icon="#{msg_botoes.btn_icon_lupa_embutido}" immediate="true" />
+												</span>
+												<h:inputText readonly="true" id="cidade" size="30" maxlength="30" styleClass="form-control camposSomenteLeitura" value="#{FuncionarioControle.pessoaVO.cidade.nome} - #{FuncionarioControle.pessoaVO.cidade.estado.sigla}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-6">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_necessidadesEspeciais}" />
+												<h:inputText id="necessidadesEspeciais" size="25" maxlength="100" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.necessidadesEspeciais}" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_sexo}" />
+												<h:selectOneMenu id="sexo" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.sexo}">
+													<f:selectItems value="#{FuncionarioControle.listaSelectItemSexoPessoa}" />
+												</h:selectOneMenu>
+												<h:message for="sexo" styleClass="field control-label mensagemDetalhada col-md-12" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_estadoCivil}" />
+												<h:selectOneMenu id="estadoCivil" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.estadoCivil}">
+													<f:selectItems value="#{FuncionarioControle.listaSelectItemEstadoCivilPessoa}" />
+												</h:selectOneMenu>
+												<h:message for="estadoCivil" styleClass="field control-label mensagemDetalhada col-md-12" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Aluno_corRaca}" />
+											<h:selectOneMenu id="corRaca" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.corRaca}">
+												<f:selectItems value="#{EnumControle.comboboxCorRaca}" />
+											</h:selectOneMenu>
+											<h:message for="corRaca" styleClass="field control-label mensagemDetalhada col-md-12" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Aluno_deficiencia}" />
+											<h:selectOneMenu id="deficiencia" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.deficiencia}">
+												<f:selectItems value="#{FuncionarioControle.listaSelectItemDeficiencia}" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nacionalidade}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12">
+												<h:selectOneMenu id="nacionalidade" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.nacionalidade.codigo}">
+													<f:selectItems value="#{FuncionarioControle.listaSelectItemNacionalidade}" />
+												</h:selectOneMenu>
+												<span class="append-icon right mr10"> <otm:commandIcon id="atualizar_nacionalidade" action="#{FuncionarioControle.montarListaSelectItemNacionalidade}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" immediate="true" render="form:nacionalidade" />
+												</span>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_naturalidade}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12">
+												<h:inputText readonly="true" id="naturalidade" size="25" maxlength="30" styleClass="form-control camposSomenteLeitura" value="#{FuncionarioControle.pessoaVO.naturalidade.nome} - #{FuncionarioControle.pessoaVO.naturalidade.estado.sigla}" />
+												<span class="append-icon right mr10"> <otm:commandIcon id="consultaNaturalidade" alt="Localizar Cidade" render="formNaturalidade" oncomplete="#{rich:component('panelNaturalidade')}.show();document.getElementById('form:naturalidade').focus()" icon="#{msg_botoes.btn_icon_lupa_embutido}" immediate="true" />
+												</span>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_dataNasc}" />
+											<otm:calendar id="dataNasc" inputSize="9" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.dataNasc}" />
+											<h:message for="dataNasc" styleClass="field control-label mensagemDetalhada col-md-12" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-2">
+												<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Fornecedor_isentarTaxaBoleto}" />
+												<h:panelGroup layout="block" styleClass="pn col-md-12">
+													<otm:selectBooleanCheckbox id="IsentarTaxaBoleto" value="#{FuncionarioControle.pessoaVO.isentarTaxaBoleto}" />
+												</h:panelGroup>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-3">
+												<h:outputText styleClass="field control-label tituloCampos" value="Permitir Enviar Contas para Remessa" />
+												<h:panelGroup layout="block" styleClass="pn col-md-12">
+													<otm:selectBooleanCheckbox id="permiteenviarremessa" value="#{FuncionarioControle.pessoaVO.permiteEnviarRemessa}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+								</ui:define>
+							</otm2:panel>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row">
+							<otm2:panel name="panelContatos" styleClassFooter="dn" opened="#{FuncionarioControle.pessoaVO.maximixado}">
+								<ui:define name="header">
+									<i class="fas fa-phone mr5"></i>
+									<h:outputText value="Contatos" />
+								</ui:define>
+								<ui:define name="body">
+									<h:panelGroup layout="block" styleClass="row">
+										<h:panelGroup layout="block" styleClass="col-md-4">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_telefoneComer}" />
+											<h:inputText id="telefoneComer" size="15" onkeyup="return maskTelefone('form:telefoneComer', event)" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.telefoneComer}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_telefoneRes}" />
+											<h:inputText id="telefoneRes" size="15" onkeyup="return maskTelefone('form:telefoneRes', event)" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.telefoneRes}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_telefoneRecado}" />
+											<h:inputText id="telefoneRecado" size="15" onkeyup="return maskTelefone('form:telefoneRecado', event)" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.telefoneRecado}" />
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="row">
+										<h:panelGroup layout="block" styleClass="col-md-4">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_celular}" />
+											<h:inputText id="celular" size="15" onkeyup="return maskTelefone('form:celular', event)" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.celular}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-8">
+											<h:outputText styleClass="field control-label tituloCampos" value="E-mail" />
+											<h:inputText id="funcionarioEmail" size="65" maxlength="100" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.email}" />
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="row">
+										<otm2:panel name="panelEmailInstitucional" styleClassFooter="dn" opened="#{FuncionarioControle.pessoaEmailInstitucionalVO.maximixado}">
+											<ui:define name="header">
+												<i class="fas fa-envelope mr5"></i>
+												<h:outputText value="E-mail Institucional" />
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup id="panelPessoaEmailInstitucional" width="100%">
+													<h:panelGroup layout="block" styleClass="col-md-10">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_email}" />
+														<h:inputText styleClass="form-control camposObrigatorios" size="100" maxlength="250" value="#{FuncionarioControle.pessoaEmailInstitucionalVO.email}" id="emailPessoaInstitucional" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<otm:spacer width="100%" />
+														<otm:commandButton id="adicionarPessoaEmailInstitucional" render="form:panelPessoaEmailInstitucional, form:pgMensagens" action="#{FuncionarioControle.adicionarPessoaEmailInstitucional}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary pr30 pl30" value="Adicionar" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+													<rich:dataTable id="listaPessoaEmailInstitucional" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.pessoaVO.listaPessoaEmailInstitucionalVO}" var="pessoaEmailInstitucionalItem">
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_aplic.prt_Pessoa_codigo}" />
+															</f:facet>
+															<h:outputText value="#{pessoaEmailInstitucionalItem.codigo}" />
+														</rich:column>
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_aplic.prt_Pessoa_email}" />
+															</f:facet>
+															<h:outputText value="#{pessoaEmailInstitucionalItem.email}" />
+														</rich:column>
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_aplic.prt_PessoaGsuite_statusAtivoInativoEnum}" />
+															</f:facet>
+															<h:outputText value="#{pessoaEmailInstitucionalItem.statusAtivoInativoEnum}" converter="EnumConverter" />
+														</rich:column>
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_bt.btn_opcoes}" />
+															</f:facet>
+															<otm:commandIcon id="editarPessoaEmailInstitucionalItem" render="form:panelPessoaEmailInstitucional, form:pgMensagens" action="#{FuncionarioControle.editarPessoaEmailInstitucional}" tooltip="#{msg_bt.btn_editar}" icon="#{msg_botoes.btn_icon_editar}  iconePequeno" />
+															<otm:commandIcon id="ativarEmailInstitucionalItem" render="form:panelPessoaEmailInstitucional, form:pgMensagens, formAtivacaoInativacaoEmailInstitucional" action="#{FuncionarioControle.selecionarPessoaEmailInstitucional}" oncomplete="#{rich:component('panelAtivacaoInativacaoEmailInstitucional')}.show();" tooltip="Ativar" icon="#{msg_botoes.btn_icon_ativar} iconePequeno" rendered="#{pessoaEmailInstitucionalItem.apresentarBotaoAtivar}" />
+															<otm:commandIcon id="inativarEmailInstitucionalItem" render="form:panelPessoaEmailInstitucional, form:pgMensagens, formAtivacaoInativacaoEmailInstitucional" action="#{FuncionarioControle.selecionarPessoaEmailInstitucional}"  oncomplete="#{rich:component('panelAtivacaoInativacaoEmailInstitucional')}.show();" tooltip="Inativar" icon="#{msg_botoes.btn_icon_inativar} iconePequeno" rendered="#{!pessoaEmailInstitucionalItem.apresentarBotaoAtivar}" />
+															<otm:commandIcon id="removerEmailInstitucionalItem" render="form:panelPessoaEmailInstitucional, form:pgMensagens" action="#{FuncionarioControle.removerPessoaEmailInstitucional}" tooltip="#{msg_bt.btn_excluir}" icon="#{msg_botoes.btn_icon_remover}  iconePequeno" />
+														</rich:column>
+													</rich:dataTable>
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="row" rendered="#{FuncionarioControle.existeConfiguracaoSeiGsuite}">
+										<otm2:panel name="panelEmailGsuite" styleClassFooter="dn" opened="#{FuncionarioControle.pessoaGsuiteVO.maximixado}">
+											<ui:define name="header">
+												<i class="fas fa-envelope mr5"></i>
+												<h:outputText value="E-mail Gsuite" />
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup id="panelPessoaGsuite" width="100%">
+													<h:panelGroup layout="block" styleClass="col-md-10">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_email}" />
+														<h:inputText styleClass="form-control camposObrigatorios" size="100" maxlength="250" value="#{FuncionarioControle.pessoaGsuiteVO.email}" id="emailPessoaGsuite" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-2">
+														<otm:spacer width="100%" />
+														<otm:commandButton id="adicionarPessoaGSuite" render="form:panelPessoaGsuite, form:pgMensagens" action="#{FuncionarioControle.adicionarPessoaGsuite}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary pl30 pr30" value="Adicionar" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+													<rich:dataTable id="listaPessoaGsuite" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.pessoaVO.listaPessoaGsuite}" var="pessoaGsuiteItem">
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_aplic.prt_Pessoa_codigo}" />
+															</f:facet>
+															<h:outputText value="#{pessoaGsuiteItem.codigo}" />
+														</rich:column>
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_aplic.prt_Pessoa_email}" />
+															</f:facet>
+															<h:outputText value="#{pessoaGsuiteItem.email}" />
+														</rich:column>
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_aplic.prt_PessoaGsuite_statusAtivoInativoEnum}" />
+															</f:facet>
+															<h:outputText value="#{pessoaGsuiteItem.statusAtivoInativoEnum}" converter="EnumConverter" />
+														</rich:column>
+														<rich:column>
+															<f:facet name="header">
+																<h:outputText value="#{msg_bt.btn_opcoes}" />
+															</f:facet>
+															<otm:commandIcon id="editarPessoaGsuite" render="form:panelPessoaGsuite, form:pgMensagens" action="#{FuncionarioControle.editarPessoaGsuite}" tooltip="#{msg_bt.btn_editar}" icon="#{msg_botoes.btn_icon_editar}  iconePequeno" />
+															<otm:commandIcon id="removerPessoaGsuite" render="form:panelPessoaGsuite, form:pgMensagens" action="#{FuncionarioControle.removerPessoaGsuite}" tooltip="#{msg_bt.btn_excluir}" icon="#{msg_botoes.btn_icon_remover}  iconePequeno" />
+														</rich:column>
+													</rich:dataTable>
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+								</ui:define>
+							</otm2:panel>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row">
+							<otm2:panel name="panel_banco" styleClassFooter="dn" opened="#{FuncionarioControle.funcionarioVO.maximixado}">
+								<ui:define name="header">
+									<i class="fas fa-wallet mr5"></i>
+									<h:outputText value="#{msg_aplic.prt_FuncionarioBancoRecebimento_tituloForm}" />
+								</ui:define>
+								<ui:define name="body">
+									<h:panelGroup id="funcionarioBancoRecebimento" layout="block" styleClass="row">
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioBancoRecebimento_empresaRecebimento}" />
+											<h:inputText id="nomeEmpresa" size="40" styleClass="form-control campos" maxlength="100" value="#{FuncionarioControle.funcionarioVO.empresaRecebimento}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioBancoRecebimento_cnpjEmpresaRecebimento}" />
+											<h:inputText id="cnpjEmpresaRecebimento" styleClass="form-control campos" size="18" maxlength="18" onkeypress="return mascara(this.form, 'form:cnpjEmpresaRecebimento', '99.999.999/9999-99', event);" value="#{FuncionarioControle.funcionarioVO.cnpjEmpresaRecebimento}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioBancoRecebimento_nome}" />
+											<h:inputText id="nomeBanco" size="30" styleClass="form-control campos" maxlength="30" value="#{FuncionarioControle.funcionarioVO.nomeBanco}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioBancoRecebimento_numero}" />
+											<h:inputText onkeydown="aceitarSomenteValorNumericoPositivo(this)" id="numeroBancoRecebimento" styleClass="form-control campos" size="10" maxlength="10" value="#{FuncionarioControle.funcionarioVO.numeroBancoRecebimento}">
+												<a4j:ajax event="change" render="form" />
+											</h:inputText>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioBancoRecebimento_agencia}" />
+											<h:inputText onkeydown="aceitarSomenteValorNumericoPositivo(this)" styleClass="form-control campos" size="15" maxlength="15" value="#{FuncionarioControle.funcionarioVO.numeroAgenciaRecebimento}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="Digito Agencia" />
+											<h:inputText onkeydown="aceitarSomenteValorNumericoPositivo(this)" size="4" maxlength="1" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioVO.digitoAgenciaRecebimento}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioBancoRecebimento_contaCorrente}" />
+											<h:inputText onkeydown="aceitarSomenteValorNumericoPositivo(this)" styleClass="form-control campos" size="15" maxlength="15" value="#{FuncionarioControle.funcionarioVO.contaCorrenteRecebimento}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-2">
+											<h:outputText styleClass="field control-label tituloCampos" value="Digito Conta Corrente" />
+											<h:inputText onkeydown="aceitarSomenteValorNumericoPositivo(this)" styleClass="form-control campos" size="4" maxlength="1" value="#{FuncionarioControle.funcionarioVO.digitoCorrenteRecebimento}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-4">
+											<h:outputText styleClass="field control-label tituloCampos" value="Operação" />
+											<h:inputText onkeydown="aceitarSomenteValorNumericoPositivo(this)" styleClass="form-control campos" size="4" maxlength="5" value="#{FuncionarioControle.funcionarioVO.operacaoBancaria}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_titulacaopagamento}" />
+											<h:panelGroup layout="block" styleClass="pn col-md-12">
+												<h:selectOneMenu id="escolaridade" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioVO.escolaridade}">
+													<f:selectItems value="#{FuncionarioControle.listaSelectItemEscolaridadeFormacaoAcademica}" />
+												</h:selectOneMenu>
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-6">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_tipoIdentificacaoChavePIX}" />
+											<h:selectOneMenu styleClass=" form-control campos" value="#{FuncionarioControle.funcionarioVO.tipoIdentificacaoChavePixEnum}" rendered="#{FuncionarioControle.numeroBancoItau}">
+												<f:selectItems value="#{EnumControle.comboboxTipoIdentificacaoChavePixEnumItau}" />
+												<a4j:ajax event="change" render="topltipChavePixId ,chaveEnderecamentoPixId , chaveEnderecamentoPixIdCpfCnpj ,campoChaveEnderecamentoId" />
+											</h:selectOneMenu>
+											<h:selectOneMenu id="tipoChaveEnderecamentoPIxID" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioVO.tipoIdentificacaoChavePixEnum}" rendered="#{!FuncionarioControle.numeroBancoItau}">
+												<f:selectItems value="#{EnumControle.comboboxTipoIdentificacaoChavePixEnum}" />
+												<a4j:ajax event="change" render="panelPix , topltipChavePixId ,chaveEnderecamentoPixId , chaveEnderecamentoPixIdCpfCnpj" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+										<h:panelGroup id="panelPix" layout="block" styleClass="col-md-6">
+											<otm:outputHelp id="topltipChavePixId" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_chaveEnderecamentoPIX}">
+												<h:panelGroup layout="block" styleClass="col-md-10">
+													<h:panelGroup rendered="#{FuncionarioControle.funcionarioVO.tipoIdentificacaoChavePixEnum.telefone}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_ChaveEnderecamentoPixTelefone}" />
+													</h:panelGroup>
+													<h:panelGroup rendered="#{FuncionarioControle.funcionarioVO.tipoIdentificacaoChavePixEnum.email}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_ChaveEnderecamentoPixEmail}" />
+													</h:panelGroup>
+													<h:panelGroup rendered="#{FuncionarioControle.funcionarioVO.tipoIdentificacaoChavePixEnum.cpfCnpj}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_ChaveEnderecamentoPixCpfCnpj}" />
+													</h:panelGroup>
+													<h:panelGroup rendered="#{FuncionarioControle.funcionarioVO.tipoIdentificacaoChavePixEnum.chaveAleatoria}">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_ChaveEnderecamentoPixChaveAleatoria}" />
+													</h:panelGroup>
+												</h:panelGroup>
+											</otm:outputHelp>
+											<h:inputText id="chaveEnderecamentoPixIdCpfCnpj" rendered="#{FuncionarioControle.funcionarioVO.tipoIdentificacaoChavePixEnum.cpfCnpj}" size="#{FuncionarioControle.sizeChaveEnderecamentoPix}" maxlength="#{FuncionarioControle.sizeChaveEnderecamentoPix}" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioVO.chaveEnderecamentoPix}" onkeydown="aceitarSomenteValorNumericoPositivo(this);" />
+											<h:inputText id="chaveEnderecamentoPixId" rendered="#{!FuncionarioControle.funcionarioVO.tipoIdentificacaoChavePixEnum.cpfCnpj}" size="#{FuncionarioControle.sizeChaveEnderecamentoPix}" maxlength="#{FuncionarioControle.sizeChaveEnderecamentoPix}" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioVO.chaveEnderecamentoPix}" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-8">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioBancoRecebimento_observacao}" />
+											<h:inputTextarea id="observacao" styleClass="form-control campos" rows="2" cols="80" value="#{FuncionarioControle.funcionarioVO.observacao}" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</ui:define>
+							</otm2:panel>
+						</h:panelGroup>
+
+					</rich:tab>
+					<!--  ///////////////////////////////////////////// DADOS FUNCIONAIS ///////////////////////////////////////////////-->
+					<rich:tab id="richTabDadosFuncionais" name="richTabDadosFuncionais" header="Dados Funcionais" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('richTabDadosFuncionais', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="richCargos" name="richCargos" header="#{msg_aplic.prt_FuncionarioCargo_tituloForm}" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('richCargos', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="tabFormacaoAcademica" name="tabFormacaoAcademica" header="#{msg_aplic.prt_FormacaoAcademica_tituloForm}" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('tabFormacaoAcademica', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="tabFiliacao" name="tabFiliacao" header="#{msg_aplic.prt_Filiacao_tituloForm}" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('tabFiliacao', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="tabDependentes" name="tabDependentes" header="#{msg_aplic.prt_Dependentes_tituloForm}" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('tabDependentes', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab header="#{msg_aplic.prt_Funcionario_financeiro}" name="financeiro" id="financeiro" styleClass="richPanel" action="#{FuncionarioControle.navegarAba('financeiro', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab header="#{msg_aplic.prt_DisciplinasInteresse_tituloForm}" name="tabDisciplinaInteresse" rendered="#{FuncionarioControle.controladorTela}" styleClass="richPanel" id="tabDisciplinaInteresse" action="#{FuncionarioControle.navegarAba('tabDisciplinaInteresse', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab header="Horários Disponíveis/Indisponíveis" name="tabHorariosDisponiveisIndisponiveis" rendered="#{FuncionarioControle.controladorTela}" render="form" styleClass="richPanel" id="tabHorariosDisponiveisIndisponiveis" action="#{FuncionarioControle.navegarAba('tabHorariosDisponiveisIndisponiveis', 'funcionarioForm.xhtml')}">
+					</rich:tab>
+
+					<rich:tab id="tabDocumentacaoProfessor" styleClass="richPanel" name="tabDocumentacaoProfessor" header="Documentação GED" action="documentoProfessorForm.xhtml?faces-redirect=true">
+					</rich:tab>
+
+
+					<rich:tab id="tabAssinaturaFuncionario" styleClass="richPanel" name="tabAssinaturaFuncionario" header="Assinatura Funcionário" action="funcionarioAssinaturaForm.xhtml?faces-redirect=true">
+					</rich:tab>
+
+				</rich:tabPanel>
+
+				<h:panelGrid columns="1" width="100%" styleClass="tabMensagens" id="tabMensagens">
+					<otm:mensagem bean="#{FuncionarioControle}"></otm:mensagem>
+					<h:panelGroup styleClass="barraFlutuanteInferior " layout="block">
+						<h:panelGroup styleClass="btn-group btn-group-lg col-xs-12" layout="block">
+							<otm:commandButton id="novo" immediate="true" action="#{FuncionarioControle.novo}" value="#{msg_bt.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+							<otm:commandButton style="margin-left:5px" id="salvar" action="#{FuncionarioControle.gravar}" value="#{msg_bt.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" oncomplete="#{FuncionarioControle.apresentarModalCriarUsuario}" render="form, formUsuarioFuncionario" />
+							<otm:commandButton style="margin-left:5px" id="excluir" action="#{FuncionarioControle.excluir}" value="#{msg_bt.btn_excluir}" accesskey="3" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" styleClass="btn btn-danger btn-excluir" />
+							<otm:commandButton style="margin-left:5px" id="consultar" immediate="true" action="#{FuncionarioControle.inicializarConsultar}" value="#{msg_bt.btn_consultar}" accesskey="4" styleClass="btn btn-default btn-consultar" />
+							<otm:commandButton style="margin-left:5px" id="unificarProspect" oncomplete="#{rich:component('panelUnificarProspects')}.show();" icon="#{msg_botoes.btn_icon_unificar_embutido}" styleClass="btn btn-success" value="Unificar dados de funcionários" accesskey="4" render="formUnificarProspects" rendered="#{!FuncionarioControle.funcionarioVO.novoObj and FuncionarioControle.permitirUnificarFuncionariosDuplicados}" />
+							<otm:commandButton style="margin-left:5px" id="criarUsuario" onclick="#{FuncionarioControle.cadastroUsuarioAutomatico}" value="Criar Usuário" accesskey="5" icon="#{msg_botoes.btn_icon_usuario_embutido}" styleClass="btn btn-default" rendered="#{FuncionarioControle.apresentarCriarUsuario}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGrid>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

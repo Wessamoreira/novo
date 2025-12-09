@@ -1,0 +1,1154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:otm2="http://www.otimize-ti.com.br" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
+
+<!-- este tela é usada na visão do professor e administrativa -->
+
+<rich:dragIndicator id="indicator" acceptClass="dragOk" rejectClass="dragError" draggingClass="dragDefault">
+	<i class="fas fa-book-reader"></i>
+	<!-- 	<i class="" width="30" height="30" url="#{resource['/imagens/ead/avaliacaoOnlineRea.png']}" /> -->
+</rich:dragIndicator>
+<rich:popupPanel id="panelFinalizacao" width="450" height="150">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="Atenção" />
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formFinalizacao">
+		<h:panelGroup layout="block" id="panelGridFinalizacao" styleClass="row">
+			<h:panelGroup styleClass="col-md-12">
+				<h:outputText styleClass="" escape="false" value="Prezado(a) ALUNO, seu tempo se esgotou, clique em OK para visualizar seu gabarito." />
+			</h:panelGroup>
+			<h:panelGroup layout="block" columns="1" id="panelGridBotaoOk" styleClass="col-md-12 text-center m10">
+				<otm:commandButton id="visualizarGabarito" onclick="this.disabled = true" oncomplete="#{rich:component('panelFinalizacao')}.hide()" render="formAvaliacaoOnlineMatricula" action="#{AvaliacaoOnlineControle.realizarCorrecaoExercicio}" accesskey="1" value="OK" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_ok_embutido}" />
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelAvaliacaoOnlineMatricula" styleClass="modalMaximizado100">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="Avaliação Online Simulado"></h:outputText>
+		</h:panelGroup>
+	</f:facet>
+	<f:facet name="controls">
+		<h:panelGroup>
+			<a4j:commandButton image="#{resource['imagens/close.png']}" styleClass="icon-close-modal" render="formAvaliacaoOnlineMatricula" oncomplete="#{rich:component('panelAvaliacaoOnlineMatricula')}.hide(); (#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline.randomicoPorComplexidade} ? #{rich:component('panelSimularAvaliacao')}.show() : '')">
+				<f:setPropertyActionListener value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline.randomicoPorComplexidade}" target="#{AvaliacaoOnlineControle.simulandoAvaliacao}"></f:setPropertyActionListener>
+				<f:setPropertyActionListener value="false" target="#{AvaliacaoOnlineControle.apresentarResultadoAvaliacaoOnline}"></f:setPropertyActionListener>
+				<f:setPropertyActionListener value="AGUARDANDO_REALIZACAO" target="#{AvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum}"></f:setPropertyActionListener>
+			</a4j:commandButton>
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formAvaliacaoOnlineMatricula">
+		<h:panelGroup layout="block" styleClass="row text-center" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline.randomicoPorComplexidade}" id="questoesExistentes">
+			<h:outputFormat styleClass="field  control-label text-danger" style="font-size: 16px;  font-weight: bold;" value="Existem {0} questões fáceis, {1} médias e {2} difíceis no banco de questões, totalizando {3} questões.">
+				<f:param name="{0}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.qtdeQuestaoFacil}"></f:param>
+				<f:param name="{1}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.qtdeQuestaoMedio}"></f:param>
+				<f:param name="{2}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.qtdeQuestaoDificil}"></f:param>
+				<f:param name="{3}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.qtdeQuestaoFacil + AvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.qtdeQuestaoMedio + AvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.qtdeQuestaoDificil}"></f:param>
+			</h:outputFormat>
+		</h:panelGroup>
+		<!-- 				<otm2:avaliacaoOnlineAluno id="avalAluno" bean="#{AvaliacaoOnlineControle}" /> -->
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelSimularAvaliacao" styleClass="modalMaximizado" onshow="document.getElementById('formSimularAvaliacao:turmaSim').focus()" shadowOpacity="true" top="0" width="750" height="500">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="Simular Avaliação"></h:outputText>
+		</h:panelGroup>
+	</f:facet>
+	<f:facet name="controls">
+		<h:panelGroup>
+			<a4j:commandButton image="#{resource['imagens/close.png']}" styleClass="icon-close-modal" render="form" execute="@this" oncomplete="#{rich:component('panelSimularAvaliacao')}.hide()">
+				<f:setPropertyActionListener value="false" target="#{AvaliacaoOnlineControle.simulandoAvaliacao}"></f:setPropertyActionListener>
+				<f:setPropertyActionListener value="AGUARDANDO_REALIZACAO" target="#{AvaliacaoOnlineControle.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum}"></f:setPropertyActionListener>
+			</a4j:commandButton>
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formSimularAvaliacao">
+		<h:panelGroup layout="block" styleClass="row">
+			<h:panelGroup layout="block" styleClass="col-md-12 pn">
+				<h:panelGroup layout="block" rendered="#{!AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.geral}" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_disciplina}" />
+					<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" rendered="#{!AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.geral}" value="#{AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.disciplina.nome}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" rendered="#{!AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoAdministrativa}" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requisicao_turma}" />
+					<h:selectOneMenu id="itensTurmaProfessor" disabled="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.codigo}">
+						<a4j:ajax event="change" execute="@form" listener="#{AvaliacaoOnlineControle.selecionarTurma}" render="formSimularAvaliacao"></a4j:ajax>
+						<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoAdministrativa}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_turma}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" value="#{AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.identificadorTurma}" />
+					<h:panelGroup styleClass="append-icon right">
+						<otm:commandIcon id="consultaDadosTurma2" rendered="#{!AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}" tooltip="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" />
+						<otm:commandIcon id="limparDadosTurma2" rendered="#{!AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}" tooltip="Limpas Dados" action="#{AvaliacaoOnlineControle.limparTurma}" render="formSimularAvaliacao" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{(AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.codigo ne 0 and !AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.integral) or (AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoProfessor and AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.codigo eq 0)}">
+				<h:outputText styleClass="field control-label tituloCampos" value="Ano" />
+				<h:inputText id="ano3" disabled="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}" size="4" maxlength="4" value="#{AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.ano}" styleClass="form-control camposObrigatorios">
+					<a4j:ajax event="change" listener="#{AvaliacaoOnlineControle.consultarDefinicoesTutoriaOnlineTurmaDisciplina}" render="formSimularAvaliacao" execute="@form"></a4j:ajax>
+				</h:inputText>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{(AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.codigo ne 0 and AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.semestral)  or (AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoProfessor and AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.codigo eq 0)}">
+				<h:outputText styleClass="field control-label tituloCampos" value="Semestre" />
+				<h:selectOneMenu id="semestre3" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.semestre}" disabled="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}">
+					<a4j:ajax event="change" listener="#{AvaliacaoOnlineControle.consultarDefinicoesTutoriaOnlineTurmaDisciplina}" render="formSimularAvaliacao" execute="@form"></a4j:ajax>
+					<f:selectItems value="#{EnumControle.comboboxSemestreEnum}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.geral and AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.codigo ne 0}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_disciplina}" />
+				<h:selectOneMenu id="disciplinaPorTurma2" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.disciplina.codigo}">
+					<a4j:ajax event="change" execute="@form" listener="#{AvaliacaoOnlineControle.selecionarDisciplina}" render="formSimularAvaliacao"></a4j:ajax>
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemDisciplinasPorTurma}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.isApresentarOpcaoSelecaoProfessorSimulacaoAvaliacao and !empty AvaliacaoOnlineControle.listaSelectItemProfessorSimularAvaliacao}">
+				<otm:outputHelp id="helpProfessorSimularAcesso" tooltip="O professor listado é baseado na definição de tutoria on-line." value="#{msg_aplic.prt_ProgramacaoAula_professor}" />
+				<h:selectOneMenu id="professor2" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.professor.codigo}">
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemProfessorSimularAvaliacao}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup id="conteudo2" layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.turma.codigo ne 0 and AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.disciplina.codigo ne 0 }">
+				<otm:outputHelp id="helpConteudoSimularAcesso" tooltip="O conteúdo listado é baseado na avaliação on-line (caso vinculado o conteúdo) ou na configuração da turma conteúdo. Caso não informado só será considerado apenas questões sem vinculo a nenhum conteúdo." value="Conteúdo" />
+				<h:selectOneMenu disabled="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.conteudoVO.codigo ne 0}" styleClass="form-control #{AvaliacaoOnlineControle.avaliacaoOnlineVO.politicaSelecaoQuestaoEnum ne 'QUALQUER_QUESTAO' ? 'camposObrigatorios' : 'campos'}" value="#{AvaliacaoOnlineControle.matriculaPeriodoTurmaDisciplinaVO.conteudo.codigo}">
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemConteudo}" />
+					<a4j:ajax event="change" execute="@form" listener="#{AvaliacaoOnlineControle.consultarTemaAssunto}" render="formSimularAvaliacao"></a4j:ajax>
+				</h:selectOneMenu>
+			</h:panelGroup>
+		</h:panelGroup>
+		<h:panelGroup id="assuntos2" layout="block" styleClass="row p10" rendered="#{!empty AvaliacaoOnlineControle.avaliacaoOnlineTemaAssuntoSimulacaoVOs}">
+			<h:outputText styleClass="field control-label tituloCampos" style="width:100%;text-align:left;display:block" value="Assunto(s) Questão(ões)" rendered="#{!empty AvaliacaoOnlineControle.avaliacaoOnlineTemaAssuntoSimulacaoVOs}" />
+			<h:panelGroup layout="block" styleClass="row" style="border-radius:5px; border:1px solid #cccccc">
+				<a4j:repeat value="#{AvaliacaoOnlineControle.avaliacaoOnlineTemaAssuntoSimulacaoVOs}" var="temaAssuntoItem" style="width:100%">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field  control-label tituloCampos col-md-12 pn" value="#{temaAssuntoItem.temaAssuntoVO.nome}"></h:outputText>
+						<otm:selectBooleanCheckbox id="temaSimulado" disabled="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.possuiTemaAssuntoSelecionado}" value="#{temaAssuntoItem.selecionado}">
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</a4j:repeat>
+			</h:panelGroup>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="row" id="mensagemConsultarSimular">
+			<otm:mensagem bean="#{AvaliacaoOnlineControle}"></otm:mensagem>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+			<otm:commandButton render="formAvaliacaoOnlineMatricula, mensagemConsultarSimular" icon="fas fa-tasks" value="Simular Avaliação On-line" styleClass="btn btn-default" oncomplete="#{AvaliacaoOnlineControle.oncompleteModal}" action="#{AvaliacaoOnlineControle.realizarSimulacaoVisualizacaoAvaliacaoOnlineAluno}"></otm:commandButton>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelProfessor" styleClass="modalMaximizado" onshow="document.getElementById('formProfessor:valorConsultarProfessor').focus()" shadowOpacity="true" top="0" width="750" height="500">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_consultaProfessor}"></h:outputText>
+		</h:panelGroup>
+	</f:facet>
+	<f:facet name="controls">
+		<h:panelGroup>
+			<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkProfessor">
+				<rich:componentControl target="panelProfessor" operation="hide" event="click" />
+			</h:graphicImage>
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formProfessor">
+		<h:panelGroup layout="block" styleClass="col-md-12">
+			<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-4">
+			<h:selectOneMenu styleClass="form-control campos" id="consultarProfessor" value="#{AvaliacaoOnlineControle.campoConsultaProfessor}">
+				<f:selectItems value="#{AvaliacaoOnlineControle.tipoConsultaComboBoxProfessor}" />
+				<a4j:ajax event="change" render="formProfessor" />
+			</h:selectOneMenu>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-6">
+			<h:inputText id="valorConsultarProfessor" size="10" styleClass="form-control campos" rendered="#{!AvaliacaoOnlineControle.isApresentarCampoCpf}" value="#{AvaliacaoOnlineControle.valorConsultaProfessor}" />
+			<h:inputText id="cpf" rendered="#{AvaliacaoOnlineControle.isApresentarCampoCpf}" size="14" maxlength="14" onkeypress="return mascara(this.formProfessor, 'formProfessor:cpf', '999.999.999-99', event);" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.valorConsultaProfessor}" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-2">
+			<otm:commandButton id="btnConsultar" render="formProfessor, resultadoConsultarProfessor, scResultadoProfessor" action="#{AvaliacaoOnlineControle.consultarProfessor}" styleClass="btn btn-default" value="#{msg_bt.btn_consultar}" icon="#{msg_botoes.btn_icon_lupa_embutido}" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+		<rich:dataTable id="resultadoConsultarProfessor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AvaliacaoOnlineControle.listaConsultaProfessor}" rendered="#{!empty AvaliacaoOnlineControle.listaConsultaProfessor}" rows="5" var="professorItens">
+			<rich:column>
+				<f:facet name="header">
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_professor}" />
+				</f:facet>
+				<h:panelGroup>
+					<a4j:commandLink action="#{AvaliacaoOnlineControle.selecionarProfessor}" focus="professor" render="form:dadosBasicos, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide();" value="#{professorItens.nome}" />
+				</h:panelGroup>
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_cpf}" />
+				</f:facet>
+				<h:panelGroup>
+					<a4j:commandLink action="#{AvaliacaoOnlineControle.selecionarProfessor}" focus="professor" render="form:dadosBasicos, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide();" value="#{professorItens.CPF}" />
+				</h:panelGroup>
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">
+					<h:outputText value="#{msg_aplic.prt_ProgramacaoAula_titulacao}" />
+				</f:facet>
+				<h:panelGroup>
+					<a4j:commandLink action="#{AvaliacaoOnlineControle.selecionarProfessor}" focus="professor" render="form:dadosBasicos, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide();" value="#{professorItens.titulacaoNivelEscolaridade}" />
+				</h:panelGroup>
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">
+					<h:outputText value="#{msg_bt.btn_opcoes}" />
+				</f:facet>
+				<otm:commandIcon action="#{AvaliacaoOnlineControle.selecionarProfessor}" focus="professor" render="form:dadosBasicos, form:panelGridMensagens" oncomplete="#{rich:component('panelProfessor')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+			</rich:column>
+			<f:facet name="footer">
+				<div style="text-align: center !important">
+					<rich:dataScroller align="center" for="formProfessor:resultadoConsultarProfessor" maxPages="10" id="scResultadoProfessor" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</div>
+			</f:facet>
+		</rich:dataTable>
+		<h:panelGroup layout="block" columns="1" width="100%" styleClass="tabMensagens" id="mensagemConsultarProfessor">
+			<otm:mensagem bean="#{AvaliacaoOnlineControle}"></otm:mensagem>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelTurma" styleClass="modalMaximizado" onshow="document.getElementById('formTurma:valorConsultarTurma').focus()" width="550" autosized="true">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="#{msg_aplic.prt_ContaPagar_consultarTurma}"></h:outputText>
+		</h:panelGroup>
+	</f:facet>
+	<f:facet name="controls">
+		<h:panelGroup>
+			<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkTurma" />
+			<rich:componentControl target="panelTurma" operation="hide" event="click" />
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formTurma">
+		<h:panelGroup layout="block" styleClass="col-md-12">
+			<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-4">
+			<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{AvaliacaoOnlineControle.campoConsultaTurma}">
+				<f:selectItems value="#{AvaliacaoOnlineControle.tipoConsultaComboTurma}" />
+			</h:selectOneMenu>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-6">
+			<h:inputText id="valorConsultarTurma" size="10" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.valorConsultaTurma}" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-2">
+			<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultarTurma, formTurma:resultadoConsultarTurma, formTurma:scResultadoTurma, formTurma" action="#{AvaliacaoOnlineControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+		<rich:dataTable id="resultadoConsultarTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AvaliacaoOnlineControle.listaConsultaTurma}" rows="5" var="turmaItens">
+			<rich:column sortBy="#{turmaItens.identificadorTurma}">
+				<f:facet name="header">
+					<h:outputText value="#{msg_aplic.prt_Turma_identificadorTurma}" />
+				</f:facet>
+				<a4j:commandLink action="#{AvaliacaoOnlineControle.selecionarTurma}" oncomplete="#{rich:component('panelTurma')}.hide()" render="formTurma, form, formSimularAvaliacao" id="identificadorTurma" value="#{turmaItens.identificadorTurma}" />
+			</rich:column>
+			<rich:column sortBy="#{turmaItens.curso.nome}">
+				<f:facet name="header">
+					<h:outputText value="#{msg_aplic.prt_Turma_curso}" />
+				</f:facet>
+				<a4j:commandLink action="#{AvaliacaoOnlineControle.selecionarTurma}" id="curso" oncomplete="#{rich:component('panelTurma')}.hide()" render="formTurma, form, formSimularAvaliacao" value="#{turmaItens.curso.nome}" />
+			</rich:column>
+			<rich:column sortBy="#{turmaItens.turno.nome}">
+				<f:facet name="header">
+					<h:outputText value="#{msg_aplic.prt_Turma_turno}" />
+				</f:facet>
+				<a4j:commandLink action="#{AvaliacaoOnlineControle.selecionarTurma}" id="turno" oncomplete="#{rich:component('panelTurma')}.hide()" render="formTurma, form, formSimularAvaliacao" value="#{turmaItens.turno.nome}" />
+			</rich:column>
+			<rich:column sortBy="#{turmaItens.peridoLetivo.descricao}">
+				<f:facet name="header">
+					<h:outputText value="#{msg_aplic.prt_Turma_periodoLetivo}" />
+				</f:facet>
+				<a4j:commandLink action="#{AvaliacaoOnlineControle.selecionarTurma}" id="periodo" render="formTurma, form, formSimularAvaliacao" oncomplete="#{rich:component('panelTurma')}.hide()" value="#{turmaItens.peridoLetivo.descricao}" />
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">
+					<h:outputText value="#{msg_botoes.btn_opcoes}" />
+				</f:facet>
+				<otm:commandIcon action="#{AvaliacaoOnlineControle.selecionarTurma}" render="formTurma, form, formSimularAvaliacao" oncomplete="#{rich:component('panelTurma')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+			</rich:column>
+			<f:facet name="footer">
+				<div style="text-align: center !important">
+					<rich:dataScroller align="center" for="formTurma:resultadoConsultarTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" fastControls="hide" stepControls="auto" />
+				</div>
+			</f:facet>
+		</rich:dataTable>
+		<h:panelGroup layout="block" id="mensagemConsultarTurma" styleClass="row">
+			<otm:mensagem bean="#{AvaliacaoOnlineControle}"></otm:mensagem>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelDisciplina" styleClass="modalMaximizado" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formDisciplina:valorConsultaDisciplinaMatricula').focus();">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="#{msg_aplic.prt_Disciplina_consultarDisciplina}" />
+		</h:panelGroup>
+	</f:facet>
+	<f:facet name="controls">
+		<h:panelGroup>
+			<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkConsultarDisciplina">
+				<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+			</h:graphicImage>
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formDisciplina">
+		<h:panelGroup layout="block" styleClass="col-md-12">
+			<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-4">
+			<h:selectOneMenu styleClass="form-control campos" id="consultaDisciplinaMatricula" value="#{AvaliacaoOnlineControle.controleConsultaDisciplina.campoConsulta}">
+				<f:selectItems value="#{AvaliacaoOnlineControle.tipoConsultaComboDisciplina}" />
+			</h:selectOneMenu>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-6">
+			<h:inputText id="valorConsultaDisciplinaMatricula" size="10" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.controleConsultaDisciplina.valorConsulta}" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-2">
+			<otm:commandButton id="btnConsultar" render="formDisciplina:mensagemConsultaDisciplinaMatricula, formDisciplina:resultadoConsultaDisciplinaMatricula, formDisciplina:scResultadoDisciplinaMatricula, formDisciplina" action="#{AvaliacaoOnlineControle.consultarDisciplina}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+		<rich:dataTable id="resultadoConsultaDisciplinaMatricula" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{AvaliacaoOnlineControle.controleConsultaDisciplina.listaConsulta}" rows="5" var="disciplinaItem">
+			<rich:column>
+				<f:facet name="header">
+					<h:outputText value="#{msg_aplic.prt_Disciplina_codigo}" />
+				</f:facet>
+				<h:panelGroup>
+					<a4j:commandLink action="#{AvaliacaoOnlineControle.selecionarDisciplina}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide();" value="#{disciplinaItem.codigo}" />
+				</h:panelGroup>
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">
+					<h:outputText value="#{msg_aplic.prt_Disciplina_nome}" />
+				</f:facet>
+				<h:panelGroup>
+					<a4j:commandLink action="#{AvaliacaoOnlineControle.selecionarDisciplina}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide();" value="#{disciplinaItem.nome}" />
+				</h:panelGroup>
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">
+					<h:outputText value="#{msg_bt.btn_opcoes}" />
+				</f:facet>
+				<otm:commandIcon action="#{AvaliacaoOnlineControle.selecionarDisciplina}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+			</rich:column>
+			<f:facet name="footer">
+				<div style="text-align: center !important">
+					<rich:dataScroller align="center" for="formDisciplina:resultadoConsultaDisciplinaMatricula" maxPages="10" id="scResultadoDisciplinaMatricula" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</div>
+			</f:facet>
+		</rich:dataTable>
+		<h:panelGroup layout="block" id="mensagemConsultaDisciplinaMatricula">
+			<otm:mensagem bean="#{AvaliacaoOnlineControle}"></otm:mensagem>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelQuestao" styleClass="modalMaximizado" shadowOpacity="true" top="0" width="800" height="500">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="Consultar Questões"></h:outputText>
+		</h:panelGroup>
+	</f:facet>
+	<f:facet name="controls">
+		<h:panelGroup>
+			<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkQuesta">
+				<rich:componentControl target="panelQuestao" operation="hide" event="click" />
+			</h:graphicImage>
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formQuestao">
+		<h:panelGroup layout="block" styleClass="col-md-3">
+			<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+			<h:selectOneMenu styleClass="form-control campos" id="consulta" value="#{AvaliacaoOnlineControle.campoConsulta}">
+				<a4j:ajax event="change" listener="#{AvaliacaoOnlineControle.limparCamposBusca}" render="formQuestao" execute="formQuestao" />
+				<f:selectItems value="#{AvaliacaoOnlineControle.tipoConsultaCombo}" />
+			</h:selectOneMenu>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AvaliacaoOnlineControle.campoConsulta eq 'codigo' or AvaliacaoOnlineControle.campoConsulta eq ''}">
+			<h:inputText styleClass="form-control campos" value="#{AvaliacaoOnlineControle.valorConsulta}" onkeydown="aceitarSomenteValorNumerico(this)" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AvaliacaoOnlineControle.campoConsulta eq 'questao'}">
+			<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_enunciado}" />
+			<h:inputText maxlength="250" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.questaoVO.enunciado}" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AvaliacaoOnlineControle.campoConsulta eq 'questao'}">
+			<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_nivelComplexidadeQuestaoEnum}" />
+			<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.questaoVO.nivelComplexidadeQuestao}">
+				<f:selectItems value="#{EnumControle.comboBoxNivelComplexidadeQuestaoEnum}" />
+			</h:selectOneMenu>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AvaliacaoOnlineControle.campoConsulta eq 'questao'}">
+			<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_tipoQuestao}" />
+			<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.questaoVO.tipoQuestaoEnum}">
+				<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemTipoQuestaoConsulta}" />
+			</h:selectOneMenu>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+			<a4j:commandLink id="consultar" render="form, formQuestao" value="consultar" action="#{AvaliacaoOnlineControle.consultarQuestao}" styleClass="btn btn-default btn-consultar" accesskey="2">
+				<i class="fas fa-search pull-left" style="margin-right: 0.8em; font-size: 14px; margin-top: 2px;"></i>
+				<f:setPropertyActionListener target="#{AvaliacaoOnlineControle.controleConsultaQuestoes.paginaAtual}" value="1" />
+				<f:setPropertyActionListener target="#{AvaliacaoOnlineControle.controleConsultaQuestoes.page}" value="1" />
+			</a4j:commandLink>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-12 mt5">
+			<rich:dataTable id="questoes" rendered="#{! empty AvaliacaoOnlineControle.controleConsultaQuestoes.listaConsulta}" headerClass="consulta" rowKeyVar="row" value="#{AvaliacaoOnlineControle.controleConsultaQuestoes.listaConsulta}" width="100%" rows="5" var="questaoItem">
+				<rich:column style="text-align: center !important;">
+					<f:facet name="header">
+						<h:outputText value="Código" />
+					</f:facet>
+					<h:outputText escape="false" value="#{questaoItem.codigo}" />
+				</rich:column>
+				<rich:column style="text-align: center !important;">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_Questao_enunciado}" />
+					</f:facet>
+					<h:outputText escape="false" value="#{questaoItem.enunciado}" />
+				</rich:column>
+				<rich:column style="text-align: center !important;">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_Questao_nivelComplexidadeQuestaoEnum}" />
+					</f:facet>
+					<h:outputText styleClass="field control-label tituloCampos" value="#{questaoItem.nivelComplexidadeQuestao.valorApresentar}" />
+				</rich:column>
+				<rich:column style="text-align: center !important;">
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<otm:commandIcon render="form, panelGridMensagensQuestao, questoes" rendered="#{!questaoItem.selecionado}" action="#{AvaliacaoOnlineControle.adicionarQuestao}" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" tooltip="#{msg.msg_adicionar_dados}" />
+					<otm:commandIcon render="form, panelGridMensagensQuestao, questoes" rendered="#{questaoItem.selecionado}" action="#{AvaliacaoOnlineControle.removerQuestao}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="#{msg.msg_remover_dados}" />
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller rendered="#{AvaliacaoOnlineControle.controleConsultaQuestoes.apresentarDatascroller}" align="center" for="formQuestao:questoes" render="questoes, panelGridMensagensQuestao" id="scResultadoConsultaQuestao" scrollListener="#{AvaliacaoOnlineControle.paginarQuestao}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+		</h:panelGroup>
+		<h:panelGroup layout="block" id="panelGridMensagensQuestao" columns="1" width="100%" styleClass="tabMensagens">
+			<otm:mensagem bean="#{AvaliacaoOnlineControle}"></otm:mensagem>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelQuestoesFixasRandomicamente" styleClass="modalMaximizado" shadowOpacity="true" top="0" width="600" height="380">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="Selecionar Questões Randomicamente"></h:outputText>
+		</h:panelGroup>
+	</f:facet>
+	<f:facet name="controls">
+		<h:panelGroup>
+			<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkQuestaoRandomicamente">
+				<rich:componentControl target="panelQuestoesFixasRandomicamente" operation="hide" event="click" />
+			</h:graphicImage>
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formQuestaoRandomicamente">
+		<h:panelGroup layout="block" id="questaoRandomico" styleClass="row">
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_qtdeQuestoesDificeis}" />
+				<h:inputText styleClass="form-control campos" value="#{AvaliacaoOnlineControle.nivelDificil}" onkeydown="aceitarSomenteValorNumerico(this)" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_qtdeQuestoesMedianas}" />
+				<h:inputText styleClass="form-control campos" value="#{AvaliacaoOnlineControle.nivelMedio}" onkeydown="aceitarSomenteValorNumerico(this)" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_qtdeQuestoesFaceis}" />
+				<h:inputText styleClass="form-control campos" value="#{AvaliacaoOnlineControle.nivelFacil}" onkeydown="aceitarSomenteValorNumerico(this)" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_qtdeQuestoesQualquerNivel}" />
+				<h:inputText styleClass="form-control campos" value="#{AvaliacaoOnlineControle.qualquerNivel}" onkeydown="aceitarSomenteValorNumerico(this)" />
+			</h:panelGroup>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="col-md-12 text-center mt10">
+			<otm:commandButton id="confirmar" render="formQuestaoRandomicamente, form" oncomplete="#{AvaliacaoOnlineControle.fecharModalPanelQuestoesFixasRandomicas}" value="Adicionar Questões" action="#{AvaliacaoOnlineControle.gerarQuestoesRandomicamente}" icon="#{msg_botoes.btn_icon_adicionar_embutido}" styleClass="btn btn-primary" accesskey="2" />
+		</h:panelGroup>
+		<h:panelGroup layout="block" id="panelGridMensagensQuestaoRandomicanente">
+			<otm:mensagem bean="#{AvaliacaoOnlineControle}"></otm:mensagem>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelAvisoAtivacaoPorTurma" styleClass="modalMaximizado" shadowOpacity="true" width="900" height="450" onshow="document.getElementById('formAvisoAtivacaoPorTurma:salvar').focus();">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="Alerta!" />
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formAvisoAtivacaoPorTurma">
+		<h:panelGroup layout="block" columns="1" styleClass="colunaEsquerda" width="100%">
+			<rich:dataTable id="alunosTurma" rowClasses="linhaLancamentoNota, linhaLancamentoNotaPar" columnClasses="colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada" style="width:100%" render="paginador" headerClass="consulta" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.listaHistoricoAluno}" rows="10" var="historicoItens">
+				<f:facet name="header">
+					<h:outputText value="#{msg.msg_AvaliacaoOnline_avisoAtivacaoPorTurma}" />
+				</f:facet>
+				<rich:column filterType="custom" filter="#{FilterFactory.filter('matricula', 'matricula.matricula', 'TEXTO')}">
+					<f:facet name="header">
+						<h:panelGroup layout="block" style="width:100%">
+							<h:outputText value="#{msg_aplic.prt_HistoricoTurma_matriculaAluno}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:100%">
+							<h:inputText styleClass="form-control campos" size="12" value="#{FilterFactory.filter('matricula', 'matricula.matricula', 'TEXTO').filtro}">
+								<a4j:ajax event="change" execute="@this" render="alunosTurma, paginador" />
+							</h:inputText>
+							<a4j:commandButton render="alunosTurma, paginador" image="#{resource['/imagens/limpar.gif']}" action="#{FilterFactory.limparFiltro('matricula')}" value="Limpar">
+								<rich:tooltip value="Limpar Filtro" />
+							</a4j:commandButton>
+						</h:panelGroup>
+					</f:facet>
+					<h:panelGroup layout="block">
+						<h:outputText id="matriculaAluno" value="#{historicoItens.matricula.matricula}" />
+					</h:panelGroup>
+				</rich:column>
+				<rich:column filterType="custom" filter="#{FilterFactory.filter('nomeAluno', 'matricula.aluno.nome', 'TEXTO')}">
+					<f:facet name="header">
+						<h:panelGroup layout="block" style="width:100%">
+							<h:outputText value="#{msg_aplic.prt_HistoricoTurma_nomeAluno}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:100%">
+							<h:inputText styleClass="form-control campos" size="12" value="#{FilterFactory.filter('nomeAluno', 'matricula.aluno.nome', 'TEXTO').filtro}">
+								<a4j:ajax event="change" execute="@this" render="alunosTurma, paginador" />
+							</h:inputText>
+							<a4j:commandButton render="alunosTurma, paginador" image="#{resource['/imagens/limpar.gif']}" action="#{FilterFactory.limparFiltro('nomeAluno')}" value="Limpar">
+								<rich:tooltip value="Limpar Filtro" />
+							</a4j:commandButton>
+						</h:panelGroup>
+					</f:facet>
+					<h:panelGroup layout="block">
+						<h:outputText id="nomeAluno" value="#{historicoItens.matricula.aluno.nome}" />
+					</h:panelGroup>
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="formAvisoAtivacaoPorTurma:alunosTurma" maxPages="10" id="scAlunosTurma" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+				<h:panelGroup layout="block">
+					<otm:commandButton id="salvar" render="form, panelProgressBar, formAvisoAtivacaoPorTurma" oncomplete="#{rich:component('panelAvisoAtivacaoPorTurma')}.hide();this.disabled=false" onclick='this.disabled=true' action="#{AvaliacaoOnlineControle.realizarInicioAtivacaoPorProgressBar}" value="Gravar" styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" />
+					<otm:spacer width="5px;" />
+					<otm:commandButton render="form, formAvisoAtivacaoPorTurma" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" oncomplete="#{rich:component('panelAvisoAtivacaoPorTurma')}.hide();" alt="Fechar" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelAvisoAlteracaoPorTurmaAtivada" styleClass="modalMaximizado" shadowOpacity="true" width="900" height="450" onshow="document.getElementById('formAvisoAlteracaoPorTurmaAtivada:salvar').focus();">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="Alerta!" />
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formAvisoAlteracaoPorTurmaAtivada">
+		<h:panelGroup layout="block" columns="1" styleClass="colunaEsquerda" width="100%">
+			<rich:dataTable id="alunosTurma" rowClasses="linhaLancamentoNota, linhaLancamentoNotaPar" columnClasses="colunaVerticalmenteCentralizada, colunaVerticalmenteCentralizada" style="width:100%" render="paginador" headerClass="consulta" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.listaHistoricoAluno}" rows="10" var="historicoItens">
+				<f:facet name="header">
+					<h:outputText value="#{msg.msg_AvaliacaoOnline_avisoAlteracaoPorTurmaAtivada}" />
+				</f:facet>
+				<rich:column filterType="custom" filter="#{FilterFactory.filter('matricula', 'matricula.matricula', 'TEXTO')}">
+					<f:facet name="header">
+						<h:panelGroup layout="block" style="width:100%">
+							<h:outputText value="#{msg_aplic.prt_HistoricoTurma_matriculaAluno}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:100%">
+							<h:inputText styleClass="form-control campos" size="12" value="#{FilterFactory.filter('matricula', 'matricula.matricula', 'TEXTO').filtro}">
+								<a4j:ajax event="change" execute="@this" render="alunosTurma, paginador" />
+							</h:inputText>
+							<a4j:commandButton render="alunosTurma, paginador" image="#{resource['/imagens/limpar.gif']}" action="#{FilterFactory.limparFiltro('matricula')}" value="Limpar">
+								<rich:tooltip value="Limpar Filtro" />
+							</a4j:commandButton>
+						</h:panelGroup>
+					</f:facet>
+					<h:panelGroup layout="block">
+						<h:outputText id="matriculaAluno" value="#{historicoItens.matricula.matricula}" />
+					</h:panelGroup>
+				</rich:column>
+				<rich:column filterType="custom" filter="#{FilterFactory.filter('nomeAluno', 'matricula.aluno.nome', 'TEXTO')}">
+					<f:facet name="header">
+						<h:panelGroup layout="block" style="width:100%">
+							<h:outputText value="#{msg_aplic.prt_HistoricoTurma_nomeAluno}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="width:100%">
+							<h:inputText styleClass="form-control campos" size="12" value="#{FilterFactory.filter('nomeAluno', 'matricula.aluno.nome', 'TEXTO').filtro}">
+								<a4j:ajax event="change" execute="@this" render="alunosTurma, paginador" />
+							</h:inputText>
+							<a4j:commandButton render="alunosTurma, paginador" image="#{resource['/imagens/limpar.gif']}" action="#{FilterFactory.limparFiltro('nomeAluno')}" value="Limpar">
+								<rich:tooltip value="Limpar Filtro" />
+							</a4j:commandButton>
+						</h:panelGroup>
+					</f:facet>
+					<h:panelGroup layout="block">
+						<h:outputText id="nomeAluno" value="#{historicoItens.matricula.aluno.nome}" />
+					</h:panelGroup>
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="alunosTurma" maxPages="10" id="scAlunosTurma" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+				<h:panelGroup layout="block">
+					<otm:commandButton id="salvar" render="form, panelProgressBar, formAvisoAlteracaoPorTurmaAtivada" oncomplete="#{rich:component('panelAvisoAlteracaoPorTurmaAtivada')}.hide();this.disabled=false" onclick='this.disabled=true' action="#{AvaliacaoOnlineControle.realizarInicioAlteracaoPorTurmaAtivadaPorProgressBar}" value="gravar" styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" />
+					<otm:spacer width="5px;" />
+					<otm:commandButton render="form, formAvisoAlteracaoPorTurmaAtivada" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" oncomplete="#{rich:component('panelAvisoAlteracaoPorTurmaAtivada')}.hide();" alt="Fechar" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelAvisoPoliticaSelecaoQuestao" styleClass="modalMaximizado" shadowOpacity="true" width="550" height="150" onshow="document.getElementById('formAvisoPoliticaSelecaoQuestao:salvar').focus();">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="Alerta!" />
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formAvisoPoliticaSelecaoQuestao">
+		<h:panelGroup layout="block" columns="1" styleClass="colunaEsquerda" width="100%">
+			<h:panelGroup layout="block">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_AvaliacaoOnline_AvisoPoliticaSelecaoQuestao}" />
+			</h:panelGroup>
+			<otm:spacer height="10px;" />
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+				<h:panelGroup layout="block">
+					<otm:commandButton id="salvar" render="form, formAvisoPoliticaSelecaoQuestao" oncomplete="#{rich:component('panelAvisoPoliticaSelecaoQuestao')}.hide();this.disabled=false" onclick='this.disabled=true' action="#{AvaliacaoOnlineControle.gravar}" value="gravar" styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" />
+					<otm:spacer width="5px;" />
+					<otm:commandButton render="form, formAvisoPoliticaSelecaoQuestao" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" oncomplete="#{rich:component('panelAvisoPoliticaSelecaoQuestao')}.hide();" alt="Fechar" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<rich:popupPanel id="panelAvisoInativarPorTurma" styleClass="modalMaximizado" shadowOpacity="true" width="550" height="150" onshow="document.getElementById('formAvisoInativarPorTurma:salvar').focus();">
+	<f:facet name="header">
+		<h:panelGroup>
+			<h:outputText value="Alerta de Inativação de Avaliação Online" />
+		</h:panelGroup>
+	</f:facet>
+	<h:form id="formAvisoInativarPorTurma">
+		<h:panelGroup layout="block" columns="1" styleClass="colunaEsquerda" width="100%">
+			<h:panelGroup rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}" layout="block">
+				<otm:selectBooleanCheckbox value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.excluirCalendarioAtividadeAguardandoRealizacao}" />
+				<h:outputText styleClass="field control-label tituloCampos" value="Deseja excluir os Calendário dessa Avaliação Online que ainda estão Aguardando Realização." />
+			</h:panelGroup>
+			<h:panelGroup rendered="#{!AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}" layout="block">
+				<h:outputText escape="false" value="#{AvaliacaoOnlineControle.mensagemInativacao}" />
+			</h:panelGroup>
+			<otm:spacer height="10px;" />
+			<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+				<h:panelGroup layout="block">
+					<otm:commandButton id="salvar" render="form, formAvisoInativarPorTurma" oncomplete="#{rich:component('panelAvisoInativarPorTurma')}.hide();this.disabled=false" onclick='this.disabled=true' action="#{AvaliacaoOnlineControle.inativarAvaliacaoOnline}" value="gravar" styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" />
+					<otm:spacer width="5px;" />
+					<otm:commandButton render="form, formAvisoInativarPorTurma" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" oncomplete="#{rich:component('panelAvisoInativarPorTurma')}.hide();" alt="Fechar" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:form>
+</rich:popupPanel>
+
+<otm2:progressBar id="panelProgressBar" bean="#{AvaliacaoOnlineControle}" render="panelProgressBar, form" modal="true" bar="progressBarVO">
+</otm2:progressBar>
+
+<h:form id="form">
+	<a4j:jsFunction name="encerrarSimulacao">
+		<f:setPropertyActionListener value="false" target="#{AvaliacaoOnlineControle.simulandoAvaliacao}"></f:setPropertyActionListener>
+	</a4j:jsFunction>
+	<h:commandLink action="#{AvaliacaoOnlineControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+
+	<h:panelGroup id="panelGridForm">
+		<h:panelGroup id="dadosBasicos">
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_nome}" />
+				<h:inputText styleClass="form-control camposObrigatorios" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.nome}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<otm:outputHelp id="tipoUsoOut" value="#{msg_aplic.prt_AvaliacaoOnline_tipoUso}">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoUsoExC01}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoUsoExC02}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoUsoExC03}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoUsoExC04}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoUsoExC05}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoUsoExC06}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</otm:outputHelp>
+				<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso}" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}">
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemTipoUso}" />
+					<a4j:ajax event="change" execute="@form" render="form" listener="#{AvaliacaoOnlineControle.preencherCamposPorTipoUsoAvaliacaoOnline}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<otm:outputHelp id="situacaoOut" icon="fas fa-user" value="#{msg_aplic.prt_AvaliacaoOnline_situacao}">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="font-weight-bold btn-block fs13" value="#{msg_aplic.prt_AvaliacaoOnline_respCriacao}" />
+							<h:outputText styleClass="tituloCampos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.reposnsavelCriacao.nome}" readonly="true" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt5">
+							<h:outputText styleClass="font-weight-bold btn-block fs13" value="#{msg_aplic.prt_AvaliacaoOnline_dataCriacao}" />
+							<h:outputText styleClass="tituloCampos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.dataCriacao}" readonly="true">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+							</h:outputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt10" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelAtivacao}">
+							<h:outputText styleClass="font-weight-bold btn-block fs13" value="#{msg_aplic.prt_AvaliacaoOnline_respAtivacao}" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelAtivacao}" />
+							<h:outputText styleClass="tituloCampos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.reposnsavelAtivacao.nome}" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelAtivacao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt5" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelAtivacao}">
+							<h:outputText styleClass="font-weight-bold btn-block fs13" value="#{msg_aplic.prt_AvaliacaoOnline_dataAtivacao}" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelAtivacao}" />
+							<h:outputText styleClass="tituloCampos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.dataAtivacao}" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelAtivacao}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+							</h:outputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt10" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelInativacao}">
+							<h:outputText styleClass="font-weight-bold btn-block fs13" value="#{msg_aplic.prt_AvaliacaoOnline_respInativacao}" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelInativacao}" />
+							<h:outputText styleClass="tituloCampos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.reposnsavelInativacao.nome}" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelInativacao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt5" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelInativacao}">
+							<h:outputText styleClass="font-weight-bold btn-block fs13" value="#{msg_aplic.prt_AvaliacaoOnline_dataInativacao}" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelInativacao}" />
+							<h:outputText styleClass="tituloCampos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.dataInativacao}" rendered="#{AvaliacaoOnlineControle.apresentarResponsavelInativacao}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+							</h:outputText>
+						</h:panelGroup>
+					</h:panelGroup>
+				</otm:outputHelp>
+				<h:inputText id="situacaoEnum" styleClass="form-control camposSomenteLeitura" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.situacaoEnum_Apresentar}" readonly="true" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma and AvaliacaoOnlineControle.isApresentarAnoVisaoProfessorCoordenador ? 'col-md-4' : 'col-md-6'}" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma and !AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoProfessor}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requisicao_turma}" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma and !AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoProfessor}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText readonly="true" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.turmaVO.identificadorTurma}" />
+					<h:panelGroup styleClass="append-icon right">
+						<a4j:commandLink id="consultaDadosTurma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show()" rendered="#{!AvaliacaoOnlineControle.bloquearAlteracaoConformeRegraQuestoesAdicionadas}">
+							<i class="#{msg_botoes.btn_icon_lupa_embutido}" style="font-size: 12px" />
+							<f:setPropertyActionListener value="false" target="#{AvaliacaoOnlineControle.simulandoAvaliacao}"></f:setPropertyActionListener>
+						</a4j:commandLink>
+						<a4j:commandLink id="limparDadosTurma" rendered="#{!AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado or !AvaliacaoOnlineControle.bloquearAlteracaoConformeRegraQuestoesAdicionadas}" action="#{AvaliacaoOnlineControle.limparTurma}" render="panelGridForm, form">
+							<i class="#{msg_botoes.btn_icon_limpar_embutido}" style="font-size: 12px" />
+							<f:setPropertyActionListener value="false" target="#{AvaliacaoOnlineControle.simulandoAvaliacao}"></f:setPropertyActionListener>
+						</a4j:commandLink>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma and AvaliacaoOnlineControle.isApresentarAnoVisaoProfessorCoordenador}">
+				<h:outputText styleClass="field control-label tituloCampos" value="Ano" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma and AvaliacaoOnlineControle.isApresentarAnoVisaoProfessorCoordenador}" />
+				<h:inputText size="4" maxlength="4" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.ano}" styleClass="form-control camposObrigatorios" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado or AvaliacaoOnlineControle.bloquearAlteracaoConformeRegraQuestoesAdicionadas  or !LoginControle.permissaoAcessoMenuVO.permitirLancarNotaRetroativo}" onkeypress="aceitarSomenteValorNumerico(this)">
+					<a4j:ajax event="change" execute="@form" listener="#{AvaliacaoOnlineControle.montarListaSelectItemTurma(false)}" render="form" />
+				</h:inputText>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma and AvaliacaoOnlineControle.isApresentarSemestreVisaoProfessorCoordenador}">
+				<h:outputText styleClass="field control-label tituloCampos" value="Semestre" />
+				<h:selectOneMenu id="semestre2" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.semestre}" rendered="#{AvaliacaoOnlineControle.isApresentarSemestreVisaoProfessorCoordenador}" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado or AvaliacaoOnlineControle.bloquearAlteracaoConformeRegraQuestoesAdicionadas  or !LoginControle.permissaoAcessoMenuVO.permitirLancarNotaRetroativo}">
+					<a4j:ajax event="change" execute="@form" listener="#{AvaliacaoOnlineControle.montarListaSelectItemTurma(false)}" render="form" />
+					<f:selectItems value="#{EnumControle.comboboxSemestreEnum}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma and AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoProfessor}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requisicao_turma}" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma and AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoProfessor}" />
+				<h:selectOneMenu id="turmas" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado or AvaliacaoOnlineControle.bloquearAlteracaoConformeRegraQuestoesAdicionadas}" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.turmaVO.codigo}">
+					<a4j:ajax event="change" execute="@form" listener="#{AvaliacaoOnlineControle.preencherDadosTurma}" render="form" />
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemTurma}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProgramacaoAula_disciplina}" />
+				<h:selectOneMenu id="disciplinaPorTurma" styleClass="form-control camposObrigatorios" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado or AvaliacaoOnlineControle.bloquearAlteracaoConformeRegraQuestoesAdicionadas or AvaliacaoOnlineControle.avaliacaoOnlineVO.turmaVO.codigo eq 0}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.disciplinaVO.codigo}">
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemDisciplinasPorTurma}" />
+					<a4j:ajax event="change" execute="@form" listener="#{AvaliacaoOnlineControle.setSimulandoAvaliacao(false)}" render="form">
+					</a4j:ajax>
+					<a4j:ajax event="change" oncomplete="focus('form:disciplinas')" execute="@form" listener="#{AvaliacaoOnlineControle.consultarTemaAssunto}" render="form">
+					</a4j:ajax>
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.disciplina and AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoProfessor}" id="disicplinaProf">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Disciplina_tituloForm}" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.disciplina}" />
+				<h:selectOneMenu id="disciplinas" styleClass="form-control camposObrigatorios" disabled="#{AvaliacaoOnlineControle.bloquearAlteracaoConformeRegraQuestoesAdicionadas}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.disciplinaVO.codigo}">
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemDisciplinasProfessor}" />
+					<a4j:ajax event="change" oncomplete="focus(#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.geral or AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.disciplina ? 'form:conteudo' : 'form:parametros'})" execute="@form" render="panelGridForm, form" listener="#{AvaliacaoOnlineControle.montarListaSelectItemConteudos}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.disciplina and !AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoProfessor}" id="disicplina">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Disciplina_tituloForm}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:inputText styleClass="form-control camposSomenteLeitura" readonly="true" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.disciplinaVO.nome}" />
+					<h:panelGroup styleClass="append-icon right">
+						<a4j:commandLink id="consultarDisciplina" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado or AvaliacaoOnlineControle.bloquearAlteracaoConformeRegraQuestoesAdicionadas}" render="formDisciplina" oncomplete="#{rich:component('panelDisciplina')}.show();" action="#{AvaliacaoOnlineControle.limparMensagem}">
+							<f:setPropertyActionListener value="false" target="#{AvaliacaoOnlineControle.simulandoAvaliacao}"></f:setPropertyActionListener>
+							<i class="#{msg_botoes.btn_icon_lupa_embutido}" style="font-size: 12px" />
+						</a4j:commandLink>
+						<a4j:commandLink id="limparDadosDisciplina" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado or AvaliacaoOnlineControle.bloquearAlteracaoConformeRegraQuestoesAdicionadas}" action="#{AvaliacaoOnlineControle.limparDadosDisciplina}" render="panelGridForm, form">
+							<f:setPropertyActionListener value="false" target="#{AvaliacaoOnlineControle.simulandoAvaliacao}"></f:setPropertyActionListener>
+							<i class="#{msg_botoes.btn_icon_limpar_embutido}" style="font-size: 12px" />
+						</a4j:commandLink>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="panelconteudo" layout="block" styleClass="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.geral ? 'col-md-12': 'col-md-6'}" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.geral or AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.disciplina }">
+				<h:outputText styleClass="field control-label tituloCampos" value="Conteúdo" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.geral or AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.disciplina }" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:selectOneMenu id="conteudo" styleClass="form-control #{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline ne 'FIXO'? 'camposObrigatorios' : 'campos'}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.conteudoVO.codigo}" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}">
+						<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemConteudo}" />
+						<a4j:ajax event="change" oncomplete="focus('form:parametros')" execute="@form" listener="#{AvaliacaoOnlineControle.limparCamposQuestoesQuandoConteudoOuDisciplinaAlterado}" render="panelGridForm, form" />
+					</h:selectOneMenu>
+					<h:panelGroup styleClass="append-icon right pr10 mt5">
+						<otm:commandIcon id="atualizarConteudo" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" render="panelGridForm, form" action="#{AvaliacaoOnlineControle.montarListaSelectItemConteudos}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4" id="panelparametros">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ParametrosMonitoramentoAvaliacaoOnline}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:selectOneMenu id="parametros" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.parametrosMonitoramentoAvaliacaoOnlineVO.codigo}" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}">
+						<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemParametrosMonitoramentoAvaliacaoOnline}" />
+					</h:selectOneMenu>
+					<span class="append-icon right mr10 mt5"> <otm:commandIcon id="atualizarParametros" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" render="panelGridForm, form" action="#{AvaliacaoOnlineControle.montarListaSelectItemParametrosMonitoramentoAvaliacaoOnline}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" />
+					</span>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-2">
+				<h:outputText styleClass="field control-label tituloCampos" value="Variável Nota" />
+				<h:selectOneMenu id="variavelNotaCfgPadraoAvaliacaoOnlineRea" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.variavelNotaCfgPadraoAvaliacaoOnlineRea}">
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemVariavelNotaCfaVOs}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_percentAcertosConsiderarAprovado}" />
+				<h:inputText styleClass="form-control camposObrigatorios" readonly="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.percentualAprovacao}" onkeydown="aceitarSomenteValorNumerico(this)" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3">
+				<otm:outputHelp tooltip="#{msg.help_tempoLimiteRealizacaoAvaliacaoOnline}" id="tempoProvaOut" value="Tempo de Realização (Em Minutos)" />
+				<h:inputText id="tempoLimiteRealizacaoAvaliacaoOnline" onkeydown="aceitarSomenteValorNumerico(this)" styleClass="form-control camposObrigatorios" maxlength="5" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tempoLimiteRealizacaoAvaliacaoOnline}" />
+			</h:panelGroup>
+			<h:panelGroup rendered="#{AvaliacaoOnlineControle.isApresentarNDiasEntreAvaliacaoOnlineEVezesPodeRepetir}" styleClass="col-md-3" layout="block">
+				<otm:outputHelp tooltip="#{msg.help_nrDiasEntreAvaliacoesOnline}" id="nrDiasEntreAvaliacoesOnline_Id" value="#{msg_aplic.prt_ConfiguracaoEAD_nrDiasEntreAvalicaoOnline}" />
+				<h:inputText id="nrdiasEntreAvaliacaoOnline" onkeydown="aceitarSomenteValorNumerico(this)" size="4" styleClass="form-control camposObrigatorios" maxlength="2" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.nrDiasEntreAvalicaoOnline}" />
+			</h:panelGroup>
+			<h:panelGroup rendered="#{AvaliacaoOnlineControle.isApresentarNDiasEntreAvaliacaoOnlineEVezesPodeRepetir}" styleClass="col-md-3" layout="block">
+				<otm:outputHelp tooltip="#{msg.help_nrVezesPodeRepetirAvaliacaoOnline}" id="nrVezesPodeRepetirAvaliacaoOnline_Id" value="#{msg_aplic.prt_ConfiguracaoEAD_nrVezesPodeRepetirAvaliacaoOnline}" />
+				<h:inputText id="nrVezesPodeRepetirAvaliacaoOnline" onkeydown="aceitarSomenteValorNumerico(this)" size="4" styleClass="form-control camposObrigatorios" maxlength="2" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.nrVezesPodeRepetirAvaliacaoOnline}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="#{!AvaliacaoOnlineControle.isRenderizarComboBoxPoliticaSelecaoDeQuestao ? 'col-md-6' : 'col-md-3'}">
+				<otm:outputHelp id="tipoGeracaoOut" value="#{msg_aplic.prt_AvaliacaoOnline_tipoGeracao}">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoGeracaoExC01}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoGeracaoExC02}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoGeracaoExC03}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoGeracaoExC04}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoGeracaoExC05}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_tipoGeracaoExC06}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</otm:outputHelp>
+				<h:selectOneMenu id="tipoGeracaoOnline" disabled="#{AvaliacaoOnlineControle.isDesativarComboBoxTipoGeracaoAvaliacaoOnline or AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline}" readonly="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}">
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemTipoGeracaoProvaOnline}" />
+					<a4j:ajax event="change" oncomplete="focus(#{AvaliacaoOnlineControle.isRenderizarComboBoxPoliticaSelecaoDeQuestao ? 'form' : 'form' })" render="form" execute="@form" listener="#{AvaliacaoOnlineControle.limparCamposQuestoesQuandoConteudoOuDisciplinaAlterado}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{AvaliacaoOnlineControle.isRenderizarComboBoxPoliticaSelecaoDeQuestao}">
+				<otm:outputHelp id="politicaSelecaoQuestaoOut" value="#{msg_aplic.prt_AvaliacaoOnline_politicaSelecaoQuestao}">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_politicaSelecaoQuestaoExC01}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_politicaSelecaoQuestaoExC02}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_politicaSelecaoQuestaoExC03}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_politicaSelecaoQuestaoExC04}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</otm:outputHelp>
+				<h:selectOneMenu id="politicaSelecaoQuestao" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.politicaSelecaoQuestaoEnum}">
+					<f:selectItems value="#{AvaliacaoOnlineControle.comboBoxRegraPoliticaSelecaoQuestao}" />
+					<a4j:ajax event="change" oncomplete="focus(#{AvaliacaoOnlineControle.isApresentarComboBoxRegraDistribuicaoQuestao ? 'form' : 'form' })" render="form" execute="@form" listener="#{AvaliacaoOnlineControle.validarSelecaoPoliticaSelecaoQuestaoEnum}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.isApresentarComboBoxRegraDistribuicaoQuestao}">
+				<otm:outputHelp id="regraDistribuicaoQuestaoOut" value="#{msg_aplic.prt_AvaliacaoOnline_regraDistribuicaoQuestao}">
+					<h:panelGroup layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_regraDistribuicaoQuestaoExC01}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_regraDistribuicaoQuestaoExC02}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_regraDistribuicaoQuestaoExC03}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg.help_regraDistribuicaoQuestaoExC04}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</otm:outputHelp>
+				<h:selectOneMenu id="regraDistruicaoQuestao" disabled="#{AvaliacaoOnlineControle.isFixarOpcaoEscolhaRegraDistribuicao}" styleClass="form-control camposObrigatorios" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.regraDistribuicaoQuestaoEnum}">
+					<f:selectItems value="#{EnumControle.comboBoxRegraDistribuicaoQuestaoEnum}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" id="panelregraDefinicaoPeriodoAvaliacaoOnline">
+				<otm:outputHelp id="regraDefinicaoPeriodoAvaliacaoOnlineOut" value="#{msg_aplic.prt_AvaliacaoOnline_regraDefinicaoPeriodoAvaliacaoOnline}" tooltip="#{msg.help_AvaliacaoOnline_regraDefinicaoPeriodoAvaliacaoOnline}"></otm:outputHelp>
+				<h:selectOneMenu id="regraDefinicaoPeriodoAvaliacaoOnline" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.regraDefinicaoPeriodoAvaliacaoOnline}" styleClass="form-control camposObrigatorios" disabled="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}">
+					<f:selectItems value="#{AvaliacaoOnlineControle.listaSelectItemRegraDefinicaoPeriodoAvaliacaoOnline}" />
+					<a4j:ajax event="change" oncomplete="focus(#{AvaliacaoOnlineControle.avaliacaoOnlineVO.regraDefinicaoPeriodoAvaliacaoOnline eq 'NUMERO_DIA_ESPECIFICO' ? 'form' : (AvaliacaoOnlineControle.avaliacaoOnlineVO.regraDefinicaoPeriodoAvaliacaoOnline.periodoDiaFixo ? 'form' : 'form')})" render="form" execute="@form" listener="#{AvaliacaoOnlineControle.setSimulandoAvaliacao(false)}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.regraDefinicaoPeriodoAvaliacaoOnline eq 'NUMERO_DIA_ESPECIFICO'}">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_qtdDiasLimiteResponderAvaliacaOnline}" />
+				<h:inputText id="qtdDiasLimiteResponderAvaliacaOnline" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.regraDefinicaoPeriodoAvaliacaoOnline eq 'NUMERO_DIA_ESPECIFICO'}" onkeydown="aceitarSomenteValorNumerico(this)" styleClass="form-control campos" maxlength="3" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.qtdDiasLimiteResponderAvaliacaOnline}" />
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6" id="apresentarGabarito">
+				<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_apresentarGabaritoProvaAlunoAposDataTerminoPeriodoRealizacao}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<otm:selectBooleanCheckbox id="apresentarGabaritoProvaAlunoAposDataTerminoPeriodoRealizacao" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.apresentarGabaritoProvaAlunoAposDataTerminoPeriodoRealizacao}">
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-6">
+				<otm:outputHelp id="helpLimiteTempoProvaAlunoDentroPeriodoRealizacao" tooltip="#{msg.msg_AvaliacaoOnline_limiteTempoProvaAlunoDentroPeriodoRealizacao}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_limiteTempoProvaAlunoDentroPeriodoRealizacao}" />
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<otm:selectBooleanCheckbox id="limiteTempoProvaAlunoDentroPeriodoRealizacao" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.limiteTempoProvaAlunoDentroPeriodoRealizacao}">
+					</otm:selectBooleanCheckbox>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-4 pn" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.regraDefinicaoPeriodoAvaliacaoOnline.periodoDiaFixo}">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="Período de Liberação Da Avaliação On-line" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.regraDefinicaoPeriodoAvaliacaoOnline.periodoDiaFixo}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6 h36">
+					<otm:calendar id="dataInicioAvaliacaoFixo" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.dataInicioAvaliacaoFixo}" datePattern="dd/MM/yyyy HH:mm" styleClass="form-control camposObrigatorios" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6 h36">
+					<otm:calendar id="dataTerminoAvaliacaoFixo" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.dataTerminoAvaliacaoFixo}" datePattern="dd/MM/yyyy HH:mm" styleClass="form-control camposObrigatorios" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="panelFlags">
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<otm:outputHelp id="apresentarNotaDaQuestaoOut" value="#{msg_aplic.prt_avaliacaoOnline_apresentarNotaDaQuestao}" tooltip="#{msg.msg_AvaliacaoOnline_apresentarNotaQuestao}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="apresentarNotaDaQuestao" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.apresentarNotaDaQuestao}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="panelProfessorExclusivo" rendered="#{!AvaliacaoOnlineControle.usuarioLogado.isApresentarVisaoProfessor}">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos btn-block" value="#{msg_aplic.prt_Conteudo_usoExclusivoProfessor}" />
+						<otm:selectBooleanCheckbox id="usoExclusivoProfessor" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.usoExclusivoProfessor}">
+							<a4j:ajax event="change" oncomplete="focus(#{AvaliacaoOnlineControle.avaliacaoOnlineVO.usoExclusivoProfessor ? 'form': 'form'})" execute="@form" render="form, panelFlags, panelProfessorExclusivo" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12" id="panelProfessorExclusivoPr" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.usoExclusivoProfessor}">
+						<h:outputText id="professor" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Emprestimo_Professor}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText id="nomeProfessor" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeituraObrigatorio" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.professor.nome}" />
+							<span class="append-icon right"> <otm:commandIcon id="consultaProfessor" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" tooltip="Localizar Professor" render="formProfessor" oncomplete="#{rich:component('panelProfessor')}.show();" action="#{AvaliacaoOnlineControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosProfessor" disabled="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.usoExclusivoProfessor}" tooltip="Limpas Dados" action="#{AvaliacaoOnlineControle.limparDadosProfessor}" render="panelGridForm, form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:panelGroup>
+
+		<h:panelGroup id="panelRandomico">
+			<otm2:panel name="panel_randomico" styleClassFooter="dn" styleClassHeader="mn bg-gray p10" styleClassBody="mn" stylePanel="margin-top: 10px" renderedControl="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline eq 'FIXO' and !AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado and AvaliacaoOnlineControle.permitirAlteracaoValorNota}">
+				<ui:define name="header">
+					<img src="https://img.icons8.com/ios-filled/16/000000/task.png" class="mr5" />
+					<h:outputText rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline eq 'RANDOMICO_POR_COMPLEXIDADE'}" styleClass="tituloCampos" value="Regras de Randomização das Questões" />
+					<h:outputText rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline eq 'FIXO'}" styleClass="tituloCampos" value="Questões da Avaliação On-line" />
+				</ui:define>
+				<ui:define name="control">
+					<h:panelGroup id="exercicios" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline eq 'FIXO' and !AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado and AvaliacaoOnlineControle.permitirAlteracaoValorNota}">
+						<otm:commandIcon id="adicionarQuestoes" rendered="#{!AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado and AvaliacaoOnlineControle.permitirAlteracaoValorNota}" icon="#{msg_botoes.btn_icon_adicionar2_embutido} mr5 text-primary" styleIcon="font-size: 15px" oncomplete="#{AvaliacaoOnlineControle.abrirModalConsultarQuestoes}" tooltip="Adicionar Questão Manualmente" render="formQuestao" />
+						<otm:commandIcon id="adicionarQuestoesRandomicamente" rendered="#{!AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado and AvaliacaoOnlineControle.permitirAlteracaoValorNota}" oncomplete="#{AvaliacaoOnlineControle.abrirModalSelecionarQuestoesRandomicamente}" icon="#{msg_botoes.btn_icon_adicionar2_embutido} mr5 text-success" styleIcon="font-size: 15px" tooltip="Adicionar Questão Randomicamente" render="formQuestaoRandomicamente" />
+					</h:panelGroup>
+				</ui:define>
+				<ui:define name="body">
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_qtdeQuestoesDificeis}" />
+						<h:inputText id="quantidadeNivelQuestaoDificil" disabled="#{!AvaliacaoOnlineControle.permitirAlteracaoValorNota or AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline eq 'FIXO'}" styleClass="form-control #{!AvaliacaoOnlineControle.permitirAlteracaoValorNota ? 'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.quantidadeNivelQuestaoDificil}" onkeydown="aceitarSomenteValorNumerico(this)">
+							<a4j:ajax event="change" oncomplete="focus('form:notaPorQuestaoNivelDificil')" execute="@form" listener="#{AvaliacaoOnlineControle.somarNotaAvaliacao}" render="form:valorAvaliacaoRandomico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_notaPorQuestaoDificeis}" />
+						<h:inputText id="notaPorQuestaoNivelDificil" disabled="#{!AvaliacaoOnlineControle.permitirAlteracaoValorNota}" styleClass="form-control #{!AvaliacaoOnlineControle.permitirAlteracaoValorNota ? 'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.notaPorQuestaoNivelDificil}" onkeydown="aceitarSomenteValorDecimal(this)">
+							<f:converter converterId="FormatadorNumerico" />
+							<a4j:ajax event="change" oncomplete="focus('form:quantidadeNivelQuestaoMedio')" execute="@form" listener="#{AvaliacaoOnlineControle.somarNotaAvaliacao}" render="form:valorAvaliacaoRandomico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_qtdeQuestoesMedianas}" />
+						<h:inputText id="quantidadeNivelQuestaoMedio" disabled="#{!AvaliacaoOnlineControle.permitirAlteracaoValorNota or AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline eq 'FIXO'}" styleClass="form-control #{!AvaliacaoOnlineControle.permitirAlteracaoValorNota ? 'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.quantidadeNivelQuestaoMedio}" onkeydown="aceitarSomenteValorNumerico(this)">
+							<a4j:ajax event="change" oncomplete="focus('form:notaPorQuestaoNivelMedio')" execute="@form" listener="#{AvaliacaoOnlineControle.somarNotaAvaliacao}" render="form:valorAvaliacaoRandomico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_notaPorQuestaoMedianas}" />
+						<h:inputText id="notaPorQuestaoNivelMedio" disabled="#{!AvaliacaoOnlineControle.permitirAlteracaoValorNota}" styleClass="form-control #{!AvaliacaoOnlineControle.permitirAlteracaoValorNota? 'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.notaPorQuestaoNivelMedio}" onkeydown="aceitarSomenteValorDecimal(this)">
+							<f:converter converterId="FormatadorNumerico" />
+							<a4j:ajax event="change" oncomplete="focus('form:quantidadeNivelQuestaoFacil')" execute="@form" listener="#{AvaliacaoOnlineControle.somarNotaAvaliacao}" render="form:valorAvaliacaoRandomico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_qtdeQuestoesFaceis}" />
+						<h:inputText id="quantidadeNivelQuestaoFacil" disabled="#{!AvaliacaoOnlineControle.permitirAlteracaoValorNota or AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline eq 'FIXO'}" styleClass="form-control #{!AvaliacaoOnlineControle.permitirAlteracaoValorNota? 'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.quantidadeNivelQuestaoFacil}" onkeydown="aceitarSomenteValorNumerico(this)">
+							<a4j:ajax event="change" oncomplete="focus('form:notaPorQuestaoNivelFacil')" execute="@form" listener="#{AvaliacaoOnlineControle.somarNotaAvaliacao}" render="form:valorAvaliacaoRandomico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_notaPorQuestaoFaceis}" />
+						<h:inputText id="notaPorQuestaoNivelFacil" disabled="#{!AvaliacaoOnlineControle.permitirAlteracaoValorNota}" styleClass="form-control #{!AvaliacaoOnlineControle.permitirAlteracaoValorNota? 'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.notaPorQuestaoNivelFacil}" onkeydown="aceitarSomenteValorDecimal(this)">
+							<f:converter converterId="FormatadorNumerico" />
+							<a4j:ajax event="change" oncomplete="focus(#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline ne 'FIXO' ? 'form' : 'form'})" execute="@form" listener="#{AvaliacaoOnlineControle.somarNotaAvaliacao}" render="form:valorAvaliacaoRandomico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline ne 'FIXO'}" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_qtdeQuestoesQualquerNivel}" />
+						<h:inputText id="quantidadeQualquerNivelQuestao" disabled="#{!AvaliacaoOnlineControle.permitirAlteracaoValorNota}" styleClass="form-control #{!AvaliacaoOnlineControle.permitirAlteracaoValorNota? 'camposSomenteLeitura' : 'camposObrigatorios'}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.quantidadeQualquerNivelQuestao}" onkeydown="aceitarSomenteValorNumerico(this)">
+							<a4j:ajax event="change" oncomplete="focus('form:notaMaximaAvaliacao')" execute="@form" listener="#{AvaliacaoOnlineControle.somarNotaAvaliacao}" render="form:valorAvaliacaoRandomico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" id="valorAvaliacaoRandomico" styleClass="col-md-3">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nota Máxima Avaliação" />
+						<h:inputText id="notaMaximaAvaliacao" styleClass="form-control camposSomenteLeitura" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.notaMaximaAvaliacao}" readonly="true" onkeydown="aceitarSomenteValorDecimal(this)">
+							<f:converter converterId="FormatadorNumerico" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline eq 'RANDOMICO_POR_COMPLEXIDADE'}">
+						<otm:outputHelp id="randomizarApenasQuestoesCadastradasPeloProfessorOut" tooltip="#{msg.help_RandomizarApenasQuestoesCadastradasPeloProfessor}" value="#{msg_aplic.prt_AvaliacaoOnline_randomizarApenasQuestoesCadastradasPeloProfessor}"></otm:outputHelp>
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="randomizarApenasQuestoesCadastradasPeloProfessor" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.randomizarApenasQuestoesCadastradasPeloProfessor}" disabled="#{AvaliacaoOnlineControle.desabilitarRecursoRandomizacaoQuestaoProfessor}" styleClass="form-control campos" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" id="permitirRepeticoes" rendered="#{AvaliacaoOnlineControle.isRenderizarCamposRandomizacaoQuestaoTipoUsoDisciplinaOuGeral}">
+						<otm:outputHelp tooltip="#{msg.help_permitirRepetirQuestao}" id="permiteRepeticoesDeQuestoesAPartirSegundaAvaliacaoOnlineAlunoOut" value="#{msg_aplic.prt_AvaliacaoOnline_permiteRepeticoesDeQuestoesAPartirSegundaAvaliacaoOnlineAluno}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="permiteRepeticoesDeQuestoesAPartirSegundaAvaliacaoOnlineAluno" styleClass="form-control campos" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.permiteRepeticoesDeQuestoesAPartirSegundaAvaliacaoOnlineAluno}">
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline ne 'FIXO' and AvaliacaoOnlineControle.avaliacaoOnlineVO.isPermiteInformarTemaAssunto and !empty AvaliacaoOnlineControle.avaliacaoOnlineVO.avaliacaoOnlineTemaAssuntoVOs}">
+						<h:outputText styleClass="field  control-label tituloCampos col-md-12 title" style="font-size:14px;width:100%;display:block" value="Filtrar Questão(ões) do(s) Assunto(s)" />
+						<h:panelGroup id="assuntos" layout="block" styleClass="row">
+							<a4j:repeat value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.avaliacaoOnlineTemaAssuntoVOs}" rowKeyVar="rowTema" var="temaAssuntoItem" style="width:100%">
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field  control-label tituloCampos col-md-12 pn" value="#{temaAssuntoItem.temaAssuntoVO.nome}"></h:outputText>
+									<otm:selectBooleanCheckbox id="selecionado#{rowTema}" value="#{temaAssuntoItem.selecionado}">
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</a4j:repeat>
+						</h:panelGroup>
+					</h:panelGroup>
+				</ui:define>
+			</otm2:panel>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="row mn" style="margin-top: 5px !important" id="tabelaExercicios" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoGeracaoProvaOnline eq 'FIXO'}">
+			<a4j:repeat id="items" rowKeyVar="row" rendered="#{!empty AvaliacaoOnlineControle.avaliacaoOnlineVO.avaliacaoOnlineQuestaoVOs}" value="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.avaliacaoOnlineQuestaoVOs}" var="questaoListaExercicioItens">
+				<h:panelGroup layout="block" styleClass="row mn pt10" style="border:1px solid #cccccc; border-radius:5px; margin-bottom: 5px !important">
+					<h:panelGroup layout="block" id="panelEnunciado" styleClass="col-md-12">
+						<rich:dragSource type="AvaliacaoOnlineQuestaoVO" dragIndicator="indicator" dragValue="#{questaoListaExercicioItens}">
+						</rich:dragSource>
+						<rich:dropTarget dropValue="#{questaoListaExercicioItens}" render="form" dropListener="#{AvaliacaoOnlineControle.alterarOrdemApresentacaoQuestaoDragDrop}" acceptedTypes="AvaliacaoOnlineQuestaoVO">
+						</rich:dropTarget>
+						<h:panelGroup layout="block" style="float:left;position:relative;top:-3px" styleClass="mr5">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{questaoListaExercicioItens.ordemApresentacao})" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" id="editorFinish" style="float: left;text-align:left;height:100%;width:80%">
+							<rich:tooltip value="Arraste e solte sobre outra pergunta para alterar a ordem de apresentação" target="form:items:#{row}:editorFinish"></rich:tooltip>
+							<h:outputText escape="false" styleClass="field  control-label tituloCampos bold" value="#{questaoListaExercicioItens.questaoVO.enunciado}">
+							</h:outputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" id="opcEditor" style="float: left;width:10%;text-align:right">
+							<otm:commandIcon onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.situacao ne 'ATIVO'}" execute="@this" action="#{AvaliacaoOnlineControle.removerQuestaoAvaliacaoOnline}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" render="form:dadosBasicos" />
+							<otm:commandIcon execute="@this" ignoreDupResponses="true" rendered="#{row gt 0 and row lt AvaliacaoOnlineControle.avaliacaoOnlineVO.numeroQuestoes}" action="#{AvaliacaoOnlineControle.subirQuestaoAvaliacaoOnline}" icon="#{msg_botoes.btn_icon_subir} iconePequeno" render="form:tabelaExercicios" />
+							<otm:commandIcon execute="@this" ignoreDupResponses="true" rendered="#{(row+1) lt AvaliacaoOnlineControle.avaliacaoOnlineVO.numeroQuestoes}" action="#{AvaliacaoOnlineControle.descerQuestaoAvaliacaoOnline}" icon="#{msg_botoes.btn_icon_descer} iconePequeno" render="form:tabelaExercicios" />
+							<otm:commandIcon tooltip="#{questaoListaExercicioItens.questaoVO.ajuda}" rendered="#{questaoListaExercicioItens.questaoVO.isExisteAjuda}" icon="#{msg_botoes.btn_icon_help} iconePequeno" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" style="float: right;width:5%;text-align:right">
+							<otm:commandIcon rendered="#{questaoListaExercicioItens.maximixado}" style="position: relative;top: 2px;" render="tabelaExercicios" action="#{questaoListaExercicioItens.setMaximixado(false)}" icon="fas fa-sort-up " />
+							<otm:commandIcon rendered="#{!questaoListaExercicioItens.maximixado}" style="position: relative;top: -2px;" render="tabelaExercicios" action="#{questaoListaExercicioItens.setMaximixado(true)}" icon="fas fa-sort-down" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup id="columnOpcaoes#{row}" rendered="#{questaoListaExercicioItens.maximixado}" layout="block" styleClass="row pl10">
+						<a4j:repeat id="subItems#{row}" value="#{questaoListaExercicioItens.questaoVO.opcaoRespostaQuestaoVOs}" var="opcaoRespostaQuestaoItens">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:panelGroup layout="block" id="situacaoResposta" styleClass="tituloCamposOpcaoRespostaQuestao" style="float:left;text-align:left;height:100%;margin-right:3px;">
+									<otm:commandIcon rendered="#{opcaoRespostaQuestaoItens.correta}" icon="fas fa-check text-info" styleClass="field control-label tituloCampos" />
+									<otm:commandIcon rendered="#{!opcaoRespostaQuestaoItens.correta}" icon="fas fa-times text-danger" styleClass="field control-label tituloCampos" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" style="float:left;position:relative;top:-4px">
+									<h:outputText styleClass="field control-label tituloCampos" style="margin-right:3px;" value="#{opcaoRespostaQuestaoItens.letraCorrespondente}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" id="editorFinish" styleClass="tituloCamposOpcaoRespostaQuestao" style="float:left;text-align:left;height:100%;width:90%;">
+									<h:outputText escape="false" styleClass="field control-label tituloCampos" value="#{opcaoRespostaQuestaoItens.opcaoResposta}">
+									</h:outputText>
+								</h:panelGroup>
+							</h:panelGroup>
+						</a4j:repeat>
+					</h:panelGroup>
+				</h:panelGroup>
+			</a4j:repeat>
+		</h:panelGroup>
+		<h:panelGroup layout="block" id="msgs" styleClass="row">
+			<otm:mensagem bean="#{AvaliacaoOnlineControle}"></otm:mensagem>
+		</h:panelGroup>
+		<h:panelGroup id="panelGridMensagens" styleClass="barraFlutuanteInferior row text-center" layout="block">
+			<h:panelGroup styleClass="btn-group btn-group-lg col-xs-12" layout="block">
+				<otm:commandButton id="novo" render="form" action="#{AvaliacaoOnlineControle.novo}" accesskey="1" value="Novo" styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_adicionar_embutido}" tooltip="#{msg.msg_novo_dados}" />
+				<otm:commandButton style="margin-left:5px" id="gravar" render="form" action="#{AvaliacaoOnlineControle.validarAvaliacaoOnlineModalAntesGravar}" oncomplete="#{AvaliacaoOnlineControle.oncompleteModal}" value="Gravar" styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" accesskey="2" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.situacao ne 'ATIVO' or (AvaliacaoOnlineControle.avaliacaoOnlineVO.situacao eq 'ATIVO' and !AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma )}" />
+				<otm:commandButton style="margin-left:5px" id="gravarTurma" render="form, formAvisoAlteracaoPorTurmaAtivada" action="#{AvaliacaoOnlineControle.prepararDadosParaAtivacaoPorTurma}" oncomplete="#{rich:component('panelAvisoAlteracaoPorTurmaAtivada')}.show();" value="Gravar Turma" styleClass="btn btn-dark" icon="#{msg_botoes.btn_icon_gravar_embutido}" tooltip="#{msg.msg_gravar_dados}" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.situacao eq 'ATIVO' and AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}" />
+				<otm:commandButton style="margin-left:5px" id="excluir" rendered="#{!AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" action="#{AvaliacaoOnlineControle.excluir}" value="Excluir" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_remover_embutido}" tooltip="#{msg.msg_excluir_dados}" accesskey="3" />
+				<otm:commandButton style="margin-left:5px" render="form" id="ativar" action="#{AvaliacaoOnlineControle.ativarAvaliacaoOnline}" value="Ativar" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_ativar_embutido}" tooltip="#{msg.msg_ativar_dados}" accesskey="5" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.situacao ne 'ATIVO' and !AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}" />
+				<otm:commandButton style="margin-left:5px" render="form, formAvisoAtivacaoPorTurma " id="ativarPorTurma" action="#{AvaliacaoOnlineControle.prepararDadosParaAtivacaoPorTurma}" oncomplete="#{AvaliacaoOnlineControle.abrirModalAvisoAtivacaoPorTurma}" value="Ativar" styleClass="btn btn-primary" icon="#{msg_botoes.btn_icon_ativar_embutido}" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.situacao ne 'ATIVO' and AvaliacaoOnlineControle.avaliacaoOnlineVO.tipoUso.turma}" />
+				<otm:commandButton style="margin-left:5px" render="form, formAvisoInativarPorTurma" id="inativar" action="#{AvaliacaoOnlineControle.validarAvaliacaoOnlineModalAntesInativar}" oncomplete="#{AvaliacaoOnlineControle.oncompleteModal}" styleClass="btn btn-danger" value="Inativar" icon="#{msg_botoes.btn_icon_inativar_embutido}" tooltip="#{msg_bt.btn_inativar}" rendered="#{AvaliacaoOnlineControle.avaliacaoOnlineVO.situacao eq 'ATIVO'}" />
+				<otm:commandButton style="margin-left:5px" render="form" id="clonar" rendered="#{AvaliacaoOnlineControle.isNaoPermitirAlterarQuandoAtivado}" action="#{AvaliacaoOnlineControle.clonar}" value="Clonar" styleClass="btn btn-warning" icon="#{msg_botoes.btn_icon_clonar_embutido}" tooltip="#{msg_bt.btn_clonar}" accesskey="7" />
+				<otm:commandButton style="margin-left:5px" render="formSimularAvaliacao, formAvaliacaoOnlineMatricula, msgs" oncomplete="#{AvaliacaoOnlineControle.oncompleteModal}" id="simularId" action="#{AvaliacaoOnlineControle.inicializarDadosSimulacaoVisualizacaoAvaliacaoOnlineAluno}" value="Simular Avaliação" icon="#{msg_botoes.btn_icon_simular_avaliaçao}" tooltip="Simular Avaliação" accesskey="7" />
+				<otm:commandButton style="margin-left:5px" id="consultar" type="submit" accesskey="4" action="#{AvaliacaoOnlineControle.voltarTelaConsulta}" value="consultar" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" title="#{msg.msg_consultar_dados}" />
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:panelGroup>
+</h:form>
+</html>

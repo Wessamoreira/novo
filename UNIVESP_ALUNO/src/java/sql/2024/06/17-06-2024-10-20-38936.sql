@@ -1,0 +1,5 @@
+ALTER TABLE matricula RENAME COLUMN dataEnvioNotificacaoMensagemBoasVindas TO dataenvionotificacaoativacaomatricula;
+ALTER TABLE periodochamadaprocseletivo RENAME COLUMN dataenviomensagemboasvindas TO dataenviomensagemativacaomatricula;
+delete from personalizacaomensagemautomatica where templatemensagemautomaticaenum ='MENSAGEM_NOTIFICACAO_BOASVINDAS_MATRICULA_PROCESSO_SELETIVO';
+
+

@@ -1,0 +1,1612 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_Funcionario_tituloForm}" />
+	</ui:define>
+
+	<ui:define name="modal">
+		<ui:include src="../../visaoAdministrativo/administrativo/funcionarioFormModal.xhtml" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<script type="text/javascript">
+		window.onload = function(){
+		    	document.getElementById("form:matricula").focus();
+	 	    }
+		</script>
+		<h:form id="form">
+			<h:panelGroup id="panelGridForm" layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup id="grupoMatricula" layout="block" styleClass="row">
+						<h:panelGroup layout="block" styleClass="col-md-1 text-center">
+							<h:panelGroup layout="block">
+								<h:panelGroup layout="block" rendered="#{FuncionarioControle.pessoaVO.existeImagem}">
+									<h:graphicImage rendered="#{FuncionarioControle.pessoaVO.existeImagem}" id="foto1" alt="Alterar Foto" value="#{FuncionarioControle.caminhoFotoUsuario}" style="width:64px; height:64px">
+										<a4j:ajax event="click" execute="@this" render="formImagem, formWebCam" oncomplete="Webcam.reset(); #{rich:component('panelImagem')}.show()" />
+									</h:graphicImage>
+								</h:panelGroup>
+								<h:panelGroup layout="block" rendered="#{!FuncionarioControle.pessoaVO.existeImagem}">
+									<otm:commandIcon rendered="#{!FuncionarioControle.pessoaVO.existeImagem}" tooltip="Adicionar Foto Aluno" icon="fa fa-user" styleIcon="font-size:64px;color: #CCCCCC  !important;" oncomplete="Webcam.reset(); #{rich:component('panelImagem')}.show();"></otm:commandIcon>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="#{FuncionarioControle.funcionarioVO.informarMatricula ? 'col-md-3' : 'col-md-4'}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nome}" />
+							<h:inputText id="nome" size="70" maxlength="100" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.nome}">
+								<a4j:ajax event="change" listener="#{FuncionarioControle.setarNomeBatismo}" render="form:nomeBatismo" />
+							</h:inputText>
+							<h:message for="nome" styleClass="field control-label mensagemDetalhada col-md-12" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="#{FuncionarioControle.funcionarioVO.informarMatricula ? 'col-md-3' : 'col-md-4'}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_nomeBatismo}" />
+							<h:inputText id="nomeBatismo" size="70" maxlength="100" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.nomeBatismo}">
+								<a4j:ajax event="change" listener="#{FuncionarioControle.setarNomeSocial}" render="form:nome" execute="form:nome" />
+							</h:inputText>
+							<h:message for="nomeBatismo" styleClass="field control-label mensagemDetalhada col-md-12" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{FuncionarioControle.funcionarioVO.informarMatricula}">
+							<h:outputText id="matriculaTexto" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_matricula}" />
+							<h:panelGroup layout="block" styleClass="pn col-md-12">
+								<h:inputText id="matricula" size="20" maxlength="30" styleClass="form-control camposObrigatorios" readonly="#{FuncionarioControle.isInformarMatricula}" value="#{FuncionarioControle.funcionarioVO.matricula}" />
+							</h:panelGroup>
+							<h:message for="matricula" styleClass="field control-label mensagemDetalhada col-md-12" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{FuncionarioControle.isMostrarCampoMatricula}">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Funcionario_informarMatricula}" />
+							<h:panelGroup layout="block" styleClass="pn col-md-12">
+								<otm:selectBooleanCheckbox id="informarMatricula" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioVO.informarMatricula}">
+									<a4j:ajax event="click" render="form:panelGridForm" listener="#{FuncionarioControle.limparMatricula}" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<rich:tabPanel width="100%" id="richTabFuncionario" headerAlignment="center" activeItem="#{FuncionarioControle.abaAtiva}" switchType="ajax">
+					<rich:tab id="tabDadosPessoais" name="tabDadosPessoais" header="Dados Pessoais" styleClass="richPanel" action="funcionarioDadosPessoaisForm.xhtml?faces-redirect=true">
+					</rich:tab>
+					<!--  ///////////////////////////////////////////// DADOS FUNCIONAIS ///////////////////////////////////////////////-->
+					<rich:tab id="richTabDadosFuncionais" name="richTabDadosFuncionais" header="Dados Funcionais" styleClass="richPanel">
+						<h:panelGroup id="panelGridDadosFuncionais" layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_CPF}" />
+									<h:inputText id="funcionarioCPF" onkeypress="return mascara(this.form, 'form:funcionarioCPF', '999.999.999-99', event);" size="20" maxlength="14" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.pessoaVO.CPF}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_RG}" />
+									<h:inputText id="funcionarioRG" size="20" maxlength="25" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.RG}" />
+									<h:message for="funcionarioRG" styleClass="field control-label mensagemDetalhada col-md-12" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_orgaoEmissor}" />
+									<h:inputText id="orgaoEmissor" size="7" maxlength="20" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.orgaoEmissor}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_estadoEmissaoRG}" />
+									<h:panelGroup layout="block" styleClass="pn col-md-12">
+										<h:selectOneMenu id="estadoEmissaoRG" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.estadoEmissaoRG}">
+											<f:selectItems value="#{FuncionarioControle.listaSelectItemEstadoEmissaoRGPessoa}" />
+										</h:selectOneMenu>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_dataEmissaoRG}" />
+									<otm:calendar id="dataEmissaoRG" inputSize="9" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.dataEmissaoRG}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_tituloEleitoral}" />
+									<h:inputText id="tituloEleitoral" size="20" maxlength="25" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.tituloEleitoral}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_zonaEleitoral}" />
+								<h:inputText id="zonaEleitoral" size="20" maxlength="25" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.zonaEleitoral}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_dataExpedicaoTituloEleitoral}" />
+								<otm:calendar id="dataExpedicaoTituloEleitoral" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" styleClass="form-control campos" inputSize="10" value="#{FuncionarioControle.pessoaVO.dataExpedicaoTituloEleitoral}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_certificadoMilitar}" />
+								<h:inputText id="certificadoMilitar" size="20" maxlength="20" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.certificadoMilitar}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_orgaoExpedidorCertificadoMilitar}" />
+								<h:inputText id="orgaoExpedidorCertificadoMilitar" size="20" maxlength="20" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.orgaoExpedidorCertificadoMilitar}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_dataExpedicaoCertificadoMilitar}" />
+								<otm:calendar id="dataExpedicaoCertificadoMilitar" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" styleClass="form-control campos" inputSize="10" value="#{FuncionarioControle.pessoaVO.dataExpedicaoCertificadoMilitar}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_pispasep}" />
+								<h:inputText id="pispasep" size="20" maxlength="20" styleClass="form-control campos" value="#{FuncionarioControle.pessoaVO.pispasep}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Funcionario_exerceCargoAdministrativo}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12" id="panelGroupExerceAdministrativo">
+									<otm:selectBooleanCheckbox id="exerceCargoAdministrativo" value="#{FuncionarioControle.funcionarioVO.exerceCargoAdministrativo}">
+										<a4j:ajax event="click" execute="@none" listener="#{FuncionarioControle.atualizarExerceCargo}" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_Ativo}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<otm:selectBooleanCheckbox id="pessoaAtivo" value="#{FuncionarioControle.pessoaVO.ativo}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_professor}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<otm:selectBooleanCheckbox id="professor" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioVO.pessoa.professor}">
+										<a4j:ajax event="click" execute="richTabFuncionario" render="form:panelGroupExerceAdministrativo, form:richTabFuncionario" listener="#{FuncionarioControle.renderizarTela}" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<otm:spacer width="100%" />
+								<h:selectOneMenu styleClass="form-control camposObrigatorios" rendered="#{FuncionarioControle.funcionarioVO.pessoa.professor==true}" id="tipoProfessor" value="#{FuncionarioControle.pessoaVO.atuaComoDocente}">
+									<f:selectItems value="#{FuncionarioControle.listaSelectItemAtuaComoDocente}" />
+									<a4j:ajax event="change" oncomplete="document.getElementById('form:tipoProfessor').focus();" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+					<!--/////////////////////////////////////////	CARGOS	 //////////////////////////////////////////////////////-->
+					<rich:tab id="richCargos" name="richCargos" header="#{msg_aplic.prt_FuncionarioCargo_tituloForm}" styleClass="richPanel">
+						<h:panelGroup id="pnlFuncionarioCargo" layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_cargo}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<h:selectOneMenu id="funcionarioCargo_cargo" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.funcionarioCargoVO.cargo.codigo}">
+										<f:selectItems value="#{FuncionarioControle.listaSelectItemCargo}" />
+										<a4j:ajax event="change" listener="#{FuncionarioControle.atualizarCargo}" render="form:pnlUnidadeEnsino, form:pnlDepartamento, form:pnlCbo, form:faixaSalarial, form:nivelSalarial, form:pnlDepartamento, form:pnlFuncionarioCargo, form:progressaoSalarial" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_unidadeEnsino}" />
+								<h:panelGroup id="pnlUnidadeEnsino" layout="block" styleClass="pn col-md-12">
+									<h:selectOneMenu id="funcionarioCargo_unidadeEnsino" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.funcionarioCargoVO.unidade.codigo}">
+										<f:selectItems value="#{FuncionarioControle.listaSelectItemUnidadeEnsino}" />
+										<a4j:ajax event="change" render="@this" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:panelGroup id="pnlDepartamento" layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_departamento}" />
+									<h:panelGroup layout="block" styleClass="pn col-md-12">
+										<h:inputText id="funcionarioCargo_departamento" disabled="true" size="26" styleClass="form-control camposSomenteLeitura" value="#{FuncionarioControle.funcionarioCargoVO.departamento.nome}" />
+										<span class="append-icon right"> <otm:commandIcon id="consultaDepartamento" alt="Departamento" render="formDepartamento" oncomplete="#{rich:component('panelDepartamento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosDepartamento" alt="Limpas Dados" action="#{FuncionarioControle.limparDadosDepartamento}" render="form:pnlDepartamento" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_MatriculaCargo}" />
+									<h:inputText id="funcionarioMatricula" size="34" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioCargoVO.matriculaCargo}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_situacao}" />
+									<h:panelGroup layout="block" styleClass="pn col-md-12">
+										<h:selectOneMenu id="funcionarioCargoSituacao" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.funcionarioCargoVO.situacaoFuncionario}" disabled="#{!FuncionarioControle.permiteAlterarSituacaoCargo and FuncionarioControle.funcionarioCargoVO.codigo ne 0}">
+											<f:selectItems value="#{FuncionarioControle.listaSelectItemSituacaoFuncionario}" />
+										</h:selectOneMenu>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Funcionario_dataAdmissao}" />
+								<otm:calendar id="dataAdmissao" inputSize="8" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" value="#{FuncionarioControle.funcionarioCargoVO.dataAdmissao}" />
+								<h:message for="dataAdmissao" styleClass="form-control camposObrigatorios" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DadosComerciais_dataDemissao}" />
+								<otm:calendar id="dataDemissao" inputSize="8" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" value="#{FuncionarioControle.funcionarioCargoVO.dataDemissao}" />
+								<h:message for="dataDemissao" styleClass="field control-label mensagemDetalhada col-md-12" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_gerente}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<otm:selectBooleanCheckbox styleClass="form-control campos" id="gerente" value="#{FuncionarioControle.funcionarioCargoVO.gerente}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{FuncionarioControle.apresentarCampoConsultorGerente}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_consultor}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<otm:selectBooleanCheckbox id="consultor" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioCargoVO.consultor}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{FuncionarioControle.funcionarioCargoVO.cargo.controlaNivelExperiencia}">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_nivelExperiencia}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<h:selectOneMenu id="nivelExperiencia" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.funcionarioCargoVO.nivelExperiencia}">
+										<f:selectItems value="#{EnumControle.comboboxNivelExperienciaCargoEnum}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_UtilizaNoRH}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<otm:selectBooleanCheckbox id="utilizaNoRH" value="#{FuncionarioControle.funcionarioCargoVO.utilizaRH}" disabled="#{!AplicacaoControle.cliente.permitirAcessoModuloRH}" styleClass="form-control campos">
+										<a4j:ajax event="change" execute="@form" render="form:groupUtilizarRH form:listaFuncionarioCargoVOs" listener="#{FuncionarioControle.limparCamposNaoUtilizadoRH()}" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup id="groupUtilizarRH" disabled="#{!AplicacaoControle.cliente.permitirAcessoModuloRH}">
+							<h:panelGroup layout="block" styleClass="row" rendered="#{FuncionarioControle.funcionarioCargoVO.utilizaRH}">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<hr width="100%"></hr>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_FormaContratacao}" />
+										<h:panelGroup>
+											<h:selectOneMenu id="funcionarioCargo_FormaContratacao" styleClass="#{FuncionarioControle.funcionarioCargoVO.utilizaRH ? 'form-control camposObrigatorios' : 'form-control campos'}" value="#{FuncionarioControle.funcionarioCargoVO.formaContratacao}">
+												<f:selectItems value="#{FuncionarioControle.listaSelectItemFormaContratacao}" />
+												<a4j:ajax event="change" render="form:gridContratacao form:salario form:nivelSalarial form:faixaSalarial" listener="#{FuncionarioControle.apresentarPossuiCargoComissionado()}" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_TipoRecebimento}" />
+										<h:panelGroup layout="block" styleClass="pn col-md-12">
+											<h:selectOneMenu id="funcionarioCargo_TipoRecebimento" styleClass="#{FuncionarioControle.funcionarioCargoVO.utilizaRH ? 'form-control camposObrigatorios' : 'form-control campos'}" value="#{FuncionarioControle.funcionarioCargoVO.tipoRecebimento}">
+												<f:selectItems value="#{FuncionarioControle.listaSelectItemTipoRecebimento}" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_secaoFolhaPagamento}" />
+										<h:panelGroup layout="block" styleClass="pn col-md-12">
+											<span class="append-icon right mr10"> <otm:commandIcon id="consultaSecaoFolhaPagamento" alt="Seção Folha de Pagamento" render="formSecaoFolhaPagamento" oncomplete="#{rich:component('panelSecaoFolhaPagamento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosSecaoFolhaPagamento" alt="Limpas Dados" action="#{FuncionarioControle.limparDadosSecaoFolhaPagamento}" render="form:secaoFolhaPagamento" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+											</span>
+											<h:inputText readonly="true" id="secaoFolhaPagamento" size="26" maxlength="30" styleClass="form-control camposSomenteLeitura" value="#{FuncionarioControle.funcionarioCargoVO.secaoFolhaPagamento.descricao}" />
+										</h:panelGroup>
+									</h:panelGroup>
+
+								</h:panelGroup>
+
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Vagas_salario}" />
+										<h:inputText id="salario" size="34" readonly="#{FuncionarioControle.funcionarioCargoVO.formaContratacao eq 'ESTATUTARIO' ? true : false}" maxlength="10" styleClass="#{FuncionarioControle.funcionarioCargoVO.utilizaRH ? 'form-control camposObrigatorios' : 'form-control campos'}" value="#{FuncionarioControle.funcionarioCargoVO.salario}" onkeydown="aceitarSomenteValorDecimal(this)">
+											<a4j:ajax event="change" execute="@this" render="@this" />
+											<f:converter converterId="FormatadorNumerico" />
+										</h:inputText>
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_nivelSalarial}" />
+										<h:selectOneMenu id="nivelSalarial" styleClass="#{FuncionarioControle.funcionarioCargoVO.formaContratacao eq 'ESTATUTARIO' ? 'form-control camposObrigatorios' : 'form-control campos'}" value="#{FuncionarioControle.funcionarioCargoVO.nivelSalarial.codigo}">
+											<f:selectItems value="#{FuncionarioControle.listaSelectItemNivelSalarial}" />
+											<a4j:ajax event="change" render="form:faixaSalarial form:salario" listener="#{FuncionarioControle.selecionarNivelSalarial()}" />
+										</h:selectOneMenu>
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_faixaSalarial}" />
+										<h:panelGroup layout="block" styleClass="pn col-md-12">
+											<h:selectOneMenu id="faixaSalarial" styleClass="#{FuncionarioControle.funcionarioCargoVO.formaContratacao eq 'ESTATUTARIO' ? 'form-control camposObrigatorios' : 'form-control campos'}" value="#{FuncionarioControle.funcionarioCargoVO.faixaSalarial.codigo}">
+												<f:selectItems value="#{FuncionarioControle.listaSelectItemFaixaSalarial}" />
+												<a4j:ajax event="change" render="form:salario" listener="#{FuncionarioControle.salarioPorFaixaSalarial()}" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_progressaoSalarial}" />
+										<h:inputText id="progressaoSalarial" size="34" readonly="true" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioCargoVO.cargo.progressaoSalarial.descricao}" />
+									</h:panelGroup>
+
+								</h:panelGroup>
+
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_sindicato}" />
+
+										<h:panelGroup id="pnlSindicato" layout="block" styleClass="pn col-md-12">
+											<span class="append-icon right mr10"> <otm:commandIcon id="consultaSindicato" alt="Sindicato" render="formSindicato" oncomplete="#{rich:component('panelSindicato')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosSindicato" alt="Limpas Dados" action="#{FuncionarioControle.limparDadosSindicato}" render="form:pnlSindicato" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+											</span>
+											<h:inputText id="funcionarioCargo_sindicato" disabled="true" size="26" styleClass="form-control camposSomenteLeitura" value="#{FuncionarioControle.funcionarioCargoVO.sindicatoVO.parceiroVO.nome}" />
+										</h:panelGroup>
+									</h:panelGroup>
+
+									<h:panelGroup id="pnlCursoEnquadramento" layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_curso}" />
+
+										<h:panelGroup id="pnlCurso" layout="block" styleClass="pn col-md-12">
+											<span class="append-icon right mr10"> <otm:commandIcon id="consultaCurso" alt="Curso Enquadramento" render="formCursoFuncionarioCargo" oncomplete="#{rich:component('panelCursoFuncionarioCargo')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosCurso" alt="Limpas Dados" action="#{FuncionarioControle.limparDadosCursoFuncionarioCargo}" render="form:pnlCurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+											</span>
+
+											<h:inputText id="funcionarioCargo_curso" disabled="true" size="26" styleClass="form-control camposSomenteLeitura" value="#{FuncionarioControle.funcionarioCargoVO.cursoVO.nome}" />
+
+											<h:commandButton id="help_curso" image="#{resource['/V2/imagens/70.png']}" style="margin-left: 10px" />
+											<rich:tooltip followMouse="false" direction="topLeft" style="left:100px;width:300px;height:50px;" target="help_curso" showDelay="500">
+												<h:outputText styleClass="colunaDireita" value="#{msg.msg_help_Funcionario_cursoEnquadramento}" />
+											</rich:tooltip>
+										</h:panelGroup>
+									</h:panelGroup>
+
+									<h:panelGroup id="pnlCbo" layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Cargo_cbo}" />
+										<h:inputText id="funcionarioCargo_cbo" readonly="true" size="34" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioCargoVO.cargo.cbo}" />
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_JornadaDeTrabalhoHoras}" />
+										<h:inputText id="funcionarioCargo_Jornada" size="10" value="#{FuncionarioControle.funcionarioCargoVO.jornada}" styleClass="#{FuncionarioControle.funcionarioCargoVO.utilizaRH ? 'form-control camposObrigatorios' : 'form-control campos'}" onkeydown="aceitarSomenteValorDecimal(this)">
+											<a4j:ajax event="change" execute="@this" render="@this" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_previdencia}" />
+										<h:panelGroup layout="block" styleClass="pn col-md-12">
+											<h:selectOneMenu id="previdencia" styleClass="form-control campos" value="#{FuncionarioControle.funcionarioCargoVO.previdencia}">
+												<f:selectItems value="#{EnumControle.previdencia}" />
+												<a4j:ajax event="change" render="form:pnlUtilizarRH" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_dataBaseQuinquenio}" />
+										<otm:calendar id="dataBaseQuinquenio" inputSize="31" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" value="#{FuncionarioControle.funcionarioCargoVO.dataBaseQuinquenio}" />
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{FuncionarioControle.funcionarioCargoVO.previdencia eq 'PREVIDENCIA_PROPRIA'}">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_optanteTotal}" />
+										<h:panelGroup layout="block" styleClass="col-md-12 pn">
+											<otm:selectBooleanCheckbox id="optanteTotal" value="#{FuncionarioControle.funcionarioCargoVO.optanteTotal}" styleClass="form-control campos" />
+										</h:panelGroup>
+									</h:panelGroup>
+
+								</h:panelGroup>
+
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<otm:outputHelp tooltip="#{msg.msg_help_Funcionario_salarioComposto}" id="msg_help_Funcionario_salarioComposto" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_salarioComposto}" />
+										<h:panelGroup layout="block" styleClass="pn col-md-12">
+											<otm:selectBooleanCheckbox id="salarioComposto" value="#{FuncionarioControle.funcionarioCargoVO.salarioComposto}" styleClass="form-control campos">
+												<a4j:ajax event="change" listener="#{FuncionarioControle.salarioCompostoSelecionado()}" render="form:salario" />
+											</otm:selectBooleanCheckbox>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+
+								<h:panelGroup id="gridContratacao" layout="block" styleClass="row" rendered="#{FuncionarioControle.funcionarioCargoVO.utilizaRH}">
+									<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{FuncionarioControle.funcionarioCargoVO.formaContratacao eq 'ESTATUTARIO'}">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_comissionado}" />
+										<h:panelGroup layout="block" styleClass="pn col-md-12">
+											<otm:selectBooleanCheckbox id="comissionado" value="#{FuncionarioControle.funcionarioCargoVO.comissionado}" styleClass="form-control campos">
+												<a4j:ajax event="change" execute="@this" render="form:grupoComissionado" />
+											</otm:selectBooleanCheckbox>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+
+								<h:panelGroup id="grupoComissionado" layout="block" styleClass="row" rendered="#{FuncionarioControle.funcionarioCargoVO.utilizaRH and FuncionarioControle.funcionarioCargoVO.comissionado}">
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_tipoContratacao}" />
+										<h:panelGroup layout="block" styleClass="pn col-md-12">
+											<h:selectOneMenu id="funcionarioCargo_tipoContrato" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.funcionarioCargoVO.tipoContratacaoComissionado}">
+												<f:selectItems value="#{EnumControle.tipoContratacaoComissionadosEnum}" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_cargoAtual}" />
+										<h:panelGroup layout="block" styleClass="pn col-md-12">
+											<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.funcionarioCargoVO.cargoAtual.codigo}">
+												<f:selectItems value="#{FuncionarioControle.listaSelectItemCargo}" />
+											</h:selectOneMenu>
+										</h:panelGroup>
+
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FuncionarioCargo_salarioCargoAtual}" />
+										<h:inputText id="salarioCargoAtual" value="#{FuncionarioControle.funcionarioCargoVO.salarioCargoAtual}" styleClass="form-control camposObrigatorios" onkeydown="aceitarSomenteValorDecimal(this)">
+											<a4j:ajax event="change" execute="@this" render="@this" />
+											<f:converter converterId="FormatadorNumerico" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+								<otm:commandButton accesskey="1" styleClass="btn btn-primary dark btn-adicionar" id="btnAdicionarFuncionarioCargo" rendered="#{FuncionarioControle.permiteAdicionarCargo and !FuncionarioControle.funcionarioCargoVO.itemEmEdicao}" value="#{msg_bt.btn_adicionar}" action="#{FuncionarioControle.gravarSituacoesHistorico}" oncomplete="#{FuncionarioControle.abrirPopUpSituacoesHistorico()}" render="formAlterarSituacaoHistoricos, form" />
+								<otm:commandButton style="margin-left:5px;" accesskey="2" icon="#{msg_botoes.btn_icon_editar_embutido}" id="btnAlterarFuncionarioCargo" rendered="#{FuncionarioControle.permiteAdicionarCargo and FuncionarioControle.funcionarioCargoVO.itemEmEdicao}" value="Alterar" action="#{FuncionarioControle.gravarSituacoesHistorico}" oncomplete="#{FuncionarioControle.abrirPopUpSituacoesHistorico()}" render="formAlterarSituacaoHistoricos, form" />
+								<otm:commandButton style="margin-left:5px;" action="#{FuncionarioControle.cancelarEdicaoFuncionarioCargo}" accesskey="3" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" id="btnCancelarFuncionarioCargo" oncomplete="#{rich:component('panelSituacoesHistoricos')}.hide();" value="Cancelar Edição Funcionario Cargo" rendered="#{FuncionarioControle.permiteAdicionarCargo and FuncionarioControle.funcionarioCargoVO.itemEmEdicao}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup id="listaFuncionarioCargoVOs" layout="block" styleClass="col-md-12">
+								<rich:dataTable columnClasses="colunaAlinhamento" id="funcionarioCargoVO" headerClass="subordinado" rowClasses="linhaImparSubordinado, linhaParSubordinado" styleClass="tabFormSubordinada" value="#{FuncionarioControle.funcionarioVO.funcionarioCargoVOs}" var="funcionarioCargoItem" width="100%">
+									<rich:column rendered="false">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{funcionarioCargoItem.codigo}" />
+									</rich:column>
+									<rich:column rendered="false">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{funcionarioCargoItem.cargo.codigo}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_MatriculaCargo}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.matriculaCargo}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_gerente}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.gerenteApresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_UtilizaNoRH}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.utilizaRhApresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_cargo}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.cargoExercidoFuncionarioCargo}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_unidadeEnsino}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.unidade.nome}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="Centro Custo" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.centroCusto.identificadorCentroCusto}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_Funcionario_dataAdmissao}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.dataAdmissaoApresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_DadosComerciais_dataDemissao}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.dataDemissaoApresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_TextoPadrao_situacao}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.situacaoFuncionarioApresentar}" />
+									</rich:column>
+
+									<rich:column rendered="#{FuncionarioControle.funcionarioCargoVO.utilizaRH}">
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_FormaContratacao}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.formaContratacao.getValorApresentar()}" />
+									</rich:column>
+
+									<rich:column rendered="#{FuncionarioControle.funcionarioCargoVO.utilizaRH}">
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_TipoRecebimento}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.tipoRecebimento.getValor() eq 'HORISTA' ? 'Horista' : funcionarioCargoItem.tipoRecebimento.getValor() eq 'MENSALISTA' ? 'Mensalista' : ''}" />
+									</rich:column>
+
+									<rich:column rendered="#{FuncionarioControle.funcionarioCargoVO.utilizaRH}">
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_Vagas_salario}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.salario}">
+											<f:converter converterId="FormatadorNumerico" />
+										</h:outputText>
+									</rich:column>
+
+									<rich:column rendered="#{FuncionarioControle.funcionarioCargoVO.utilizaRH}">
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FuncionarioCargo_JornadaDeTrabalho}" />
+										</f:facet>
+										<h:outputText value="#{funcionarioCargoItem.jornada}" />
+									</rich:column>
+
+									<!-- Coluna de Botões menor que 6 -->
+									<rich:column rendered="#{!FuncionarioControle.validarQuantidadePermissoesBotoesFuncionario()}">
+										<f:facet name="header">
+											<h:outputText value="#{msg_botoes.btn_opcoes}" />
+										</f:facet>
+
+										<div style="min-width: 175px">
+											<h:panelGroup layout="block" styleClass="btn-group">
+												<otm:commandIcon tooltip="Remover" icon="#{msg_botoes.btn_icon_remover} iconePequeno" title="Excluir" id="removerFuncionarioCargo" action="#{FuncionarioControle.removerFuncionarioCargo}" accesskey="7" render="form:funcionarioCargoVO">
+													<!-- <a4j:ajax event="change" render="form:funcionarioCargoVO" /> -->
+												</otm:commandIcon>
+												<otm:commandIcon tooltip="Editar" icon="#{msg_botoes.btn_icon_editar} iconePequeno" accesskey="6" action="#{FuncionarioControle.editarFuncionarioCargo}" title="Editar" render="form:pnlFuncionarioCargo, form:funcionarioCargoVO, form:salario, form:groupUtilizarRH" />
+
+												<otm:commandIcon execute="@this" actionListener="#{FuncionarioControle.chamarTelaMarcacaoFerias}" icon="#{msg_botoes.btn_icon_ferias_funcionario} iconePequeno" oncomplete="abrirPopup('../rh/marcacaoFeriasForm.xhtml', 'marcacaoFeriasForm', 950, 595);" title="Marcação de Férias" tooltip="Marcação de Férias" rendered="#{FuncionarioControle.permiteAcessarMarcacaoFerias and funcionarioCargoItem.utilizaRH}" />
+												<otm:commandIcon execute="@this" actionListener="#{FuncionarioControle.chamarTelaContraCheque}" icon="#{msg_botoes.btn_icon_contra_cheque} iconePequeno" oncomplete="abrirPopup('../rh/contraChequeForm.xhtml', 'contraChequeForm', 950, 595);" tooltip="Contra Cheque" rendered="#{FuncionarioControle.permiteAcessarFichaFinanceira and funcionarioCargoItem.utilizaRH}" />
+												<!-- value="#{msg_menu.Menu_FichaFinanceira}" -->
+												<otm:commandIcon execute="@this" actionListener="#{FuncionarioControle.chamarTelaDeEventosEmprestimoDoFuncionario}" icon="#{msg_botoes.btn_icon_emprestimo} iconePequeno" oncomplete="abrirPopup('../rh/eventoEmprestimoCargoFuncionarioForm.xhtml', 'EventoEmprestimoCargoFuncionario', 950, 595);" rendered="#{FuncionarioControle.permiteAcessarEventoEmprestimo and funcionarioCargoItem.utilizaRH}" tooltip="Emprestimo" />
+												<!-- value="#{msg_menu.Menu_FichaFinanceira}"  -->
+
+												<otm:commandIcon execute="@this" actionListener="#{FuncionarioControle.chamarTelaDeEventosSalarioCompostoDoFuncionario}" icon="#{msg_botoes.btn_icon_salario_composto} iconePequeno" oncomplete="abrirPopup('../rh/salarioCompostoForm.xhtml', 'salarioCompostoForm', 950, 595);" tooltip="Salário Composto" rendered="#{FuncionarioControle.permiteAcessarSalarioComposto and funcionarioCargoItem.utilizaRH}" />
+												<!-- value="#{msg_menu.Menu_FichaFinanceira}" -->
+												<otm:commandIcon execute="@this" actionListener="#{FuncionarioControle.chamarTelaPeriodoAquisitivo}" icon="#{msg_botoes.btn_icon_periodo_aquisitivo_ferias_funcionario} iconePequeno" oncomplete="abrirPopup('../rh/periodoAquisitivoFeriasForm.xhtml', 'periodoAquisitivoFeriasForm', 950, 595);" title="Período Aquisitivo das Férias" tooltip="Período Aquisitivo das Férias" rendered="#{FuncionarioControle.permiteAcessarPeriodoAquisitivo and funcionarioCargoItem.utilizaRH}" />
+
+												<otm:commandIcon execute="@this" actionListener="#{FuncionarioControle.chamarTelaDeEventosValeTransporteDoFuncionario}" icon="#{msg_botoes.btn_icon_vale_transporte} iconePequeno" oncomplete="abrirPopup('../rh/eventoValeTransporteForm.xhtml', 'eventoValeTransporteForm', 950, 595);" tooltip="Vale Transporte" rendered="#{FuncionarioControle.permiteAcessarValeTransporte and funcionarioCargoItem.utilizaRH}" />
+												<!-- value="#{msg_menu.Menu_FichaFinanceira}" -->
+												<otm:commandIcon action="#{FuncionarioControle.chamarTelaDeEventosFixosDoFuncionario}" execute="@this" icon="#{msg_botoes.btn_icon_adicionar_evento} iconePequeno" oncomplete="abrirPopup('../rh/eventoFixoCargoFuncionarioForm.xhtml', 'eventoFixoCargoFuncionarioForm', 950, 595);" title="Evento Fixo" tooltip="#{msg_menu.Menu_FormulaFolhaPagamento}" rendered="#{FuncionarioControle.permiteCadastrarEvento and funcionarioCargoItem.codigo > 0 and funcionarioCargoItem.utilizaRH == true}" />
+												<!-- value="#{msg_menu.Menu_FormulaFolhaPagamento}" -->
+												<otm:commandIcon action="#{FuncionarioControle.prepararDadosParaAlterarSituacaoDoCargoFuncionario}" icon="#{msg_botoes.btn_icon_atualizar_situacao} iconePequeno" oncomplete="#{rich:component('panelAlterarSituacaoCargoFuncionario')}.show();" render="formAlterarSituacaoCargoFuncionario" execute="formAlterarSituacaoCargoFuncionario" tooltip="Situação do Cargo" rendered="#{FuncionarioControle.permiteAlterarSituacaoCargo}" />
+											</h:panelGroup>
+										</div>
+									</rich:column>
+
+									<!-- Coluna de Botões maior que 6 -->
+									<!-- VALIDAR COM O RENATO SE TEM NECESSIDADE DE MANTER ESSE TRECHO-->
+									<!-- <rich:column rendered="#{FuncionarioControle.validarQuantidadePermissoesBotoesFuncionario()}">
+										<f:facet name="header">
+											<h:outputText value="#{msg_botoes.btn_opcoes}" />
+										</f:facet>
+
+										<div style="float: right; min-width: 150px">
+											<otm:commandButton accesskey="6" action="#{FuncionarioControle.editarFuncionarioCargo}" id="editarItemVenda" styleClass="btn btn-primary dark btn-adicionar" title="Editar" render="form:pnlFuncionarioCargo form:salario" value="#{msg_bt.btn_editar}" style="float: right;"/>
+											<otm:commandButton id="feriasFuncionarioIcone" execute="@this"  actionListener="#{FuncionarioControle.chamarTelaMarcacaoFerias}" image="#{resource['imagens/botaoFeriasFuncionarioIcone.png']}" oncomplete="abrirPopup('../rh/marcacaoFeriasForm.xhtml', 'marcacaoFeriasForm', 950, 595);" rendered="#{FuncionarioControle.permiteAcessarMarcacaoFerias and funcionarioCargoItem.utilizaRH}" title="Marcação de Férias" value="Marcação de Férias" style="float: right;"/>
+											<otm:commandButton id="fichaFinanceira" execute="@this" actionListener="#{FuncionarioControle.chamarTelaContraCheque}" image="#{resource['imagens/botaoContraChequeIcone.png']}" oncomplete="abrirPopup('../rh/contraChequeForm.xhtml', 'contraChequeForm', 950, 595);" rendered="#{FuncionarioControle.permiteAcessarFichaFinanceira and funcionarioCargoItem.utilizaRH}" title="Contra Cheque" value="#{msg_menu.Menu_FichaFinanceira}" style="float: right;" />
+											<otm:commandButton id="eventoEmprestimo" execute="@this"  actionListener="#{FuncionarioControle.chamarTelaDeEventosEmprestimoDoFuncionario}" image="#{resource['imagens/botaoEmprestimoIcone.png']}" oncomplete="abrirPopup('../rh/eventoEmprestimoCargoFuncionarioForm.xhtml', 'EventoEmprestimoCargoFuncionario', 950, 595);" rendered="#{FuncionarioControle.permiteAcessarEventoEmprestimo and funcionarioCargoItem.utilizaRH}" title="Emprestimo" value="#{msg_menu.Menu_FichaFinanceira}" style="float: right;"/>	
+											<otm:commandButton id="eventoSalarioComposto" execute="@this"  actionListener="#{FuncionarioControle.chamarTelaDeEventosSalarioCompostoDoFuncionario}" image="#{resource['imagens/botaoSalarioCompostoIcone.png']}" oncomplete="abrirPopup('../rh/salarioCompostoForm.xhtml', 'salarioCompostoForm', 950, 595);" rendered="#{FuncionarioControle.permiteAcessarSalarioComposto and funcionarioCargoItem.utilizaRH}" title="Salário Composto" value="#{msg_menu.Menu_FichaFinanceira}" style="float: right;"/>
+										</div>
+										
+										<br />
+										<div style="float:right; min-width: 150px; margin-top: 6px">
+											<otm:commandButton title="Excluir" id="removerItemVenda"  action="#{FuncionarioControle.removerFuncionarioCargo}" value="#{msg_bt.btn_excluir}" styleClass="btn btn-danger btn-remover" accesskey="7" render="form:funcionarioCargoVO" style="float: right;">
+												<a4j:ajax event="change" render="form:funcionarioCargoVO" />
+											</otm:commandButton>
+											<otm:commandButton id="periodoAquisitivoFeriasFuncionarioIcone" execute="@this" actionListener="#{FuncionarioControle.chamarTelaPeriodoAquisitivo}" image="#{resource['imagens/botaoPeriodoAquisitivoFeriasFuncionarioIcone.png']}" oncomplete="abrirPopup('../rh/periodoAquisitivoFeriasForm.xhtml', 'periodoAquisitivoFeriasForm', 950, 595);" rendered="#{FuncionarioControle.permiteAcessarPeriodoAquisitivo and funcionarioCargoItem.utilizaRH}" title="Período Aquisitivo das Férias" value="Período Aquisitivo das Férias" style="float: right;"/>
+											<otm:commandButton id="eventoValeTransporte"  execute="@this"  actionListener="#{FuncionarioControle.chamarTelaDeEventosValeTransporteDoFuncionario}" image="#{resource['imagens/botaoValeTransporteIcone.png']}" oncomplete="abrirPopup('../rh/eventoValeTransporteForm.xhtml', 'eventoValeTransporteForm', 950, 595);" rendered="#{FuncionarioControle.permiteAcessarValeTransporte and funcionarioCargoItem.utilizaRH}" title="Vale Transporte" value="#{msg_menu.Menu_FichaFinanceira}" style="float: right;"/>
+											<otm:commandButton action="#{FuncionarioControle.chamarTelaDeEventosFixosDoFuncionario}" execute="@this"  id="adicionarEvento" image="#{resource['imagens/botaoAdicionarEventoIcone.png']}" oncomplete="abrirPopup('../rh/eventoFixoCargoFuncionarioForm.xhtml', 'eventoFixoCargoFuncionarioForm', 950, 595);" rendered="#{FuncionarioControle.permiteCadastrarEvento and funcionarioCargoItem.codigo > 0 and funcionarioCargoItem.utilizaRH == true}" title="Evento Fixo"	value="#{msg_menu.Menu_FormulaFolhaPagamento}"  style="float: right;"/>
+											<otm:commandButton action="#{FuncionarioControle.prepararDadosParaAlterarSituacaoDoCargoFuncionario}" id="alterarSituacao" image="#{resource['imagens/botaoAtualizarSituacaoIcone.png']}" oncomplete="#{rich:component('panelAlterarSituacaoCargoFuncionario')}.show();"  render="form:formAlterarSituacaoCargoFuncionario" rendered="#{FuncionarioControle.permiteAlterarSituacaoCargo}" title="Situação do Cargo" style="float: right;"/>
+										</div>
+									</rich:column> -->
+								</rich:dataTable>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+
+					<!-- FIM CARGOS -->
+
+					<!--/////////////////////////////////////////FORMACAO ACADEMICA //////////////////////////////////////////////////////-->
+
+					<rich:tab id="tabFormacaoAcademica" name="tabFormacaoAcademica" header="#{msg_aplic.prt_FormacaoAcademica_tituloForm}" styleClass="richPanel">
+						<style>
+.rf-insp {
+	border-width: 1px;
+	border-style: solid;
+	border-color: #C4C0B9;
+	display: block;
+	font-size: 1px;
+	white-space: nowrap;
+}
+
+.rf-insp-btns {
+	background-image: none !important;
+	background-color: transparent !important;
+	border: none !important;
+	vertical-align: middle !important;
+	position: relative !important;
+	left: 15% !important;
+	top: -7% !important;
+	margin-top: 8px !important;
+}
+</style>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_curso}" />
+							<h:inputText id="formacaoAcademicaCurso" size="70" maxlength="100" styleClass="form-control campos" value="#{FuncionarioControle.formacaoAcademicaVO.curso}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_instituicao}" />
+							<h:inputText id="formacaoAcademicaInstituicao" size="70" maxlength="100" styleClass="form-control campos" value="#{FuncionarioControle.formacaoAcademicaVO.instituicao}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Aluno_areaConhecimento}" />
+							<h:panelGroup layout="block" styleClass="pn col-md-12">
+								<h:selectOneMenu id="FormacaoAcademica_areaConhecimento" styleClass="form-control campos" value="#{FuncionarioControle.formacaoAcademicaVO.areaConhecimento.codigo}">
+									<f:selectItems value="#{FuncionarioControle.listaSelectItemAreaConhecimento}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_escolaridade}" />
+							<h:panelGroup layout="block" styleClass="pn col-md-12">
+								<h:selectOneMenu id="FormacaoAcademica_escolaridade" styleClass="form-control campos" value="#{FuncionarioControle.formacaoAcademicaVO.escolaridade}">
+									<f:selectItems value="#{FuncionarioControle.listaSelectItemEscolaridadeFormacaoAcademica}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_situacao}" />
+							<h:panelGroup layout="block" styleClass="pn col-md-12">
+								<h:selectOneMenu id="FormacaoAcademica_situacao" styleClass="form-control campos" value="#{FuncionarioControle.formacaoAcademicaVO.situacao}">
+									<a4j:ajax event="change" oncomplete="document.getElementById('FormacaoAcademica_situacao').focus();" render="form" />
+									<f:selectItems value="#{FuncionarioControle.listaSelectItemSituacaoFormacaoAcademica}" />
+								</h:selectOneMenu>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_FormacaoAcademica_periodo}" />
+							<rich:inputNumberSpinner styleClass="form-control" style="height: 34px;" maxValue="3000" id="anoDataFim" rendered="#{FuncionarioControle.formacaoAcademicaVO.desenharDataFim}" value="#{FuncionarioControle.formacaoAcademicaVO.anoDataFim}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!FuncionarioControle.formacaoAcademicaVO.desenharDataFim}">
+							<otm:spacer width="100%" />
+							<otm:calendar id="dataInicio" rendered="#{!FuncionarioControle.formacaoAcademicaVO.desenharDataFim}" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" styleClass="form-control campos" inputSize="10" value="#{FuncionarioControle.formacaoAcademicaVO.dataInicio}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 " rendered="#{!FuncionarioControle.formacaoAcademicaVO.desenharDataFim}">
+							<h:outputText styleClass="field control-label tituloCampos" value=" a " />
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<otm:calendar id="dataFim" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" styleClass="form-control campos" inputSize="10" value="#{FuncionarioControle.formacaoAcademicaVO.dataFim}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row" style="margin-top:10px; margin-bottom:10px ">
+							<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+								<otm:commandButton render="form, form:tabMensagens" id="btnAdicionarFormacaoAcademica" action="#{FuncionarioControle.adicionarFormacaoAcademica}" value="#{msg_bt.btn_adicionar}" alt="Adicionar Formação Academica" accesskey="5" styleClass="btn btn-primary dark btn-adicionar" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<rich:dataTable id="formacaoAcademicaVO" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.pessoaVO.formacaoAcademicaVOs}" var="formacaoAcademicaItem">
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FormacaoAcademica_curso}" />
+										</f:facet>
+										<h:outputText value="#{formacaoAcademicaItem.curso}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FormacaoAcademica_instituicao}" />
+										</f:facet>
+										<h:outputText value="#{formacaoAcademicaItem.instituicao}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FormacaoAcademica_escolaridade}" />
+										</f:facet>
+										<h:outputText value="#{formacaoAcademicaItem.escolaridade_Apresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_aplic.prt_FormacaoAcademica_situacao}" />
+										</f:facet>
+										<h:outputText value="#{formacaoAcademicaItem.situacao_Apresentar}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="Período" />
+										</f:facet>
+										<h:outputText value="#{formacaoAcademicaItem.anoDataFim}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="#{msg_botoes.btn_opcoes}" />
+										</f:facet>
+										<h:panelGroup>
+											<otm:commandIcon id="btnEditarFormacaoAcademica" action="#{FuncionarioControle.editarFormacaoAcademica}" tooltip="#{msg_bt.btn_editar}" accesskey="6" icon="#{msg_botoes.btn_icon_editar} iconePequeno" render="form, form:tabMensagens" />
+											<otm:commandIcon id="btnRemoverFormacaoAcademica" action="#{FuncionarioControle.removerFormacaoAcademica}" tooltip="#{msg_bt.btn_excluir}" accesskey="7" render="form, form:tabMensagens" icon="#{msg_botoes.btn_icon_remover} iconePequeno" />
+										</h:panelGroup>
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+						</h:panelGroup>
+					</rich:tab>
+
+					<!-- FIM FORMACAO ACADEMICA -->
+
+					<!-- ////////////////////////////////////////// FILIACAO /////////////////////////////////////////////////////////-->
+
+					<rich:tab id="tabFiliacao" name="tabFiliacao" header="#{msg_aplic.prt_Filiacao_tituloForm}" styleClass="richPanel">
+						<h:panelGroup id="pgFiliacao" layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<h:outputText styleClass="title" style="font-weight: bold; font-size: 110%;" value="#{msg_aplic.prt_Filiacao_tituloForm}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_CPF}" />
+									<h:inputText id="filiacaoCPF" onkeypress="return mascara(this.form, 'form:filiacaoCPF', '999.999.999-99', event);" size="14" maxlength="14" styleClass="#{FuncionarioControle.apresentarCss} form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.CPF}">
+										<a4j:ajax event="change" listener="#{FuncionarioControle.carregarFiliacaoPessoa}" oncomplete="document.getElementById('nomeFiliacao').focus();" render="pgFiliacao,pgMensagens" />
+									</h:inputText>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_nome}" />
+								<h:inputText id="nomeFiliacao" size="65" maxlength="100" styleClass="#{FuncionarioControle.apresentarCss} form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.nome}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_tipo}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<h:selectOneMenu id="Filiacao_tipo" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.filiacaoVO.tipo}">
+										<f:selectItems value="#{FuncionarioControle.listaSelectItemTipoFiliacao}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_RG}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<h:inputText id="filiacaoRG" size="10" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.RG}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_orgaoEmissor}" />
+								<h:inputText id="filiacaoOrgaoEmissor" size="10" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.orgaoEmissor}" />
+							</h:panelGroup>
+							<h:panelGroup id="panelCepFiliacao">
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_CEP}" />
+									<h:inputText id="CEPFiliacao" onkeypress="return mascara(this.form, 'form:CEPFiliacao', '99.999-999', event);" size="10" maxlength="10" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.CEP}">
+										<a4j:ajax status="statusCepFiliacao" event="change" listener="#{FuncionarioControle.carregarEnderecoPessoaFiliacao}" execute="@this" oncomplete="document.getElementById('enderecoFiliacao').focus();" render="form:panelCepFiliacao, form:enderecoFiliacao, form:filiacaoCidade, form:complementoFiliacao, form:numeroFiliacao, form:setorFiliacao" />
+									</h:inputText>
+									<h:message for="CEPFiliacao" styleClass="field control-label mensagemDetalhada col-md-12" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_endereco}" />
+								<h:inputText id="enderecoFiliacao" size="40" maxlength="100" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.endereco}" />
+								<h:message for="enderecoFiliacao" styleClass="field control-label mensagemDetalhada col-md-12" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_setor}" />
+								<h:inputText id="setorFiliacao" size="20" maxlength="50" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.setor}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-1">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_numero}" />
+								<h:inputText id="numeroFiliacao" size="10" maxlength="20" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.numero}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_complemento}" />
+								<h:inputText id="complementoFiliacao" size="30" maxlength="100" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.complemento}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_cidade}" />
+								<h:panelGroup layout="block" styleClass="pn col-md-12">
+									<h:inputText readonly="true" id="filiacaoCidade" size="30" maxlength="30" styleClass="form-control camposSomenteLeitura" value="#{FuncionarioControle.filiacaoVO.pais.cidade.nome} - #{FuncionarioControle.filiacaoVO.pais.cidade.estado.sigla}" />
+									<span class="append-icon right mr10"> <otm:commandIcon alt="Localizar Cidade" render="formCidade" oncomplete="#{rich:component('panelFiliacaoCidade')}.show();" action="#{FuncionarioControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" id="btnPesquisarFiliacaoCidade" />
+									</span>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="field control-label tituloCampos" value="E-mail" />
+								<h:inputText id="filiacao_email" size="35" maxlength="100" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.email}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_celular}" />
+								<h:inputText id="filiacaoCelular" onkeyup="return maskTelefone('form:filiacaoCelular', event);" size="16" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.celular}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_telefoneRes}" />
+								<h:inputText id="filiacaoTelefoneRes" onkeyup="return maskTelefone('form:filiacaoTelefoneRes', event);" size="16" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.telefoneRes}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_telefoneComer}" />
+								<h:inputText id="filiacaoTelefoneCom" onkeyup="return maskTelefone('form:filiacaoTelefoneCom', event);" size="16" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.telefoneComer}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-2">
+								<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_telefoneRecado}" />
+								<h:inputText id="filiacaoRecado" onkeyup="return maskTelefone('form:filiacaoRecado', event);" size="16" maxlength="15" styleClass="form-control campos" value="#{FuncionarioControle.filiacaoVO.pais.telefoneRecado}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton id="btnAdicionarFiliacao" action="#{FuncionarioControle.adicionarFiliacao}" value="#{msg_bt.btn_adicionar}" accesskey="7" styleClass="btn btn-primary dark btn-adicionar" render="@form" execute="@form" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row">
+							<rich:dataTable id="filiacaoVO" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.pessoaVO.filiacaoVOs}" var="filiacaoItem">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Filiacao_nome}" />
+									</f:facet>
+									<h:outputText value="#{filiacaoItem.nome}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Filiacao_tipo}" />
+									</f:facet>
+									<h:outputText value="#{filiacaoItem.tipo_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									</f:facet>
+									<h:panelGroup>
+										<otm:commandIcon id="editarFiliacao" icon="#{msg_botoes.btn_icon_editar} iconePequeno" action="#{FuncionarioControle.editarFiliacao}" tooltip="#{msg_bt.btn_editar}" accesskey="6" />
+										<otm:commandIcon id="removerFiliacao" icon="#{msg_botoes.btn_icon_remover} iconePequeno" immediate="true" action="#{FuncionarioControle.removerFiliacao}" tooltip="#{msg_bt.btn_excluir}" accesskey="7" />
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</rich:tab>
+
+					<!-- FIM FILIACAO -->
+
+					<!-- //////////////////////////////////////////////////  DEPENDENTES /////////////////////////////////////////////////////////// -->
+
+					<rich:tab id="tabDependentes" name="tabDependentes" header="#{msg_aplic.prt_Dependentes_tituloForm}" styleClass="richPanel">
+						<h:panelGroup id="pgDependentes" layout="block" styleClass="row">
+							<h:panelGroup layout="block" styleClass="row">
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:panelGroup layout="block" styleClass="col-md-2">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_CPF}" />
+										<h:inputText accesskey="1" id="dependenteCPF" maxlength="14" size="14" onkeypress="return mascara(this.form, 'form:dependenteCPF', '999.999.999-99', event);" value="#{FuncionarioControle.dependenteVO.cpf}" styleClass="form-control campos">
+											<a4j:ajax event="change" listener="#{FuncionarioControle.carregarFiliacaoPessoa}" oncomplete="document.getElementById('nomeDependente').focus();" render="pgDependentes,pgMensagens" />
+										</h:inputText>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_nome}" />
+										<h:inputText accesskey="2" size="40" maxlength="50" styleClass="#{FuncionarioControle.apresentarCss} form-control campos" value="#{FuncionarioControle.dependenteVO.nome}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-6">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_grauParentesco}" />
+										<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.dependenteVO.parentesco}">
+											<f:selectItems value="#{EnumControle.comboboxGrauParentescoEnum}" />
+										</h:selectOneMenu>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_sexo}" />
+									<h:panelGroup layout="block" styleClass="pn col-md-12">
+										<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.dependenteVO.sexo}">
+											<f:selectItems value="#{EnumControle.comboboxSexoEnumCrm}" />
+										</h:selectOneMenu>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText id="estadoCivilDependente" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Pessoa_estadoCivil}" />
+									<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.dependenteVO.estadoCivil}">
+										<f:selectItems value="#{EnumControle.comboboxEstadoCivilEnum}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_localNascimento}" />
+									<h:inputText size="40" maxlength="100" value="#{FuncionarioControle.dependenteVO.localNascimento}" styleClass="form-control campos" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_cartorio}" />
+									<h:inputText size="40" maxlength="50" value="#{FuncionarioControle.dependenteVO.cartorio}" styleClass="form-control campos" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_registro}" />
+										<h:inputText size="40" maxlength="50" value="#{FuncionarioControle.dependenteVO.registro}" styleClass="form-control campos" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Prospects_dataNascimento}" />
+										<h:panelGroup>
+											<otm:calendar jsFunction="validarDadosDependente()" datePattern="dd/MM/yyyy" enableManualInput="true" id="dataNascimento" inputSize="20" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" styleClass="form-control camposObrigatorios" value="#{FuncionarioControle.dependenteVO.dataNascimento}">
+												<!-- <a4j:ajax event="change" execute="@this"  render="form:cartaoVacina form:frequenciaEscolar form:irrfDependente" listener="#{FuncionarioControle.validarDadosDependente()}" /> -->
+												<a4j:jsFunction name="validarDadosDependente" id="btnADD" event="change" execute="@this" render="form:cartaoVacina form:frequenciaEscolar form:irrfDependente" listener="#{FuncionarioControle.validarDadosDependente()}" />
+											</otm:calendar>
+											<h:message for="dataNascimento" styleClass="field control-label mensagemDetalhada col-md-12" />
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_folha}" />
+										<h:inputText size="40" maxlength="50" value="#{FuncionarioControle.dependenteVO.folha}" styleClass="form-control campos" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_livro}" />
+										<h:inputText size="40" maxlength="50" value="#{FuncionarioControle.dependenteVO.livro}" styleClass="form-control campos" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:panelGroup layout="block" styleClass="col-md-2">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_dataEntregaCertidao}" />
+										<otm:calendar id="dataEntregaCertidao" inputSize="20" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.dataEntregaCertidao}" />
+										<h:message for="dataEntregaCertidao" styleClass="field control-label mensagemDetalhada " />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_numeroSus}" />
+										<h:inputText maxlength="50" value="#{FuncionarioControle.dependenteVO.numeroSus}" styleClass="form-control campos" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_telefone}" />
+										<h:inputText id="telefoneDependente" onchange="return mascara(this.form, 'form:telefoneDependente', '(99)9999-9999', event);" size="20" maxlength="14" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.telefone}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Filiacao_email}" />
+										<h:inputText id="emailDependente" maxlength="100" size="40" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.email}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-2">
+										<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_cartaoVacina}" />
+										<h:panelGroup layout="block" styleClass="pn col-md-12">
+											<otm:selectBooleanCheckbox id="cartaoVacina" value="#{FuncionarioControle.dependenteVO.cartaoVacina}" styleClass="form-control campos" />
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_universitarioEscolaTecnica}" />
+									<h:panelGroup layout="block" styleClass="pn col-md-12">
+										<otm:selectBooleanCheckbox id="universitarioEscolaTecnica" value="#{FuncionarioControle.dependenteVO.universitarioEscolaTecnica}" styleClass="form-control campos" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_frequenciaEscolar}" />
+									<h:panelGroup layout="block" styleClass="pn col-md-12">
+										<otm:selectBooleanCheckbox id="frequenciaEscolar" value="#{FuncionarioControle.dependenteVO.frequenciaEscolar}" styleClass="form-control campos" />
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<otm2:panel name="panelDados_incidencias" styleClassFooter="dn">
+								<ui:define name="header">
+									<img src="https://img.icons8.com/pastel-glyph/16/000000/conclusion-contract.png" />
+									<h:outputText value="#{msg_aplic.prt_EventoFolhaPagamento_Incidencias}" styleClass="ml5" />
+								</ui:define>
+								<ui:define name="body">
+									<h:panelGroup layout="block" styleClass="row">
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EventoFolhaPagamento_inss}" />
+											<h:panelGroup layout="block" styleClass="col-md-12 pn">
+												<otm:selectBooleanCheckbox styleClass="form-control campos" id="inssDependente" value="#{FuncionarioControle.dependenteVO.inss}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EventoFolhaPagamento_irrf}" />
+											<h:panelGroup layout="block" styleClass="col-md-12 pn">
+												<otm:selectBooleanCheckbox styleClass="form-control campos" id="irrfDependente" value="#{FuncionarioControle.dependenteVO.irrf}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EventoFolhaPagamento_salarioFamilia}" />
+											<h:panelGroup layout="block" styleClass="col-md-12 pn">
+												<otm:selectBooleanCheckbox id="salarioFamilia" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.salarioFamilia}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="col-md-3">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EventoFolhaPagamento_Pensao}" />
+											<h:panelGroup layout="block" styleClass="col-md-12 pn">
+												<otm:selectBooleanCheckbox value="#{FuncionarioControle.dependenteVO.pensao}">
+													<a4j:ajax event="change" render="form:pnlDadosDaPensao" />
+												</otm:selectBooleanCheckbox>
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup id="pnlDadosDaPensao">
+										<otm2:panel name="panelDados_pensao" styleClassFooter="dn" rendered="#{FuncionarioControle.dependenteVO.pensao}">
+											<ui:define name="header">
+												<i class="fas fa-id-card mr5"></i>
+												<h:outputText value="#{msg_aplic.prt_Dependentes_dadosDaPensao}" />
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup layout="block" styleClass="col-md-2">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_tipo}" />
+													<h:selectOneMenu styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.tipo}">
+														<f:selectItems value="#{EnumControle.comboboxTipoPensaoDependenteEnum}" />
+													</h:selectOneMenu>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-2">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_DataInicioDesconto}" />
+													<otm:calendar datePattern="dd/MM/yyyy" enableManualInput="true" inputSize="10" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" value="#{FuncionarioControle.dependenteVO.dataInicioDesconto}" />
+													<h:message for="dataNascimento" styleClass="field control-label mensagemDetalhada" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-2">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_PercentualInicioDesconto}" />
+													<h:inputText maxlength="3" size="10" value="#{FuncionarioControle.dependenteVO.percentual}" styleClass="form-control campos" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-6 pn" id="pnlFormulaFixa">
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_EventoFolhaPagamento_FormulaFixa}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-4">
+														<h:inputText id="formula" readonly="true" size="10" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.formulaCalculo.codigo}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-8">
+														<span class="append-icon right"> <otm:commandIcon id="consultaFormulaFixa" render="form:pnlFormulaFixa" oncomplete="#{rich:component('panelConsultaFormula')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon action="#{FuncionarioControle.limparFormulaFixa}" id="limparFormulaFixa" render="pnlFormulaFixa" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+														</span>
+														<h:inputText id="formulaFixaDescricao" readonly="true" size="35" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.formulaCalculo.descricao}" />
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12" />
+												<h:panelGroup layout="block" styleClass="col-md-6 pn" id="groupEvento">
+													<h:panelGroup layout="block" styleClass="col-md-12">
+														<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_evento}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-4">
+														<h:inputText id="eventoIdentificador" styleClass="form-control campos" size="10" value="#{FuncionarioControle.dependenteVO.eventoFolhaPagamento.identificador}">
+															<a4j:ajax event="change" execute="@this" render="form:groupEvento" listener="#{FuncionarioControle.consultarEventoPorIdentificador()}" oncomplete="focus('form:bancoPgtoPensao')" />
+														</h:inputText>
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-8">
+														<h:inputText id="eventoDescricao" size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{FuncionarioControle.dependenteVO.eventoFolhaPagamento.descricao}" />
+														<span class="append-icon right"> <otm:commandIcon id="consultaDadosEvento" alt="Localizar Evento da Folha de Pagamento" render="form, formEvento" oncomplete="#{rich:component('panelEvento')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosEvento" alt="Limpas Dados" action="#{FuncionarioControle.limparDadosEvento}" render="form:groupEvento" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+														</span>
+													</h:panelGroup>
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+										<otm2:panel name="panelDados_pensao_pagamento" styleClassFooter="dn" rendered="#{FuncionarioControle.dependenteVO.pensao}">
+											<ui:define name="header">
+												<img src="https://img.icons8.com/ios-filled/16/000000/get-cash.png" />
+												<h:outputText value="#{msg_aplic.prt_Dependentes_dadosParaPagamentoBancario}" styleClass="ml5" />
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup layout="block" styleClass="col-md-3">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_banco}" />
+													<h:inputText id="bancoPgtoPensao" maxlength="50" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.banco}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-2">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_agencia}" />
+													<h:inputText maxlength="50" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.agencia}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-2">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_conta}" />
+													<h:inputText maxlength="50" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.conta}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-2">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_operacaoBancaria}" />
+													<h:inputText maxlength="50" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.operacao}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-2">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_CpfResponsavel}" />
+													<h:inputText maxlength="50" size="50" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.cpfResponsavel}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-3">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Dependentes_NomeResponsavel}" />
+													<h:inputText maxlength="50" size="50" styleClass="form-control campos" value="#{FuncionarioControle.dependenteVO.nomeResponsavel}" />
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+								</ui:define>
+							</otm2:panel>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row" style="margin-top:20px; margin-bottom:10px ">
+							<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+								<otm:commandButton accesskey="1" action="#{FuncionarioControle.adicionarDependente}" execute="@form" styleClass="btn btn-primary dark btn-adicionar" render="@form" value="#{msg_bt.btn_adicionar}" />
+								<otm:commandButton style="margin-left:10px" accesskey="2" action="#{FuncionarioControle.cancelarEdicaoObjetoFuncionarioDependente}" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" render="@form" value="Cancelar Edição Objeto Funcionario Dependente" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row">
+							<rich:dataTable id="dependenteVO" columnClasses="colunaAlinhamento" headerClass="subordinado" rowClasses="linhaImparSubordinado, linhaParSubordinado" styleClass="tabFormSubordinada" value="#{FuncionarioControle.funcionarioVO.dependenteVOs}" var="dependenteItem" width="100%">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Filiacao_nome}" />
+									</f:facet>
+									<h:outputText value="#{dependenteItem.nome}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Dependentes_grauParentesco}" />
+									</f:facet>
+									<h:outputText value="#{dependenteItem.parentesco_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_sexo}" />
+									</f:facet>
+									<h:outputText value="#{dependenteItem.sexo}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Pessoa_estadoCivil}" />
+									</f:facet>
+									<h:outputText value="#{dependenteItem.estadoCivil_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_Prospects_dataNascimento}" />
+									</f:facet>
+									<h:outputText value="#{dependenteItem.dataNascimento_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_EventoFolhaPagamento_inss}" />
+									</f:facet>
+									<h:outputText value="#{dependenteItem.inss_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_EventoFolhaPagamento_irrf}" />
+									</f:facet>
+									<h:outputText value="#{dependenteItem.irrf_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_EventoFolhaPagamento_salarioFamilia}" />
+									</f:facet>
+									<h:outputText value="#{dependenteItem.salarioFamilia_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_EventoFolhaPagamento_Pensao}" />
+									</f:facet>
+									<h:outputText value="#{dependenteItem.pensao_Apresentar}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									</f:facet>
+									<h:panelGroup>
+										<otm:commandIcon icon="#{msg_botoes.btn_icon_editar} iconePequeno" id="editarDependente" action="#{FuncionarioControle.editarDependenteDoFuncionario}" tooltip="#{msg_bt.btn_editar}" accesskey="6" />
+										<otm:commandIcon icon="#{msg_botoes.btn_icon_remover} iconePequeno" id="removerDependente" action="#{FuncionarioControle.removerDependenteDoFuncionario}" tooltip="#{msg_bt.btn_excluir}" accesskey="7" />
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+						</h:panelGroup>
+					</rich:tab>
+
+					<!-- FIM DEPENDENTES -->
+
+					<!-- //////////////////////////////////////////////////- INICIO FINANCEIRO	/////////////////////////////////////////////////////-->
+
+					<rich:tab header="#{msg_aplic.prt_Funcionario_financeiro}" name="financeiro" id="financeiro" styleClass="richPanel">
+						<h:panelGroup layout="block" styleClass="col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Funcionario_vencimento}" />
+							<otm:calendar id="valorConsultaDataInicio" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos" styleClass="form-control campos" inputSize="10" execute="@this" value="#{FuncionarioControle.controleConsulta.dataIni}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="pn col-md-2">
+							<h:outputText styleClass="field control-label tituloCampos" value="até" />
+							<otm:calendar id="valorConsultaDataFim" execute="@this" value="#{FuncionarioControle.controleConsulta.dataFim}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton id="atualizar_contasPagar" action="#{FuncionarioControle.montarListaContaPagar}" icon="#{msg_botoes.btn_icon_atualizar_embutido}" value="Atualizar" render="form:panelContaPagar" />
+						</h:panelGroup>
+						<h:panelGroup id="panelContaPagar" layout="block" styleClass="row">
+							<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.listaContaPagar}" rendered="#{FuncionarioControle.isExisteContaPagar}" rows="10" var="contaPagarItem">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_ContaPagar_codigo}" />
+									</f:facet>
+									<h:outputText id="codigo" value="#{contaPagarItem.codigo}" />
+								</rich:column>
+								<rich:column sortBy="#{contaPagarItem.favorecido}">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_ContaPagar_fornecedor_funcionario_banco}" />
+									</f:facet>
+									<h:outputText id="fornecedor" value="#{contaPagarItem.favorecido}" />
+								</rich:column>
+								<rich:column sortBy="#{contaPagarItem.situacao_Apresentar}">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_ContaPagar_situacao}" />
+									</f:facet>
+									<h:outputText id="situacao" value="#{contaPagarItem.situacao_Apresentar}" />
+								</rich:column>
+								<rich:column sortBy="#{contaPagarItem.dataVencimento_Apresentar}">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_ContaPagar_dataVencimento}" />
+									</f:facet>
+									<h:outputText id="dataVencimento" value="#{contaPagarItem.dataVencimento_Apresentar}" />
+								</rich:column>
+								<rich:column sortBy="#{contaPagarItem.valor}">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_ContaPagar_valor}" />
+									</f:facet>
+									<h:outputText value="#{contaPagarItem.valor}">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:outputText>
+								</rich:column>
+								<rich:column sortBy="#{contaPagarItem.unidadeEnsino.nome}">
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_ContaPagar_unidadeEnsino}" />
+									</f:facet>
+									<h:outputText id="unidadeEnsino" value="#{contaPagarItem.unidadeEnsino.nome}" />
+								</rich:column>
+								<f:facet name="footer">
+									<h:panelGrid columns="1" width="100%" columnClasses="colunaCentralizada">
+										<h:panelGroup>
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_totalPagar}:" />
+											<otm:spacer width="5px" />
+											<h:outputText styleClass="field control-label tituloCampos" value="#{FuncionarioControle.totalPagar}">
+												<f:converter converterId="FormatadorNumerico" />
+											</h:outputText>
+											<otm:spacer width="20px" />
+											<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_totalPago}:" />
+											<otm:spacer width="5px" />
+											<h:outputText styleClass="field control-label tituloCampos" value="#{FuncionarioControle.totalPago}">
+												<f:converter converterId="FormatadorNumerico" />
+											</h:outputText>
+										</h:panelGroup>
+									</h:panelGrid>
+								</f:facet>
+							</rich:dataTable>
+							<h:panelGrid styleClass="colunaCentralizada">
+								<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="items" limitRender="10" page="#{FuncionarioControle.controleConsultaOtimizado.page}" scrollListener="#{FuncionarioControle.scrollerListener}" />
+							</h:panelGrid>
+						</h:panelGroup>
+					</rich:tab>
+
+					<!-- //////////////////////////////////////////////////- DISCIPLINAS INTERESSE	/////////////////////////////////////////////////////-->
+
+					<rich:tab header="#{msg_aplic.prt_DisciplinasInteresse_tituloForm}" name="tabDisciplinaInteresse" rendered="#{FuncionarioControle.controladorTela}" styleClass="richPanel" id="tabDisciplinaInteresse">
+						<h:panelGrid columns="1" width="100%" headerClass="subordinado" columnClasses="colunaCentralizada">
+							<otm:commandButton styleClass="btn btn-primary dark btn-adicionar" oncomplete="#{rich:component('panelDisciplina')}.show();" value="#{msg_bt.btn_adicionar} Disciplinas Interesse" render="formDisciplina" accesskey="6" id="botaoAdicionarDisciplinasInteresse" />
+						</h:panelGrid>
+						<h:panelGrid columns="1" width="100%" styleClass="tabFormSubordinada">
+							<rich:dataTable id="disciplinasInteresseVO" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.pessoaVO.disciplinasInteresseVOs}" rows="8" var="disciplinasInteresseItem">
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_aplic.prt_DisciplinasInteresse_disciplina}" />
+									</f:facet>
+									<h:outputText value="#{disciplinasInteresseItem.disciplina.nome}" />
+								</rich:column>
+								<rich:column>
+									<f:facet name="header">
+										<h:outputText value="#{msg_botoes.btn_opcoes}" />
+									</f:facet>
+									<h:panelGroup>
+										<otm:commandIcon render="form" id="removerDisciplinaItem" action="#{FuncionarioControle.removerDisciplinasInteresse}" tooltip="#{msg_bt.btn_excluir}" accesskey="7" icon="#{msg_botoes.btn_icon_remover} iconePequeno" />
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+							<h:panelGrid styleClass="colunaCentralizada">
+								<rich:dataScroller fastControls="hide" for="form:disciplinasInteresseVO" stepControls="auto" maxPages="100" page="#{FuncionarioControle.controleConsultaOtimizado.page}" scrollListener="#{FuncionarioControle.scrollerListener}" />
+							</h:panelGrid>
+						</h:panelGrid>
+					</rich:tab>
+
+					<!-- //////////////////////////////////////////////////- HORARIOS DISP. INDIS.	/////////////////////////////////////////////////////-->
+
+					<rich:tab header="Horários Disponíveis/Indisponíveis" name="tabHorariosDisponiveisIndisponiveis" rendered="#{FuncionarioControle.controladorTela}" render="form" styleClass="richPanel" id="tabHorariosDisponiveisIndisponiveis">
+						<rich:tabPanel switchType="client">
+							<rich:tab header="Marcar Indisponibilidade por Turno" switchType="client" styleClass="richPanel" id="tabMarcarIndisponibilidadeTurno">
+								<h:panelGroup layout="block" styleClass="row" id="abaHorario2" headerClass="consulta" style="background-color: transparent;">
+									<h:panelGroup layout="block" styleClass="row" headerClass="consulta" style="background-color: transparent;">
+										<h:panelGroup layout="block" styleClass="col-md-12">
+											<f:facet name="header">
+												<h:outputText value="Selecione um Turno" styleClass="tituloCamposNegrito" />
+											</f:facet>
+											<rich:dataGrid id="turnoVOS" value="#{FuncionarioControle.listaSelectItemTurno}" style="background-color: transparent;width:100%;" align="left" var="turnoItem" columns="5" elements="#{FuncionarioControle.tamanhoListaTurno}">
+												<h:panelGrid columns="1" style="background-color: transparent;" width="100%" columnClasses="colunaCentralizada">
+													<a4j:commandLink render="form:abaHorario2" action="#{FuncionarioControle.selecionarTurno}">
+														<h:outputText value="#{turnoItem.nome}" style="color: #000;font: 12px arial;text-align: left;vertical-align: middle;font-weight: bold;position:relative" styleClass="field control-label tituloCampos"></h:outputText>
+													</a4j:commandLink>
+												</h:panelGrid>
+											</rich:dataGrid>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="row" id="horarioInteresse2" rendered="#{FuncionarioControle.horarioSimples}" columnClasses="colunaAlinhamento">
+										<!-- <h:panelGrid columns="7" headerClass="consulta" style="position:relative; top:0px; left:0px;background-color: transparent;" footerClass="background-color: transparent;" columnClasses="colunaAlinhamento, colunaAlinhamento, colunaAlinhamento, colunaAlinhamento, colunaAlinhamento, colunaAlinhamento, colunaAlinhamento" width="100%"> -->
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-12">
+												<h:outputText styleClass="field control-label tituloCamposNegrito" value="#{FuncionarioControle.quadroHorario.turno.nome}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty FuncionarioControle.quadroHorario.listaTurnoDomingo}">
+												<rich:dataTable var="domingo" id="listaDomingo2" style="background-color: transparent;width:100%" headerClass="subordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.quadroHorario.listaTurnoDomingo}">
+													<rich:column style="background-color: transparent;text-align:center" title="#{domingo.nomeTurmaDisciplina}">
+														<f:facet name="header">
+															<h:outputText value="Domingo" />
+														</f:facet>
+														<h:panelGrid columns="1" columnClasses="colunaCentralizada" width="100%">
+															<otm:selectBooleanCheckbox id="disponivelHorarioDomingo" disabled="#{domingo.existeAula}" value="#{domingo.disponivelHorario}" />
+															<h:outputText styleClass="tituloCamposReduzidos" value="#{domingo.aula} (#{domingo.intervaloHora})" />
+														</h:panelGrid>
+													</rich:column>
+												</rich:dataTable>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty FuncionarioControle.quadroHorario.listaTurnoSegunda}">
+												<rich:dataTable var="segunda" id="listaSegunda2" style="position:relative; top:0px; left:0px;background-color: transparent;width:100%" headerClass="subordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.quadroHorario.listaTurnoSegunda}">
+													<rich:column style="background-color: transparent;text-align:center" title="#{segunda.nomeTurmaDisciplina}">
+														<f:facet name="header">
+															<h:outputText value="Segunda" />
+														</f:facet>
+														<h:panelGrid columns="1" columnClasses="colunaCentralizada" width="100%">
+															<otm:selectBooleanCheckbox id="disponivelHorarioSegunda" disabled="#{segunda.existeAula}" value="#{segunda.disponivelHorario}" />
+															<h:outputText styleClass="tituloCamposReduzidos" value="#{segunda.aula} (#{segunda.intervaloHora})" />
+														</h:panelGrid>
+													</rich:column>
+												</rich:dataTable>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty FuncionarioControle.quadroHorario.listaTurnoTerca}">
+												<rich:dataTable var="terca" id="listaTerca2" style="position:relative; top:0px; left:0px;background-color: transparent;width:100%" headerClass="subordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.quadroHorario.listaTurnoTerca}">
+													<rich:column style="background-color: transparent;text-align:center" title="#{terca.nomeTurmaDisciplina}">
+														<f:facet name="header">
+															<h:outputText value="Terça" />
+														</f:facet>
+														<h:panelGrid columns="1" columnClasses="colunaCentralizada" width="100%">
+															<otm:selectBooleanCheckbox id="disponivelHorarioTerca" disabled="#{terca.existeAula}" value="#{terca.disponivelHorario}" />
+															<h:outputText styleClass="tituloCamposReduzidos" value="#{terca.aula} (#{terca.intervaloHora})" />
+														</h:panelGrid>
+													</rich:column>
+												</rich:dataTable>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty FuncionarioControle.quadroHorario.listaTurnoQuarta}">
+												<rich:dataTable var="quarta" id="listaQuarta2" style="position:relative; top:0px; left:0px;background-color: transparent;width:100%" headerClass="subordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.quadroHorario.listaTurnoQuarta}">
+													<rich:column style="background-color: transparent;text-align:center" title="#{quarta.nomeTurmaDisciplina}">
+														<f:facet name="header">
+															<h:outputText value="Quarta" />
+														</f:facet>
+														<h:panelGrid columns="1" columnClasses="colunaCentralizada" width="100%">
+															<otm:selectBooleanCheckbox id="disponivelHorarioQuarta" disabled="#{quarta.existeAula}" value="#{quarta.disponivelHorario}" />
+															<h:outputText styleClass="tituloCamposReduzidos" value="#{quarta.aula} (#{quarta.intervaloHora})" />
+														</h:panelGrid>
+													</rich:column>
+												</rich:dataTable>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty FuncionarioControle.quadroHorario.listaTurnoQuinta}">
+												<rich:dataTable var="quinta" style="position:relative; top:0px; left:0px;background-color: transparent;width:100%" headerClass="subordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.quadroHorario.listaTurnoQuinta}">
+													<rich:column style="background-color: transparent;text-align:center" title="#{quinta.nomeTurmaDisciplina}">
+														<f:facet name="header">
+															<h:outputText value="Quinta" />
+														</f:facet>
+														<h:panelGrid columns="1" columnClasses="colunaCentralizada" width="100%">
+															<otm:selectBooleanCheckbox id="disponivelHorarioQuinta" disabled="#{quinta.existeAula}" value="#{quinta.disponivelHorario}" />
+															<h:outputText styleClass="tituloCamposReduzidos" value="#{quinta.aula} (#{quinta.intervaloHora})" />
+														</h:panelGrid>
+													</rich:column>
+												</rich:dataTable>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty FuncionarioControle.quadroHorario.listaTurnoSexta}">
+												<rich:dataTable var="sexta" style="position:relative; top:0px; left:0px;background-color: transparent;width:100%" headerClass="subordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.quadroHorario.listaTurnoSexta}">
+													<rich:column style="background-color: transparent;text-align:center" title="#{sexta.nomeTurmaDisciplina}">
+														<f:facet name="header">
+															<h:outputText value="Sexta" />
+														</f:facet>
+														<h:panelGrid columns="1" columnClasses="colunaCentralizada" width="100%">
+															<otm:selectBooleanCheckbox id="disponivelHorarioSexta" disabled="#{sexta.existeAula}" value="#{sexta.disponivelHorario}" />
+															<h:outputText styleClass="tituloCamposReduzidos" value="#{sexta.aula} (#{sexta.intervaloHora})" />
+														</h:panelGrid>
+													</rich:column>
+												</rich:dataTable>
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!empty FuncionarioControle.quadroHorario.listaTurnoSabado}">
+												<rich:dataTable var="sabado" id="listaSabado2" style="position:relative; top:0px; left:0px;background-color: transparent;width:100%;" headerClass="subordinado" columnClasses="colunaAlinhamento" value="#{FuncionarioControle.quadroHorario.listaTurnoSabado}">
+													<rich:column style="background-color: transparent;text-align:center" title="#{sabado.nomeTurmaDisciplina}">
+														<f:facet name="header">
+															<h:outputText value="Sábado" />
+														</f:facet>
+														<h:panelGrid columns="1" columnClasses="colunaCentralizada" width="100%">
+															<otm:selectBooleanCheckbox id="disponivelHorarioSabado" disabled="#{sabado.existeAula}" value="#{sabado.disponivelHorario}" />
+															<h:outputText styleClass="tituloCamposReduzidos" value="#{sabado.aula} (#{sabado.intervaloHora})" />
+														</h:panelGrid>
+													</rich:column>
+												</rich:dataTable>
+											</h:panelGroup>
+										</h:panelGroup>
+										<!-- </h:panelGrid> -->
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+												<h:outputText styleClass="tituloCamposReduzidos" value="*Marque Somente os Horários Indisponíveis" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup rendered="#{!FuncionarioControle.horarioSimples}" layout="block" styleClass="row" id="listasDetalhada2" style="background-color: transparent;">
+										<!-- <h:panelGrid id="listasDetalhada2" rendered="#{!FuncionarioControle.horarioSimples}" style="background-color: transparent;" columns="1" columnClasses="colunaAlinhamento" width="100%"> -->
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-12 ">
+												<otm:commandButton id="horarioSimples" render="form:abaHorario2" action="#{FuncionarioControle.verHorarioSimples}" icon="#{msg_botoes.btn_icon_relogio} iconePequeno" value="#{msg_aplic.prt_HorarioDetalhado}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<h:panelGroup layout="block" styleClass="row">
+											<h:panelGroup layout="block" styleClass="col-md-12 ">
+												<h:outputText styleClass="field control-label tituloCamposNegrito" value="#{FuncionarioControle.quadroHorario.turno.nome}" />
+											</h:panelGroup>
+										</h:panelGroup>
+										<!-- <h:panelGrid columns="1" id="dadosHorarioDHP2" style="background-color:transparent;" width="100%" headerClass="subordinado" columnClasses="colunaCentralizada"> -->
+										<h:panelGroup id="dadosHorarioDHP2" layout="block" styleClass="row">
+											<rich:tabPanel id="dbAbasHorario2" headerAlignment="left" width="100%" activeTabClass="true" disabledTabClass="aba2" inactiveTabClass="aba2" tabClass="aba" switchType="client" style="background-color: transparent;">
+												<rich:tab id="tabDomingo" style="background-color: transparent;" header="Domingo" styleClass="richPanel">
+													<h:panelGrid width="100%" columnClasses="colunaAlinhamento" style="background-color: transparent;" headerClass="consulta">
+														<rich:dataTable id="listaTurnoDomingo" headerClass="consulta" style="background-color: transparent;" var="domingo" columnClasses="colunaAlinhamento" cellpadding="0" cellspacing="0" width="100%" value="#{FuncionarioControle.quadroHorario.listaTurnoDomingo}">
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Horario" />
+																</f:facet>
+																<h:outputText value="#{domingo.aula} (#{domingo.intervaloHora})" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Disciplina" />
+																</f:facet>
+																<h:outputText value="#{domingo.disciplina.nome}" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Turma" />
+																</f:facet>
+																<h:outputText value="#{domingo.turma.identificadorTurma}" />
+															</rich:column>
+														</rich:dataTable>
+													</h:panelGrid>
+												</rich:tab>
+												<rich:tab id="tabSegunda" style="background-color: transparent;" header="Segunda" styleClass="richPanel">
+													<h:panelGrid width="100%" style="background-color: transparent;" columnClasses="colunaAlinhamento" headerClass="consulta">
+														<rich:dataTable id="listaTurnoSegunda" headerClass="consulta" style="background-color: transparent;" var="segunda" columnClasses="colunaAlinhamento" cellpadding="0" cellspacing="0" width="100%" value="#{FuncionarioControle.quadroHorario.listaTurnoSegunda}">
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Horario" />
+																</f:facet>
+																<h:outputText value="#{segunda.aula} (#{segunda.intervaloHora})" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Disciplina" />
+																</f:facet>
+																<h:outputText value="#{segunda.disciplina.nome}" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Turma" />
+																</f:facet>
+																<h:outputText value="#{segunda.turma.identificadorTurma}" />
+															</rich:column>
+														</rich:dataTable>
+													</h:panelGrid>
+												</rich:tab>
+												<rich:tab id="tabTerca" styleClass="richPanel" style="background-color: transparent;" header="Terça">
+													<h:panelGrid width="100%" style="background-color: transparent;" columnClasses="colunaAlinhamento" headerClass="consulta">
+														<!-- 														<f:facet name="header"> -->
+														<!-- 																	<h:outputText value="Terça" /> -->
+														<!-- 																</f:facet> -->
+														<rich:dataTable id="listaTurnoTerca" headerClass="consulta" style="background-color: transparent;" var="terca" columnClasses="colunaAlinhamento" cellpadding="0" cellspacing="0" width="100%" value="#{FuncionarioControle.quadroHorario.listaTurnoTerca}">
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Horario" />
+																</f:facet>
+																<h:outputText value="#{terca.aula} (#{terca.intervaloHora})" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Disciplina" />
+																</f:facet>
+																<h:outputText value="#{terca.disciplina.nome}" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Turma" />
+																</f:facet>
+																<h:outputText value="#{terca.turma.identificadorTurma}" />
+															</rich:column>
+														</rich:dataTable>
+													</h:panelGrid>
+												</rich:tab>
+												<rich:tab id="tabQuarta" styleClass="richPanel" style="background-color: transparent;" header="Quarta">
+													<h:panelGrid width="100%" style="background-color: transparent;" columnClasses="colunaAlinhamento" headerClass="consulta">
+														<rich:dataTable id="listaTurnoQuarta" headerClass="consulta" style="background-color: transparent;" var="quarta" columnClasses="colunaAlinhamento" cellpadding="0" cellspacing="0" width="100%" value="#{FuncionarioControle.quadroHorario.listaTurnoQuarta}">
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Horario" />
+																</f:facet>
+																<h:outputText value="#{quarta.aula} (#{quarta.intervaloHora})" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Disciplina" />
+																</f:facet>
+																<h:outputText value="#{quarta.disciplina.nome}" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Turma" />
+																</f:facet>
+																<h:outputText value="#{quarta.turma.identificadorTurma}" />
+															</rich:column>
+														</rich:dataTable>
+													</h:panelGrid>
+												</rich:tab>
+												<rich:tab id="tabQuinta" styleClass="richPanel" style="background-color: transparent;" header="Quinta">
+													<h:panelGrid width="100%" style="background-color: transparent;" columnClasses="colunaAlinhamento" headerClass="consulta">
+														<rich:dataTable id="listaTurnoQuinta" headerClass="consulta" style="background-color: transparent;" var="quinta" columnClasses="colunaAlinhamento" cellpadding="0" cellspacing="0" width="100%" value="#{FuncionarioControle.quadroHorario.listaTurnoQuinta}">
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Horario" />
+																</f:facet>
+																<h:outputText value="#{quinta.aula} (#{quinta.intervaloHora})" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Disciplina" />
+																</f:facet>
+																<h:outputText value="#{quinta.disciplina.nome}" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Turma" />
+																</f:facet>
+																<h:outputText value="#{quinta.turma.identificadorTurma}" />
+															</rich:column>
+														</rich:dataTable>
+													</h:panelGrid>
+												</rich:tab>
+												<rich:tab id="tabSexta" styleClass="richPanel" style="background-color: transparent;" header="Sexta">
+													<h:panelGrid width="100%" style="background-color: transparent;" columnClasses="colunaAlinhamento" headerClass="consulta">
+
+														<rich:dataTable id="listaTurnoSexta" headerClass="consulta" style="background-color: transparent;" var="sexta" columnClasses="colunaAlinhamento" cellpadding="0" cellspacing="0" width="100%" value="#{FuncionarioControle.quadroHorario.listaTurnoSexta}">
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Horario" />
+																</f:facet>
+																<h:outputText value="#{sexta.aula} (#{sexta.intervaloHora})" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Disciplina" />
+																</f:facet>
+																<h:outputText value="#{sexta.disciplina.nome}" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Turma" />
+																</f:facet>
+																<h:outputText value="#{sexta.turma.identificadorTurma}" />
+															</rich:column>
+														</rich:dataTable>
+													</h:panelGrid>
+												</rich:tab>
+												<rich:tab id="tabSabado" styleClass="richPanel" style="background-color: transparent;" header="Sábado">
+													<h:panelGrid width="100%" style="background-color: transparent;" columnClasses="colunaAlinhamento" headerClass="consulta">
+
+														<rich:dataTable id="listaTurnoSabado" headerClass="consulta" style="background-color: transparent;" var="sabado" columnClasses="colunaAlinhamento" width="100%" cellpadding="0" cellspacing="0" value="#{FuncionarioControle.quadroHorario.listaTurnoSabado}">
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Horario" />
+																</f:facet>
+																<h:outputText value="#{sabado.aula} (#{sabado.intervaloHora})" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Disciplina" />
+																</f:facet>
+																<h:outputText value="#{sabado.disciplina.nome}" />
+															</rich:column>
+															<rich:column style="background-color: transparent;">
+																<f:facet name="header">
+																	<h:outputText value="Turma" />
+																</f:facet>
+																<h:outputText value="#{sabado.turma.identificadorTurma}" />
+															</rich:column>
+														</rich:dataTable>
+													</h:panelGrid>
+												</rich:tab>
+											</rich:tabPanel>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+
+							</rich:tab>
+							<rich:tab id="tabMeusHorarios" styleClass="richPanel" header="Meus Horários" switchType="client">
+								<ui:include src="horarioProfessorForm.xhtml" />
+							</rich:tab>
+						</rich:tabPanel>
+					</rich:tab>
+
+					<!-- //////////////////////////////////////////////////-DOCUMENTACAO PROFESSOR	/////////////////////////////////////////////////////-->
+					<rich:tab id="tabDocumentacaoProfessor" styleClass="richPanel" name="tabDocumentacaoProfessor" header="Documentação GED" action="documentoProfessorForm.xhtml?faces-redirect=true">
+
+					</rich:tab>
+
+					<rich:tab id="tabAssinaturaFuncionario" styleClass="richPanel" name="tabAssinaturaFuncionario" header="Assinatura Funcionário" action="funcionarioAssinaturaForm.xhtml?faces-redirect=true">
+					</rich:tab>
+
+				</rich:tabPanel>
+
+				<h:panelGrid columns="1" width="100%" styleClass="tabMensagens" id="tabMensagens">
+					<otm:mensagem bean="#{FuncionarioControle}"></otm:mensagem>
+					<h:panelGroup styleClass="barraFlutuanteInferior " layout="block">
+						<h:panelGroup styleClass="btn-group btn-group-lg col-xs-12" layout="block">
+							<otm:commandButton id="novo" immediate="true" action="#{FuncionarioControle.novo}" value="#{msg_bt.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" />
+							<otm:commandButton style="margin-left:5px" id="salvar" action="#{FuncionarioControle.gravar}" value="#{msg_bt.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" oncomplete="#{FuncionarioControle.apresentarModalCriarUsuario}" render="form, formUsuarioFuncionario"/>
+							<otm:commandButton style="margin-left:5px" id="excluir" action="#{FuncionarioControle.excluir}" value="#{msg_bt.btn_excluir}" accesskey="3" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" styleClass="btn btn-danger btn-excluir" />
+							<otm:commandButton style="margin-left:5px" id="consultar" immediate="true" action="#{FuncionarioControle.inicializarConsultar}" value="#{msg_bt.btn_consultar}" accesskey="4" styleClass="btn btn-default btn-consultar" />
+							<otm:commandButton style="margin-left:5px" id="unificarProspect" oncomplete="#{rich:component('panelUnificarProspects')}.show();" icon="#{msg_botoes.btn_icon_unificar_embutido}" styleClass="btn btn-success" value="Unificar dados de funcionários" accesskey="4" render="formUnificarProspects" rendered="#{!FuncionarioControle.funcionarioVO.novoObj and FuncionarioControle.permitirUnificarFuncionariosDuplicados}" />
+							<otm:commandButton style="margin-left:5px" id="criarUsuario" onclick="#{FuncionarioControle.cadastroUsuarioAutomatico}" value="Criar Usuário" accesskey="5" icon="#{msg_botoes.btn_icon_usuario_embutido}" styleClass="btn btn-default" rendered="#{FuncionarioControle.apresentarCriarUsuario}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGrid>
+			</h:panelGroup>
+		</h:form>
+
+	</ui:define>
+</ui:composition>
+</html>

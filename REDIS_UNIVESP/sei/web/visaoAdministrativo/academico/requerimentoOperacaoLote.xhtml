@@ -1,0 +1,916 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<style>
+.rf-au-fnt input {
+	width: 100% !important;
+}
+</style>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_menu.Menu_requerimentoOperacaoLote}" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<script>
+			window.onload = function() {
+				document.getElementById("form:cod").focus();
+			}
+		</script>
+
+		<style>
+* input.rf-au-inp:empty {
+	width: 100% !important;
+	background-color: #ffffff !important;
+	padding: 2px !important;
+	padding-left: 6px !important;
+	height: 36px !important;
+	border: 1px solid #CCCCCC !important;
+	margin-bottom: 2px !important;
+	border-radius: 3px !important;
+}
+</style>
+
+		<h:form id="form">
+			<h:commandLink action="#{RequerimentoControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:inputText id="idControlador" style="display:none" size="90" value="#{RequerimentoControle.idControlador}"></h:inputText>
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ContaPagar_unidadeEnsino}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="unidadeEnsino" size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{RequerimentoControle.requerimentoConsVO.unidadeEnsino.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="selecionarUnidadeEnsino" oncomplete="#{rich:component('panelUnidadeEnsino')}.show()" icon="#{msg_botoes.btn_icon_adicionar_embutido}" render="formUnidadeEnsino" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!RequerimentoControle.gerarListaRequerimentoTodoPeriodo }">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_periodo }" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+						<otm:calendar rendered="#{!RequerimentoControle.gerarListaRequerimentoTodoPeriodo }" render="form" id="valorDataInicio" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos camposObrigatorios" inputSize="10" value="#{RequerimentoControle.controleConsulta.dataIni}">
+
+						</otm:calendar>
+
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{!RequerimentoControle.gerarListaRequerimentoTodoPeriodo }">
+					<h:outputText rendered="#{!RequerimentoControle.gerarListaRequerimentoTodoPeriodo }" styleClass="field control-label tituloCampos" value="Período Fim" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+						<otm:calendar rendered="#{!RequerimentoControle.gerarListaRequerimentoTodoPeriodo }" render="form" id="valorDataFim" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="form-control campos camposObrigatorios" inputSize="10" value="#{RequerimentoControle.controleConsulta.dataFim}">
+						</otm:calendar>
+
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Todo Período" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox value="#{RequerimentoControle.gerarListaRequerimentoTodoPeriodo }" styleClass="form-control campos">
+							<a4j:ajax event="click" render="form" execute="@form" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row">
+
+
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_curso}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<rich:autocomplete style="width: 100%; vertical-align: top; border: none !important; height: calc(1.5em + .9rem + 2px) !important; font-size: .875rem !important; font-weight: 400 !important;" autocompleteMethod="#{RequerimentoControle.autocompleteCurso}" var="cursoItem" fetchValue="#{cursoItem.nome} (#{cursoItem.codigo})" id="suggestionCurso" value="#{RequerimentoControle.autocompleteValorCurso}" layout="block" selectedItemClass="bg-gray tituloCampos p5" popupClass="bg-gray-100 rounded">
+							<rich:column>
+								<h:outputText value="#{cursoItem.nome}" />
+							</rich:column>
+							<a4j:ajax event="blur" execute="form:suggestionCurso" limitRender="true" render="form:suggestionCurso" listener="#{RequerimentoControle.blurListenterZeraConsultaCurso}" />
+							<a4j:ajax event="selectitem" execute="form:suggestionCurso" limitRender="true" status="loading" render="form:suggestionCurso" listener="#{RequerimentoControle.selecionarCursoPorCodigo}" />
+						</rich:autocomplete>
+						<span class="append-icon right"> <otm:commandIcon id="consultaCursos" tooltip="Localizar Curso" render="formCurso" action="#{RequerimentoControle.limparCurso}" oncomplete="#{rich:component('panelCurso')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparCurso" immediate="true" execute="@this" action="#{RequerimentoControle.limparDadosCurso}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="form" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_pessoa }" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<rich:autocomplete style="width: 100%; vertical-align: top; border: none !important; height: calc(1.5em + .9rem + 2px) !important; font-size: .875rem !important; font-weight: 400 !important;" fetchValue="#{requisitanteItens.nome} (#{requisitanteItens.codigo})" autocompleteMethod="#{RequerimentoControle.autocompleteRequisitante}" minChars="2" var="requisitanteItens" id="suggestionRequisitante" value="#{RequerimentoControle.autocompleteValorRequisitante}" layout="block" selectedItemClass="bg-gray tituloCampos p5" popupClass="bg-gray-100 rounded">
+							<a4j:ajax event="selectitem" render="form" execute="@form" listener="#{RequerimentoControle.selecionarRequisitantePorCodigo}" />
+							<a4j:ajax event="blur" execute="form:suggestionRequisitante" limitRender="true" render="form:suggestionRequisitante" listener="#{RequerimentoControle.blurListenerZeraConsultaRequisitante}" />
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText styleClass="tituloCamposReduzidosNegrito" value="Requisitante" />
+								</f:facet>
+								<h:outputText value="#{requisitanteItens.nome}" />
+							</rich:column>
+						</rich:autocomplete>
+						<span class="append-icon right"> <otm:commandIcon id="consultaRequisitantes" focus="nome" tooltip="Localizar Requisitante" render="formRequisitante" action="#{RequerimentoControle.limparConsultaRequisitante}" oncomplete="#{rich:component('panelRequisitante')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparRequisitante" immediate="true" execute="@this" action="#{RequerimentoControle.limparDadosRequisitante}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="form" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+
+
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="row">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_funcResponsavel }" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<rich:autocomplete style="width: 100%; vertical-align: top; border: none !important; height: calc(1.5em + .9rem + 2px) !important; font-size: .875rem !important; font-weight: 400 !important;" fetchValue="#{funcionarioResponsavelItens.pessoa.nome} (#{funcionarioResponsavelItens.pessoa.codigo})" autocompleteMethod="#{RequerimentoControle.autocompleteResponsavel}" minChars="2" rowClasses="10" var="funcionarioResponsavelItens" id="suggestionResponsavel" disabled="#{!RequerimentoControle.permitirConsultarRequerimentoOutroConsultorResponsavel}" value="#{RequerimentoControle.autocompleteValorResponsavel}" layout="block" selectedItemClass="bg-gray tituloCampos p5" popupClass="bg-gray-100 rounded">
+							<a4j:ajax event="selectitem" limitRender="true" render="form:suggestionResponsavel" listener="#{RequerimentoControle.selecionarResponsavelPorCodigo}" />
+							<a4j:ajax event="blur" limitRender="true" execute="form:suggestionResponsavel" render="form:suggestionResponsavel" listener="#{RequerimentoControle.blurListenerZeraConsultaResponsavel}" />
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText styleClass="tituloCamposReduzidosNegrito" value="Responsavel" />
+								</f:facet>
+								<h:outputText value="#{funcionarioResponsavelItens.pessoa.nome}" />
+							</rich:column>
+						</rich:autocomplete>
+						<span class="append-icon right"> <otm:commandIcon rendered="#{RequerimentoControle.permitirConsultarRequerimentoOutroConsultorResponsavel || RequerimentoControle.consultarRequerimentoOutrosResponsaveisMesmoDepartamentoTodasUnidades}" id="funcionarioResponsavel" focus="nome" tooltip="Localizar Responsavel" render="formFuncionarioResponsavel" action="#{RequerimentoControle.limparConsultaFuncionario}" oncomplete="#{rich:component('panelFuncionarioResponsavel')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon rendered="#{RequerimentoControle.permitirConsultarRequerimentoOutroConsultorResponsavel || RequerimentoControle.consultarRequerimentoOutrosResponsaveisMesmoDepartamentoTodasUnidades }" id="limparResponsavel" immediate="true" execute="@this" action="#{RequerimentoControle.limparDadosFuncionarioResponsavel}" icon="#{msg_botoes.btn_icon_limpar_embutido}" tooltip="#{msg_aplic.prt_limparCampo}" render="form" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Requerimento_tipo} de Requerimento" />
+					<h:selectOneMenu id="tipoRequerimento" styleClass="form-control camposObrigatorios" value="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.codigo}">
+						<f:selectItems value="#{RequerimentoControle.listaSelectItemTipoRequerimentoConsulta }" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_BibliotecaEmprestimo_ordenarPor }" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{RequerimentoControle.ordernarPor}">
+						<f:selectItems value="#{RequerimentoControle.listaSelectItemTipoOrdenacao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+			</h:panelGroup>
+
+			<h:panelGroup layout="block" styleClass="row text-center mt10">
+				<a4j:commandLink id="consultar" execute="@form" rendered="#{RequerimentoControle.permiteConsultar}" render="form" value="#{msg_bt.btn_consultar}" action="#{RequerimentoControle.consultarOtimizado}" accesskey="2" styleClass="btn btn-default btn-consultar">
+					<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+					<f:setPropertyActionListener target="#{RequerimentoControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+					<f:setPropertyActionListener target="#{RequerimentoControle.controleConsultaOtimizado.page}" value="1" />
+				</a4j:commandLink>
+			</h:panelGroup>
+			<h:panelGroup id="listaConsultaResumo" rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isTipoTransferenciaInterna and !empty RequerimentoControle.controleConsultaOtimizado.listaConsulta}" layout="block" styleClass="row mt10">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<otm2:panel name="resumoUnidade" styleClassFooter="dn" styleBody="margin-top:0px important;position:relative; top:-10px; max-height:300px overflow:auto" styleClassBody="border pb-5 border-info rounded-bottom" stylePanel="padding:0px !important;border:none !important" styleClassHeader="bg-info text-white p5 rounded-top w-100" styleClassClose="text-white" styleClassOpen="text-white" stylePanelHeader=" ">
+						<ui:define name="header">
+							<h:outputText value="Resumo de Vagas Por Unidade de Ensino" />
+						</ui:define>
+						<ui:define name="body">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<rich:dataTable id="tableresumoRequerimentounidade" value="#{RequerimentoControle.resumoOperacaoLoteTransferenciaInternaPorUnidadeEnsino}" var="resumoRequerimento">
+									<f:facet name="header">
+										<rich:columnGroup>
+											<rich:column>
+												<h:outputText value="Polo" />
+												<h:panelGroup layout="block" styleClass="col-md-12 pn">
+													<span class="append-icon right"> <otm:commandIcon render="tableresumoRequerimentounidade" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('unidadeEnsinoVO_nome')}" tooltip="Limpar Filtro" />
+													</span>
+													<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('unidadeEnsinoVO_nome', 'unidadeEnsinoVO.nome', 'TEXTO').filtro}">
+														<a4j:ajax event="change" execute="@this" render="tableresumoRequerimentounidade" />
+													</h:inputText>
+												</h:panelGroup>
+											</rich:column>
+<!-- 											<rich:column>
+												<h:outputText value="Dia Semana" />
+												<h:panelGroup layout="block" styleClass="col-md-12 pn">
+													<span class="append-icon right"> <otm:commandIcon render="tableresumoRequerimentounidade" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('diaSemana_descricao')}" tooltip="Limpar Filtro" />
+													</span>
+													<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('diaSemana_descricao', 'diaSemana.descricao', 'TEXTO').filtro}">
+														<a4j:ajax event="change" execute="@this" render="tableresumoRequerimentounidade" />
+													</h:inputText>
+												</h:panelGroup>
+											</rich:column> -->
+											<rich:column>
+												<h:outputText value="Vagas" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Ocupadas" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Disponíveis" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Vagas Ofertadas" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Requerimentos Deferidos" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Requerimentos Disponiveis" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Requerimentos Abertos" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Selecionar" />
+											</rich:column>
+
+										</rich:columnGroup>
+									</f:facet>
+									<rich:column filterType="custom" filter="#{FilterFactory.filter('unidadeEnsinoVO_nome', 'unidadeEnsinoVO.nome', 'TEXTO')}">
+										<h:outputText value="#{resumoRequerimento.unidadeEnsinoVO.nome}"></h:outputText>
+									</rich:column>
+<!-- 									<rich:column filterType="custom" filter="#{FilterFactory.filter('diaSemana_descricao', 'diaSemana.descricao', 'TEXTO')}">
+										<h:outputText value="#{resumoRequerimento.diaSemana.descricao}" />
+									</rich:column> -->
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.unidadeEnsinoVO.quantidadeComputadoresAlunos}"></h:outputText>
+									</rich:column>
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.qtdeMatriculados}" />
+									</rich:column>
+									<rich:column>
+										<h:outputText value="#{RequerimentoControle.calcularComputadoresDisponiveis(resumoRequerimento.unidadeEnsinoVO.quantidadeComputadoresAlunos,resumoRequerimento.qtdeMatriculados)}"></h:outputText>
+									</rich:column>
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.unidadeEnsinoVO.numeroVagaOfertada}"></h:outputText>
+									</rich:column>	
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.qtdeRequerimentoDeferido}"></h:outputText>
+									</rich:column>
+									<rich:column>
+										<h:outputText value="#{RequerimentoControle.calcularRequerimentosDisponiveis(resumoRequerimento.unidadeEnsinoVO.numeroVagaOfertada, resumoRequerimento.qtdeRequerimentoDeferido)}"></h:outputText>
+									</rich:column>
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.qtdeRequerimento}" />
+										<h:panelGroup rendered="#{resumoRequerimento.qtdeRequerimento le (resumoRequerimento.unidadeEnsinoVO.numeroVagaOfertada - resumoRequerimento.qtdeRequerimentoDeferido)}" styleClass="#{msg_botoes.btn_icon_acertou_resposta_questao} text-success ml5"></h:panelGroup>
+										<h:panelGroup rendered="#{resumoRequerimento.qtdeRequerimento gt (resumoRequerimento.unidadeEnsinoVO.numeroVagaOfertada - resumoRequerimento.qtdeRequerimentoDeferido)}" styleClass="#{msg_botoes.btn_icon_errou_resposta_questao} text-danger ml5"></h:panelGroup>
+
+									</rich:column>
+									<rich:column>
+										<otm:commandIcon tooltip="Clique para selecionar os requerimentos" icon="#{msg_botoes.btn_icon_marcar} iconePequeno text-success bg-success" render="formDeferirIndeferir, form" action="#{RequerimentoControle.selecionarResumoTransferenciaInterna(resumoRequerimento, true, false)}"  oncomplete="#{rich:component('panelDeferirIndeferir')}.show()" />
+<!-- 										<otm:commandIcon tooltip="Clique desamarcar os requerimentos" icon="#{msg_botoes.btn_icon_desmarcar} iconePequeno text-dark bg-dark" render="form" action="#{RequerimentoControle.selecionarResumoTransferenciaInterna(resumoRequerimento, resumoRequerimento.diaSemana, false, false)}" /> -->
+									</rich:column>
+
+								</rich:dataTable>
+							</h:panelGroup>
+						</ui:define>
+					</otm2:panel>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<otm2:panel name="resumoUnidadeCurso" styleClassFooter="dn" styleBody="margin-top:0px important;position:relative; top:-10px; max-height:300px overflow:auto" styleClassBody="border pb-5 border-info rounded-bottom" stylePanel="padding:0px !important;border:none !important" styleClassHeader="bg-info text-white p5 rounded-top w-100" styleClassClose="text-white" styleClassOpen="text-white" stylePanelHeader=" ">
+						<ui:define name="header">
+							<h:outputText value="Resumo de Vagas Por Unidade de Ensino e Curso" />
+						</ui:define>
+						<ui:define name="body">
+							<h:panelGroup layout="block" styleClass="col-md-12">
+								<rich:dataTable id="tableresumoRequerimentounidadecurso" value="#{RequerimentoControle.resumoOperacaoLoteTransferenciaInternaPorUnidadeEnsinoCurso}" var="resumoRequerimento">
+									<f:facet name="header">
+										<rich:columnGroup>
+											<rich:column>
+												<h:outputText value="Polo" />
+												<h:panelGroup layout="block" styleClass="col-md-12 pn">
+													<span class="append-icon right"> <otm:commandIcon render="tableresumoRequerimentounidadecurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('unidadeEnsinoVO_nome2')}" tooltip="Limpar Filtro" />
+													</span>
+													<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('unidadeEnsinoVO_nome2', 'unidadeEnsinoVO.nome', 'TEXTO').filtro}">
+														<a4j:ajax event="change" execute="@this" render="tableresumoRequerimentounidadecurso" />
+													</h:inputText>
+												</h:panelGroup>
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Curso" />
+												<h:panelGroup layout="block" styleClass="col-md-12 pn">
+													<span class="append-icon right"> <otm:commandIcon render="tableresumoRequerimentounidadecurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('curso_nome')}" tooltip="Limpar Filtro" />
+													</span>
+													<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('curso_nome', 'cursoVO.nome', 'TEXTO').filtro}">
+														<a4j:ajax event="change" execute="@this" render="tableresumoRequerimentounidadecurso" />
+													</h:inputText>
+												</h:panelGroup>
+											</rich:column>
+<!-- 											<rich:column>
+												<h:outputText value="Dia Semana" />
+												<h:panelGroup layout="block" styleClass="col-md-12 pn">
+													<span class="append-icon right"> <otm:commandIcon render="tableresumoRequerimentounidadecurso" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('diaSemana_descricao')}" tooltip="Limpar Filtro" />
+													</span>
+													<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('diaSemana_descricao2', 'diaSemana.descricao', 'TEXTO').filtro}">
+														<a4j:ajax event="change" execute="@this" render="tableresumoRequerimentounidadecurso" />
+													</h:inputText>
+												</h:panelGroup>
+											</rich:column> -->
+											<rich:column>
+												<h:outputText value="Vagas" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Ocupadas" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Disponíveis" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Vagas Ofertadas" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Requerimentos Deferidos" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value= "Requerimentos Disponiveis" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Requerimentos Abertos" />
+											</rich:column>
+											<rich:column>
+												<h:outputText value="Selecionar" />
+											</rich:column>
+
+										</rich:columnGroup>
+									</f:facet>
+									<rich:column filterType="custom" filter="#{FilterFactory.filter('unidadeEnsinoVO_nome2', 'unidadeEnsinoVO.nome', 'TEXTO')}">
+										<h:outputText value="#{resumoRequerimento.unidadeEnsinoVO.nome}"></h:outputText>
+									</rich:column>
+									<rich:column filterType="custom" filter="#{FilterFactory.filter('curso_nome', 'cursoVO.nome', 'TEXTO')}">
+										<h:outputText value="#{resumoRequerimento.cursoVO.nome}"></h:outputText>
+									</rich:column>
+<!-- 									<rich:column filterType="custom" filter="#{FilterFactory.filter('diaSemana_descricao2', 'diaSemana.descricao', 'TEXTO')}">
+
+										<h:outputText value="#{resumoRequerimento.diaSemana.descricao}" />
+									</rich:column> -->
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.unidadeEnsinoVO.quantidadeComputadoresAlunos}"></h:outputText>
+									</rich:column>
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.qtdeMatriculados}" />
+									</rich:column>
+									<rich:column>
+										<h:outputText value="#{RequerimentoControle.calcularComputadoresDisponiveis(resumoRequerimento.unidadeEnsinoVO.quantidadeComputadoresAlunos, resumoRequerimento.qtdeMatriculados)}"></h:outputText>
+									</rich:column>
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.unidadeEnsinoVO.numeroVagaOfertada}"></h:outputText>
+									</rich:column>
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.qtdeRequerimentoDeferido}"></h:outputText>
+									</rich:column>	
+									<rich:column>
+										<h:outputText value="#{RequerimentoControle.calcularRequerimentosDisponiveis(resumoRequerimento.unidadeEnsinoVO.numeroVagaOfertada,resumoRequerimento.qtdeRequerimentoDeferido)}"></h:outputText>
+									</rich:column>					
+									<rich:column>
+										<h:outputText value="#{resumoRequerimento.qtdeRequerimento}" />
+										<h:panelGroup rendered="#{resumoRequerimento.qtdeRequerimento le (resumoRequerimento.unidadeEnsinoVO.numeroVagaOfertada - resumoRequerimento.qtdeRequerimentoDeferido)}" styleClass="#{msg_botoes.btn_icon_acertou_resposta_questao} text-success ml5"></h:panelGroup>
+										<h:panelGroup rendered="#{resumoRequerimento.qtdeRequerimento gt (resumoRequerimento.unidadeEnsinoVO.numeroVagaOfertada - resumoRequerimento.qtdeRequerimentoDeferido)}" styleClass="#{msg_botoes.btn_icon_errou_resposta_questao} text-danger ml5"></h:panelGroup>
+									</rich:column>
+									<rich:column>
+										<otm:commandIcon tooltip="Clique para selecionar os requerimentos" icon="#{msg_botoes.btn_icon_marcar} iconePequeno text-success bg-success" render="formDeferirIndeferir, form" action="#{RequerimentoControle.selecionarResumoTransferenciaInterna(resumoRequerimento, true, true)}" oncomplete="#{rich:component('panelDeferirIndeferir')}.show()" />
+<!-- 										<otm:commandIcon tooltip="Clique desamarcar os requerimentos" icon="#{msg_botoes.btn_icon_desmarcar} iconePequeno text-dark bg-dark" render="form" action="#{RequerimentoControle.selecionarResumoTransferenciaInterna(resumoRequerimento, resumoRequerimento.diaSemana, false, false)}" /> -->
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+						</ui:define>
+					</otm2:panel>
+				</h:panelGroup>
+			</h:panelGroup>
+
+			<h:panelGroup id="listaConsulta" layout="block" styleClass="row">
+				<rich:dataTable id="items" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" rendered="#{!empty RequerimentoControle.controleConsultaOtimizado.listaConsulta}" value="#{RequerimentoControle.controleConsultaOtimizado.listaConsulta}" rowKeyVar="row" rows="100" var="requerimentoItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText styleClass="col-md-12" value="Selecionar" />
+							<otm:selectBooleanCheckbox id="selecionarTodos" value="#{RequerimentoControle.marcarTodos}">
+								<a4j:ajax event="click" render="form" execute="@form" listener="#{RequerimentoControle.marcarDesmarcarTodos}" />
+							</otm:selectBooleanCheckbox>
+						</f:facet>
+						<otm:selectBooleanCheckbox id="selecionar" value="#{requerimentoItem.selecionado}" />
+					</rich:column>
+					<rich:column style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('codigoRequerimento', 'codigo', 'INTEIRO')}">
+						<f:facet name="header">
+							<h:outputText value="Código" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> <otm:commandIcon render="listaConsulta" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('codigoRequerimento')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('codigoRequerimento', 'codigo', 'INTEIRO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="listaConsulta" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText id="codigo" value="#{requerimentoItem.codigo}" />
+					</rich:column>
+					<rich:column style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('matriculaAluno', 'matricula.matricula', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Requerimento_nomeRequerente}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> <otm:commandIcon render="listaConsulta" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('matriculaAluno')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('matriculaAluno', 'matricula.matricula', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="listaConsulta" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText id="nomeAluno" rendered="#{!empty requerimentoItem.matricula.aluno.nome}" value="#{requerimentoItem.matricula.matricula} - #{requerimentoItem.matricula.aluno.nome}" />
+						<h:outputText id="nomePessoa" rendered="#{empty requerimentoItem.matricula.aluno.nome}" value="#{requerimentoItem.pessoa.nome}" />
+					</rich:column>
+					<rich:column style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('unidadeEnsino_nome', 'unidadeEnsino.nome', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="Polo" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> <otm:commandIcon render="listaConsulta" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('unidadeEnsino_nome')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('unidadeEnsino_nome', 'unidadeEnsino.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="listaConsulta" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText id="nomeUnidadeEnsino" value="#{requerimentoItem.unidadeEnsino.nome}" />
+					</rich:column>
+					<rich:column style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('nomeCurso', 'curso.nome', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Requerimento_curso}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> <otm:commandIcon render="listaConsulta" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('nomeCurso')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('nomeCurso', 'curso.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="listaConsulta" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{requerimentoItem.curso.nome}" />
+					</rich:column>
+					<!-- 					<rich:column> -->
+					<!-- 						<f:facet name="header"> -->
+					<!-- 							<h:outputText value="#{msg_aplic.prt_Requerimento_tipoRequerimento}" /> -->
+					<!-- 						</f:facet> -->
+					<!-- 						<h:outputText id="tipoRequerimento" value="#{requerimentoItem.tipoRequerimento.nome}" /> -->
+					<!-- 					</rich:column> -->
+					<rich:column style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('diaSemana', 'data_Apresentar', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Requerimento_data}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> <otm:commandIcon render="listaConsulta" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('diaSemana')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('diaSemana', 'data_Apresentar', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="listaConsulta" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText id="data" value="#{requerimentoItem.data_Apresentar}" />
+					</rich:column>
+					<!-- 					<rich:column> -->
+					<!-- 						<f:facet name="header"> -->
+					<!-- 							<h:outputText value="#{msg_aplic.prt_Requerimento_dataPrevistaFinalizacao}" /> -->
+					<!-- 						</f:facet> -->
+					<!-- 						<h:outputText id="dataPrevistaFinalizacao" value="#{requerimentoItem.dataPrevistaFinalizacao_Apresentar}" /> -->
+					<!-- 					</rich:column> -->
+					<!-- 					<rich:column> -->
+					<!-- 						<f:facet name="header"> -->
+					<!-- 							<h:outputText value="Func. Resp" /> -->
+					<!-- 						</f:facet> -->
+					<!-- 						<h:outputText id="funcRespo" value="#{requerimentoItem.funcionarioVO.pessoa.nome}" /> -->
+					<!-- 					</rich:column> -->
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.tipo eq 'CA' or RequerimentoControle.requerimentoConsVO.tipoRequerimento.tipo eq 'TR'}">
+						<f:facet name="header">
+							<h:outputText value="Motivo" />
+						</f:facet>
+						<h:outputText value="#{requerimentoItem.motivoCancelamentoTrancamento.nome}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.tipo eq 'CA' or RequerimentoControle.requerimentoConsVO.tipoRequerimento.tipo eq 'TR'}">
+						<f:facet name="header">
+							<h:outputText value="Justificativa" />
+						</f:facet>
+						<h:outputText value="#{requerimentoItem.justificativaTrancamento}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.tipo eq 'TC'}">
+						<f:facet name="header">
+							<h:outputText value="Título TCC" />
+						</f:facet>
+						<h:outputText value="#{requerimentoItem.tituloMonografia}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.tipo eq 'TC'}">
+						<f:facet name="header">
+							<h:outputText value="Orientador TCC" />
+						</f:facet>
+						<h:outputText value="#{requerimentoItem.orientadorMonografia}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.tipo eq 'TC'}">
+						<f:facet name="header">
+							<h:outputText value="Nota TCC" />
+						</f:facet>
+						<h:outputText value="#{requerimentoItem.notaMonografia}" >
+							<f:converter converterId="FormatadorNumerico"></f:converter>
+						</h:outputText>
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isPermiteInformarDisciplina}">
+						<f:facet name="header">
+							<h:outputText value="Disciplina" />
+						</f:facet>
+						<h:outputText id="disciplina" value="#{requerimentoItem.disciplina.abreviatura} - #{requerimentoItem.disciplina.nome}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isCertificadoParticipacaoTCC}">
+						<f:facet name="header">
+							<h:outputText value="Grupo TCC" />
+						</f:facet>
+						<h:outputText id="grupoFacilitador" value="#{requerimentoItem.grupoFacilitador.nomeGrupo}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isCertificadoParticipacaoTCC}">
+						<f:facet name="header">
+							<h:outputText value="Tema TCC" />
+						</f:facet>
+						<h:outputText id="temaTccFacilitador" value="#{requerimentoItem.temaTccFacilitador}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isCertificadoParticipacaoTCC}">
+						<f:facet name="header">
+							<h:outputText value="Assunto TCC" />
+						</f:facet>
+						<h:outputText id="assuntoTccFacilitador" value="#{requerimentoItem.assuntoTccFacilitador}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isCertificadoParticipacaoTCC}">
+						<f:facet name="header">
+							<h:outputText value="Avaliador TCC" />
+						</f:facet>
+						<h:outputText id="avaliadorExternoFacilitador" value="#{requerimentoItem.avaliadorExternoFacilitador}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isTipoTransferenciaInterna}" style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('poloTransferencia', 'unidadeEnsinoTransferenciaInternaVO.nome', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="Polo Transferência" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> <otm:commandIcon render="listaConsulta" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('poloTransferencia')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('poloTransferencia', 'unidadeEnsinoTransferenciaInternaVO.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="listaConsulta" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText id="unidadeEnsinoTransferenciaInternaVO" value="#{requerimentoItem.unidadeEnsinoTransferenciaInternaVO.nome}" />
+					</rich:column>
+					<rich:column style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('cursoTransferencia', 'cursoTransferenciaInternaVO.nome', 'TEXTO')}" rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isTipoTransferenciaInterna}">
+						<f:facet name="header">
+							<h:outputText value="Curso Transferência" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> <otm:commandIcon render="listaConsulta" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('cursoTransferencia')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('cursoTransferencia', 'cursoTransferenciaInternaVO.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="listaConsulta" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText id="cursoTransferenciaInternaV" value="#{requerimentoItem.cursoTransferenciaInternaVO.nome}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isTipoTransferenciaInterna}">
+						<f:facet name="header">
+							<h:outputText value="Dia Semana" />
+						</f:facet>
+						<h:outputText id="diaSemana" value="#{requerimentoItem.matricula.diaSemanaAula.descricao}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isTipoTransferenciaInterna}">
+						<f:facet name="header">
+							<h:outputText value="Nr Vagas" />
+						</f:facet>
+						<h:outputText id="quantidadeComputadoresAlunos" value="#{requerimentoItem.unidadeEnsinoTransferenciaInternaVO.quantidadeComputadoresAlunos}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isTipoTransferenciaInterna}">
+						<f:facet name="header">
+							<h:outputText value="Vagas Ocupadas Por Polo" />
+						</f:facet>
+						<h:outputText id="vagaPorUnidadeEnsinoDiaSemana" value="#{requerimentoItem.vagaPorUnidadeEnsinoDiaSemana}" />
+					</rich:column>
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isTipoTransferenciaInterna}">
+						<f:facet name="header">
+							<h:outputText value="Vagas Ocupadas Por Curso" />
+						</f:facet>
+						<h:outputText id="vagaPorCursoDiaSemana" value="#{requerimentoItem.vagaPorCursoDiaSemana}" />
+					</rich:column>
+					
+					<rich:column rendered="#{RequerimentoControle.requerimentoConsVO.tipoRequerimento.isTipoTransferenciaInterna}">
+						<f:facet name="header">
+							<h:outputText value="Vagas Ofertadas Por Unidade" />
+						</f:facet>
+						<h:outputText id="vagaOfertadaUnidadeEnsino" value="#{requerimentoItem.unidadeEnsinoTransferenciaInternaVO.numeroVagaOfertada}" />
+					</rich:column>
+					<rich:column style="min-width:150px !important">
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<h:panelGroup layout="block" styleClass="row">
+							<otm:commandIcon render="form" onclick="return confirm('Você confirma o DEFERIMENTO deste requerimento?')" action="#{RequerimentoControle.deferirEspecifico(requerimentoItem, false)}" icon="#{msg_botoes.btn_icon_confirmar} iconePequeno" tooltip="Deferir" />
+							<otm:commandIcon render="form" onclick="return confirm('Você confirma o INDEFERIMENTO deste requerimento?')" action="#{RequerimentoControle.indeferirEspecifico(requerimentoItem, false)}" icon="#{msg_botoes.btn_icon_cancelar} iconePequeno" tooltip="Indeferir" />
+						</h:panelGroup>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="form:items" id="paginador" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+			</h:panelGroup>
+
+			<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+				<otm:commandButton render="form" id="deferirLoteEspecifico" onclick="return confirm('Você confirma o DEFERIMENTO do(s) requerimento(s) selecionado(s)?')" action="#{RequerimentoControle.deferirLoteEspecifico}" value="Deferir" accesskey="1" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-warning mr5" />
+				<otm:commandButton render="form" id="indeferirLoteEspecifico" onclick="return confirm('Você confirma o INDEFERIMENTO do(s) requerimento(s) selecionado(s)?')" action="#{RequerimentoControle.indeferirLoteEspecifico}" value="Indeferir" accesskey="2" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" />			
+			</h:panelGroup>
+			<h:panelGroup id="msgs" layout="block" styleClass="row">
+				<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+			</h:panelGroup>
+		</h:form>
+
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionarioResponsavel" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formFuncionarioResponsavel:valorConsultaFuncionarioResponsavel').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarFuncionario}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkFuncionarioResponsavel" />
+					<rich:componentControl target="panelFuncionarioResponsavel" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionarioResponsavel">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaFuncionarioResponsavel" value="#{RequerimentoControle.campoConsultaFuncionarioResponsavel}">
+						<f:selectItems value="#{RequerimentoControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaFuncionarioResponsavel" size="20" styleClass="form-control campos" value="#{RequerimentoControle.valorConsultaFuncionarioResponsavel}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarResponsavel" render="formFuncionarioResponsavel:mensagemConsultaFuncionario, formFuncionarioResponsavel:resultadoConsultaFuncionario, formFuncionarioResponsavel:scResultadoFuncionario" action="#{RequerimentoControle.consultarFuncionarioResponsavel}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaFuncionario" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RequerimentoControle.listaConsultaFuncionarioResponsavel}" rows="7" var="funcionarioResponsavelItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarFuncionarioResponsavel}" render="form:nomeResponsavel, form" oncomplete="#{rich:component('panelFuncionarioResponsavel')}.hide()" value="#{funcionarioResponsavelItens.pessoa.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarFuncionarioResponsavel}" render="form:nomeResponsavel, form" oncomplete="#{rich:component('panelFuncionarioResponsavel')}.hide()" value="#{funcionarioResponsavelItens.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="CPF" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarFuncionarioResponsavel}" render="form:nomeResponsavel, form" oncomplete="#{rich:component('panelFuncionarioResponsavel')}.hide()" value="#{funcionarioResponsavelItens.pessoa.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RequerimentoControle.selecionarFuncionarioResponsavel}" render="form:nomeResponsavel, form" oncomplete="#{rich:component('panelFuncionarioResponsavel')}.hide()" icon="#{msg_bt.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formFuncionarioResponsavel:resultadoConsultaFuncionario" maxPages="10" id="scResultadoFuncionario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelRequisitante" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formRequisitante:valorConsultaRequisitante').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarFuncionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkRequisitante" />
+					<rich:componentControl target="panelRequisitante" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formRequisitante">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaRequisitante" value="#{RequerimentoControle.campoConsultaRequisitante}">
+						<f:selectItems value="#{RequerimentoControle.tipoConsultaComboRequisitante}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaRequisitante" size="20" styleClass="form-control campos" value="#{RequerimentoControle.valorConsultaRequisitante}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultarRequisitante" render="formRequisitante:mensagemConsultaRequisitante, formRequisitante:resultadoConsultaRequisitante, formRequisitante:scResultadoRequisitante" action="#{RequerimentoControle.consultarRequisitante}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaRequisitante" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RequerimentoControle.listaConsultaRequisitante}" rows="7" var="requisitanteItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Nome" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarRequisitante}" render="form:nomeRequisitante, form" oncomplete="#{rich:component('panelRequisitante')}.hide()" value="#{requisitanteItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="CPF" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarRequisitante}" render="form:nomeRequisitante, form" oncomplete="#{rich:component('panelRequisitante')}.hide()" value="#{requisitanteItens.CPF}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RequerimentoControle.selecionarRequisitante}" render="form:nomeRequisitante, form" oncomplete="#{rich:component('panelRequisitante')}.hide()" icon="#{msg_bt.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formRequisitante:resultadoConsultaRequisitante" maxPages="10" id="scResultadoRequisitante" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaRequisitante" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formCurso:valorConsultaCurso').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3" />
+					<rich:componentControl target="panelCurso" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{RequerimentoControle.campoConsultaCurso}">
+						<f:selectItems value="#{RequerimentoControle.tipoConsultaComboCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCurso" size="10" styleClass="form-control campos" value="#{RequerimentoControle.valorConsultaCurso}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCurso:mensagemConsultaCurso, formCurso:resultadoConsultaCurso, formCurso:scResultadoCurso" action="#{RequerimentoControle.consultarCursoCons}" value="#{msg_bt.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCurso" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{RequerimentoControle.listaConsultaCurso}" rows="5" var="cursoItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarCursoCons}" focus="Curso" render="form:nomeCurso, form:mensagem, form" oncomplete="#{rich:component('panelCurso')}.hide()" value="#{cursoItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_UnidadeEnsinoCurso_curso}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{RequerimentoControle.selecionarCursoCons}" focus="Curso" render="form:nomeCurso, form:mensagem, form" oncomplete="#{rich:component('panelCurso')}.hide()" value="#{cursoItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_bt.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{RequerimentoControle.selecionarCursoCons}" render="form:nomeCurso, form:mensagem, form" oncomplete="#{rich:component('panelCurso')}.hide()" icon="#{msg_bt.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCurso:resultadoConsultaCurso" maxPages="10" boundaryControls="auto" stepControls="auto" fastControls="hide" id="scResultadoCurso" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCurso" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{RequerimentoControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+
+		<otm2:modalUnidadeEnsino id="panelUnidadeEnsino" bean="#{RequerimentoControle}" render="form" />
+
+		<rich:popupPanel id="panelDeferirIndeferir" styleClass="modalMaximizado100" width="750"  shadowOpacity="true">
+		    <f:facet name="header">
+		        <h:panelGroup>
+		            <h:outputText value="Deferir/Indeferir Transferências Internas" />
+		        </h:panelGroup>
+		    </f:facet>
+		   	<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink4" />
+					<rich:componentControl target="panelDeferirIndeferir" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+		    <h:form id="formDeferirIndeferir">
+		        <rich:dataTable value="#{RequerimentoControle.listaConsultaResumoTransferenciaInternaSelecionados}" var="requerimentoItem" rows="10" id="tabelaDeferirIndeferir">
+		            <rich:column>
+						<f:facet name="header">
+							<h:outputText styleClass="col-md-12" value="Selecionar" />
+							<otm:selectBooleanCheckbox id="selecionarTodos" value="#{RequerimentoControle.marcarTodos}">
+								<a4j:ajax event="click" render="form" execute="@form" listener="#{RequerimentoControle.marcarDesmarcarTodos}" />
+							</otm:selectBooleanCheckbox>
+						</f:facet>
+						<otm:selectBooleanCheckbox id="selecionar" value="#{requerimentoItem.selecionado}" />
+					</rich:column>
+		            <rich:column>
+		                <f:facet name="header">
+		                    <h:outputText value="Código" />
+		                </f:facet>
+		                <h:outputText value="#{requerimentoItem.codigo}" />
+		            </rich:column>
+		            <rich:column>
+		                <f:facet name="header">
+		                    <h:outputText value="#{msg_aplic.prt_Requerimento_nomeRequerente}" />
+		                </f:facet>
+						<h:outputText id="nomeAluno" rendered="#{!empty requerimentoItem.matricula.aluno.nome}" value="#{requerimentoItem.matricula.matricula} - #{requerimentoItem.matricula.aluno.nome}" />
+						<h:outputText id="nomePessoa" rendered="#{empty requerimentoItem.matricula.aluno.nome}" value="#{requerimentoItem.pessoa.nome}" />
+					</rich:column>
+					<rich:column style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('unidadeEnsino_nome', 'unidadeEnsino.nome', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="Polo" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> 
+								<otm:commandIcon render="formDeferirIndeferir" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('unidadeEnsino_nome')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('unidadeEnsino_nome', 'unidadeEnsino.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="formDeferirIndeferir" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText id="nomeUnidadeEnsino" value="#{requerimentoItem.unidadeEnsino.nome}" />
+					</rich:column>
+					<rich:column style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('nomeCurso', 'curso.nome', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Requerimento_curso}" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> <otm:commandIcon render="formDeferirIndeferir" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('nomeCurso')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('nomeCurso', 'curso.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="formDeferirIndeferir" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{requerimentoItem.curso.nome}" />
+					</rich:column>
+					<rich:column style="text-align: center !important" filterType="custom" filter="#{FilterFactory.filter('poloTransferencia', 'unidadeEnsinoTransferenciaInternaVO.nome', 'TEXTO')}">
+						<f:facet name="header">
+							<h:outputText value="Polo Transferência" />
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<span class="append-icon right"> <otm:commandIcon render="formDeferirIndeferir" icon="#{msg_botoes.btn_icon_limpar_embutido}" action="#{FilterFactory.limparFiltro('poloTransferencia')}" tooltip="Limpar Filtro" />
+								</span>
+								<h:inputText styleClass="form-control campos" size="10" value="#{FilterFactory.filter('poloTransferencia', 'unidadeEnsinoTransferenciaInternaVO.nome', 'TEXTO').filtro}">
+									<a4j:ajax event="change" execute="@this" render="formDeferirIndeferir" />
+								</h:inputText>
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText id="unidadeEnsinoTransferenciaInternaVO" value="#{requerimentoItem.unidadeEnsinoTransferenciaInternaVO.nome}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Vagas Ofertadas Por Unidade" />
+						</f:facet>
+						<h:outputText id="vagaOfertadaUnidadeEnsino" value="#{requerimentoItem.unidadeEnsinoTransferenciaInternaVO.numeroVagaOfertada}" />
+					</rich:column>
+					<rich:column>		
+						<f:facet name="header">
+							<h:outputText value="Requerimentos Deferidos" />
+						</f:facet>
+						<h:outputText id="requerimentoDeferido" value="#{RequerimentoControle.qtdeRequerimentoDeferido}" />
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Disponível" />
+						</f:facet>
+							<h:outputText id="requerimentoDisponivel" value="#{RequerimentoControle.calcularRequerimentosDisponiveis(requerimentoItem.unidadeEnsinoTransferenciaInternaVO.numeroVagaOfertada , RequerimentoControle.qtdeRequerimentoDeferido)}"></h:outputText>
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formDeferirIndeferir:tabelaDeferirIndeferir" maxPages="10" id="scResultadoFuncionario" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+		        </rich:dataTable>
+				<h:panelGroup styleClass="col-md-12 text-center m10" layout="block">
+					<h:outputText value="Ao clicar em 'Deferir', os requerimentos serão analisados em ordem de chegada. Os primeiros serão deferidos de acordo com o número de vagas ofertadas, e os excedentes serão indeferidos." />
+				</h:panelGroup>
+		        <h:panelGroup layout="block" styleClass="col-md-12 text-center m10">
+		        		<otm:commandButton render="form" oncomplete="#{rich:component('panelDeferirIndeferir')}.hide()"   id="deferirLoteTransferenciaInternaEspecifico" onclick="return confirm('Você confirma o DEFERIMENTO do(s) requerimento(s) selecionado(s)?')" action="#{RequerimentoControle.deferirLoteTransferenciaInternaEspecifico}" value="Deferir" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-warning mr5"  />
+						<otm:commandButton render="form" oncomplete="#{rich:component('panelDeferirIndeferir')}.hide()"  id="indeferirLoteTransferenciaInternaEspecifico" onclick="return confirm('Você confirma o INDEFERIMENTO do(s) requerimento(s) selecionado(s)?')" action="#{RequerimentoControle.indeferirLoteTransferenciaInternaEspecifico}" value="Indeferir" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" />
+				</h:panelGroup>					    
+		    </h:form>     
+		</rich:popupPanel>
+		
+		<script>
+			document.getElementById("form:tipoRequerimento").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

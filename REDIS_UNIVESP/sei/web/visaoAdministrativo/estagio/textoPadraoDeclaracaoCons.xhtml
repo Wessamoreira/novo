@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_TextoPadraoDeclaracao_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<title><h:outputText value="#{msg_aplic.prt_TextoPadraoDeclaracao_tituloForm}" /></title>
+		<h:form id="formCadastro">
+			<h:commandLink action="#{TextoPadraoDeclaracaoControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelParaConsulta">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu onblur="blurinput(this);" onfocus="focusinput(this);" styleClass="form-control campos" id="consulta" required="true" value="#{TextoPadraoDeclaracaoControle.controleConsulta.campoConsulta}">
+						<f:selectItems value="#{TextoPadraoDeclaracaoControle.tipoConsultaCombo}" />
+						<a4j:ajax event="change" render="panelParaConsulta" listener="#{TextoPadraoDeclaracaoControle.realizarLimparCampos}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{TextoPadraoDeclaracaoControle.controleConsulta.campoConsulta ne 'dataDefinicao'}">
+					<h:inputText id="valorConsulta" onblur="blurinput(this);" onfocus="focusinput(this);" styleClass="form-control campos" value="#{TextoPadraoDeclaracaoControle.controleConsulta.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{TextoPadraoDeclaracaoControle.controleConsulta.campoConsulta eq 'dataDefinicao'}">
+					<otm:calendar id="dataParaConsulta" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputSize="10" value="#{TextoPadraoDeclaracaoControle.controleConsulta.dataIni}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="consultar" type="submit" value="#{msg_botoes.btn_consultar}" action="#{TextoPadraoDeclaracaoControle.consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+			<rich:dataTable id="items" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{TextoPadraoDeclaracaoControle.listaConsulta}" rendered="#{TextoPadraoDeclaracaoControle.apresentarResultadoConsulta}" rows="10" var="planoTextoPadraoItens">
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_TextoPadrao_codigo}" />
+					</f:facet>
+					<h:commandLink action="#{TextoPadraoDeclaracaoControle.editar}" id="codigo" value="#{planoTextoPadraoItens.codigo}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_TextoPadrao_descricao}" />
+					</f:facet>
+					<h:commandLink action="#{TextoPadraoDeclaracaoControle.editar}" id="descricao" value="#{planoTextoPadraoItens.descricao}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_RenovarMatricula_unidadeEnsino}" />
+					</f:facet>
+					<h:commandLink action="#{TextoPadraoDeclaracaoControle.editar}" id="unidadeEnsino" value="#{planoTextoPadraoItens.unidadeEnsino.nome}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_TextoPadrao_responsavelDefinicao}" />
+					</f:facet>
+					<h:commandLink action="#{TextoPadraoDeclaracaoControle.editar}" id="responsavelDefinicao" value="#{planoTextoPadraoItens.responsavelDefinicao.nome}" />
+				</rich:column>
+				<rich:column>
+					<f:facet name="header">
+						<h:outputText value="#{msg_botoes.btn_opcoes}" />
+					</f:facet>
+					<otm:commandIcon action="#{TextoPadraoDeclaracaoControle.editar}" tooltip="#{msg_botoes.btn_editar}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" />
+				</rich:column>
+				<f:facet name="footer">
+					<div style="text-align: center !important">
+						<rich:dataScroller boundaryControls="auto" stepControls="auto" fastControls="hide" for="items" limitRender="10" align="center" />
+					</div>
+				</f:facet>
+			</rich:dataTable>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{TextoPadraoDeclaracaoControle}" />
+				<h:panelGroup styleClass="barraFlutuanteInferior" layout="block">
+					<otm:commandButton id="novo" action="#{TextoPadraoDeclaracaoControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" alt="#{msg.msg_novo_dados}" accesskey="1" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<script>
+			document.getElementById("formCadastro:valorConsulta").focus();
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

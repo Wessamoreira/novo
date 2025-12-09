@@ -1,0 +1,1 @@
+UPDATE maparegistroevasaocurso SET tipotrancamentoenum = 'RENOVACAO_AUTOMATICA' WHERE tipotrancamentoenum = 'TRANCAMENTO_RENOVACAO_AUTOMATICA';

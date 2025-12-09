@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_RelatorioFichaFinanceira}" />
+	</ui:define>
+	<ui:define name="conteudo">
+
+		<style type="text/css">
+body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+		<h:form id="form">
+			<h:panelGroup id="gridRelatorio">
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_PrestacaoConta_dataCompetencia}" />
+						<otm:calendar id="dataCompetencia" jsFunction="consultarCompetenciaFolhaPagamentoPorDataCompetencia()" oninputkeypress="return mascara(this.form, this.id, '99/9999', event);" onchanged="return renderData(this.id)" oninputblur="form" enableManualInput="true" datePattern="MM/yyyy" inputSize="15" value="#{FichaFinanceiraRelControle.competencia.dataCompetencia}">
+							<!-- 							<a4j:ajax event="change" listener="#{FichaFinanceiraRelControle.consultarCompetenciaFolhaPagamentoPorDataCompetencia}" render="form:periodo form:contraChequeEvento" /> -->
+						</otm:calendar>
+						<a4j:jsFunction name="consultarCompetenciaFolhaPagamentoPorDataCompetencia" action="#{FichaFinanceiraRelControle.consultarCompetenciaFolhaPagamentoPorDataCompetencia}" render="form:periodo form:contraChequeEvento"></a4j:jsFunction>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<otm:commandButton style="margin-right:5px" id="consultaDadosPeriodo" accesskey="2" value="Localizar Competência" render="form, formCompetencia" oncomplete="#{rich:component('panelCompetencia')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-default" />
+					<otm:commandButton id="limparDadosPeriodo" value="Limpas Dados" action="#{FichaFinanceiraRelControle.limparDadosCompetencia}" render="form:gridRelatorio" icon="#{msg_botoes.btn_icon_limpar_embutido}" styleClass="btn btn-default" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_LancamentoFolhaPagamento_periodo}" />
+					<h:selectOneMenu id="periodo" styleClass="form-control campos" value="#{FichaFinanceiraRelControle.periodo.codigo}">
+						<f:selectItems value="#{FichaFinanceiraRelControle.listaSelectItemCompetenciaPeriodo}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-9">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_funcionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText size="18" styleClass="form-control campos" value="#{FichaFinanceiraRelControle.templateLancamentoFolhaPagamento.funcionarioCargoVO.matriculaCargo}" maxlength="10">
+						<a4j:ajax event="change" listener="#{FichaFinanceiraRelControle.consultarFuncionarioPorMatricula}" render="form:nomePessoa" execute="@this" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:inputText size="46" styleClass="form-control campos" id="nomePessoa" readonly="true" value="#{FichaFinanceiraRelControle.templateLancamentoFolhaPagamento.funcionarioCargoVO.funcionarioVO.pessoa.nome}" maxlength="10" />
+					<span class="append-icon right"> <otm:commandIcon id="consultaDadosFuncionario" tooltip="Localizar Funcionario" render="form, formFuncionario" oncomplete="#{rich:component('panelFuncionario')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosFuncionario" tooltip="Limpas Dados" action="#{FichaFinanceiraRelControle.limparDadosFuncionario}" render="form:gridRelatorio" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+					</span>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ExibirEventoZerados}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<otm:selectBooleanCheckbox id="exibirEventoZerados" value="#{FichaFinanceiraRelControle.exibirEventoZerados}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="gridFuncionario">
+				<h:panelGroup id="pnlSelecaoFuncionario">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_formaContratacao}" />
+							<h:selectManyListbox style="height: 200px" styleClass="form-control campos" id="formaContratacaoFuncionario" value="#{FichaFinanceiraRelControle.formaContratacao}">
+								<a4j:ajax event="change" listener="#{FichaFinanceiraRelControle.selecionarFormaContratacao}" render="form:marcarTodosFormaContratacao" />
+								<f:selectItems value="#{FichaFinanceiraRelControle.listaSelectItemFormacontratacao}" />
+							</h:selectManyListbox>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_recebimento}" />
+							<h:selectManyListbox style="height: 200px" styleClass="form-control campos" id="tipoRecebimento" value="#{FichaFinanceiraRelControle.recebimento}">
+								<a4j:ajax event="change" listener="#{FichaFinanceiraRelControle.selecionarRecebimento}" render="form:marcarTodosRecebimento" />
+								<f:selectItems value="#{FichaFinanceiraRelControle.listaSelectItemRecebimento}" />
+							</h:selectManyListbox>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_GrupoLancamentoFolhaPagamento_situacao}" />
+							<h:selectManyListbox style="height: 200px" styleClass="form-control campos" id="situacaoFuncionario" value="#{FichaFinanceiraRelControle.situacao}">
+								<a4j:ajax event="change" listener="#{FichaFinanceiraRelControle.selecionarSituacao}" render="form:marcarTodosSituacao" />
+								<f:selectItems value="#{FichaFinanceiraRelControle.listaSelectItemSituacao}" />
+							</h:selectManyListbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" id="marcarTodosFormaContratacao">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberTodos}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox value="#{FichaFinanceiraRelControle.marcarTodosFormaContratacao}">
+								<a4j:ajax event="change" listener="#{FichaFinanceiraRelControle.selecionarTodosFormaContratacao()}" render="form:gridFuncionario" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" id="marcarTodosRecebimento">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberTodos}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox value="#{FichaFinanceiraRelControle.marcarTodosRecebimento}">
+								<a4j:ajax event="change" listener="#{FichaFinanceiraRelControle.selecionarTodosRecebimento()}" render="form:gridFuncionario" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4" id="marcarTodosSituacao">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_NotaFiscalSaida_tipoOrigemContaReceberTodos}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox value="#{FichaFinanceiraRelControle.marcarTodosSituacao}">
+								<a4j:ajax event="change" listener="#{FichaFinanceiraRelControle.selecionarTodosSituacao()}" render="form:gridFuncionario" />
+							</otm:selectBooleanCheckbox>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText class="tituloCampos" value="Para Selecionar várias opções segure o CTRL." />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" columnClasses="colunaEsquerda">
+				<otm:mensagem bean="#{FichaFinanceiraRelControle}"></otm:mensagem>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton action="#{FichaFinanceiraRelControle.gerarRelatorio}" oncomplete="#{FichaFinanceiraRelControle.download}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_gerar_relatorio}" value="Gerar Relatorio" accesskey="1" type="submit" render="form" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<!-- Consulta Funcionario -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncionario" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarFuncionario}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelFuncionario" />
+					<rich:componentControl target="panelFuncionario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncionario">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTipoDocumento" value="#{FichaFinanceiraRelControle.campoConsultaFuncionario}">
+						<f:selectItems value="#{FichaFinanceiraRelControle.tipoConsultaComboFuncionario}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionario" size="30" styleClass="form-control campos" value="#{FichaFinanceiraRelControle.valorConsultaFuncionario}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarFuncionario" render="formFuncionario:mensagemConsultaFuncionario, formFuncionario:gridFuncionarioTab, formFuncionario:scResultadoFuncionarioRespPreInscricao" action="#{FichaFinanceiraRelControle.consultarFuncionario}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{FichaFinanceiraRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{FichaFinanceiraRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup id="gridFuncionarioTab" columns="1" width="100%">
+					<rich:dataTable id="funcionarioItem" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{FichaFinanceiraRelControle.funcionarioCargoVOs}" rendered="#{FichaFinanceiraRelControle.apresentarResultadoConsultaFuncionarioCargo}" rows="10" var="funcionarioCargoItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_matricula}" />
+							</f:facet>
+							<a4j:commandLink id="matricula" action="#{FichaFinanceiraRelControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.matriculaCargo}" render="form:gridRelatorio" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+							</f:facet>
+							<a4j:commandLink id="nome" action="#{FichaFinanceiraRelControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.funcionarioVO.pessoa.nome}" render="form:gridRelatorio" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_cargo}" />
+							</f:facet>
+							<a4j:commandLink id="cargoNome" action="#{FichaFinanceiraRelControle.selecionarFuncionarioCargo}" value="#{funcionarioCargoItem.cargo.nome}" render="form:gridRelatorio" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_bt.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="botaoEditar" action="#{FichaFinanceiraRelControle.selecionarFuncionarioCargo}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" render="form:gridRelatorio" oncomplete="#{rich:component('panelFuncionario')}.hide()" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formFuncionario:funcionarioItem" maxPages="10" id="scResultadoFuncionarioRespPreInscricao" page="#{FichaFinanceiraRelControle.controleConsultaOtimizado.page}" scrollListener="#{FichaFinanceiraRelControle.scrollerListenerFuncionario}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaFuncionario" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{FichaFinanceiraRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Consulta Competência -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCompetencia" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="800" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Curso_consultarCompetencia}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelCompetencia" />
+					<rich:componentControl target="panelCompetencia" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCompetencia">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTipoDocumento" value="#{FichaFinanceiraRelControle.campoConsultaCompetencia}">
+						<f:selectItems value="#{EnumControle.tipoConsultaComboCompetencioFolhaPagamento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-5">
+					<h:inputText id="valorConsultaFuncionario" size="30" styleClass="form-control campos" value="#{FichaFinanceiraRelControle.valorConsultaCompetencia}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<a4j:commandLink id="btnConsultarCompetencia" render="formCompetencia:mensagemConsultaCompetencia, formCompetencia:gridCompetenciaTab, formCompetencia:scResultadoCompetenciaRespPreInscricao" action="#{FichaFinanceiraRelControle.consultarCompetencia}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{FichaFinanceiraRelControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{FichaFinanceiraRelControle.controleConsultaOtimizado.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<h:panelGroup id="gridCompetenciaTab" columns="1" width="100%">
+					<rich:dataTable id="competenciaItem" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{FichaFinanceiraRelControle.competenciaFolhaPagamentoVOs}" rows="10" var="competenciaItem">
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_codigo}" />
+							</f:facet>
+							<a4j:commandLink id="matricula" action="#{FichaFinanceiraRelControle.selecionarCompetencia}" value="#{competenciaItem.codigo}" render="form:gridRelatorio" oncomplete="#{rich:component('panelCompetencia')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_Nome}" />
+							</f:facet>
+							<a4j:commandLink id="nome" action="#{FichaFinanceiraRelControle.selecionarCompetencia}" value="#{competenciaItem.descricao}" render="form:gridRelatorio" oncomplete="#{rich:component('panelCompetencia')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_TextoPadrao_situacao}" />
+							</f:facet>
+							<a4j:commandLink id="situacao" action="#{FichaFinanceiraRelControle.selecionarCompetencia}" value="#{competenciaItem.situacao.getValorApresentar()}" render="form:gridRelatorio" oncomplete="#{rich:component('panelCompetencia')}.hide()" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="#{msg_bt.btn_opcoes}" />
+							</f:facet>
+							<otm:commandIcon id="botaoEditar" action="#{FichaFinanceiraRelControle.selecionarCompetencia}" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" render="form:gridRelatorio" oncomplete="#{rich:component('panelCompetencia')}.hide()" />
+						</rich:column>
+						<f:facet name="footer">
+							<div style="text-align: center !important">
+								<rich:dataScroller align="center" for="formFuncionario:funcionarioItem" maxPages="10" id="scResultadoFuncionarioRespPreInscricao" page="#{FichaFinanceiraRelControle.controleConsultaOtimizado.page}" scrollListener="#{FichaFinanceiraRelControle.scrollerListenerFuncionario}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+							</div>
+						</f:facet>
+					</rich:dataTable>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaCompetencia" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{FichaFinanceiraRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

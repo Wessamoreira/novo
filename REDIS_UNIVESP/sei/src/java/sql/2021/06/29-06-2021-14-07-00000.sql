@@ -1,0 +1,1 @@
+alter table questionarioRespostaOrigemMotivosPadroesEstagio add column if not exists selecionado boolean default false;

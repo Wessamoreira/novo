@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoProfessor/template/visaoProfessor.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ListaExercicio_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style type="text/css">
+.rich-dtascroller-table {
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.rich-datascr-button {
+	border: none;
+}
+
+.rich-datascr-button-dsbld {
+	background-color: transparent;
+}
+</style>
+		<!-- 	<ui:include src="richPanelImagem.xhtml" /> -->
+		<h:form id="form">
+			<h:commandLink action="#{ListaExercicioControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<h:panelGroup id="dadosBasicos">
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_situacaoListaExercicio}" />
+							<h:inputText readonly="true" size="15" id="situacao" styleClass="form-control camposSomenteLeitura" value="#{ListaExercicioControle.listaExercicioVO.situacaoListaExercicio.valorApresentar}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_tipoGeracaoListaExercicio}" />
+							<h:selectOneMenu disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" styleClass="form-control camposObrigatorios" value="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio}">
+								<a4j:ajax event="change" render="panelGridForm" />
+								<f:selectItems value="#{ListaExercicioControle.listaSelectItemTipoGeracaoListaExercicio}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-3">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_periodoDisponibilizacaoListaExercicio}" />
+							<h:selectOneMenu disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" styleClass="form-control camposObrigatorios" value="#{ListaExercicioControle.listaExercicioVO.periodoDisponibilizacaoListaExercicio}">
+								<a4j:ajax event="change" render="panelGridForm" />
+								<f:selectItems value="#{ListaExercicioControle.listaSelectItemPeriodoDisponibilizacaoListaExercicio}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_descricao}" />
+							<h:inputText readonly="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" maxlength="255" styleClass="form-control camposObrigatorios" value="#{ListaExercicioControle.listaExercicioVO.descricao}">
+								<a4j:ajax event="change" execute="@this" />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_turma}" />
+							<h:selectOneMenu styleClass="form-control campos" value="#{ListaExercicioControle.listaExercicioVO.turma.codigo}">
+								<a4j:ajax event="change" execute="panelGridForm" render="panelGridForm" listener="#{ListaExercicioControle.montarListaSelectItemTurmaDisciplina}" />
+								<f:selectItems value="#{ListaExercicioControle.listaSelectItemTurma}" />
+							</h:selectOneMenu>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'RANDOMICO'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_politicaSelecaoQuestao}" rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'RANDOMICO'}" />
+						<h:selectOneMenu disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" styleClass="form-control camposObrigatorios" value="#{ListaExercicioControle.listaExercicioVO.politicaSelecaoQuestaoEnum}">
+							<f:selectItems value="#{EnumControle.comboBoxPoliticaSelecaoQuestaoEnum}" />
+							<a4j:ajax event="change" execute="form:dadosBasicos" render="form:dadosBasicos" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ListaExercicioControle.isApresentarRegraDistribuicaoQuestao}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_regraDistribuicaoQuestao}" rendered="#{ListaExercicioControle.isApresentarRegraDistribuicaoQuestao}" />
+						<h:selectOneMenu id="regraDistruicaoQuestao" styleClass="form-control camposObrigatorios" value="#{ListaExercicioControle.listaExercicioVO.regraDistribuicaoQuestaoEnum}" disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}">
+							<f:selectItems value="#{EnumControle.comboBoxRegraDistribuicaoQuestaoEnum}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_disciplina}" />
+						<h:selectOneMenu disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" styleClass="form-control camposObrigatorios" value="#{ListaExercicioControle.listaExercicioVO.disciplina.codigo}">
+							<a4j:ajax event="change" execute="panelGridForm" render="panelGridForm" listener="#{ListaExercicioControle.alterarDisciplina}" />
+							<f:selectItems value="#{ListaExercicioControle.listaSelectItemDisciplina}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ListaExercicioControle.listaExercicioVO.periodoDisponibilizacaoListaExercicio eq 'PERIODO'}">
+						<h:outputText rendered="#{ListaExercicioControle.listaExercicioVO.periodoDisponibilizacaoListaExercicio eq 'PERIODO'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_liberarDia}" />
+						<rich:calendar disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" id="liberarDia" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="camposObrigatorios" inputSize="10" value="#{ListaExercicioControle.listaExercicioVO.liberarDia}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ListaExercicioControle.listaExercicioVO.periodoDisponibilizacaoListaExercicio eq 'PERIODO'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_encerrarDia}" />
+						<rich:calendar disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" id="encerrarDia" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" onchanged="return renderData(this.id)" oninputchange="validarData(this.value,this.id)" enableManualInput="true" datePattern="dd/MM/yyyy" inputClass="camposObrigatorios" inputSize="10" value="#{ListaExercicioControle.listaExercicioVO.encerrarDia}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'RANDOMICO'}">
+						<h:outputText rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'RANDOMICO'}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_sortear}:" />
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_sortearFacil}" />
+						<h:inputText size="10" readonly="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" onkeydown="aceitarSomenteValorNumerico(this)" disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" maxlength="12" styleClass="form-control campos" value="#{ListaExercicioControle.listaExercicioVO.quantidadeNivelQuestaoFacil}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'RANDOMICO'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_sortearMedio}" />
+						<h:inputText size="10" readonly="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" onkeydown="aceitarSomenteValorNumerico(this)" disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" maxlength="12" styleClass="form-control campos" value="#{ListaExercicioControle.listaExercicioVO.quantidadeNivelQuestaoMedio}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'RANDOMICO'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_sortearDificil}" />
+						<h:inputText size="10" readonly="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" onkeydown="aceitarSomenteValorNumerico(this)" disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" maxlength="12" styleClass="form-control campos" value="#{ListaExercicioControle.listaExercicioVO.quantidadeNivelQuestaoDificil}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'RANDOMICO'}">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ListaExercicio_sortearQualquer}" />
+						<h:inputText size="10" readonly="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" onkeydown="aceitarSomenteValorNumerico(this)" disabled="#{!ListaExercicioControle.permiteAlterarListaExercicioProfessor}" maxlength="12" styleClass="form-control campos" value="#{ListaExercicioControle.listaExercicioVO.quantidadeQualquerNivelQuestao}" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'RANDOMICO'}">
+					<otm:outputHelp tooltip="#{msg.help_RandomizarApenasQuestoesCadastradasPeloProfessor}" id="AvaliacaoOnline_randomizarApenasQuestoesCadastradasPeloProfessor" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AvaliacaoOnline_randomizarApenasQuestoesCadastradasPeloProfessor}" />
+					<otm:selectBooleanCheckbox disabled="#{ListaExercicioControle.desabilitarRecursoRandomizacaoQuestaoProfessor}" value="#{ListaExercicioControle.listaExercicioVO.randomizarApenasQuestoesCadastradasPeloProfessor}" styleClass="campos" />
+				</h:panelGroup>
+				<rich:dataTable width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" styleClass="tabFormSubordinada" columnClasses="colunaAlinhamento" id="questoesConteudo" rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'RANDOMICO' and ! empty ListaExercicioControle.listaConteudoVOs}" rows="10" rowKeyVar="row" value="#{ListaExercicioControle.listaConteudoVOs}" var="qtdeQuestoesConteudoItens">
+					<f:facet name="header">
+						<rich:columnGroup>
+							<rich:column style="text-align: center !important" rowspan="2">
+								<h:outputText value="Conteúdo" />
+								<h:outputText value="#{qtdeQuestoesConteudoItens.descricao}" />
+							</rich:column>
+							<rich:column style="text-align: center !important" colspan="3">
+								<h:outputText value="Nº Exercícios (Conteúdo + Sem Vínculo Com Conteúdo)" />
+							</rich:column>
+							<rich:column style="text-align: center !important" breakRowBefore="true">
+								<h:outputText value="Díficil" />
+							</rich:column>
+							<rich:column style="text-align: center !important">
+								<h:outputText value="Médio" />
+							</rich:column>
+							<rich:column style="text-align: center !important">
+								<h:outputText value="Fácil" />
+							</rich:column>
+						</rich:columnGroup>
+					</f:facet>
+					<rich:column style="text-align: center !important;vertical-align:middle">
+						<h:outputText value="#{qtdeQuestoesConteudoItens.descricao}" />
+					</rich:column>
+					<rich:column style="text-align: center !important;vertical-align:middle">
+						<h:outputText value="#{qtdeQuestoesConteudoItens.qtdeExercicioDificil}" />
+					</rich:column>
+					<rich:column style="text-align: center !important;vertical-align:middle">
+						<h:outputText value="#{qtdeQuestoesConteudoItens.qtdeExercicioMedio}" />
+					</rich:column>
+					<rich:column style="text-align: center !important;vertical-align:middle">
+						<h:outputText value="#{qtdeQuestoesConteudoItens.qtdeExercicioFacil}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="form:questoesConteudo" render="questoesConteudo, panelGridMensagens" id="scResultadoConsulta" scrollListener="#{ListaExercicioControle.scrollListener}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<rich:collapsiblePanel switchType="client" style="width:100%;padding:0px" rendered="#{ListaExercicioControle.listaExercicioVO.tipoGeracaoListaExercicio eq 'FIXO' and ListaExercicioControle.listaExercicioVO.disciplina.codigo > 0}">
+					<f:facet name="header">
+						<h:outputText value="#{msg_aplic.prt_ListaExercicio_exercicios}" />
+					</f:facet>
+					<h:panelGroup columns="1" width="100%" cellpadding="0" cellspacing="0" id="exercicios" columnClasses="colunaCentralizada">
+						<a4j:commandButton rendered="#{ListaExercicioControle.permiteAlterarListaExercicioProfessor}" oncomplete="#{rich:component('panelQuestao')}.show()" image="#{resource['/imagens/botaoAdicionarExercicio.png']}" render="formQuestao" action="#{ListaExercicioControle.inicializarConsultaQuestao}" />
+						<h:panelGroup layout="block" style="width: 100%;">
+							<rich:dataTable headerClass="consulta" width="100%" id="items" rowKeyVar="row" rendered="#{!empty ListaExercicioControle.listaExercicioVO.questaoListaExercicioVOs}" value="#{ListaExercicioControle.listaExercicioVO.questaoListaExercicioVOs}" var="questaoListaExercicioItem">
+								<rich:column title="Arraste e solte para alterar a ordem" style="width:580px;text-align:left;border-right:none">
+									<rich:dragSource dragType="QuestaoListaExercicioVO" dragIndicator="indicator" dragValue="#{questaoListaExercicio}">
+									</rich:dragSource>
+									<rich:dropTarget dropValue="#{questaoListaExercicio}" render="form:exercicios" dropListener="#{ListaExercicioControle.alterarOrdemApresentacaoQuestaoListaExercicio}" acceptedTypes="QuestaoListaExercicioVO">
+									</rich:dropTarget>
+									<h:panelGroup layout="block" style="float:left">
+										<h:panelGroup layout="block" style="float:left;margin-top:1px;">
+											<h:outputText styleClass="field control-label tituloCampos" value="#{questaoListaExercicioItem.ordemApresentacao})" />
+										</h:panelGroup>
+										<h:panelGroup layout="block" id="editorFinish" styleClass="field control-label tituloCampos" style="float:left;margin-top:0px;text-align:left;height:100%;width:570px;vertical-align:top;">
+											<h:outputText escape="false" value="#{questaoListaExercicioItem.questao.enunciado}">
+											</h:outputText>
+										</h:panelGroup>
+									</h:panelGroup>
+								</rich:column>
+								<rich:column style="width:30px;text-align:left;border-left:none">
+									<h:panelGroup rendered="#{ListaExercicioControle.permiteAlterarListaExercicioProfessor}" layout="block" id="opcEditor" style="float:left;width:22px">
+										<otm:commandIcon action="#{ListaExercicioControle.removerQuestaoListaExercicio}" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Questao Lista Exercicio" render="exercicios" />
+										<otm:commandIcon ignoreDupResponses="true" rendered="#{row gt 0 and row lt ListaExercicioControle.listaExercicioVO.numeroQuestoes}" action="#{ListaExercicioControle.subirQuestaoListaExercicio}" icon="#{msg_botoes.btn_icon_subir} iconePequeno" tooltip="Subir Questao Lista Exercicio" render="exercicios" />
+										<otm:commandIcon ignoreDupResponses="true" rendered="#{(row+1) lt ListaExercicioControle.listaExercicioVO.numeroQuestoes}" action="#{ListaExercicioControle.descerQuestaoListaExercicio}" tooltip="Descer Questao Lista Exercicio" icon="#{msg_botoes.btn_icon_descer} iconePequeno" render="exercicios" />
+									</h:panelGroup>
+								</rich:column>
+							</rich:dataTable>
+							<!-- 														 											<rich:dataScroller align="center" for="form:items" render="itens, panelGridMensagens" id="scResultadoConsulta" rendered="#{!empty ListaExercicioControle.listaExercicioVO.questaoListaExercicioVOs}" boundaryControls="auto" stepControls="auto" fastControls="hide" />  -->
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:collapsiblePanel>
+				<h:panelGroup id="panelGridMensagens" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ListaExercicioControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+						<h:panelGroup>
+							<otm:commandButton style="margin-top:5px" id="novo" action="#{ListaExercicioControle.novo}" value="#{msg_botoes.btn_novo}" styleClass="btn btn-info btn-novo" title="#{msg.msg_novo_dados}" accesskey="1" />
+							<otm:spacer rendered="#{ListaExercicioControle.permiteAlterarListaExercicioProfessor}" width="5px" />
+							<otm:commandButton style="margin-top:5px" id="gravar" rendered="#{ListaExercicioControle.permiteAlterarListaExercicioProfessor}" render="form" action="#{ListaExercicioControle.persistir}" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" title="#{msg.msg_gravar_dados}" accesskey="2" />
+							<otm:spacer rendered="#{ListaExercicioControle.permiteAlterarListaExercicioProfessor}" width="5px" />
+							<otm:commandButton style="margin-top:5px" id="excluir" rendered="#{ListaExercicioControle.permiteAlterarListaExercicioProfessor}" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" action="#{ListaExercicioControle.excluir}" value="#{msg_botoes.btn_excluir}" styleClass="btn btn-danger btn-excluir" title="#{msg.msg_editar_dados}" accesskey="3" />
+							<otm:spacer rendered="#{ListaExercicioControle.permiteAlterarListaExercicioProfessor and ListaExercicioControle.listaExercicioVO.situacaoListaExercicio ne 'ATIVA'}" width="5px" />
+							<otm:commandButton style="margin-top:5px" render="form" id="ativar" rendered="#{ListaExercicioControle.permiteReativarListaExercicioProfessor and ListaExercicioControle.listaExercicioVO.situacaoListaExercicio ne 'ATIVA'}" action="#{ListaExercicioControle.ativar}" icon="#{msg_botoes.btn_icon_ativar_embutido}" styleClass="btn btn-primary" image="#{resource['/imagens/botaoAtivar.png']}" value="Ativar" accesskey="5" />
+							<otm:spacer rendered="#{ListaExercicioControle.possuiPermissaoInativarProfessor}" width="5px" />
+							<otm:commandButton style="margin-top:5px" oncomplete="#{rich:component('confirmarInativacao')}.show()" render="formConfirmarInativacao" id="inativar" rendered="#{ListaExercicioControle.possuiPermissaoInativarProfessor}" icon="#{msg_botoes.btn_icon_inativar_embutido}" styleClass="btn btn-danger" image="#{resource['/imagens/botaoInativar.png']}" value="Inativar" accesskey="5" />
+							<otm:spacer rendered="#{!ListaExercicioControle.listaExercicioVO.novoObj}" width="5px" />
+							<otm:commandButton style="margin-top:5px" render="form" id="clonar" rendered="#{!ListaExercicioControle.listaExercicioVO.novoObj}" action="#{ListaExercicioControle.clonar}" icon="#{msg_botoes.btn_icon_clonar_embutido}" styleClass="btn btn-warning" image="#{resource['/imagens/botaoClonar.png']}" value="Clonar" accesskey="7" />
+							<otm:spacer width="5px" rendered="#{!ListaExercicioControle.listaExercicioVO.novoObj}" />
+							<otm:commandButton style="margin-top:5px" id="consultar" action="#{ListaExercicioControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" title="#{msg.msg_consultar_dados}" accesskey="4" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<rich:dragIndicator id="indicator">
+		</rich:dragIndicator>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelMensagemErro" shadowOpacity="true" width="750" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg.msg_RichMensagemErro}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkMensagemErro" />
+					<rich:componentControl target="panelMensagemErro" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMensagemErro" onkeydown="fecharModal('panelMensagemErro',event);">
+				<h:panelGroup columns="1" width="100%">
+					<rich:dataTable id="listaMensagemErro" width="100%" styleClass="field control-label mensagemDetalhada col-md-12" columnClasses="colunaEsquerda" value="#{ListaExercicioControle.listaMensagemErro}" var="mensagem" rows="10">
+						<rich:column>
+							<h:outputText value="#{mensagem}" />
+						</rich:column>
+					</rich:dataTable>
+					<rich:dataScroller align="center" boundaryControls="auto" stepControls="auto" fastControls="hide" for="formMensagemErro:listaMensagemErro" maxPages="10" id="scResultadoListaMensagemErro" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelQuestao" shadowOpacity="true" top="0" width="850" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_ListaExercicio_adicionarExercicios}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkQuesta" />
+					<rich:componentControl target="panelQuestao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formQuestao">
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+					<h:selectOneMenu styleClass="form-control campos" id="consulta" value="#{ListaExercicioControle.campoConsulta}" style="position: relative; left: 50px;">
+						<a4j:ajax event="change" listener="#{ListaExercicioControle.limparCamposBusca}" render="formQuestao" execute="formQuestao" />
+						<f:selectItems value="#{ListaExercicioControle.tipoConsultaCombo}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ListaExercicioControle.campoConsulta eq 'codigo' or ListaExercicioControle.campoConsulta eq ''}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Valor Consulta" />
+					<h:inputText styleClass="form-control campos" value="#{ListaExercicioControle.valorConsulta}" onkeydown="aceitarSomenteValorNumerico(this)" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{ListaExercicioControle.campoConsulta eq 'questao'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_enunciado}" />
+					<h:inputText size="50" maxlength="250" styleClass="form-control campos" value="#{ListaExercicioControle.questaoVO.enunciado}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ListaExercicioControle.campoConsulta eq 'questao'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_nivelComplexidadeQuestaoEnum}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ListaExercicioControle.questaoVO.nivelComplexidadeQuestao}">
+						<f:selectItems value="#{ListaExercicioControle.listaSelectItemComplexidadeQuestaoConsulta}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{ListaExercicioControle.campoConsulta eq 'questao'}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Questao_tipoQuestao}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{ListaExercicioControle.questaoVO.tipoQuestaoEnum}">
+						<f:selectItems value="#{ListaExercicioControle.listaSelectItemTipoQuestaoConsulta}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+					<a4j:commandLink id="consultar" render="formQuestao" value="#{msg_botoes.btn_consultar}" action="#{ListaExercicioControle.consultarQuestao}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2">
+						<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+						<f:setPropertyActionListener target="#{ListaExercicioControle.controleConsultaQuestao.paginaAtual}" value="1" />
+						<f:setPropertyActionListener target="#{ListaExercicioControle.controleConsultaQuestao.page}" value="1" />
+					</a4j:commandLink>
+				</h:panelGroup>
+				<rich:dataTable id="questoes" style="margin-top:10px" rendered="#{ListaExercicioControle.controleConsultaQuestao.apresentarListaConsulta}" headerClass="consulta" rowKeyVar="row" value="#{ListaExercicioControle.controleConsultaQuestao}" width="100%" rows="5" var="questaoItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Código" />
+						</f:facet>
+						<h:panelGroup layout="block" styleClass="field control-label tituloCampos" style="text-align:left;max-height:40px;overflow:auto">
+							<h:outputText escape="false" value="#{questaoItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column style="width:500px;text-align:left">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Questao_enunciado}" />
+						</f:facet>
+						<h:panelGroup layout="block" styleClass="field control-label tituloCampos" style="width:680px;text-align:left;max-height:40px;overflow:auto">
+							<h:outputText escape="false" value="#{questaoItem.enunciado}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column style="text-align:center;vertical-align:middle">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Questao_nivelComplexidadeQuestaoEnum}" />
+						</f:facet>
+						<h:outputText styleClass="field control-label tituloCampos" value="#{questaoItem.nivelComplexidadeQuestao.valorApresentar}" />
+					</rich:column>
+					<rich:column style="text-align:center;vertical-align:middle">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon render="form:exercicios, panelGridMensagensQuestao, questoes" rendered="#{!questaoItem.selecionado}" action="#{ListaExercicioControle.adicionarQuestao}" icon="#{msg_botoes.btn_icon_adicionar} iconePequeno" tooltip="Adicionar Questao" />
+						<otm:commandIcon render="form:exercicios, panelGridMensagensQuestao, questoes" rendered="#{questaoItem.selecionado}" action="#{ListaExercicioControle.removerQuestao}" value="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Remover Questao" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller rendered="#{ListaExercicioControle.controleConsultaQuestao.apresentarDatascroller}" align="center" for="formQuestao:questoes" render="questoes, panelGridMensagensQuestao" id="scResultadoConsultaQuestao" scrollListener="#{ListaExercicioControle.paginarQuestao}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="panelGridMensagensQuestao" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ListaExercicioControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+						<otm:commandButton oncomplete="#{rich:component('panelQuestao')}.hide()" id="fecharQuestao" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-info" value="#{msg.msg_confirmar_dados}" accesskey="1" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado" id="confirmarInativacao" shadowOpacity="true" width="500" autosized="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Confirmar Inativação da Lista de Exercício?" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlink7" />
+					<rich:componentControl target="confirmarInativacao" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formConfirmarInativacao">
+				<h:panelGroup columns="1" width="100%">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_ListaExercicio_inativarListaExercicio}" />
+					<otm:spacer height="20" />
+					<h:panelGroup columns="2" styleClass="tabSubordinada, colunaCentralizada">
+						<otm:commandButton style="margin-right:5px" id="confirmar" render="form" oncomplete="#{rich:component('confirmarInativacao')}.hide()" action="#{ListaExercicioControle.inativar}" icon="#{msg_botoes.btn_icon_confirmar_embutido}" value="Confirmar" styleClass="btn btn-info" />
+						<otm:commandButton id="fechar" oncomplete="#{rich:component('confirmarInativacao')}.hide()" render="form" icon="#{msg_botoes.btn_icon_fechar_embutido}" styleClass="btn btn-danger" value="Fechar" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

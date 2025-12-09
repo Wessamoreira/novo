@@ -1,0 +1,1 @@
+ALTER TABLE public.requerimentocidtiporequerimento DROP CONSTRAINT fk_requerimento, ADD CONSTRAINT fk_requerimento FOREIGN KEY (requerimento) REFERENCES requerimento(codigo) ON UPDATE CASCADE ON DELETE CASCADE;

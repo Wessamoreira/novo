@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:p="http://primefaces.org/ui" 
+	xmlns:h="http://java.sun.com/jsf/html" 
+	xmlns:f="http://java.sun.com/jsf/core"
+
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:composite="http://java.sun.com/jsf/composite"
+	xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+		<composite:interface>
+			<composite:attribute name="bean" required="true" type="java.lang.Object"/>			
+			<composite:attribute name="dashboardFavorito" required="true" type="java.lang.Object"/>			
+			<composite:attribute name="height" default="380px" type="java.lang.String" />
+		</composite:interface>
+		
+		<composite:implementation>
+			<h:panelGroup id="FAVORITOS" style="order:#{cc.attrs.dashboardFavorito.ordem}" layout="block" styleClass="col-md-6" rendered="#{!cc.attrs.dashboardFavorito.ocultar}">
+			<p:droppable for="FAVORITOS" rendered="#{!LoginControle.appMovel}" tolerance="pointer" >
+				<p:ajax listener="#{LoginControle.registrarPosicaoDashboard}" update="form"></p:ajax>
+			</p:droppable>
+			<p:draggable for="FAVORITOS" rendered="#{!LoginControle.appMovel}" cursor="pointer" revert="true" zindex="800" >
+			</p:draggable>
+		<otm2:dashpanel id="dashboardFavoritos" cols="12">
+			<ui:define name="header">
+				<i class="#{cc.attrs.dashboardFavorito.icone} mr-2 fs12"></i>
+				<h:outputLabel styleClass="fs12 fonteHeaderDashboard" value="#{cc.attrs.dashboardFavorito.titulo}" />
+				<p:commandLink action="#{cc.attrs.bean.persistirDashboard(cc.attrs.dashboardFavorito)}" rendered="#{!cc.attrs.dashboardFavorito.maximizado}" styleClass="float-right p-0" update="panelGeral">
+					<i class="fas fa-angle-down text-center fonteHeaderDashboard mr-2 fs12" />
+					<f:setPropertyActionListener value="true" target="#{cc.attrs.dashboardFavorito.maximizado}"></f:setPropertyActionListener>
+				</p:commandLink>
+				<p:commandLink action="#{cc.attrs.bean.persistirDashboard(cc.attrs.dashboardFavorito)}" rendered="#{cc.attrs.dashboardFavorito.maximizado}" styleClass="float-right p-0" update="panelGeral">
+					<i class="fas fa-angle-up text-center fonteHeaderDashboard mr-2 fs12" />
+					<f:setPropertyActionListener value="false" target="#{cc.attrs.dashboardFavorito.maximizado}"></f:setPropertyActionListener>
+				</p:commandLink>
+				<p:commandLink id="ocultarrFavs" action="#{cc.attrs.bean.persistirDashboard(cc.attrs.dashboardFavorito)}" update="menuTopo, panelGeral" styleClass="border-0 bg-transparent float-right p-0" title="Ocultar Gráfico">
+					<i class="fas fa-compress-arrows-alt text-center fonteHeaderDashboard mr-2 fs12" />
+					<f:setPropertyActionListener value="true" target="#{cc.attrs.dashboardFavorito.ocultar}"></f:setPropertyActionListener>
+				</p:commandLink>
+			</ui:define>
+			<ui:define name="body">
+				<div id="favoritos" >
+				<h:panelGroup layout="block" styleClass="row scroller-x" rendered="#{cc.attrs.dashboardFavorito.maximizado}" style="height:#{cc.attrs.height};overflow-x:auto">
+					<ui:repeat  value="#{cc.attrs.bean.usuarioLogado.listaFavoritos}" var="fav">
+						<h:panelGroup layout="block" styleClass="col-md-6 mt5 mb5" 
+						rendered="#{(fav.pagina eq 'realizarNavegacaoParaMinhaBiblioteca' and LoginControle.isMinhaBibliotecaHabilitado)
+						or (fav.pagina eq 'realizarNavegacaoParaBibliotecaLexMagister' and LoginControle.isLexMagisterHabilitado) 
+						or (fav.pagina eq 'realizarNavegacaoParaBibliotecaPergamum' and LoginControle.isBibliotecaPergamumHabilitado)
+						or (fav.pagina ne 'realizarNavegacaoParaMinhaBiblioteca' and fav.pagina ne 'realizarNavegacaoParaBibliotecaLexMagister' and fav.pagina ne 'realizarNavegacaoParaBibliotecaPergamum')}">
+							<p:commandLink update="form" oncomplete="carregarMenu('#accordionSidebar');carregarRecursoMenu()" styleClass="mr10 pull-left" action="#{FavoritoControle.desfavoritar}" title="Desfavoritar">
+								<span class="fa fa-star iconeDesfavoritar" style="position:relative; top:0px !important" />
+								<f:setPropertyActionListener target="#{FavoritoControle.pagina}" value="#{fav.pagina}" />
+								<f:setPropertyActionListener target="#{FavoritoControle.booleanMarcarFavoritar}" value="#{fav.booleanMarcarFavoritar}" />
+								<f:setPropertyActionListener target="#{FavoritoControle.tipoVisao}" value="#{cc.attrs.bean.usuarioLogado.tipoVisaoAcesso}" />
+							</p:commandLink>
+							<p:commandLink styleClass="tituloCampos" rendered="#{!empty fav.scriptExecutar and !fn:contains(fav.scriptExecutar, 'window.open') and fav.pagina ne 'realizarNavegacaoParaMinhaBiblioteca' and fav.pagina ne 'realizarNavegacaoParaBibliotecaLexMagister' and fav.pagina ne 'realizarNavegacaoParaBibliotecaBvPearson' and fav.pagina ne 'realizarNavegacaoParaBibliotecaPergamum'}" value="#{fav.propertMenu}" onclick="#{fav.scriptExecutar}('#{fav.pagina}', '#{fav.pagina}', 950, 595)" action="#{LoginControle.removerControleMemoriaFlashTela(fav.removerControlador)}" />
+							<p:commandLink styleClass="tituloCampos" rendered="#{!empty fav.scriptExecutar and fn:contains(fav.scriptExecutar, 'window.open')  and fav.pagina ne 'realizarNavegacaoParaMinhaBiblioteca'  and fav.pagina ne 'realizarNavegacaoParaBibliotecaLexMagister' and fav.pagina ne 'realizarNavegacaoParaBibliotecaBvPearson' and fav.pagina ne 'realizarNavegacaoParaBibliotecaPergamum'}" value="#{fav.propertMenu}" onclick="#{fav.scriptExecutar}" action="#{LoginControle.removerControleMemoriaFlashTela(fav.removerControlador)}" />
+							<p:commandLink styleClass="tituloCampos" rendered="#{empty fav.scriptExecutar  and fav.pagina ne 'realizarNavegacaoParaMinhaBiblioteca'  and fav.pagina ne 'realizarNavegacaoParaBibliotecaLexMagister' and fav.pagina ne 'realizarNavegacaoParaBibliotecaBvPearson' and fav.pagina ne 'realizarNavegacaoParaBibliotecaPergamum'}" value="#{fav.propertMenu}" action="#{LoginControle.removerControleMemoriaFlashTela(fav.removerControlador, fav.pagina)}" />
+							<p:commandLink styleClass="tituloCampos" rendered="#{fav.pagina eq 'realizarNavegacaoParaMinhaBiblioteca'}" value="#{fav.propertMenu}" action="#{LoginControle.realizarNavegacaoParaMinhaBiblioteca}" target="_blank" />
+							<p:commandLink styleClass="tituloCampos" rendered="#{fav.pagina eq 'realizarNavegacaoParaBibliotecaLexMagister'}" value="#{fav.propertMenu}" action="#{LoginControle.realizarNavegacaoParaBibliotecaLexMagister}" target="_blank" />
+					        <p:commandLink styleClass="tituloCampos" rendered="#{fav.pagina eq 'realizarNavegacaoParaBibliotecaPergamum'}" value="#{fav.propertMenu}" action="#{LoginControle.realizarNavegacaoParaBibliotecaPergamum}" target="_blank" />
+					        <otm:pearson id="bibliotecaPearson" bean="#{LoginControle}"  styleClass="tituloCampos"  style="font:13px arial;" rendered="#{fav.pagina eq 'realizarNavegacaoParaBibliotecaBvPearson'}"  />
+						</h:panelGroup>
+					</ui:repeat>
+				</h:panelGroup>
+				</div>
+			</ui:define>
+		</otm2:dashpanel>
+	</h:panelGroup>
+		</composite:implementation>		
+	</html>

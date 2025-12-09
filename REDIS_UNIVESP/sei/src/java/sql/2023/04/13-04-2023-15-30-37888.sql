@@ -1,0 +1,1 @@
+update formacaoacademica set areaconhecimento = null where formacaoacademica.codigo in (select f.codigo from formacaoacademica f where 1 = 1 and not exists (select ac.codigo from areaconhecimento ac where ac.codigo = f.areaconhecimento) and f.areaconhecimento is not null );

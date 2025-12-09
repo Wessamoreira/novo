@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_RenovarMatricula_tituloForm}" />
+		<h:outputText rendered="#{RenovarMatriculaControle.matriculaVO.matricula ne ''}" value=" #{RenovarMatriculaControle.matriculaVO.matricula}" />
+		<h:outputText rendered="#{RenovarMatriculaControle.matriculaVO.aluno.codigo ne 0}" value=" - " />
+		<h:outputText rendered="#{RenovarMatriculaControle.matriculaVO.aluno.codigo ne 0}" value=" #{RenovarMatriculaControle.matriculaVO.aluno.nome} " />
+	</ui:define>
+	<ui:define name="conteudo">
+		<ui:define name="ajuda">
+			<h:panelGroup layout="block" styleClass="mt10" style="z-index: 3000;position:fixed;float:right;left:98%;">
+				<otm:commandIcon rendered="#{(RenovarMatriculaControle.matriculaVO.aluno.codigo ne 0) 	and (LoginControle.permissaoAcessoMenuVO.followUpProspect)}" icon="#{msg_botoes.btn_icon_followup_embutido} fs20 corCliente" tooltip="Follow-Up Prospect" action="#{LoginControle.removerControleMemoriaFlashTela('FollowUpControle')}" oncomplete="window.open('../../ConverteGetParaPostServletFollowUp?pagina=visaoAdministrativo/crm/followUpForm.xhtml&amp;param=codigoPessoa&amp;valor=#{RenovarMatriculaControle.matriculaVO.aluno.codigo}','FollowUP','resizable=yes,maximize=yes,fullscreen=yes,scrollbars=yes');" />
+			</h:panelGroup>
+		</ui:define>
+		<rich:popupPanel styleClass="modalMaximizado50" id="liberarRenovacaoDocumentoPendente" shadowOpacity="true" width="500" height="200" onshow="document.getElementById('formLiberarRenovacaoDocumentoPendente:username').focus()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Liberar Renovação com Documentos Obrigatórios Pendentes" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hiperlinkliberarRenovacaoDocumentoPendente" />
+					<rich:componentControl target="liberarRenovacaoDocumentoPendente" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formLiberarRenovacaoDocumentoPendente">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Usuario_username}" />
+						<h:inputText id="username" size="15" styleClass="camposObrigatorios" value="#{RenovarMatriculaControle.usernameLiberarRenovacaoDocumentoPendente}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_msg_senha}" />
+						<h:inputSecret id="senha" size="15" styleClass="camposObrigatorios" value="#{RenovarMatriculaControle.senhaLiberarRenovacaoDocumentoPendente}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton render="form, botoesRenovarMatricula" oncomplete="#{rich:component('liberarRenovacaoDocumentoPendente')}.hide()" action="#{RenovarMatriculaControle.executarVerificacaoUsuarioPodeLiberarRenovacaoDocumentoPendente}" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-dark" value="Confirmar Liberação" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" onshow="iniciarCropFrente()" id="panelImagemDocumentosEntregues" zindex="2000" shadowOpacity="false">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos} - #{RenovarMatriculaControle.documetacaoMatriculaVO.tipoDeDocumentoVO.nome}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagem">
+				<h:panelGroup id="panelArquivo" layout="block" styleClass="row mn">
+					<h:panelGroup id="arquivoUpload">
+						<h:panelGroup layout="block" rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.isPossuiArquivo}">
+							<h:panelGroup id="dadosImagem" rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVO.isImagem}" layout="block" style="pn col-md-12">
+								<h:panelGroup layout="block" styleClass="col-md-12 text-center mt10 mb10 pt10 pb5 border-bottom border-top">
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_recortar} iconePequeno ml5" action="#{RenovarMatriculaControle.recortarImagem}" oncomplete="iniciarCropFrente()" render="formImagem" tooltip="Recortar Imagem" />
+									<otm:commandIcon action="#{RenovarMatriculaControle.executarZoomIn}" icon="#{msg_botoes.btn_icon_zoomPlus} iconePequeno ml5" oncomplete="iniciarCropFrente()" render="formImagem" tooltip="Reduzir Imagem" />
+									<otm:commandIcon action="#{RenovarMatriculaControle.executarZoomOut}" icon="#{msg_botoes.btn_icon_zoomMinus} iconePequeno ml5" oncomplete="iniciarCropFrente()" render="formImagem" tooltip="Aumentar Imagem" />
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_esquerda} iconePequeno ml5" action="#{RenovarMatriculaControle.rotacionar90GrausParaEsquerda}" oncomplete="iniciarCropFrente()" render="formImagem" tooltip="Girar 90º para Esquerda" />
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_direita} iconePequeno ml5" action="#{RenovarMatriculaControle.rotacionar90GrausParaDireita}" oncomplete="iniciarCropFrente()" render="formImagem" tooltip="Girar 90º para Direita" />
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_180} iconePequeno ml5" action="#{RenovarMatriculaControle.rotacionar180Graus}" oncomplete="iniciarCropFrente()" render="formImagem" tooltip="Girar 180º" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="pn col-md-12 text-center" style="display:block;overflow:auto;max-height:442px;">
+									<h:graphicImage id="image" url="#{RenovarMatriculaControle.caminhoServidorDownloadDocumentacao}" />
+								</h:panelGroup>
+								<h:panelGroup style="display:none" layout="block">
+									<h:outputText value="X" />
+									<h:inputText size="4" id="x" value="#{RenovarMatriculaControle.x}" />
+									<h:outputText value="Y" />
+									<h:inputText size="4" id="y" value="#{RenovarMatriculaControle.y}" />
+									<h:outputText value="largura" />
+									<h:inputText size="4" id="w" value="#{RenovarMatriculaControle.largura}" />
+									<h:outputText value="altura" />
+									<h:inputText size="4" id="h" value="#{RenovarMatriculaControle.altura}" />
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup id="dadosPDF" layout="block" styleClass="pn col-md-12" rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVO.isPdF and !empty RenovarMatriculaControle.caminhoPDF}">
+								<object id="pdfFrente" data="#{RenovarMatriculaControle.caminhoPDF}" style="width: 100%; height: calc(100vh - 100px)" />
+							</h:panelGroup>
+							<h:graphicImage rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVO.isWord}" url="#{resource['/imagens/iconeArquivo/wordGrande.png']}" />
+							<h:graphicImage rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVO.isExcel}" url="#{resource['/imagens/iconeArquivo/excelGrande.png']}" />
+							<h:graphicImage rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVO.isTxt}" url="#{resource['/imagens/iconeArquivo/txtGrande.png']}" />
+							<h:graphicImage rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVO.isOutros}" url="#{resource['/imagens/iconeArquivo/outrosGrande.png']}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+						<otm:commandButton id="dwl4" oncomplete="location.href='../../DownloadSV'" rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.isPossuiArquivo}" value="Download Arquivo" icon="#{msg_botoes.btn_icon_download_embutido}" styleClass="btn btn-success mr5" action="#{RenovarMatriculaControle.realizarDownloadArquivo(RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVO)}" />
+						<otm:commandButton action="#{RenovarMatriculaControle.adicionarArquivoDocumentacaoMatricula}" styleClass="btn btn-dark mr5" value="#{msg_botoes.btn_confirmar}" oncomplete="#{rich:component('panelImagemDocumentosEntregues')}.hide();#{RenovarMatriculaControle.abrirModalInclusaoArquivoVerso}" render="documetacaoMatriculaVO, tabMensagensAux, mensagemDocumentacao2, mensagemDetalhadaDocumentacao2" icon="#{msg_botoes.btn_icon_confirmar_embutido}" />
+						<otm:commandButton id="cancelarUploadArquivo" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" title="#{msg_botoes.btn_cancelar}" value="#{msg_botoes.btn_cancelar}" action="#{RenovarMatriculaControle.limparDocumentacaoMatriculaVO}" oncomplete="#{rich:component('panelImagemDocumentosEntregues')}.hide();" render="documetacaoMatriculaVO, tabMensagensAux, mensagemDocumentacao2, mensagemDetalhadaDocumentacao2, formIncluirArquivoVerso" />
+					</h:panelGroup>
+					<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="tabMensagensAux">
+						<otm:mensagem bean="#{RenovarMatriculaControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelUpload" onshow="clickUpload('#formUplod')" zindex="2000" shadowOpacity="false" width="550" height="250">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUplod">
+				<h:panelGroup id="panelArquivoUpload" layout="block" styleClass="row mt10 mb10">
+					<h:panelGroup id="arquivoUpload2" layout="block" styleClass="col-md-12 text-center text-center">
+						<rich:fileUpload id="btnUpload" listHeight="0" listWidth="300" allowFlash="false" noDuplicate="true" fileUploadListener="#{RenovarMatriculaControle.upLoadArquivo}" addLabel="Selecionar Arquivo" acceptedTypes="gif, png, jpg, jpeg, bmp, pdg, JPEG, JPG, PNG, GIF, BMP, PDF, pdf, doc, docx, xls, xlsx, txt, xml" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{RenovarMatriculaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true"
+							onupload="return validarTamanhoUploadArquivoExtensao(event, 'form:upload', #{RenovarMatriculaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}, 'gif, png, jpg, jpeg, bmp, pdg, JPEG, JPG, PNG, GIF, BMP, PDF, pdf, doc, docx, xls, xlsx, txt, xml');" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');" sizeExceededLabel="alert('Arquivo não Enviado. Tamanho Máximo Permitido #{RenovarMatriculaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB.');">
+							<a4j:ajax event="uploadcomplete" render="formImagem, btnUpload, form" oncomplete="#{RenovarMatriculaControle.oncompleteModal}" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton id="cancelarUploadArquivo2" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" title="#{msg_botoes.btn_cancelar}" value="#{msg_botoes.btn_cancelar}" action="#{RenovarMatriculaControle.limparDocumentacaoMatriculaVO}" render="documetacaoMatriculaVO, tabMensagensAux, mensagemDocumentacao2, mensagemDetalhadaDocumentacao2, formIncluirArquivoVerso" oncomplete="#{rich:component('panelUpload')}.hide();" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelImagemDocumentosEntreguesVerso" onshow="iniciarCropVerso()" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="850" height="650">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos} Verso" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagemVerso">
+				<h:panelGroup layout="block" styleClass="row" id="panelArquivoVerso">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_DocumetacaoMatricula_tipoDocumento}" />
+						<h:inputText readonly="true" styleClass="form-control camposSomenteLeitura" size="100" value="#{RenovarMatriculaControle.documetacaoMatriculaVO.tipoDeDocumentoVO.nome}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row mn" id="arquivoUploadVerso">
+						<h:panelGroup id="arquivo">
+							<h:panelGroup rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.isPossuiArquivoVerso}">
+								<h:panelGroup id="dadosImagemVerso" rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isImagem}">
+									<h:panelGroup layout="block" styleClass="col-md-12 text-center mt10 mb10">
+										<otm:commandIcon icon="#{msg_botoes.btn_icon_recortar} iconePequeno" action="#{RenovarMatriculaControle.recortarImagemVerso}" oncomplete="iniciarCropVerso()" render="formImagemVerso" tooltip="Recorte a Imagem" />
+										<otm:commandIcon action="#{RenovarMatriculaControle.executarZoomInVerso}" icon="#{msg_botoes.btn_icon_zoomPlus} iconePequeno ml5" oncomplete="iniciarCropVerso()" render="formImagemVerso" tooltip="Reduzir Imagem" />
+										<otm:commandIcon action="#{RenovarMatriculaControle.executarZoomOutVerso}" icon="#{msg_botoes.btn_icon_zoomMinus} iconePequeno ml5" oncomplete="iniciarCropVerso()" render="formImagemVerso" tooltip="Aumentar Imagem" />
+										<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_esquerda} iconePequeno ml5" action="#{RenovarMatriculaControle.rotacionar90GrausParaEsquerdaVerso}" oncomplete="iniciarCropVerso()" render="formImagemVerso" tooltip="Girar 90º para Esquerda" />
+										<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_direita} iconePequeno ml5" action="#{RenovarMatriculaControle.rotacionar90GrausParaDireitaVerso}" oncomplete="iniciarCropVerso()" render="formImagemVerso" tooltip="Girar 90º para Direita" />
+										<otm:commandIcon icon="#{msg_botoes.btn_icon_girar_180} iconePequeno ml5" action="#{RenovarMatriculaControle.rotacionar180GrausVerso}" oncomplete="iniciarCropVerso()" render="formImagemVerso" tooltip="Girar 180º" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="row" columns="1" columnClasses="colunaCentralizada" style="display:block;overflow:auto;max-height:442px;max-width:816px;">
+										<h:graphicImage id="imageVerso" url="#{RenovarMatriculaControle.caminhoServidorDownloadDocumentacaoVerso}" />
+									</h:panelGroup>
+									<h:panelGroup style="display:none" layout="block">
+										<h:outputText value="X" />
+										<h:inputText size="4" id="xVerso" value="#{RenovarMatriculaControle.xcropVerso}" />
+										<h:outputText value="Y" />
+										<h:inputText size="4" id="yVerso" value="#{RenovarMatriculaControle.ycropVerso}" />
+										<h:outputText value="largura" />
+										<h:inputText size="4" id="wVerso" value="#{RenovarMatriculaControle.larguraVerso}" />
+										<h:outputText value="altura" />
+										<h:inputText size="4" id="hVerso" value="#{RenovarMatriculaControle.alturaVerso}" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup id="dadosPDFVerso" layout="block" style="width:100%" rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isPdF and !empty RenovarMatriculaControle.caminhoPDFVerso}">
+									<otm:pdfView id="pdfVerso" data="#{RenovarMatriculaControle.caminhoPDFVerso}" height="500px" />
+								</h:panelGroup>
+								<h:graphicImage rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isWord}" url="#{resource['/imagens/iconeArquivo/wordGrande.png']}" />
+								<h:graphicImage rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isExcel}" url="#{resource['/imagens/iconeArquivo/excelGrande.png']}" />
+								<h:graphicImage rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isTxt}" url="#{resource['/imagens/iconeArquivo/txtGrande.png']}" />
+								<h:graphicImage rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso.isOutros}" url="#{resource['/imagens/iconeArquivo/outrosGrande.png']}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+						<otm:commandButton id="dwl5" oncomplete="location.href='../../DownloadSV'" rendered="#{RenovarMatriculaControle.documetacaoMatriculaVO.isPossuiArquivoVerso}" value="Download" icon="#{msg_botoes.btn_icon_download_embutido}" styleClass="btn btn-success mr5" action="#{RenovarMatriculaControle.realizarDownloadArquivo(RenovarMatriculaControle.documetacaoMatriculaVO.arquivoVOVerso)}" />
+				 		<otm:commandButton action="#{RenovarMatriculaControle.adicionarArquivoDocumentacaoMatriculaVerso}" value="Confirmar" oncomplete="#{rich:component('panelImagemDocumentosEntreguesVerso')}.hide()" render="documetacaoMatriculaVO, tabMensagensAuxVerso, mensagemDocumentacao2, mensagemDetalhadaDocumentacao2" icon="#{msg_botoes.btn_icon_confirmar_embutido}" styleClass="btn btn-dark mr5" />
+						<otm:commandButton id="cancelarUploadArquivoVerso" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" title="#{msg_botoes.btn_cancelar}" value="#{msg_botoes.btn_cancelar}" action="#{RenovarMatriculaControle.limparDocumentacaoMatriculaVerso}" oncomplete="#{rich:component('panelImagemDocumentosEntreguesVerso')}.hide();" render="documetacaoMatriculaVO, tabMensagensAuxVerso, mensagemDocumentacao2, mensagemDetalhadaDocumentacao2" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row" id="tabMensagensAuxVerso">
+						<otm:mensagem bean="#{RenovarMatriculaControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelUploadVerso" zindex="2000" onshow="clickUpload('#formUplodVerso')" overlapEmbedObjects="true" shadowOpacity="false" width="450" height="150">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Disciplina_uploadArquivos} Verso" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formUplodVerso">
+				<h:panelGroup id="panelArquivoUploadVerso">
+					<h:panelGroup id="arquivoUpload2Verso">
+						<rich:fileUpload id="btnUploadVerso" listHeight="100" listWidth="300" allowFlash="false" noDuplicate="true" fileUploadListener="#{RenovarMatriculaControle.upLoadArquivoVerso}" addLabel="Selecionar Arquivo" acceptedTypes="gif, png, jpg, jpeg, bmp, pdg, JPEG, JPG, PNG, GIF, BMP, PDF, pdf, doc, docx, xls, xlsx, txt, xml" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido #{RenovarMatriculaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB." progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true"
+							onupload="return validarTamanhoUploadArquivoExtensao(event, 'form:upload', #{RenovarMatriculaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}, 'gif, png, jpg, jpeg, bmp, pdg, JPEG, JPG, PNG, GIF, BMP, PDF, pdf, doc, docx, xls, xlsx, txt, xml');" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');" sizeExceededLabel="alert('Arquivo não Enviado. Tamanho Máximo Permitido #{RenovarMatriculaControle.configuracaoGeralPadraoSistema.tamanhoMaximoUpload}MB.');">
+							<a4j:ajax event="uploadcomplete" render="formImagemVerso, btnUploadVerso, form" oncomplete="#{RenovarMatriculaControle.oncompleteModal}" />
+						</rich:fileUpload>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton id="cancelarUploadArquivoVerso2" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" title="#{msg_botoes.btn_cancelar}" value="#{msg_botoes.btn_cancelar}" action="#{RenovarMatriculaControle.limparDocumentacaoMatriculaVerso}" render="documetacaoMatriculaVO, tabMensagensAuxVerso, mensagemDocumentacao2, mensagemDetalhadaDocumentacao2" oncomplete="#{rich:component('panelUploadVerso')}.hide();" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelExcluir" shadowOpacity="true" width="450" height="160">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Excluir"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formExcluir">
+				<h:panelGroup layout="block" styleClass="row mt10 mb20">
+					<h:outputText value="#{msg_aplic.prt_RenovarMatricula_confirmarExclusao}" styleClass="field control-label tituloCampos" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton value="Sim" render="form" icon="#{msg_botoes.btn_icon_ok_embutido}" styleClass="btn btn-info" oncomplete="#{rich:component('panelExcluir')}.hide()" action="#{RenovarMatriculaControle.removerArquivoDocumentacao}" alt="Excluir" />
+					<otm:spacer width="20px" />
+					<otm:commandButton value="Não" immediate="true" action="#{RenovarMatriculaControle.cancelarExclusaoArquivoDocumentoEntregue}" render="entregue, documetacaoMatriculaVO" oncomplete="#{rich:component('panelExcluir')}.hide()" icon="#{msg_botoes.btn_icon_cancelar_embutido}" styleClass="btn btn-danger" alt="Não Excluir" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelIncluirArquivoVerso" zindex="2000" overlapEmbedObjects="true" shadowOpacity="false" width="400" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_DocumetacaoMatricula_RealizarUploadArquivoVerso}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formIncluirArquivoVerso">
+				<h:panelGroup id="panelArquivoIncluirVerso">
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_DocumetacaoMatricula_MensagemRealizarUploadArquivoVerso}" />
+					</h:panelGroup>
+					<otm:spacer width="10px" />
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-50">
+						<otm:commandButton id="incluirArquivoVerso" styleClass="btn btn-info " title="#{msg_botoes.btn_sim}" value="#{msg_botoes.btn_sim}" oncomplete="#{rich:component('panelIncluirArquivoVerso')}.hide();#{rich:component('panelUploadVerso')}.show();" render="formImagemVerso" icon="#{msg_botoes.btn_icon_confirmar_embutido}" />
+						<otm:commandButton id="naoIncluirArquivoVerso" styleClass="btn btn-danger ml5" title="#{msg_botoes.btn_nao}" value="#{msg_botoes.btn_nao}" oncomplete="#{rich:component('panelIncluirArquivoVerso')}.hide();" icon="#{msg_botoes.btn_icon_cancelar_embutido}" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelPreview" zindex="2000" shadowOpacity="false" width="400" height="200">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="Visualizar Arquivo" />
+				</h:panelGroup>
+				
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkpanelPreview" />
+					<rich:componentControl target="panelPreview" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPreview">
+				<h:panelGroup id="panelPreviewGeral" styleClass="row">
+					<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{RenovarMatriculaControle.caminhoPreviewTipoPdf}">
+						<otm2:pdfView2 bean="#{RenovarMatriculaControle}" height="calc(100vh - 100px)" data="#{RenovarMatriculaControle.caminhoPreview}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12" rendered="#{!RenovarMatriculaControle.caminhoPreviewTipoPdf}">
+						<h:graphicImage url="#{RenovarMatriculaControle.caminhoPreview}" width="98%" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+						<otm:commandButton id="fecharpanelPreview" title="#{msg_botoes.btn_fechar}" icon="#{msg_botoes.btn_icon_fechar_embutido}" value="Fechar" styleClass="btn btn-info" oncomplete="#{rich:component('panelPreview')}.hide();" />						
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<h:outputScript src="resource:///jquery.js" />
+		<h:outputScript name="jquery.color.js" library="script/crop" />
+		<h:outputScript name="jquery.Jcrop.js" library="script/crop" />
+		<h:outputStylesheet name="jquery.Jcrop.css" library="script/crop" />
+
+		<script>
+			(function($) {
+				clickUpload = function(idPanel) {
+					var input = $(idPanel).find("input:file");
+					$(input).click();
+				};
+
+				iniciarCropFrente = function() {
+					$("#formImagem\\:image").Jcrop({
+						onSelect : showCoordsFrente,
+						onChange : showCoordsFrente,
+						bgColor : 'black',
+						bgOpacity : .3,
+					});
+				};
+
+				function showCoordsFrente(c) {
+					var valorX = document.getElementById('formImagem:x');
+					valorX.value = c.x;
+					var valorY = document.getElementById('formImagem:y');
+					valorY.value = c.y;
+					var valorW = document.getElementById('formImagem:w');
+					valorW.value = c.w;
+					var valorH = document.getElementById('formImagem:h');
+					valorH.value = c.h;
+				}
+				;
+
+				iniciarCropVerso = function() {
+					$("#formImagemVerso\\:imageVerso").Jcrop({
+						onSelect : showCoordsVerso,
+						onChange : showCoordsVerso,
+						bgColor : 'black',
+						bgOpacity : .3,
+					});
+				};
+
+				function showCoordsVerso(c) {
+					var valorX = document
+							.getElementById('formImagemVerso:xVerso');
+					valorX.value = c.x;
+					var valorY = document
+							.getElementById('formImagemVerso:yVerso');
+					valorY.value = c.y;
+					var valorW = document
+							.getElementById('formImagemVerso:wVerso');
+					valorW.value = c.w;
+					var valorH = document
+							.getElementById('formImagemVerso:hVerso');
+					valorH.value = c.h;
+				}
+				;
+
+			})(jQuery);
+		</script>
+		
+		<style>
+			.btn-disabledUpload {
+				color: #b3afaf !important;
+			}
+			.background-upload {
+				background-color: rgba(158, 158, 158, 0.185) !important;
+			}
+		</style>
+
+		<h:form id="form">
+			<h:panelGroup id="pgGeral">
+				<h:panelGroup id="tabPanelRenovarMatricula">
+					<h:panelGroup rendered="#{RenovarMatriculaControle.guiaAba eq 'Documentacao'}">
+						<h:outputText styleClass="title" value="Documentação da Matrícula/Aluno" />
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Matricula_localArmazenamentoDocumentacao}" />
+							<h:inputText id="localArmazenamento" size="40" maxlength="200" styleClass="form-control campos" value="#{RenovarMatriculaControle.matriculaVO.localArmazenamentoDocumentosMatricula}" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+						<h:panelGroup layout="block" rendered="#{RenovarMatriculaControle.controlaAprovacaoDocEntregue}" styleClass="row mt10">
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<i class="#{msg_botoes.btn_icon_confirmar_embutido} fs14 mr5"></i>
+								<h:outputText value="Entregue" styleClass="field control-label tituloCampos" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<i class="fas fa-file-upload fs14 mr5"></i>
+								<h:outputText value="Pendente" styleClass="field control-label tituloCampos" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<i class="fas fa-exclamation-triangle fs14 mr5"></i>
+								<h:outputText value="Pendente Aprovação" styleClass="field control-label tituloCampos" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-3">
+								<i class="fas fa-ban fs14 mr5"></i>
+								<h:outputText value="Documento  Rejeitado" styleClass="field control-label tituloCampos" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<rich:dataTable id="documetacaoMatriculaVO" width="100%" headerClass="subordinado" styleClass="tabFormSubordinada" rowClasses="linhaImparSubordinado, linhaParSubordinado" columnClasses="colunaAlinhamento" value="#{RenovarMatriculaControle.matriculaVO.documetacaoMatriculaVOs}" var="documetacaoMatriculaItens">
+							<rich:column style="width: 16.66">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_DocumetacaoMatricula_tipoDocumento}" />
+								</f:facet>
+								<h:outputText value="#{documetacaoMatriculaItens.tipoDeDocumentoVO.nome} - #{documetacaoMatriculaItens.ano}/#{documetacaoMatriculaItens.semestre}" rendered="#{documetacaoMatriculaItens.ano != '' and documetacaoMatriculaItens.semestre != ''}" />
+								<h:outputText value="#{documetacaoMatriculaItens.tipoDeDocumentoVO.nome}" rendered="#{documetacaoMatriculaItens.ano == '' and documetacaoMatriculaItens.semestre == ''}" />
+								<h:outputText value="#{documetacaoMatriculaItens.tipoDeDocumentoVO.nome} -  #{documetacaoMatriculaItens.ano}" rendered="#{documetacaoMatriculaItens.ano == '' and documetacaoMatriculaItens.semestre != ''}" />
+							</rich:column>
+							<rich:column style="width: 16.66">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_DocumetacaoMatricula_entregue}" />
+								</f:facet>
+								<h:panelGroup rendered="#{!RenovarMatriculaControle.controlaAprovacaoDocEntregue}">
+									<otm:selectBooleanCheckbox id="entregue" styleClass="form-control campos" value="#{documetacaoMatriculaItens.entregue}">
+										<a4j:ajax event="click" oncomplete="#{documetacaoMatriculaItens.entregue ? '' : RenovarMatriculaControle.verificarPossuiArquivoDocumentacaoMatricula}" listener="#{RenovarMatriculaControle.selecionarArquivoDocumentoEntregueExclusao}" render="this, documetacaoMatriculaVO, panelExcluir" />
+									</otm:selectBooleanCheckbox>
+								</h:panelGroup>
+								<h:panelGroup rendered="#{RenovarMatriculaControle.controlaAprovacaoDocEntregue}" layout="block" style="width:100%">
+									<otm:commandIcon disabled="true" rendered="#{documetacaoMatriculaItens.entregue}" icon="#{msg_botoes.btn_icon_confirmar_embutido} fs20" tooltip="Documento Entregue" />
+									<otm:commandIcon disabled="true" rendered="#{!documetacaoMatriculaItens.entregue and !documetacaoMatriculaItens.arquivoAprovadoPeloDep and !documetacaoMatriculaItens.isPossuiArquivo and documetacaoMatriculaItens.dataNegarDocDep == null}" icon="fas fa-file-upload fs20" tooltip="Documento Pendente" />
+									<otm:commandIcon disabled="true" rendered="#{!documetacaoMatriculaItens.entregue and !documetacaoMatriculaItens.arquivoAprovadoPeloDep and documetacaoMatriculaItens.isPossuiArquivo and documetacaoMatriculaItens.dataNegarDocDep == null}" icon="fas fa-exclamation-triangle fs20" tooltip="Documento Pendente Aprovação" />
+									<otm:commandIcon disabled="true" rendered="#{!documetacaoMatriculaItens.entregue and documetacaoMatriculaItens.dataNegarDocDep != null}" icon="fas fa-ban fs20" tooltip="#{documetacaoMatriculaItens.justificativaNegacao}" />
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 16.66">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_DocumetacaoMatricula_dataEntrega}" />
+								</f:facet>
+								<h:panelGroup>
+									<h:outputText id="dataentregue" value="#{documetacaoMatriculaItens.dataEntrega_Apresentacao}" />
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="width: 16.66" rendered="#{RenovarMatriculaControle.permiteAnexarImagemDocumentosEntregues}">
+								<f:facet name="header">
+									<h:outputText value="Arquivo Frente" />
+								</f:facet>
+								<otm:commandIcon id="uploadList" render="formImagem" oncomplete="#{RenovarMatriculaControle.oncompleteModal}" rendered="#{documetacaoMatriculaItens.documentoEntregue or RenovarMatriculaControle.controlaAprovacaoDocEntregue}" action="#{RenovarMatriculaControle.selecionarObjetoDocumentacaoMatricula}" icon="#{msg_botoes.btn_icon_upload} iconePequeno" disabled="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo}" tooltip="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo ? 'Para realizar o upload do arquivo frente deve-se excluir a documentação antiga do aluno' : 'Upload Documento Frente'}" styleClassIcon="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo ? 'background-upload btn-disabledUpload' : ''}" />
+								<otm:commandIcon oncomplete="#{documetacaoMatriculaItens.arquivoVO.servidorArquivoOnline eq 'APACHE'} ? location.href='../../DownloadSV' : abrirPopup('../../DownloadSV', 'DownloadSV_#{documetacaoMatriculaItens.codigo}',950,595)" rendered="#{documetacaoMatriculaItens.isPossuiArquivo}" tooltip="Download Arquivo" action="#{RenovarMatriculaControle.realizarDownloadArquivo(documetacaoMatriculaItens.arquivoVO)}" icon="#{msg_botoes.btn_icon_download} iconePequeno ml5" />
+								<otm:commandIcon id="previewFrente" oncomplete="#{rich:component('panelPreview')}.show();" render="formPreview" rendered="#{documetacaoMatriculaItens.isPossuiArquivo and (documetacaoMatriculaItens.arquivoVO.isPdF or documetacaoMatriculaItens.arquivoVO.isImagem)}" tooltip="Visualizar Arquivo" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" action="#{RenovarMatriculaControle.realizarVisualizacaoPreview(documetacaoMatriculaItens.arquivoVO)}" />
+							</rich:column>
+							<rich:column style="width: 16.66" rendered="#{RenovarMatriculaControle.permiteAnexarImagemDocumentosEntregues}">
+								<f:facet name="header">
+									<h:outputText value="Arquivo Verso" />
+								</f:facet>
+								<otm:commandIcon id="uploadListVerso" render="formImagemVerso, panelImagemDocumentosEntreguesVerso" oncomplete="#{RenovarMatriculaControle.oncompleteModal}" rendered="#{(documetacaoMatriculaItens.entregue or RenovarMatriculaControle.controlaAprovacaoDocEntregue) and documetacaoMatriculaItens.tipoDeDocumentoVO.documentoFrenteVerso and documetacaoMatriculaItens.isPossuiArquivo}" action="#{RenovarMatriculaControle.selecionarObjetoDocumentacaoMatriculaVerso}" icon="#{msg_botoes.btn_icon_upload} iconePequeno" disabled="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo}" tooltip="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo ? 'Para realizar o upload do arquivo verso deve-se excluir a documentação antiga do aluno' : 'Upload Documento Verso'}" styleClassIcon="#{documetacaoMatriculaItens.desabilitarBotaoUparArquivo ? 'background-upload btn-disabledUpload' : ''}" />
+								<otm:commandIcon oncomplete="#{documetacaoMatriculaItens.arquivoVOVerso.servidorArquivoOnline eq 'APACHE'} ? location.href='../../DownloadSV' : abrirPopup('../../DownloadSV', 'DownloadSV_#{documetacaoMatriculaItens.codigo}',950,595)" rendered="#{documetacaoMatriculaItens.isPossuiArquivoVerso}" tooltip="Download Arquivo Verso" action="#{RenovarMatriculaControle.realizarDownloadArquivo(documetacaoMatriculaItens.arquivoVOVerso)}" icon="#{msg_botoes.btn_icon_download} iconePequeno ml5" />
+								<otm:commandIcon id="previewVerso" oncomplete="#{rich:component('panelPreview')}.show();" render="formPreview" rendered="#{documetacaoMatriculaItens.isPossuiArquivoVerso and (documetacaoMatriculaItens.arquivoVOVerso.isPdF or documetacaoMatriculaItens.arquivoVOVerso.isImagem)}" tooltip="Visualizar Arquivo" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" action="#{RenovarMatriculaControle.realizarVisualizacaoPreview(documetacaoMatriculaItens.arquivoVOVerso)}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Arquivo Assinado" />
+								</f:facet>
+								<otm:commandIcon id="dwl5" oncomplete="#{documetacaoMatriculaItens.arquivoVOAssinado.servidorArquivoOnline eq 'APACHE'} ? location.href='../../DownloadSV' : abrirPopup('../../DownloadSV', 'DownloadSV_#{documetacaoMatriculaItens.codigo}',950,595)" rendered="#{documetacaoMatriculaItens.isPossuiArquivoAssinado}" icon="#{msg_botoes.btn_icon_download} iconePequeno" tooltip="Download Arquivo Assinado" action="#{RenovarMatriculaControle.realizarDownloadArquivo(documetacaoMatriculaItens.arquivoVOAssinado)}" />
+								
+								<otm:commandIcon id="previewAssinado" oncomplete="#{rich:component('panelPreview')}.show();" render="formPreview" rendered="#{documetacaoMatriculaItens.isPossuiArquivoAssinado and (documetacaoMatriculaItens.arquivoVOAssinado.isPdF or documetacaoMatriculaItens.arquivoVOAssinado.isImagem)}" tooltip="Visualizar Arquivo" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" action="#{RenovarMatriculaControle.realizarVisualizacaoPreview(documetacaoMatriculaItens.arquivoVOAssinado)}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="Arquivo Ged" />
+								</f:facet>
+								<otm:commandIcon id="dwlGed" oncomplete="#{documetacaoMatriculaItens.arquivoGED.servidorArquivoOnline eq 'APACHE'} ? location.href='../../DownloadSV' : abrirPopup('../../DownloadSV', 'DownloadSV_#{documetacaoMatriculaItens.codigo}',950,595)" rendered="#{documetacaoMatriculaItens.arquivoGED.codigo ne 0}" icon="#{msg_botoes.btn_icon_download} iconePequeno" tooltip="Download Arquivo Assinado" action="#{RenovarMatriculaControle.realizarDownloadArquivo(documetacaoMatriculaItens.arquivoGED)}" />
+								<otm:commandIcon id="previewGed1" oncomplete="#{rich:component('panelPreview')}.show();" render="formPreview" rendered="#{documetacaoMatriculaItens.arquivoGED.codigo ne 0 and (documetacaoMatriculaItens.arquivoGED.isPdF or documetacaoMatriculaItens.arquivoGED.isImagem)}" tooltip="Visualizar Arquivo" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" action="#{RenovarMatriculaControle.realizarVisualizacaoPreview(documetacaoMatriculaItens.arquivoGED)}" />								
+							</rich:column>
+							<rich:column style="width: 16.66" rendered="#{RenovarMatriculaControle.permiteAnexarImagemDocumentosEntregues}">
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon id="removerItemArquivo" oncomplete="#{rich:component('panelExcluir')}.show()" action="#{RenovarMatriculaControle.selecionarArquivoDocumentoEntregueExclusao}" tooltip="#{msg_botoes.btn_excluir} Documento" icon="#{msg_botoes.btn_icon_remover} iconePequeno" rendered="#{documetacaoMatriculaItens.isPossuiArquivo or documetacaoMatriculaItens.isPossuiArquivoVerso}" />
+								<h:panelGroup layout="block" styleClass="col-md-12" id="helpResponsavelRecebimento">
+									<otm:commandIcon icon="#{msg_botoes.btn_icon_usuario} iconePequeno" disable="true" rendered="#{documetacaoMatriculaItens.entregue}" />
+								</h:panelGroup>
+								<rich:tooltip target="helpResponsavelRecebimento" id="tooltipNaoVisivel" zindex="1000">
+									<h:panelGroup layout="block" styleClass="col-md-9">
+										<h:outputText styleClass="tituloCampos" value="Responsável Recebimento Documento" />
+										<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.usuario.nome}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="tituloCampos" value="Data Entrega" />
+										<h:inputText readonly="true" styleClass="form-control campos" value="#{documetacaoMatriculaItens.dataEntrega_Apresentacao}" />
+									</h:panelGroup>
+								</rich:tooltip>
+								<!-- 								tooltip="Responsável Recebimento Documento: #{documetacaoMatriculaItens.usuario.nome} em #{documetacaoMatriculaItens.dataEntrega_Apresentacao}"  -->
+							</rich:column>
+						</rich:dataTable>
+						<h:panelGroup layout="block" styleClass="row">
+							<otm:mensagem bean="#{RenovarMatriculaControle}" />
+						</h:panelGroup>
+						<h:panelGroup styleClass="navbar navbar-fixed-bottom barraFlutuanteInferior text-center " layout="block">
+							<otm:commandButton action="#{RenovarMatriculaControle.navegarAbaDadosBasicos}" render="form" value="Voltar" icon="#{msg_botoes.btn_icon_voltar}" />
+							<otm:commandButton style="margin-left:5px" action="#{RenovarMatriculaControle.atualizarListaControleDocumentacaoCurso}" value="Atualizar Lista de Documentos" render="documetacaoMatriculaVO" icon="#{msg_botoes.btn_icon_atualizar_embutido}" styleClass="btn btn-default" />
+							<!-- 								<otm:commandButton immediate="true" action="#{RenovarMatriculaControle.inicializarConsultar}" value="#{msg_botoes.btn_novo}" accesskey="1" styleClass="btn btn-info btn-novo" /> -->
+							<!-- 								<otm:commandButton immediate="true" action="#{RenovarMatriculaControle.inicializarConsultar}" value="#{msg_botoes.btn_consultar}" accesskey="4" styleClass="btn btn-default btn-consultar" /> -->
+							<otm:commandButton style="margin-left:5px" render="form" id="imprimirPDF" oncomplete="#{RenovarMatriculaControle.download}" action="#{RenovarMatriculaControle.imprimirTermoCompromissoDocumentacao}" value="Termo Documentação" accesskey="2" icon="far fa-file-pdf" styleClass="btn btn-default" />
+							<otm:commandButton style="margin-left:5px" rendered="#{LoginControle.permissaoAcessoMenuVO.navegarAbaDisciplinas}" action="#{RenovarMatriculaControle.navegarAbaDisciplinas}" oncomplete="#{RenovarMatriculaControle.oncompleteModal}" render="form, formAvisoVerificarDadosEnadeCenso" styleClass="btn btn-default" icon="fas fa-arrow-right" value="Avançar Disciplina" />
+							<otm:commandButton style="margin-left:5px" rendered="#{!RenovarMatriculaControle.matriculaPeriodoVO.financeiroManual and !LoginControle.permissaoAcessoMenuVO.navegarAbaDisciplinas and LoginControle.permissaoAcessoMenuVO.navegarAbaPlanoFinanceiroAluno}" action="#{RenovarMatriculaControle.navegarAbaPlanoFinanceiroAluno}" oncomplete="#{RenovarMatriculaControle.apresentarModalUsuarioSenhaAutorizarMatriculaAcimaRealizada}" render="form, tabPlanoFinanceiroAluno, formLiberarMatriculaAcimaNrVagas, formLiberarMatriculaAcimaNrAulas" styleClass="btn btn-default" icon="fas fa-arrow-right" value="Avançar Financeiro" />
+							<otm:commandButton style="margin-left:5px" rendered="#{RenovarMatriculaControle.matriculaVO.existeDocumentoPendenteImpediRenovacao}" icon="#{msg_botoes.btn_icon_bloqueado_embutido}" oncomplete="#{rich:component('liberarRenovacaoDocumentoPendente')}.show()" value="Liberar Renovação Com Documento Pendente" styleClass="btn btn-default" tooltip="Liberar renovação de matrícula mesmo com documento obrigatório (para renovação) pendente." />
+							<otm:commandButton style="margin-left:5px" rendered="#{!LoginControle.permissaoAcessoMenuVO.navegarAbaDisciplinas and !LoginControle.permissaoAcessoMenuVO.navegarAbaPlanoFinanceiroAluno}" action="#{RenovarMatriculaControle.navegarAbaDisciplinaMatriculado}" render="form" value="#{msg_botoes.btn_gravar}" styleClass="btn btn-dark btn-gravar" />
+							<otm:commandButton style="margin-left:5px" rendered="#{RenovarMatriculaControle.matriculaPeriodoVO.financeiroManual and !LoginControle.permissaoAcessoMenuVO.navegarAbaDisciplinas}" render="form, formAvisoContaReceber, formParcelaExtra, panelParcelaExtra, formAvisoContaReceberEditadaManualmente" action="#{RenovarMatriculaControle.gravarAbrirRichAvisoContaReceber}" oncomplete="#{RenovarMatriculaControle.apresentarRichAvisoContaReceber}" value="#{msg_botoes.btn_gravar}" accesskey="2" styleClass="btn btn-dark btn-gravar" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

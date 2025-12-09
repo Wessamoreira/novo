@@ -1,0 +1,1 @@
+UPDATE configuracaogeralsistema SET versaoseisignature = '152861';

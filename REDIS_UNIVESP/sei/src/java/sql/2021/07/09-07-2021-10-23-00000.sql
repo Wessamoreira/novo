@@ -1,0 +1,1 @@
+ALTER TABLE public.configuracaoldap ADD urllogoutad varchar(255) NULL;

@@ -1,0 +1,1 @@
+alter table centroreceita add column if not exists  informarmanualmenteidentificadorcentroreceita boolean default false;

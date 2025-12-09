@@ -1,0 +1,1 @@
+	alter table tiporequerimento add column permitiraproveitardisciplinascursando boolean default true;

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:p="http://primefaces.org/ui" xmlns:h="http://java.sun.com/jsf/html" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:f="http://java.sun.com/jsf/core"
+ xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<ui:component>
+	<c:if test="#{empty id}">
+		<c:set var="id" value="modalProgressBar"></c:set>
+	</c:if>
+	<c:if test="#{empty bar}">
+		<c:set var="bar" value="progressBar"></c:set>
+	</c:if>
+	<c:if test="#{empty update}">
+		<c:set var="update" value="form"></c:set>
+	</c:if>
+	<c:if test="#{empty height}">
+		<c:set var="height" value="66px"></c:set>
+	</c:if>
+	<c:if test="#{empty width}">
+		<c:set var="width" value="350"></c:set>
+	</c:if>
+	<c:if test="#{empty left}">
+		<c:set var="left" value="42%"></c:set>
+	</c:if>
+	<c:if test="#{empty top}">
+		<c:set var="top" value="50%"></c:set>
+	</c:if>
+	<c:if test="#{empty interval}">
+		<c:set var="interval" value="500"></c:set>
+	</c:if>
+	<c:if test="#{empty modal}">
+		<c:set var="modal" value="true"></c:set>
+	</c:if>
+	<c:if test="#{empty local}">
+		<c:set var="local" value="false"></c:set>
+	</c:if>
+
+	<style type="text/css">
+		.progress-bg {
+			background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #F2F2F2), color-stop(1, #CCCCCC)) !important; background : #F2F2F2; filter : progid : DXImageTransform.Microsoft.Gradient ( startColorStr = '#F2F2F2', endColorStr = '#CCCCCC', gradientType = '0');
+			background: -moz-linear-gradient(bottom, #F2F2F2 0%, #CCCCCC 100%);
+			background: #F2F2F2;
+			filter: progid:DXImageTransform.Microsoft.Gradient(startColorStr='#F2F2F2', endColorStr='#CCCCCC', gradientType='0');
+		}
+   </style>
+	<style type="text/css">
+		.rf-pb-rmng {
+			width: 96% !important;
+			height: 25px !important;
+		}
+	</style>
+
+
+	<p:dialog id="#{id}" widgetVar="#{id}" onShow="#{bean[bar].assincrono} ?  iniciarProgress2() : iniciarProgress1()" styleClass="modalMaximizado50p0" header="Processando..." closable="false" rendered="#{modal}" dynamic="true" fitViewport="true" modal="true" visible="#{bean[bar].pollAtivado}">
+		<h:form prependId="false" id="#{id}_form">
+			<h:panelGroup id="#{id}_functions" layout="block">
+				<p:remoteCommand id="#{id}_iniciarProgress1" name="iniciarProgress1" onstart="PF('#{id}_pool1').start()" update="#{id}_form"></p:remoteCommand>
+				<p:remoteCommand id="#{id}_iniciarProgress2" name="iniciarProgress2" action="#{bean[bar].iniciarAssincrono}" onstart="PF('#{id}_pool2').start()" update="#{id}_form"></p:remoteCommand>				
+			</h:panelGroup>
+
+			<h:panelGroup id="#{id}_container" rendered="#{bean[bar].pollAtivado}" styleClass="row mt50" layout="block">
+				<h:panelGroup styleClass="col-md-12" rendered="#{!bean[bar].assincrono}" layout="block">
+					<p:progressBar id="#{id}_pool1" widgetVar="#{id}_pool1" global="false" interval="#{interval}" labelTemplate="{value}%" value="#{bean[bar].porcentagem}" ajax="true">
+						<p:ajax event="complete" update="#{update}" oncomplete="PF('#{id}').hide();#{oncomplete}" />
+					</p:progressBar>
+				</h:panelGroup>
+				<h:panelGroup styleClass="col-md-12" rendered="#{bean[bar].assincrono}" layout="block">
+					<p:progressBar id="#{id}_pool2" widgetVar="#{id}_pool2" global="false" interval="#{interval}" labelTemplate="#{bean[bar].status}" value="#{bean[bar].porcentagem}" ajax="true">
+						<p:ajax event="complete" update="#{update}" oncomplete="PF('#{id}').hide();#{oncomplete}" />
+					</p:progressBar>
+				</h:panelGroup>
+				<h:panelGroup styleClass="col-md-1" layout="block">
+					<h:panelGroup layout="block" styleClass="loading-icon" style="position:relative;width:30px;height:30px">
+						<h:graphicImage value="#{resource['imagens/logo_sei_cinza.png']}" style="width:30px;" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup styleClass="barra-btn-flutuante-modal-50" layout="block">
+				<ui:insert name="botoesADDProgressBar">
+				</ui:insert>
+			</h:panelGroup>
+			<p:growl escape="false" showDetail="true" showSummary="false" globalOnly="true"></p:growl>
+		</h:form>
+	</p:dialog>
+	<h:panelGroup id="#{id}_container2" rendered="#{!modal and item.pollAtivado}" layout="block" styleClass="col-md-12">
+		<h:panelGroup styleClass="col-md-12" layout="block">
+			<p:progressBar global="false" interval="#{interval}" displayOnly="true" mode="determinate" value="#{item.porcentagem}">
+				<p:ajax event="complete" update="#{update}" oncomplete="#{oncomplete}" />
+			</p:progressBar>
+		</h:panelGroup>
+	</h:panelGroup>
+
+	<h:panelGroup id="#{id}_container3" rendered="#{!modal and item.pollAtivado}" style="width:294px;height:24px;">
+		<h:panelGroup styleClass="col-md-12" rendered="#{!bean[bar].assincrono}" layout="block">
+			<p:progressBar id="#{id}_pool3" widgetVar="#{id}_pool3" global="false" interval="#{interval}" labelTemplate="{value}%" value="#{bean[bar].porcentagem}" ajax="true">
+				<p:ajax event="complete" update="#{update}" oncomplete="PF('#{id}').hide();#{oncomplete}" />
+			</p:progressBar>
+		</h:panelGroup>
+		<h:panelGroup styleClass="col-md-12" rendered="#{bean[bar].assincrono}" layout="block">
+			<p:progressBar id="#{id}_pool4" widgetVar="#{id}_pool4" global="false" interval="#{interval}" labelTemplate="#{bean[bar].status}" value="#{bean[bar].porcentagem}" ajax="true">
+				<p:ajax event="complete" update="#{update}" oncomplete="PF('#{id}').hide();#{oncomplete}" />
+			</p:progressBar>
+		</h:panelGroup>
+		<h:panelGroup id="#{id}_progresso1" layout="block" style="background-color:transparent; height:25px; margin-left:10px; width:270px; float:left; border:1px solid #C4C0C9">
+			<h:panelGroup layout="block" styleClass="progress-bg" style="height:25px !important; position:relative; width:#{item.porcentagem}% !important; float:left !important;">
+				<h:outputText id="label#{id}TableMode" styleClass="field control-label tituloCampos" style="display:block; width:270px; position:relative; top:2px; text-align:center;float:left;" value="#{item.status}" />
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:panelGroup>
+
+	<h:panelGroup layout="block" id="#{id}_container4" rendered="#{!modal and local}" style="width:100%;">
+			<p:remoteCommand id="#{id}_encerrar3" status="#{id}_region" name="encerrarProgressBarLocal" action="#{bean[bar].encerrar}" execute="@this" render="#{id}_container4 #{render}" oncomplete="#{oncomplete}" />
+			<h:panelGroup layout="block" id="#{id}_shadow3" rendered="#{bean[bar].pollAtivado}" style="position:relative;background-color:#CCCCCC;opacity:0.6;width:100%;height:#{height};">
+				<h:panelGroup layout="block" id="#{id}_container34" style="position:relative;top:40%;left:30%;background-color:#FFFFFF;width:40%;height:20%;">
+					<p:progressBar id="#{id}_pool5" widgetVar="#{id}_pool5" global="false" interval="#{interval}" labelTemplate="#{bean[bar].status}" value="#{bean[bar].porcentagem}" ajax="true">
+						<p:ajax event="complete" update="#{update}" oncomplete="PF('#{id}').hide();#{oncomplete}" />
+					</p:progressBar>
+					<h:panelGroup  id="#{id}_progresso3" layout="block" style="height:35%;position:relative;top:37%;left:5%;width:90%;border:1px solid #C4C0C9">
+						<h:panelGroup layout="block" styleClass="progress-bg" style="height:100%!important;position:relative;width:#{bean[bar].porcentagem}%!important;max-width:100%!important;">
+							<h:outputText id="label#{id}Local" styleClass="field control-label tituloCampos" style="display:block; width:350px; position:relative; top:25%; text-align:center;" value="#{bean[bar].status}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:panelGroup>
+	</h:panelGroup>
+</ui:component>
+</html>

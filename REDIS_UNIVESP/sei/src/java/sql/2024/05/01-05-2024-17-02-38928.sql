@@ -1,0 +1,1 @@
+ alter table if exists  matricula  add COLUMN  if not exists  dataenvionotificacaoconfirmacaomatricula timestamp  ;

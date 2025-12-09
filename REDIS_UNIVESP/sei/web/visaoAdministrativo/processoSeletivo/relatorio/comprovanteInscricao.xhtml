@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm">
+<h:head>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_ComprovanteInscricao_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{ComprovanteInscricaoRelControle.liberarBackingBeanMemoria}" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridPrincipal">
+				<h:panelGroup id="filtrosBusca">
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_tituloForm}" />
+						<h:selectOneMenu id="unidadeEnsino" styleClass="form-control campos" value="#{ComprovanteInscricaoRelControle.inscricaoVO.procSeletivo.codigo}">
+							<f:selectItems value="#{ComprovanteInscricaoRelControle.listaSelectItemProcessoSeletivo}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Candidato_tituloForm}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<h:inputText size="50" maxlength="50" readonly="true" id="candidato_nomePessoa" styleClass="form-control camposSomenteLeitura" value="#{ComprovanteInscricaoRelControle.inscricaoVO.candidato.nome}" />
+							<span class="append-icon right"> <otm:commandIcon id="consultaDadosCandidato" focus="campoConsultaCandidato" tooltip="Localizar Candidato" render="formCandidato" oncomplete="#{rich:component('panelCandidato')}.show()" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosCandidato" tooltip="Limpar Dados" action="#{ComprovanteInscricaoRelControle.limparCandidato}" render="form:nomeCurso, form:turma, form:disciplinaNome, panelGridPrincipal, panelMensagem" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+							</span>
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ProcSeletivo_tipoLayoutComprovante}" />
+						<h:selectOneMenu id="tipoLayoutComprovante" styleClass="form-control campos" value="#{ComprovanteInscricaoRelControle.inscricaoVO.procSeletivo.tipoLayoutComprovante}">
+							<a4j:ajax event="change" render="form:declararCursoEscolaPublica ,form:declararCursoEscolaPublicaPanelGroup"  execute="@this" />
+							<f:selectItems value="#{ComprovanteInscricaoRelControle.listaSelectItemTipoLayout}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup  id="declararCursoEscolaPublicaPanelGroup"  layout="block" styleClass="col-md-3" rendered="#{ComprovanteInscricaoRelControle.isMostrarDeclararCursoEscolaPublica }">
+						<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_ComprovanteInscricao_declararCursoEscolaPublica}" rendered="#{ComprovanteInscricaoRelControle.isMostrarDeclararCursoEscolaPublica }" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn">
+							<otm:selectBooleanCheckbox id="declararCursoEscolaPublica" value="#{ComprovanteInscricaoRelControle.declararCursoEscolaPublica }" styleClass="form-control campos" rendered="#{ComprovanteInscricaoRelControle.isMostrarDeclararCursoEscolaPublica }" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior" id="panelGridBotoes">
+					<otm:commandButton render="form" id="imprimirPDF" oncomplete="#{ComprovanteInscricaoRelControle.download}" action="#{ComprovanteInscricaoRelControle.imprimirPDF}" value="Gerar Relatório (PDF)" accesskey="2" icon="#{msg_botoes.btn_icon_pdf_embutido}" styleClass="btn btn-danger" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="panelMensagem" columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{ComprovanteInscricaoRelControle}"></otm:mensagem>
+			</h:panelGroup>
+		</h:form>
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCandidato" shadowOpacity="true" width="750" height="500" onshow="document.getElementById('formCandidato:valorConsultaCandidato').focus()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Recebimento_candidato}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3" />
+					<rich:componentControl target="panelCandidato" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCandidato">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{ComprovanteInscricaoRelControle.campoConsultaCandidato}">
+						<f:selectItems value="#{ComprovanteInscricaoRelControle.tipoConsultaComboCandidato}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCandidato" size="20" styleClass="form-control campos" value="#{ComprovanteInscricaoRelControle.valorConsultaCandidato}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar3" render="formCandidato:mensagemConsultaCandidato, formCandidato:resultadoConsultaCandidato, formCandidato:scResultadoCandidato" action="#{ComprovanteInscricaoRelControle.consultarCandidato}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCandidato" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{ComprovanteInscricaoRelControle.listaConsultaCandidato}" rows="5" var="candidatoItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Pessoa_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{ComprovanteInscricaoRelControle.selecionarCandidato}" render="form" oncomplete="#{rich:component('panelCandidato')}.hide()" value="#{candidatoItens.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{ComprovanteInscricaoRelControle.selecionarCandidato}" render="form" oncomplete="#{rich:component('panelCandidato')}.hide()" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCandidato:resultadoConsultaCandidato" maxPages="10" id="scResultadoCandidato" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaCandidato" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{ComprovanteInscricaoRelControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

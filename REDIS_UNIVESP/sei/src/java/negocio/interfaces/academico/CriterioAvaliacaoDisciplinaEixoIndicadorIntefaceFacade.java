@@ -1,0 +1,33 @@
+package negocio.interfaces.academico;
+
+import java.util.List;
+
+import negocio.comuns.academico.CriterioAvaliacaoDisciplinaEixoIndicadorVO;
+import negocio.comuns.academico.CriterioAvaliacaoDisciplinaVO;
+import negocio.comuns.academico.CriterioAvaliacaoIndicadorVO;
+import negocio.comuns.utilitarias.ConsistirException;
+
+public interface CriterioAvaliacaoDisciplinaEixoIndicadorIntefaceFacade {
+	
+	void incluirCriterioAvaliacaoDisciplinaEixoIndicador(CriterioAvaliacaoDisciplinaVO criterioAvaliacaoDisciplinaVO) throws Exception;
+	
+	void alterarCriterioAvaliacaoDisciplinaEixoIndicador(CriterioAvaliacaoDisciplinaVO criterioAvaliacaoDisciplinaVO) throws Exception;
+	
+	void excluirCriterioAvaliacaoDisciplinaEixoIndicador(CriterioAvaliacaoDisciplinaVO criterioAvaliacaoDisciplinaVO) throws Exception;
+	
+	void validarDados(CriterioAvaliacaoDisciplinaEixoIndicadorVO criterioAvaliacaoDisciplinaEixoIndicadorVO) throws ConsistirException;
+	
+	List<CriterioAvaliacaoDisciplinaEixoIndicadorVO> consultarPorCriterioAvaliacaoDisciplina(Integer criterioAvaliacaoDisciplina, int nivelMontarDados) throws Exception;
+	
+	void alterarOrdemCriterioAvaliacaoIndicadorVO(CriterioAvaliacaoDisciplinaEixoIndicadorVO criterioAvaliacaoDisciplinaEixoIndicadorVO, CriterioAvaliacaoIndicadorVO criterioAvaliacaoIndicadorVO, boolean subir) throws Exception;
+	
+	void adicionarCriterioAvaliacaoIndicadorVO(CriterioAvaliacaoDisciplinaEixoIndicadorVO criterioAvaliacaoDisciplinaEixoIndicadorVO, CriterioAvaliacaoIndicadorVO criterioAvaliacaoIndicadorVO) throws Exception;
+	
+	void excluirCriterioAvaliacaoIndicadorVO(CriterioAvaliacaoDisciplinaEixoIndicadorVO criterioAvaliacaoDisciplinaEixoIndicadorVO, CriterioAvaliacaoIndicadorVO criterioAvaliacaoIndicadorVO) throws Exception;
+
+	void realizarCalculoNotaCriterioAvaliacaoDisciplinaEixoIndicador(CriterioAvaliacaoDisciplinaEixoIndicadorVO criterioAvaliacaoDisciplinaEixoIndicadorVO) throws Exception;
+
+	void realizarCalculoQtdeIndicadorPorBimestre(CriterioAvaliacaoDisciplinaEixoIndicadorVO criterioAvaliacaoDisciplinaEixoIndicadorVO) throws Exception;
+}
+	
+	

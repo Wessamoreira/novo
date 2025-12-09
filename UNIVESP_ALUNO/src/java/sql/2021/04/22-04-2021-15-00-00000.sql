@@ -1,0 +1,5 @@
+alter table layoutrelatorioseidecidirfuncionariocargo rename to layoutrelatorioseidecidirfuncionario;
+ALTER TABLE layoutrelatorioseidecidirfuncionario drop constraint if exists funcionariocargo_fkey;
+alter table layoutrelatorioseidecidirfuncionario rename column funcionariocargo to funcionario;
+update layoutrelatorioseidecidirfuncionario set funcionario = funcionariocargo.funcionario from funcionariocargo where funcionariocargo.codigo = layoutrelatorioseidecidirfuncionario.funcionario;
+alter table layoutrelatorioseidecidirfuncionario add constraint fk_layoutrelatorioseidecidirfuncionario_funcionario foreign key (funcionario) references funcionario(codigo) on delete cascade on update cascade;

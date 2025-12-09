@@ -1,0 +1,743 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<h:head>
+	<script type="text/javascript">
+		window.onload = function() {
+			document.getElementById("form:identificador").focus();
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="#{msg_aplic.prt_HistoricoFuncionario_tituloForm}" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<h:form id="form">
+			<h:commandLink action="#{HistoricoFuncionarioControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup layout="block" styleClass="row" id="panelDadosTodos">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_matriculaFuncionario}" />
+					<h:inputText id="matriculaFuncionario" size="50" readonly="true" styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.funcionarioCargo.funcionarioVO.matricula}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_funcionario}" />
+					<h:inputText id="funcionario" size="50" readonly="true" styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.funcionarioCargo.funcionarioVO.pessoa.nome}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2" id="pnlMatriculaCargo">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_matriculaCargo}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="matriculaCargo" size="50" styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.funcionarioCargo.matriculaCargo}">
+							<a4j:ajax event="change" listener="#{HistoricoFuncionarioControle.consultarFuncionarioPelaMatriculaCargo}" render="form" />
+						</h:inputText>
+						<span class="append-icon right"> <otm:commandIcon icon="#{msg_botoes.btn_icon_atualizar_embutido}" tooltip="#{msg.msg_EventosFuncionarioCargo}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_cargo}" />
+					<h:inputText id="cargo" size="50" styleClass="form-control camposObrigatorios" readonly="true" value="#{HistoricoFuncionarioControle.funcionarioCargo.cargo.nome}" />
+				</h:panelGroup>
+			</h:panelGroup>
+			<rich:tabPanel activeItem="#{HistoricoFuncionarioControle.abaSelecionada}">
+				<!-- Tab HISTORICO DEPENDENTES -->
+				<rich:tab styleClass="row" header="Histórico Dependentes" id="primeiraTab" name="primeiraTab" action="#{HistoricoFuncionarioControle.consultarDadosHistoricoDependentes}">
+					<h:panelGroup layout="block" styleClass="row">
+						<rich:dataTable id="tableHistoricoDependentes" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{HistoricoFuncionarioControle.dataModeloHistoricoDependentes}" rows="10" var="dependentes">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+								</f:facet>
+								<h:outputText value="#{dependentes.dataMudanca}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_numeroDependenteIRRF}" />
+								</f:facet>
+								<h:outputText value="#{dependentes.numeroDependentesIRRF}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_numeroDependenteSalarioFamilia}" />
+								</f:facet>
+								<h:outputText value="#{dependentes.numeroDependentesSalarioFamilia}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.editarHistoricoDependente}" immediate="true" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar Historico Dependente" oncomplete="#{rich:component('panelDependentes')}.show();" render="formDependentes" />
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.deletarHistoricoDependentes(dependentes)}" render="form:primeiraTab" icon="#{msg_botoes.btn_icon_remover} iconePequeno" tooltip="Deletar Historico Dependentes" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller align="center" for="tableHistoricoDependentes" id="scHistoricoDependentes" scrollListener="#{HistoricoFuncionarioControle.scrollerListenerHistoricoDependentes}" page="#{HistoricoFuncionarioControle.dataModeloHistoricoDependentes.page}" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton id="novoDependente" oncomplete="#{rich:component('panelDependentes')}.show();" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" action="#{HistoricoFuncionarioControle.novoHistoricoDependente}" render="formDependentes" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- TAB HISTORICO FUNCAO -->
+				<rich:tab header="Histórico Função" id="segundaTab" action="#{HistoricoFuncionarioControle.consultarDadosHistoricoFuncao()}" render="segundaTab">
+					<h:panelGroup layout="block" styleClass="row">
+						<rich:dataTable id="tableHistoricoFuncao" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{HistoricoFuncionarioControle.dataModeloHistoricoFuncao}" rows="10" var="funcao">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+								</f:facet>
+								<h:outputText value="#{funcao.dataMudanca}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_motivoMudanca}" />
+								</f:facet>
+								<h:outputText value="#{funcao.motivoMudanca.getValorApresentar()}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_cargo}" />
+								</f:facet>
+								<h:outputText value="#{funcao.cargo.nome}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_nivelSalarial}" />
+								</f:facet>
+								<h:outputText value="#{funcao.nivelSalarial.descricao}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_faixaSalarial}" />
+								</f:facet>
+								<h:outputText value="#{funcao.faixaSalarial.descricao}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.editarHistoricoFuncao}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar Historico Funcao" immediate="true" oncomplete="#{rich:component('panelFuncao')}.show();" render="formFuncao" />
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.deletarHistoricoFuncao(funcao)}" tooltip="Deletar Historico Funcao" render="form:segundaTab" icon="#{msg_botoes.btn_icon_remover} iconePequeno" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller align="center" for="tableHistoricoFuncao" id="scHistoricoFuncao" scrollListener="#{HistoricoFuncionarioControle.dataModeloHistoricoFuncao}" page="#{HistoricoFuncionarioControle.dataModeloHistoricoFuncao.page}" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton id="novoFuncao" oncomplete="#{rich:component('panelFuncao')}.show();" render="formFuncao" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" action="#{HistoricoFuncionarioControle.novoHistoricoFuncao}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- TAB HISTORICO SALARIAL -->
+				<rich:tab header="Histórico Salarial" id="terceiraTab" action="#{HistoricoFuncionarioControle.consultarDadosHistoricoSalarial()}">
+					<h:panelGroup layout="block" styleClass="row">
+						<rich:dataTable id="tableHistoricoSalarial" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{HistoricoFuncionarioControle.dataModeloHistoricoSalarial}" rows="10" var="salarial">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+								</f:facet>
+								<h:outputText value="#{salarial.dataMudanca}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_jornada}" />
+								</f:facet>
+								<h:outputText value="#{salarial.jornada}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_salario}" />
+								</f:facet>
+								<h:outputText value="#{salarial.salario}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_salarioHora}" />
+								</f:facet>
+								<h:outputText value="#{salarial.salarioHora}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_percentualVariacaoSalarial}" />
+								</f:facet>
+								<h:outputText value="#{salarial.percentualVariacaoSalarial}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_motivoMudanca}" />
+								</f:facet>
+								<h:outputText value="#{salarial.motivoMudanca.getValorApresentar()}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.editarHistoricoSalarial}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" immediate="true" tooltip="Editar Historico Salarial" oncomplete="#{rich:component('panelSalarial')}.show();" render="formSalarial" />
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.deletarHistoricoSalarial(salarial)}" tooltip="Deletar Historico Salarial" render="form:terceiraTab" icon="#{msg_botoes.btn_icon_remover} iconePequeno" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller align="center" for="tableHistoricoSalarial" id="scHistoricoSalarial" scrollListener="#{HistoricoFuncionarioControle.scrollerListenerHistoricoSalarial}" page="#{HistoricoFuncionarioControle.dataModeloHistoricoSalarial.page}" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton id="novoSalarial" oncomplete="#{rich:component('panelSalarial')}.show();" render="formSalarial" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" action="#{HistoricoFuncionarioControle.novoHistoricoSalarial}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- TAB HISTORICO SECAO -->
+				<rich:tab header="Histórico Seção" id="quartaTab" action="#{HistoricoFuncionarioControle.consultarDadosHistoricoSecao()}">
+					<h:panelGroup layout="block" styleClass="row">
+						<rich:dataTable id="tableHistoricoSecao" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{HistoricoFuncionarioControle.dataModeloHistoricoSecao}" rows="10" var="secaofolha">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+								</f:facet>
+								<h:outputText value="#{secaofolha.dataMudanca}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_secaoFolhaPagamento}" />
+								</f:facet>
+								<h:outputText value="#{secaofolha.secaoFolhaPagamento.descricao}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_motivoMudanca}" />
+								</f:facet>
+								<h:outputText value="#{secaofolha.motivoMudanca.getValorApresentar()}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.editarHistoricoSecao}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" tooltip="Editar Historico Secao" oncomplete="#{rich:component('panelSecao')}.show();" render="formSecao" />
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.deletarHistoricoSecao(secaofolha)}" tooltip="Deletar Historico Secao" render="form:quartaTab" icon="#{msg_botoes.btn_icon_remover} iconePequeno" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller align="center" for="tableHistoricoSecao" id="scHistoricoSecao" page="#{HistoricoFuncionarioControle.dataModeloHistoricoSecao.page}" scrollListener="#{HistoricoFuncionarioControle.scrollerListenerHistoricoSecao}" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton id="novoSecao" oncomplete="#{rich:component('panelSecao')}.show();" render="formSecao" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" action="#{HistoricoFuncionarioControle.novoHistoricoSecao}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- TAB HISTORICO SITUACAO -->
+				<rich:tab header="Histórico Situação" id="quintaTab" action="#{HistoricoFuncionarioControle.consultarDadosHistoricoSituacao()}">
+					<h:panelGroup layout="block" styleClass="row">
+						<rich:dataTable id="tableHistoricoSituacao" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{HistoricoFuncionarioControle.dataModeloHistoricoSituacao}" rows="10" var="situacao">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+								</f:facet>
+								<h:outputText value="#{situacao.dataMudanca}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_motivoMudanca}" />
+								</f:facet>
+								<h:outputText value="#{situacao.motivoMudanca.getValorApresentar()}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_situacao}" />
+								</f:facet>
+								<h:outputText value="#{situacao.situacao.getValorApresentar()}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.editarHistoricoSituacao}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" render="formSituacao" tooltip="Editar Historico Situacao" oncomplete="#{rich:component('panelSituacao')}.show();" />
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.deletarHistoricoSituacao(situacao)}" tooltip="Deletar Historico Situacao" render="form:quintaTab" icon="#{msg_botoes.btn_icon_remover} iconePequeno" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller align="center" for="tableHistoricoSituacao" page="#{HistoricoFuncionarioControle.dataModeloHistoricoSituacao.page}" scrollListener="#{HistoricoFuncionarioControle.scrollerListenerHistoricoSituacao}" id="scHistoricoSituacao" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton id="novoSituacao" oncomplete="#{rich:component('panelSituacao')}.show();" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" action="#{HistoricoFuncionarioControle.novoHistoricoSituacao}" render="formSituacao" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- TAB HISTORICO AFASTAMENTO -->
+				<rich:tab header="Histórico Afastamento" id="sextaTab" action="#{HistoricoFuncionarioControle.consultarDadosHistoricoAfastamento()}">
+					<h:panelGroup layout="block" styleClass="row">
+						<rich:dataTable id="tableHistoricoAfastamento" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{HistoricoFuncionarioControle.dataModeloHistoricoAfastamento}" rows="10" var="tableAfastamento">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataInicio}" />
+								</f:facet>
+								<h:outputText value="#{tableAfastamento.dataInicio}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataFinal}" />
+								</f:facet>
+								<h:outputText value="#{tableAfastamento.dataFinal}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataRequerimento}" />
+								</f:facet>
+								<h:outputText value="#{tableAfastamento.dataRequerimento}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_quantidade}" />
+								</f:facet>
+								<h:outputText value="#{tableAfastamento.quantidade}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_tipoAfastamento}" />
+								</f:facet>
+								<h:outputText value="#{tableAfastamento.tipoAfastamento.getValorApresentar()}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_motivoAfastamento}" />
+								</f:facet>
+								<h:outputText value="#{tableAfastamento.motivoAfastamento.getValorApresentar()}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.editarHistoricoAfastamento}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" immediate="true" tooltip="Editar Historico Afastamento" oncomplete="#{rich:component('panelAfastamento')}.show();" render="formAfastamento" />
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.deletarHistoricoAfastamento(tableAfastamento)}" tooltip="Deletar Historico Afastamento" render="form:sextaTab" icon="#{msg_botoes.btn_icon_remover} iconePequeno" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller align="center" for="tableHistoricoAfastamento" id="scHistoricoAfastamento" render="formAfastamento" page="#{HistoricoFuncionarioControle.dataModeloHistoricoAfastamento.page}" scrollListener="#{HistoricoFuncionarioControle.scrollerListenerHistoricoAfastamento}" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton id="novoAfastamento" oncomplete="#{rich:component('panelAfastamento')}.show();" render="formAfastamento" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" action="#{HistoricoFuncionarioControle.novoHistoricoAfastamento}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+				<!-- TAB HISTORICO PENSAO -->
+				<rich:tab header="Histórico Pensão" id="setimaTab" action="#{HistoricoFuncionarioControle.consultarDadosHistoricoPensao()}">
+					<h:panelGroup layout="block" styleClass="row">
+						<rich:dataTable id="tableHistoricoPensao" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{HistoricoFuncionarioControle.dataModeloHistoricoPensao}" rows="10" var="tablePensao">
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dependente}" />
+								</f:facet>
+								<h:outputText value="#{tablePensao.funcionarioDependente.nome}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_dataCompetencia}" />
+								</f:facet>
+								<h:outputText value="#{tablePensao.competenciaFolhaPagamento.dataCompetencia}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_valor}" />
+								</f:facet>
+								<h:outputText value="#{tablePensao.valor}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_TextoPadrao_tipoMovimento}" />
+								</f:facet>
+								<h:outputText value="#{tablePensao.tipoMovimentoPensao.getValorApresentar()}" />
+							</rich:column>
+							<rich:column>
+								<f:facet name="header">
+									<h:outputText value="#{msg_botoes.btn_opcoes}" />
+								</f:facet>
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.editarHistoricoPensao}" icon="#{msg_botoes.btn_icon_editar} iconePequeno" immediate="true" tooltip="Editar Historico Pensao" oncomplete="#{rich:component('panelPensao')}.show();" style="margin-right: 10px" render="formPensao" />
+								<otm:commandIcon action="#{HistoricoFuncionarioControle.deletarHistoricoPensao(tablePensao)}" tooltip="Deletar Historico Pensao" render="form:setimaTab" icon="#{msg_botoes.btn_icon_remover} iconePequeno" onclick="return confirm('#{msg.msg_confirmacao_excluxao}');" />
+							</rich:column>
+							<f:facet name="footer">
+								<div style="text-align: center !important">
+									<rich:dataScroller align="center" for="tableHistoricoPensao" id="scHistoricoPensao" render="formPensao" page="#{HistoricoFuncionarioControle.dataModeloHistoricoPensao.page}" scrollListener="#{HistoricoFuncionarioControle.scrollerListenerHistoricoPensao}" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+						<h:panelGroup layout="block" styleClass="col-md-12 text-center" style="margin:10px">
+							<otm:commandButton id="novoPensao" oncomplete="#{rich:component('panelPensao')}.show();" render="formPensao" styleClass="btn btn-info btn-novo" value="#{msg_botoes.btn_novo}" title="#{msg.msg_novo_dados}" accesskey="1" action="#{HistoricoFuncionarioControle.novoHistoricoPensao}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</rich:tab>
+			</rich:tabPanel>
+			<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+				<otm:mensagem bean="#{HistoricoFuncionarioControle}"></otm:mensagem>
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton accesskey="3" action="#{HistoricoFuncionarioControle.inicializarConsultar}" id="consultar" styleClass="btn btn-default btn-consultar" immediate="true" value="#{msg_botoes.btn_consultar}" />
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+		<!-- Modal de Dependentes -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDependentes" shadowOpacity="true" width="800" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Funcionario_consultarSecao}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkDependentes">
+						<rich:componentControl target="panelDependentes" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDependentes">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+					<otm:calendar id="dataCompetencia" value="#{HistoricoFuncionarioControle.historicoDependentesVO.dataMudanca}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_numeroDependenteIRRF}" />
+					<h:inputText styleClass="form-control camposObrigatorios" onkeypress="return SomenteNumero(event)" size="10" maxlength="8" value="#{HistoricoFuncionarioControle.historicoDependentesVO.numeroDependentesIRRF}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_numeroDependenteSalarioFamilia}" />
+					<h:inputText styleClass="form-control camposObrigatorios" onkeypress="return SomenteNumero(event)" size="10" maxlength="8" value="#{HistoricoFuncionarioControle.historicoDependentesVO.numeroDependentesSalarioFamilia}" />
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{HistoricoFuncionarioControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton style="margin-right:5px" accesskey="1" styleClass="btn btn-dark" value="Gravar" action="#{HistoricoFuncionarioControle.persistirHistoricoDependente()}" id="persistirHistoricoDependente" render="form formDependentes" icon="#{msg_botoes.btn_icon_gravar_embutido}" oncomplete="#{rich:component('panelDependentes')}.hide()" />
+							<otm:commandButton accesskey="2" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelDependentes')}.hide()" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Modal de Funçao -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelFuncao" shadowOpacity="true" width="800" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Funcionario_consultarSecao}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkFuncao">
+						<rich:componentControl target="panelFuncao" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formFuncao">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+					<otm:calendar value="#{HistoricoFuncionarioControle.historicoFuncaoVO.dataMudanca}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_motivoMudanca}" />
+					<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{HistoricoFuncionarioControle.historicoFuncaoVO.motivoMudanca}">
+						<f:selectItems value="#{EnumControle.tipoContratacaoComissionadosEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_cargo}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoFuncaoVO.cargo.codigo}">
+						<f:selectItems value="#{HistoricoFuncionarioControle.listaSelectItemCargo}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_nivelSalarial}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoFuncaoVO.nivelSalarial.codigo}">
+						<f:selectItems value="#{HistoricoFuncionarioControle.listaSelectItemNivelSalarial}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_faixaSalarial}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoFuncaoVO.faixaSalarial.codigo}">
+						<f:selectItems value="#{HistoricoFuncionarioControle.listaSelectItemFaixaSalarial}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{HistoricoFuncionarioControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton style="margin-right:5px" accesskey="1" styleClass="btn btn-dark" value="Gravar" action="#{HistoricoFuncionarioControle.persistirHistoricoFuncao()}" id="persistirHistoricoFuncao" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" oncomplete="#{rich:component('panelFuncao')}.hide()" />
+							<otm:commandButton accesskey="2" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelFuncao')}.hide()" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Modal de Historico Salarial -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelSalarial" shadowOpacity="true" width="800" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Histórico Salarial" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkSalarial">
+						<rich:componentControl target="panelSalarial" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formSalarial">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+					<otm:calendar value="#{HistoricoFuncionarioControle.historicoSalarialVO.dataMudanca}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_jornada}" />
+					<h:inputText styleClass="form-control camposObrigatorios" onkeypress="return SomenteNumero(event)" size="10" maxlength="8" value="#{HistoricoFuncionarioControle.historicoSalarialVO.jornada}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_salario}" />
+					<h:inputText id="salario" maxlength="10" onkeydown="aceitarSomenteValorDecimal(this)" styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoSalarialVO.salario}">
+						<a4j:ajax execute="@this" render="@this" />
+						<f:converter converterId="FormatadorNumerico" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_salarioHora}" />
+					<h:inputText id="salarioHora" maxlength="10" onkeydown="aceitarSomenteValorDecimal(this)" styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoSalarialVO.salarioHora}">
+						<a4j:ajax execute="@this" render="@this" />
+						<f:converter converterId="FormatadorNumerico" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_percentualVariacaoSalarial}" />
+					<h:inputText styleClass="form-control camposObrigatorios" onkeypress="return SomenteNumero(event)" size="10" maxlength="8" value="#{HistoricoFuncionarioControle.historicoSalarialVO.percentualVariacaoSalarial}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_motivoMudanca}" />
+					<h:selectOneMenu id="motivoMudancaSecao" styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoSalarialVO.motivoMudanca}">
+						<f:selectItems value="#{EnumControle.comboboxMotivoMudancaSecao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{HistoricoFuncionarioControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton style="margin:5px" accesskey="1" styleClass="btn btn-dark" value="Gravar" action="#{HistoricoFuncionarioControle.persistirHistoricoSalarial()}" id="persistirHistoricoSalarial" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" oncomplete="#{rich:component('panelSalarial')}.hide()" />
+							<otm:commandButton accesskey="2" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelSalarial')}.hide()" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Modal de Secao -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelSecao" shadowOpacity="true" width="800" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Funcionario_consultarSecao}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkSecao">
+						<rich:componentControl target="panelSecao" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formSecao">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+					<otm:calendar datePattern="dd/MM/yyyy" enableManualInput="true" inputClass="form-control camposObrigatorios" inputSize="10" onchanged="return renderData(this.id)" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" value="#{HistoricoFuncionarioControle.historicoSecaoVO.dataMudanca}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_secaoFolhaPagamento}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoSecaoVO.secaoFolhaPagamento.codigo}">
+						<f:selectItems value="#{HistoricoFuncionarioControle.listaSelectItemSecaoFolhaPagamento}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_motivoMudanca}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoSecaoVO.motivoMudanca}">
+						<f:selectItems value="#{EnumControle.comboboxMotivoMudancaSecao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{HistoricoFuncionarioControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton style="margin-right:5px" accesskey="1" styleClass="btn btn-dark" value="Gravar" action="#{HistoricoFuncionarioControle.persistirHistoricoSecao()}" id="persistirHistoricoSecao" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" oncomplete="#{rich:component('panelSecao')}.hide()" />
+							<otm:commandButton accesskey="2" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelSecao')}.hide()" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Modal de Situacao -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelSituacao" shadowOpacity="true" width="800" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Funcionario_consultarSecao}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkSituacao">
+						<rich:componentControl target="panelSituacao" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formSituacao">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataMudanca}" />
+					<otm:calendar value="#{HistoricoFuncionarioControle.historicoSituacaoVO.dataMudanca}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_motivoMudanca}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoSituacaoVO.motivoMudanca}">
+						<f:selectItems value="#{EnumControle.comboboxMotivoMudancaSecao}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_situacao}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoSituacaoVO.situacao}">
+						<f:selectItems value="#{EnumControle.situacaoFuncionarioCargo}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaSituacao" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{HistoricoFuncionarioControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton style="margin-right:5px" accesskey="1" styleClass="btn btn-dark" value="Gravar" action="#{HistoricoFuncionarioControle.persistirHistoricoSituacao()}" id="persistirHistoricoSituacao" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" oncomplete="#{rich:component('panelSituacao')}.hide()" />
+							<otm:commandButton accesskey="2" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelSituacao')}.hide()" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Modal de Afastamento -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAfastamento" shadowOpacity="true" width="800" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Histórico Afastamento" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkAfastamento">
+						<rich:componentControl target="panelAfastamento" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAfastamento">
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataInicio}" />
+					<otm:calendar value="#{HistoricoFuncionarioControle.historicoAfastamentoVO.dataInicio}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="Data Fim" />
+					<otm:calendar value="#{HistoricoFuncionarioControle.historicoAfastamentoVO.dataFinal}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataRequerimento}" />
+					<otm:calendar value="#{HistoricoFuncionarioControle.historicoAfastamentoVO.dataRequerimento}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_quantidade}" />
+					<h:inputText styleClass="form-control camposObrigatorios" onkeypress="return SomenteNumero(event)" size="10" maxlength="8" value="#{HistoricoFuncionarioControle.historicoAfastamentoVO.quantidade}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_tipoAfastamento}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoAfastamentoVO.motivoAfastamento}">
+						<f:selectItems value="#{EnumControle.comboboxMotivoAfastamentoFuncionarioEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_motivoAfastamento}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoAfastamentoVO.tipoAfastamento}">
+						<f:selectItems value="#{EnumControle.comboboxTipoAfastamentoFuncionarioEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaAfastamento" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{HistoricoFuncionarioControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton style="margin-right:5px" accesskey="1" styleClass="btn btn-dark" value="Gravar" action="#{HistoricoFuncionarioControle.persistirHistoricoAfastamento()}" id="persistirHistoricoAfastamento" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" oncomplete="#{rich:component('panelAfastamento')}.hide()" />
+							<otm:commandButton accesskey="2" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelAfastamento')}.hide()" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+		<!-- Modal de Pensao -->
+		<rich:popupPanel styleClass="modalMaximizado" id="panelPensao" shadowOpacity="true" width="800" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Histórico Pensão" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPensao">
+						<rich:componentControl target="panelPensao" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPensao">
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dependente}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoPensaoVO.funcionarioDependente.codigo}">
+						<f:selectItems value="#{HistoricoFuncionarioControle.listaSelectItemFuncionarioDependente}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_dataCompetencia}" />
+					<otm:calendar datePattern="dd/MM/yyyy" enableManualInput="true" disabled="true" inputClass="camposObrigatorios form-control" inputSize="10" onchanged="return renderData(this.id)" oninputkeypress="return mascara(this.form, this.id, '99/99/9999', event);" value="#{HistoricoFuncionarioControle.historicoPensaoVO.competenciaFolhaPagamento.dataCompetencia}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_valor}" />
+					<h:inputText id="salario" maxlength="10" onkeydown="aceitarSomenteValorDecimal(this)" styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoPensaoVO.valor}">
+						<a4j:ajax execute="@this" render="@this" />
+						<f:converter converterId="FormatadorNumerico" />
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TextoPadrao_tipoMovimento}" />
+					<h:selectOneMenu styleClass="form-control camposObrigatorios" value="#{HistoricoFuncionarioControle.historicoPensaoVO.tipoMovimentoPensao}">
+						<f:selectItems value="#{EnumControle.comboboxTipoMovimentoPensaoEnum}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaPensao" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{HistoricoFuncionarioControle}"></otm:mensagem>
+					<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+						<h:panelGroup>
+							<otm:commandButton accesskey="1" styleClass="btn btn-dark" value="Fechar" action="#{HistoricoFuncionarioControle.persistirHistoricoPensao()}" id="persistirHistoricoPensao" render="form" icon="#{msg_botoes.btn_icon_gravar_embutido}" oncomplete="#{rich:component('panelPensao')}.hide()" />
+							<otm:commandButton accesskey="2" styleClass="btn btn-danger" value="Fechar" icon="#{msg_botoes.btn_icon_fechar_embutido}" oncomplete="#{rich:component('panelPensao')}.hide()" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

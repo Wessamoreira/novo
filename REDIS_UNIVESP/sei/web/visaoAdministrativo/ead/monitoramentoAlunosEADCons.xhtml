@@ -1,0 +1,2014 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" xmlns:otm2="http://www.otimize-ti.com.br">
+<h:head>
+	<script type="text/javascript">
+		window.onload = function() {
+			document.getElementById("form:valorConsulta").focus();
+		}
+	</script>
+</h:head>
+<ui:composition template="/visaoAdministrativo/template/visaoAdministrativa.xhtml">
+	<ui:define name="tituloPagina">
+		<h:outputText value="Monitoramento Alunos EAD" />
+	</ui:define>
+	<ui:define name="conteudo">
+		<style>
+.row-overflow::-webkit-scrollbar-thumb {
+	display: block !important;
+	background-color: #c7c7c7 !important;
+	scrollbar-color: #c7c7c7 transparent !important;
+	height: 20px !important;
+}
+
+.border-bottom-panel {
+	border-bottom: solid 2px #cacaca !important;
+}
+
+.tituloGabarito {
+	font-size: 20px;
+	font-weight: 510;
+	line-height: 23px !important;
+	font-family: none;
+}
+.bg-success {
+    background-color: #089601 !important;
+}
+.bg-danger {
+    background-color: #ff0000 !important;
+}
+.bg-warning {
+    background-color: #f6c23e !important;
+}
+</style>
+		<h:form id="form">
+			<h:commandLink action="#{MonitoramentoAlunosEADControle.liberarBackingBeanMemoria}" immediate="true" id="idLiberarBackingBeanMemoria" style="display: none" />
+			<h:panelGroup id="panelGridForm">
+				<!-- 				<otm:commandButton id="consultaDadosGabarito" style="position:relative;" alt="Localizar Gabarito" render="formGabarito" oncomplete="#{rich:component('panelGabarito')}.show();" styleClass="#{msg_botoes.btn_icon_lupa_embutido}" /> -->
+				<h:panelGroup layout="block" styleClass="col-md-12 pn">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="field control-label tituloCampos" value="Filtrar Por" />
+						<h:selectOneMenu styleClass="form-control campos" id="nivelProgramacao" value="#{MonitoramentoAlunosEADControle.tipoNivelProgramacaoTutoria}">
+							<f:selectItems value="#{MonitoramentoAlunosEADControle.listaSelectItemNivelProgramacaoTutoria}" />
+							<a4j:ajax event="change" listener="#{MonitoramentoAlunosEADControle.montarObjetosPorValorFiltroCampoSelecionado}" render="form:panelGridForm" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2" rendered="#{MonitoramentoAlunosEADControle.tipoNivelProgramacaoTutoria eq 'DISCIPLINA' or MonitoramentoAlunosEADControle.tipoNivelProgramacaoTutoria eq 'UNIDADE_ENSINO'}">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Curso_periodicidade}" rendered="#{MonitoramentoAlunosEADControle.tipoNivelProgramacaoTutoria eq 'DISCIPLINA' or MonitoramentoAlunosEADControle.tipoNivelProgramacaoTutoria eq 'UNIDADE_ENSINO'}" />
+						<h:selectOneMenu id="periodicidade" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.periodicidade}" rendered="#{MonitoramentoAlunosEADControle.tipoNivelProgramacaoTutoria eq 'DISCIPLINA' or MonitoramentoAlunosEADControle.tipoNivelProgramacaoTutoria eq 'UNIDADE_ENSINO'}">
+							<a4j:ajax event="change" render="form" />
+							<f:selectItems value="#{MonitoramentoAlunosEADControle.listaSelectItemPeriodicidade}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{MonitoramentoAlunosEADControle.isApresentarCampoUnidadeEnsino}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_DevolucaoCheque_unidadeEnsino}" rendered="#{MonitoramentoAlunosEADControle.isApresentarCampoUnidadeEnsino}" />
+					<h:selectOneMenu id="selectItemUnidadeEnsino" styleClass="form-control camposObrigatorios" value="#{MonitoramentoAlunosEADControle.unidadeEnsinoVO.codigo}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.listaSelectItemUnidadeEnsino}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{MonitoramentoAlunosEADControle.isApresentarCampoTurma}">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_turma}" rendered="#{MonitoramentoAlunosEADControle.isApresentarCampoTurma}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="idetificadorTurma" styleClass="form-control camposObrigatorios" value="#{MonitoramentoAlunosEADControle.turmaVO.identificadorTurma}">
+							<a4j:ajax event="change" listener="#{MonitoramentoAlunosEADControle.montarTurma}" render="form" />
+						</h:inputText>
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosTurma" tooltip="Localizar Turma" render="formTurma" oncomplete="#{rich:component('panelTurma')}.show();" action="#{MonitoramentoAlunosEADControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosTurma" tooltip="Limpas Dados" action="#{MonitoramentoAlunosEADControle.limparDadosTurma}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6" rendered="#{MonitoramentoAlunosEADControle.isApresentarCampoCurso}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Curso" rendered="#{MonitoramentoAlunosEADControle.isApresentarCampoCurso}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn">
+						<h:inputText id="nomeCurso" styleClass="form-control camposSomenteLeituraObrigatorio" readonly="true" value="#{MonitoramentoAlunosEADControle.cursoVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosCurso" tooltip="Localizar Aluno" render="formCurso" oncomplete="#{rich:component('panelCurso')}.show();" action="#{MonitoramentoAlunosEADControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosCurso" tooltip="Limpas Dados" action="#{MonitoramentoAlunosEADControle.limparDadosCurso}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Conteudo_disciplina}" />
+					<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{!MonitoramentoAlunosEADControle.isApresentarCampoDisciplina}">
+						<h:inputText id="disciplina" maxlength="50" readonly="true" styleClass="form-control camposSomenteLeituraObrigatorio" value="#{MonitoramentoAlunosEADControle.disciplinaVO.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultarDisciplina" tooltip="#{msg_botoes.btn_consultar}" render="formDisciplina" oncomplete="#{rich:component('panelDisciplina')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" title="#{msg.msg_consultar_dados}" /> <otm:commandIcon id="limparDisciplina" render="form" action="#{MonitoramentoAlunosEADControle.limparDisciplina}" tooltip="#{msg_botoes.btn_btnLimpar}" icon="#{msg_botoes.btn_icon_limpar_embutido}" title="#{msg_botoes.btn_btnLimpar}" />
+						</span>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 pn" rendered="#{MonitoramentoAlunosEADControle.isApresentarCampoDisciplina}">
+						<h:selectOneMenu id="selectItemDisciplina" styleClass="form-control camposObrigatorios" value="#{MonitoramentoAlunosEADControle.disciplinaVO.codigo}">
+							<f:selectItems value="#{MonitoramentoAlunosEADControle.listaSelectItemDisciplinas}" />
+							<a4j:ajax event="change" render="form:panelGridForm" listener="#{MonitoramentoAlunosEADControle.montarListaSelectItemTemasAssuntosDisciplina}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_TemaAssunto_assunto}" />
+					<h:selectOneMenu id="selectItemTemaAssunto" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.temaAssuntoVO.codigo}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.listaSelectItemTemasAssuntosDisciplina}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6 pn">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_HistoricoAlunoRel_matriculaAluno}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:inputText id="alunoMatricula" size="20" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.matriculaVO.matricula}">
+							<a4j:ajax event="change" listener="#{MonitoramentoAlunosEADControle.consultarAlunoPorMatricula}" render="form" execute="@this" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-8">
+						<h:inputText id="alunoNome" size="40" styleClass="form-control camposSomenteLeitura" readonly="true" value="#{MonitoramentoAlunosEADControle.matriculaVO.aluno.nome}" />
+						<span class="append-icon right"> <otm:commandIcon id="consultaDadosAluno" tooltip="Localizar Aluno" render="formAluno" oncomplete="#{rich:component('panelAluno')}.show();" action="#{HistoricoAlunoRelControle.limparMensagem}" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparDadosAluno" tooltip="Limpas Dados" action="#{MonitoramentoAlunosEADControle.limparDadosAluno}" render="form" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup id="panelPeriodo" rendered="#{MonitoramentoAlunosEADControle.periodicidade.valor eq 'IN'}">
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_periodoMatricula}" rendered="#{MonitoramentoAlunosEADControle.periodicidade.valor eq 'IN'}" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+							<otm:calendar id="dataInicio" enableManualInput="true" value="#{MonitoramentoAlunosEADControle.dataInicio}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<h:outputText styleClass="tituloCampos" value="Periodo Fim" />
+						<h:panelGroup layout="block" styleClass="col-md-12 pn h36">
+							<otm:calendar id="dataFim" enableManualInput="true" value="#{MonitoramentoAlunosEADControle.dataFim}" />
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{MonitoramentoAlunosEADControle.isApresentarAno}">
+					<h:outputText rendered="#{MonitoramentoAlunosEADControle.isApresentarAno}" styleClass="tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_ano}" />
+					<h:inputText rendered="#{MonitoramentoAlunosEADControle.isApresentarAno}" styleClass="form-control camposObrigatorios" value="#{MonitoramentoAlunosEADControle.ano}" maxlength="4" size="4" onkeydown="aceitarSomenteValorNumerico(this)">
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-1" rendered="#{MonitoramentoAlunosEADControle.isApresentarSemestre}">
+					<h:outputText rendered="#{MonitoramentoAlunosEADControle.isApresentarSemestre}" styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AtividadeDiscursiva_semestre}" />
+					<h:selectOneMenu rendered="#{MonitoramentoAlunosEADControle.isApresentarSemestre}" styleClass="form-control camposObrigatorios" value="#{MonitoramentoAlunosEADControle.semestre}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.campoBoxSemestreTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{MonitoramentoAlunosEADControle.turmaVO.codigo != 0}">
+					<h:outputText styleClass="field control-label tituloCampos" value="Nível" rendered="#{MonitoramentoAlunosEADControle.turmaVO.codigo != 0}" />
+					<h:selectOneMenu styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.itemParametrosMonitoramentoAvaliacaoOnlineVO.codigo}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.listaSelectItemNivel}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4 pn" id="panelPercentual">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="Percentual Acesso Conteúdo" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="percentualInicio" size="10" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.percentualInicio}" onkeydown="aceitarSomenteValorDecimal(this);">
+							<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+							<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="2" />
+						</h:inputText>
+						<span class="append-icon right"> <h:outputText styleClass="tituloCampos" value="%" />
+						</span>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-1 text-center">
+						<h:outputText styleClass="tituloCampos" value="Ate" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-5">
+						<h:inputText id="percentualFim" size="10" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.percentualFim}" onkeydown="aceitarSomenteValorDecimal(this);">
+							<f:converter converterId="FormatadorNumericoPermitindoValoresNulos" />
+							<f:attribute name="quantidadeCasasDecimaisPermitirAposVirgula" value="2" />
+						</h:inputText>
+						<span class="append-icon right"> <h:outputText styleClass="tituloCampos" value="%" />
+						</span>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<otm2:panel name="panel_alunoAvaliacao" styleClassHeader="mn p5 bg-gray rounded-top" stylePanel="margin-top: 5px" styleClassBody="mn p5" styleClassFooter="dn" opened="#{!MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}" renderedControl="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}">
+						<ui:define name="header">
+							<h:outputText styleClass="tituloCampos font-weight-bold" value="Alunos / #{msg_aplic.prt_monitoramentoEad_situacaoAvaliacaoOnline}" />
+						</ui:define>
+						<ui:define name="body">
+							<h:panelGroup layout="block" styleClass="col-md-12 pn bg-white">
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom-panel">
+									<h:outputText styleClass="tituloCampos" value="Alunos" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="Estudando" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="estudando" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.estudando}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="field control-label tituloCampos" value="Concluiram" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="concluiram" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.concluiram}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 pn bg-white mt10">
+								<h:panelGroup layout="block" styleClass="col-md-12">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAvaliacaoOnline}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAvaliacaoOnlineAprovado}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="aprovado" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoAvaliacaoOnlineAprovado}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAvaliacaoOnlineReprovado}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="reprovado" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoAvaliacaoOnlineReprovado}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAvaliacaoOnlineAguardandoExecucao}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="aguardandoExecucao" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoAvaliacaoOnlineAguardandoExecucao}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-5">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAvaliacaoOnlinePeriodoRealizacaoEncerrado}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="periodoRealizacaoEncerrado" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoAvaliacaoOnlinePeriodoRealizacaoEncerrado}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAvalicaoOnlineAvaliacaoOnlineNaoGerada}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="avaliacaoOnlineNaoGerada" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoAvaliacaoOnlineAvaliacaoOnlineNaoGerada}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-8">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_nomeAvaliacaoOnlineREA}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<h:inputText readonly="true" id="nomeAvaliacaoOnlineRea" size="60" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.avaliacaoOnlineVO.nome}" />
+										<span class="append-icon right"> <otm:commandIcon id="consultarAvaliacaoOnlineRea" tooltip="#{msg_botoes.btn_consultar}" render="formAvaliacaoOnlineRea" oncomplete="#{rich:component('panelAvaliacaoOnlineRea')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparAvaliacaoOnlineRea" render="form" action="#{MonitoramentoAlunosEADControle.limparAvaliacaoOnlineRea}" tooltip="#{msg_botoes.btn_btnLimpar}" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+										</span>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+						</ui:define>
+					</otm2:panel>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<otm2:panel name="panel_atividadeDuvida" styleClassHeader="mn p5 bg-gray rounded-top" stylePanel="margin-top: 5px" styleClassBody="mn p5" styleClassFooter="dn" opened="#{!MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}" renderedControl="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}">
+						<ui:define name="header">
+							<h:outputText styleClass="tituloCampos font-weight-bold" value="#{msg_aplic.prt_monitoramentoEad_situacaoAtividadeDiscursiva} / #{msg_aplic.prt_monitoramentoEad_situacaoDuvidaTutor}" />
+						</ui:define>
+						<ui:define name="body">
+							<h:panelGroup layout="block" styleClass="col-md-12 pn bg-white">
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom-panel">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAtividadeDiscursiva}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAtividadeDiscursicaAguardandoAvaliacaoProfessor}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="situacaoAtividadeDiscursivaAguardandoAvaliacaoProfessor" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoAtividadeDiscursivaAguardandoAvaliacaoProfessor}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAtividadeDiscursivaAguardandoRespostaAluno}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="situacaoAtividadeDiscursivaAguardandoRespostaAluno" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoAtividadeDiscursivaAguardandoRespostaAluno}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-4">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoAtividadeDiscursivaAvaliada}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="situacaoAtividadeDiscursivaAvaliada" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoAtividadeDiscursivaAvaliada}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 pn bg-white mt10">
+								<h:panelGroup layout="block" styleClass="col-md-12 border-bottom-panel">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoDuvidaTutor}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoDuvidaTutorAguardandoRespostaProfessor}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="situacaoDuvidaTutorAguardandoRespostaProfessor" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoDuvidaTutorAguardandoRespostaProfessor}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_situacaoDuvidaTutorAguardandoRespostaAluno}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox id="situacaoDuvidaTutorAguardadandoRespostaAluno" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.situacaoDuvidaTutorAguardandoRespostaAluno}">
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_nomeAtividadeDiscursiva}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:inputText readonly="true" id="nomeAtividadeDiscursiva" size="60" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.atividadeDiscursivaVO.enunciado}" />
+									<span class="append-icon right"> <otm:commandIcon id="consultarAtividadeDiscursiva" tooltip="#{msg_botoes.btn_consultar}" render="formAtividadeDiscursiva" oncomplete="#{rich:component('panelAtividadeDiscursiva')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparAtividadeDiscursiva" render="form" action="#{MonitoramentoAlunosEADControle.limparAtividadeDiscursiva}" tooltip="#{msg_botoes.btn_btnLimpar}" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+									</span>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_monitoramentoEad_nomeTutor}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 pn">
+									<h:inputText readonly="true" id="nomeTutor" size="60" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.tutor.pessoa.nome}" />
+									<span class="append-icon right"> <otm:commandIcon id="consultarTutor" tooltip="#{msg_botoes.btn_consultar}" render="formTutor" oncomplete="#{rich:component('panelTutor')}.show();" icon="#{msg_botoes.btn_icon_lupa_embutido}" /> <otm:commandIcon id="limparTutor" render="form" action="#{MonitoramentoAlunosEADControle.limparTutor}" tooltip="#{msg_botoes.btn_btnLimpar}" icon="#{msg_botoes.btn_icon_limpar_embutido}" />
+									</span>
+								</h:panelGroup>
+							</h:panelGroup>
+						</ui:define>
+					</otm2:panel>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<otm2:panel name="panel_situacaoAcademica" styleClassHeader="mn p5 bg-gray rounded-top" stylePanel="margin-top: 5px" styleClassBody="mn p5" styleClassFooter="dn" opened="#{!MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}" renderedControl="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}">
+						<ui:define name="header">
+							<h:panelGroup id="panelMarcarDesmarcarSituacaoAcademica">
+								<h:outputText styleClass="tituloCampos font-weight-bold mr5" value="#{msg_aplic.prt_FiltroRelatorioAcademico_titulo} - #{MonitoramentoAlunosEADControle.isApresentarTextoCheckBoxMarcarDesmarcarTodosFormacaoAcademica}" />
+								<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.marcarTodasSituacoesAcademicas}">
+									<a4j:ajax event="click" execute="@this" listener="#{MonitoramentoAlunosEADControle.realizarSelecaoCheckboxMarcarDesmarcarTodosSituacaoAcademica}" render="panelMarcarDesmarcarSituacaoAcademica, panelSituacaoAcademica" />
+								</otm:selectBooleanCheckbox>
+							</h:panelGroup>
+						</ui:define>
+						<ui:define name="body">
+							<h:panelGroup id="panelSituacaoAcademica">
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_ativo}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.ativo}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_preMatricula}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.preMatricula}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_preMatriculaCancelada}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.preMatriculaCancelada}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_trancado}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.trancado}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_cancelado}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.cancelado}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_concluido}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.concluido}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_transferenciaInterna}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.transferenciaInterna}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_transferenciaSaida}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.transferenciaExterna}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_formado}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.formado}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-3">
+									<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_FiltroRelatorioAcademico_abandonoCurso}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 pn">
+										<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.filtroRelatorioAcademicoVO.abandonado}">
+											<a4j:ajax event="click" execute="@this" />
+										</otm:selectBooleanCheckbox>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+						</ui:define>
+					</otm2:panel>
+				</h:panelGroup>
+
+				<h:panelGroup layout="block" styleClass="col-md-12 m5">
+					<h:panelGroup layout="block" styleClass="col-md-4" rendered="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}" />
+					<h:panelGroup layout="block" styleClass="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador ? 'col-md-4' : 'col-md-12'} text-center">
+						<a4j:commandLink id="consultar" render="form, tabela, alunosVOs" value="#{msg_botoes.btn_consultar}" action="#{MonitoramentoAlunosEADControle.consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" accesskey="2">
+							<span class="fa fa-search pull-left" style="margin-right: 0.8em; position: relative; top: 3px; font-size: 14px;"></span>
+							<f:setPropertyActionListener target="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+							<f:setPropertyActionListener target="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.page}" value="1" />
+						</a4j:commandLink>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4 float-right" rendered="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}">
+						<h:panelGroup layout="block" styleClass="col-md-5"></h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-5"></h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-2 border rounded p5 text-center">
+							<a4j:commandLink render="form" action="#{MonitoramentoAlunosEADControle.mudarLayoutConsulta}">
+								<h:panelGroup style="color: black;" styleClass="#{MonitoramentoAlunosEADControle.versaoAntiga ? 'fas fa-check-square fs16 mr5 ': 'fas fa-table fs16 mr5'}"></h:panelGroup>
+							</a4j:commandLink>
+							<a4j:commandLink render="form" action="#{MonitoramentoAlunosEADControle.mudarLayoutConsulta2}">
+								<h:panelGroup style="color: black;" styleClass="#{MonitoramentoAlunosEADControle.versaoNova ? 'fas fa-check-square fs16 ': 'fas fa-th-list fs16'}"></h:panelGroup>
+							</a4j:commandLink>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+
+
+				<h:panelGroup layout="block" styleClass="barraFlutuanteInferior">
+					<otm:commandButton rendered="#{LoginControle.permissaoAcessoMenuVO.comunicacaoInterna}" id="enviarEmail" render="formComunicadoInterno" oncomplete="#{rich:component('panelComunicadoInterno')}.show();" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" styleClass="btn btn-primary" action="#{MonitoramentoAlunosEADControle.inicializarComunicacao}" image="#{resource['./imagens/botaoEnviarEmail.png']}" value="Enviar E-mail" accesskey="3" />
+				</h:panelGroup>
+				<h:panelGroup id="listaConsulta">
+					<h:panelGroup styleClass="row mn row-overflow" id="tabela">
+						<rich:dataTable id="alunosVOs" style="margin-top:10px" rendered="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador and MonitoramentoAlunosEADControle.versaoAntiga}" headerClass="consulta" rowKeyVar="row" value="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado}" width="100%" rows="5" var="alunosItens">
+							<rich:column rendered="#{LoginControle.permissaoAcessoMenuVO.comunicacaoInterna}" style="text-align:center;vertical-align:middle">
+								<f:facet name="header">
+									<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.selecionarAtividade}">
+										<a4j:ajax event="click" listener="#{MonitoramentoAlunosEADControle.selecionarTodasAtividades}" render="alunosVOs" />
+									</otm:selectBooleanCheckbox>
+								</f:facet>
+								<otm:selectBooleanCheckbox value="#{alunosItens.selecionarAtividade}">
+									<a4j:ajax event="click" listener="#{MonitoramentoAlunosEADControle.selecionarAtividade}" render="alunosVOs" />
+								</otm:selectBooleanCheckbox>
+							</rich:column>
+							<rich:column style="text-align:center;vertical-align:middle">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalPresencialResposta_matricula}" />
+								</f:facet>
+								<h:outputText style="text-align:left" value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.matricula}" />
+							</rich:column>
+							<rich:column style="text-align:center;vertical-align:middle">
+								<f:facet name="header">
+									<h:outputText value="Aluno" />
+								</f:facet>
+								<h:outputText value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.matriculaObjetoVO.aluno.nome}" />
+							</rich:column>
+							<rich:column style="width: 380px !important; height: 200px !important;">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_MonitoramentoAlunosEAD_evolucaoConteudoOnline}" />
+								</f:facet>
+								<h:panelGroup>
+									<h:panelGroup style="float:left;">
+										<h:outputText rendered="#{alunosItens.codigo ne 0}" value="#{msg_aplic.prt_MonitoramentoAlunosEAD_limiteTermino} " />
+										<h:outputText rendered="#{alunosItens.codigo ne 0}" value="#{alunosItens.dataFimAcessoConteudoEstudo}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+										</h:outputText>
+										<a4j:commandButton rendered="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.conteudo.codigo ne 0}" id="graficoLinha" style="float:right" alt="#{msg_aplic.prt_MonitoramentoAlunosEAD_exibirGraficoLinha}" title="#{msg_aplic.prt_MonitoramentoAlunosEAD_exibirGraficoLinha}" render="formPanelGraficoLine" oncomplete="#{rich:component('panelGraficoMonitoramentoAlunos')}.show();" action="#{MonitoramentoAlunosEADControle.montarGraficoLinhaEvolucaoAluno}" image="#{resource['./imagens/ead/chartLine.png']}" />
+										<h:outputText escape="false" value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.graficoDesempenhoAluno}" />
+									</h:panelGroup>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="text-align:center;vertical-align:middle;position:relative;">
+								<f:facet name="header">
+									<h:outputText value="#{msg_aplic.prt_BibliotecaEmprestimo_periodo}" />
+								</f:facet>
+								<h:panelGroup>
+									<h:panelGroup rendered="#{alunosItens.codigo ne 0}" columns="1" width="100%" columnClasses="colunaCentralizada">
+										<h:outputText style="font-size: 12px;" value="#{alunosItens.dataInicio}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+										</h:outputText>
+										<h:outputText style="font-size: 12px;" value="#{alunosItens.dataFim}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+										</h:outputText>
+									</h:panelGroup>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="min-width: 288px;">
+								<f:facet name="header">
+									<h:outputText value="Nível Disciplinas Na Avaliação On-line" />
+								</f:facet>
+								<h:panelGroup rendered="#{alunosItens.codigo ne 0}">
+									<h:outputText id="nivel" value="#{alunosItens.graficoAproveitamentoAvaliacaoVO.descricaoParametro}" style="#{alunosItens.graficoAproveitamentoAvaliacaoVO.cssNivelAproveitamento}" />
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-12 mt5 text-center">
+									<otm:commandIcon id="monitorConhecimento" rendered="#{alunosItens.codigo ne 0}" alt="Monitor de Conhecimento" render="formAvaliacoesAluno" oncomplete="#{rich:component('panelAvaliacoesAluno')}.show();" action="#{MonitoramentoAlunosEADControle.consultarCalendarioAtividadesMatriculaPeriodoTurmaDisciplina}" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" />
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="text-align:center;vertical-align:middle">
+								<f:facet name="header">
+									<h:outputText value="Avaliação" />
+								</f:facet>
+								<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeAvaliacaoOnline} avaliação(ões) liberada(s)" />
+								<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeAvaliacaoRealizada}" />
+								<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeAvaliacaoAguardandoRealizacao}" />
+								<h:panelGroup layout="block" styleClass="col-md-12 mt5 text-center">
+									<otm:commandIcon id="consultarAvaliacoesOnlines" title="Exibir Avaliações Aluno" render="formAvaliacoesAluno" oncomplete="#{rich:component('panelAvaliacoesAluno')}.show();" action="#{MonitoramentoAlunosEADControle.consultarCalendarioAtividadesMatriculaPeriodoTurmaDisciplina}" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" />
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="min-width: 170px;">
+								<f:facet name="header">
+									<h:outputText value="Atividade Discursiva" />
+								</f:facet>
+								<h:panelGroup columns="1" width="100%" columnClasses="colunaCentralizada">
+									<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeAtividadeDiscursivasAvaliadas}" />
+									<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeAtividadeDiscursivasAguardando}" />
+									<h:panelGroup layout="block" styleClass="col-md-12 mt5 text-center">
+										<otm:commandIcon id="consultarAtividadeDiscursiva" title="Exibir Atividade Discursiva" render="formAtividadesAluno" oncomplete="#{rich:component('panelAtividadesAluno')}.show();" action="#{MonitoramentoAlunosEADControle.consultarAtividadesDiscursivasAluno}" icon="#{msg_botoes.btn_icon_lupa} iconePequeno" />
+									</h:panelGroup>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="min-width: 137px;">
+								<f:facet name="header">
+									<h:outputText value="Dúvida ao Tutor" />
+								</f:facet>
+								<h:panelGroup columns="1" width="100%" columnClasses="colunaCentralizada">
+									<h:panelGroup>
+										<a4j:commandLink id="duvidasProfessor" disabled="true" action="#{MonitoramentoAlunosEADControle.consultarDuvidasTutor}">
+											<span class="#{msg_botoes.btn_icon_usuario_embutido} fs13 mr5" />
+										</a4j:commandLink>
+										<rich:tooltip followMouse="true" style="width:180px; height:30px; " target="duvidasProfessor" showDelay="500">
+											<h:panelGroup columns="1" columnClasses="colunaEsquerda, tituloCamposReduzidos">
+												<h:panelGroup>
+													<otm:spacer width="1px" />
+													<h:outputText styleClass="tituloCamposReduzidos" value="#{alunosItens.qtdeDuvidasProfessor} Dúvidas Professor" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:tooltip>
+										<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeDuvidasProfessor}" />
+									</h:panelGroup>
+									<h:panelGroup>
+										<a4j:commandLink id="duvidasAguardandoRespostaProfessor" disabled="true" action="#{MonitoramentoAlunosEADControle.consultarDuvidasTutor}">
+											<span class="#{msg_botoes.btn_icon_professor_embutido} fs13 mr5" />
+										</a4j:commandLink>
+										<rich:tooltip followMouse="true" style="width:240px; height:30px; " target="duvidasAguardandoRespostaProfessor" showDelay="500">
+											<h:panelGroup columns="1" columnClasses="colunaEsquerda, tituloCamposReduzidos">
+												<h:panelGroup>
+													<otm:spacer width="1px" />
+													<h:outputText styleClass="tituloCamposReduzidos" value="#{alunosItens.qtdeDuvidasAguardandoRespostaProfessor} Dúvida(s) Aguardando Resposta Professor" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:tooltip>
+										<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeDuvidasAguardandoRespostaProfessor}" />
+									</h:panelGroup>
+									<h:panelGroup>
+										<a4j:commandLink id="duvidasAguardandoRespostaAluno" disabled="true" action="#{MonitoramentoAlunosEADControle.consultarDuvidasTutor}">
+											<span class="#{msg_botoes.btn_icon_aluno_embutido} fs13 mr5" />
+										</a4j:commandLink>
+										<rich:tooltip followMouse="true" style="width:220px; height:30px; " target="duvidasAguardandoRespostaAluno" showDelay="500">
+											<h:panelGroup columns="1" columnClasses="colunaEsquerda, tituloCamposReduzidos">
+												<h:panelGroup>
+													<otm:spacer width="1px" />
+													<h:outputText styleClass="tituloCamposReduzidos" value="#{alunosItens.qtdeDuvidasAguardandoRespostaAluno} Dúvida(s) Aguardando Resposta Aluno" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</rich:tooltip>
+										<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeDuvidasAguardandoRespostaAluno}" />
+									</h:panelGroup>
+								</h:panelGroup>
+							</rich:column>
+							<rich:column style="text-align:center;vertical-align:middle">
+								<f:facet name="header">
+									<h:outputText value="Tutor" />
+								</f:facet>
+								<h:outputText value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.professor.nome}" />
+							</rich:column>
+							<rich:column style="min-width: 124px;">
+								<f:facet name="header">
+									<h:outputText value="Cód. Conteúdo" />
+								</f:facet>
+								<h:outputText value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.conteudo.codigo}" />
+							</rich:column>
+							<rich:column style="text-align:center;vertical-align:middle">
+								<f:facet name="header">
+									<h:outputText value="Conteúdo" />
+								</f:facet>
+								<h:outputText value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.conteudo.descricao}" />
+							</rich:column>
+							<f:facet name="footer">
+								<h:panelGroup layout="block" styleClass="row">
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<span class="#{msg_botoes.btn_icon_usuario_embutido} fs20 mr5 text-dark" />
+										<h:outputText styleClass="col-md-12 tituloCampos" value="Dúvidas Professor" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<span class="#{msg_botoes.btn_icon_professor_embutido} fs20 mr5 ml10 text-dark" />
+										<h:outputText styleClass="col-md-12 tituloCampos" value="Dúvidas Aguardando Resposta Professor" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<span class="#{msg_botoes.btn_icon_aluno_embutido} fs20 mr5 ml10 text-dark" />
+										<h:outputText styleClass="col-md-12 tituloCampos" value="Dúvidas Aguardando Resposta Aluno" />
+									</h:panelGroup>
+								</h:panelGroup>
+								<div style="text-align: center !important">
+									<rich:dataScroller align="center" for="alunosVOs" render="alunosVOs, panelGridMensagens" id="scResultadoConsulta" page="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.page}" scrollListener="#{MonitoramentoAlunosEADControle.paginarConsulta}" rendered="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+								</div>
+							</f:facet>
+						</rich:dataTable>
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" styleClass="col-md-12 border rounded bg-gray-100 p5" rendered="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador and MonitoramentoAlunosEADControle.versaoNova}">
+						<otm:selectBooleanCheckbox value="#{MonitoramentoAlunosEADControle.selecionarAtividade}">
+							<a4j:ajax event="click" listener="#{MonitoramentoAlunosEADControle.selecionarTodasAtividades}" render="form:listaConsulta" />
+						</otm:selectBooleanCheckbox>
+					</h:panelGroup>
+					<a4j:repeat id="alunosVOsApre" rendered="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador and MonitoramentoAlunosEADControle.versaoNova}" rowKeyVar="row" value="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado}" rows="5" var="alunosItens">
+						<h:panelGroup layout="block" styleClass="row mr-2 mt-2 mb-2" style="margin-left: 1px;">
+							<h:panelGroup layout="block" styleClass="col-md-12 pn">
+								<h:panelGroup layout="block" styleClass="row mn rounded-top bg-gray-300 pb5 #{!alunosItens.minimizarLista ? 'border-bottom-list rounded-bottom' : ''}">
+									<h:panelGroup layout="block" styleClass="col-md-11 pt-2" style="display: flex">
+										<h:panelGroup rendered="#{LoginControle.permissaoAcessoMenuVO.comunicacaoInterna}">
+											<div style="width: 6.66%">
+												<otm:selectBooleanCheckbox value="#{alunosItens.selecionarAtividade}">
+													<a4j:ajax event="click" listener="#{MonitoramentoAlunosEADControle.selecionarAtividade}" render="form:listaConsulta" />
+												</otm:selectBooleanCheckbox>
+											</div>
+										</h:panelGroup>
+										<div style="width: 13.66%">
+											<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="#{msg_aplic.prt_AvaliacaoInstitucionalPresencialResposta_matricula}" />
+											<h:outputText value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.matricula}" />
+										</div>
+										<div style="width: 16.66%">
+											<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="Aluno" />
+											<h:outputText value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.matriculaObjetoVO.aluno.nome}" />
+										</div>
+										<div style="width: 22.66%">
+											<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="#{msg_aplic.prt_BibliotecaEmprestimo_periodo}" />
+											<h:outputText value="#{alunosItens.dataInicio}" rendered="#{alunosItens.codigo ne 0}">
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+											</h:outputText>
+											<h:outputText value=" Até " />
+											<h:outputText value="#{alunosItens.dataFim}" rendered="#{alunosItens.codigo ne 0}">
+												<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+											</h:outputText>
+										</div>
+										<div style="width: 24.66%">
+											<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="Nível Disciplinas Na Avaliação On-line" />
+											<h:outputText value="#{alunosItens.graficoAproveitamentoAvaliacaoVO.descricaoParametro}" style="#{alunosItens.graficoAproveitamentoAvaliacaoVO.cssNivelAproveitamento}; border-radius: 3px !important;" rendered="#{alunosItens.codigo ne 0}" />
+										</div>
+										<div style="width: 16.66%">
+											<h:outputText styleClass="btn-block tituloCampos font-weight-bold" value="Tutor" />
+											<h:outputText value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.professor.nome}" />
+										</div>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-1 text-center pt-2">
+										<otm:commandIcon id="monitorConhecimento" rendered="#{alunosItens.codigo ne 0}" tooltip="Monitor de Conhecimento" render="formAvaliacoesAluno" oncomplete="#{rich:component('panelAvaliacoesAluno')}.show();" action="#{MonitoramentoAlunosEADControle.consultarCalendarioAtividadesMatriculaPeriodoTurmaDisciplina}" icon="#{msg_botoes.btn_icon_help2_embutido}" styleIcon="font-size: 14px" styleClass="mr5" />
+										<a4j:commandLink rendered="#{alunosItens.minimizarLista}" render="form:listaConsulta">
+											<f:setPropertyActionListener value="false" target="#{alunosItens.minimizarLista}"></f:setPropertyActionListener>
+											<i class="fas fa-chevron-down text-blue-dark font-weight-bold" style="font-size: 18px"></i>
+										</a4j:commandLink>
+										<a4j:commandLink rendered="#{!alunosItens.minimizarLista}" render="form:listaConsulta">
+											<f:setPropertyActionListener value="true" target="#{alunosItens.minimizarLista}"></f:setPropertyActionListener>
+											<i class="fas fa-chevron-up text-blue-dark font-weight-bold" style="font-size: 18px"></i>
+										</a4j:commandLink>
+									</h:panelGroup>
+								</h:panelGroup>
+
+								<h:panelGroup layout="block" rendered="#{alunosItens.minimizarLista}" styleClass="row mn border-left border-right border-bottom rounded-bottom mr-2 pb-2" style="position: relative; top: -6px;">
+
+									<h:panelGroup layout="block" styleClass="col-md-12">
+										<otm2:panel name="panel_grafico_#{row+1}" styleClassHeader="mn p5 bg-gray rounded-top" stylePanel="margin-top: 5px" styleClassBody="mn p5" styleClassFooter="dn" renderedControl="false">
+											<ui:define name="header">
+												<h:panelGroup layout="block" styleClass="col-md-11">
+													<h:outputText styleClass="tituloCampos text-gray-500" value="#{msg_aplic.prt_MonitoramentoAlunosEAD_evolucaoConteudoOnline} " />
+													<h:outputText styleClass="tituloCampos text-gray-500" rendered="#{alunosItens.codigo ne 0}" value="( #{msg_aplic.prt_MonitoramentoAlunosEAD_limiteTermino} " />
+													<h:outputText styleClass="tituloCampos text-gray-500" rendered="#{alunosItens.codigo ne 0}" value=" #{alunosItens.dataFimAcessoConteudoEstudo} )">
+														<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+													</h:outputText>
+													<h:outputText value=" - #{alunosItens.matriculaPeriodoTurmaDisciplinaVO.conteudo.codigo} - #{alunosItens.matriculaPeriodoTurmaDisciplinaVO.conteudo.descricao}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-1">
+													<otm:commandIcon rendered="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.conteudo.codigo ne 0}" id="graficoLinha" alt="#{msg_aplic.prt_MonitoramentoAlunosEAD_exibirGraficoLinha}" title="#{msg_aplic.prt_MonitoramentoAlunosEAD_exibirGraficoLinha}" render="formPanelGraficoLine" oncomplete="#{rich:component('panelGraficoMonitoramentoAlunos')}.show();" action="#{MonitoramentoAlunosEADControle.montarGraficoLinhaEvolucaoAluno}" icon="fas fa-chart-line" styleClass="float-right" styleIcon="font-size: 14px" />
+												</h:panelGroup>
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup layout="block" styleClass="col-md-12">
+													<h:outputText escape="false" value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.graficoDesempenhoAluno}" />
+												</h:panelGroup>
+
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<otm2:panel name="panel_avaliacao_#{row+1}" styleClassHeader="mn p5 bg-gray rounded-top" stylePanel="margin-top: 5px" styleClassBody="mn p5" styleClassFooter="dn" renderedControl="false">
+											<ui:define name="header">
+												<h:panelGroup layout="block" styleClass="col-md-11">
+													<h:outputText styleClass="tituloCampos text-gray-500" value="Avaliação" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-1">
+													<otm:commandIcon id="consultarAvaliacoesOnlines" tooltip="Exibir Avaliações Aluno" render="formAvaliacoesAluno" oncomplete="#{rich:component('panelAvaliacoesAluno')}.show();" action="#{MonitoramentoAlunosEADControle.consultarCalendarioAtividadesMatriculaPeriodoTurmaDisciplina}" icon="#{msg_botoes.btn_icon_verificar_embutido}" styleClass="float-right" styleIcon="font-size: 14px" />
+												</h:panelGroup>
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup layout="block" styleClass="col-md-12 pn border rounded bg-gray-100 text-center mt5" style="padding-top: 10px !important; padding-bottom: 10px !important;">
+													<h:outputText value="#{alunosItens.qtdeAvaliacaoOnline} Avaliação(ões) Liberada(s)" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 pn border rounded bg-gray-100 text-center mt5" style="padding-top: 10px !important; padding-bottom: 10px !important;">
+													<h:outputText value="#{alunosItens.qtdeAvaliacaoRealizada}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 pn border rounded bg-gray-100 text-center mt5" style="padding-top: 10px !important; padding-bottom: 10px !important;" rendered="#{!empty alunosItens.qtdeAvaliacaoAguardandoRealizacao}">
+													<h:outputText value="#{alunosItens.qtdeAvaliacaoAguardandoRealizacao}" />
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<otm2:panel name="panel_discursiva_#{row+1}" styleClassHeader="mn p5 bg-gray rounded-top" stylePanel="margin-top: 5px" styleClassBody="mn p5" styleClassFooter="dn" renderedControl="false">
+											<ui:define name="header">
+												<h:panelGroup layout="block" styleClass="col-md-11">
+													<h:outputText styleClass="tituloCampos text-gray-500" value="Atividade Discursiva" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-1">
+													<otm:commandIcon id="consultarAtividadeDiscursiva" tooltip="Exibir Atividade Discursiva" render="formAtividadesAluno" oncomplete="#{rich:component('panelAtividadesAluno')}.show();" action="#{MonitoramentoAlunosEADControle.consultarAtividadesDiscursivasAluno}" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleIcon="font-size: 14px" styleClass="float-right" />
+												</h:panelGroup>
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup layout="block" styleClass="col-md-12 pn border rounded bg-gray-100 text-center mt5" style="padding-top: 10px !important; padding-bottom: 10px !important;">
+													<h:outputText value="#{alunosItens.qtdeAtividadeDiscursivasAvaliadas}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-12 pn border rounded bg-gray-100 text-center mt5" style="padding-top: 10px !important; padding-bottom: 10px !important;">
+													<h:outputText value="#{alunosItens.qtdeAtividadeDiscursivasAguardando}" />
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+									<!-- 									<h:panelGroup layout="block" styleClass="col-md-3"> -->
+									<!-- 										<otm2:panel name="panel_conteudo_#{row+1}" styleClassHeader="mn p5 bg-gray rounded-top" stylePanel="margin-top: 5px" styleClassBody="mn p5" styleClassFooter="dn" renderedControl="false"> -->
+									<!-- 											<ui:define name="header"> -->
+									<!-- 												<h:outputText styleClass="tituloCampos text-gray-500" value="Conteúdo" /> -->
+									<!-- 											</ui:define> -->
+									<!-- 											<ui:define name="body"> -->
+									<!-- 												<h:outputText value="#{alunosItens.matriculaPeriodoTurmaDisciplinaVO.conteudo.codigo} - #{alunosItens.matriculaPeriodoTurmaDisciplinaVO.conteudo.descricao}" /> -->
+									<!-- 											</ui:define> -->
+									<!-- 										</otm2:panel> -->
+									<!-- 									</h:panelGroup> -->
+									<h:panelGroup layout="block" styleClass="col-md-4">
+										<otm2:panel name="panel_duvidaTutor_#{row+1}" styleClassHeader="mn p5 bg-gray rounded-top" stylePanel="margin-top: 5px" styleClassBody="mn p5" styleClassFooter="dn" renderedControl="false">
+											<ui:define name="header">
+												<h:outputText styleClass="tituloCampos text-gray-500" value="Dúvida ao Tutor" />
+											</ui:define>
+											<ui:define name="body">
+												<h:panelGroup layout="block" styleClass="col-md-4 pn border rounded bg-gray-100 text-center mt5" style="padding-top: 10px !important; padding-bottom: 10px !important; width: 31.33%; margin-right: 5px;">
+													<a4j:commandLink id="duvidasProfessor" disabled="true" action="#{MonitoramentoAlunosEADControle.consultarDuvidasTutor}">
+														<span class="#{msg_botoes.btn_icon_usuario_embutido} fs13 mr5" />
+													</a4j:commandLink>
+													<rich:tooltip followMouse="true" style="width:180px; height:30px; " target="duvidasProfessor" showDelay="500">
+														<h:panelGroup columns="1" columnClasses="colunaEsquerda, tituloCamposReduzidos">
+															<h:panelGroup>
+																<otm:spacer width="1px" />
+																<h:outputText styleClass="tituloCamposReduzidos" value="#{alunosItens.qtdeDuvidasProfessor} Dúvidas Professor" />
+															</h:panelGroup>
+														</h:panelGroup>
+													</rich:tooltip>
+													<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeDuvidasProfessor}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-4 pn border rounded bg-gray-100 text-center mt5" style="padding-top: 10px !important; padding-bottom: 10px !important; width: 31.33%; margin-right: 5px;">
+													<a4j:commandLink id="duvidasAguardandoRespostaProfessor" disabled="true" action="#{MonitoramentoAlunosEADControle.consultarDuvidasTutor}">
+														<span class="#{msg_botoes.btn_icon_professor_embutido} fs13 mr5" />
+													</a4j:commandLink>
+													<rich:tooltip followMouse="true" style="width:240px; height:30px; " target="duvidasAguardandoRespostaProfessor" showDelay="500">
+														<h:panelGroup columns="1" columnClasses="colunaEsquerda, tituloCamposReduzidos">
+															<h:panelGroup>
+																<otm:spacer width="1px" />
+																<h:outputText styleClass="tituloCamposReduzidos" value="#{alunosItens.qtdeDuvidasAguardandoRespostaProfessor} Dúvida(s) Aguardando Resposta Professor" />
+															</h:panelGroup>
+														</h:panelGroup>
+													</rich:tooltip>
+													<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeDuvidasAguardandoRespostaProfessor}" />
+												</h:panelGroup>
+												<h:panelGroup layout="block" styleClass="col-md-4 pn border rounded bg-gray-100 text-center mt5" style="padding-top: 10px !important; padding-bottom: 10px !important; width: 31.33%; margin-right: 5px;">
+													<a4j:commandLink id="duvidasAguardandoRespostaAluno" disabled="true" action="#{MonitoramentoAlunosEADControle.consultarDuvidasTutor}">
+														<span class="#{msg_botoes.btn_icon_aluno_embutido} fs13 mr5" />
+													</a4j:commandLink>
+													<rich:tooltip followMouse="true" style="width:220px; height:30px; " target="duvidasAguardandoRespostaAluno" showDelay="500">
+														<h:panelGroup columns="1" columnClasses="colunaEsquerda, tituloCamposReduzidos">
+															<h:panelGroup>
+																<otm:spacer width="1px" />
+																<h:outputText styleClass="tituloCamposReduzidos" value="#{alunosItens.qtdeDuvidasAguardandoRespostaAluno} Dúvida(s) Aguardando Resposta Aluno" />
+															</h:panelGroup>
+														</h:panelGroup>
+													</rich:tooltip>
+													<h:outputText style="font-size: 12px;" value="#{alunosItens.qtdeDuvidasAguardandoRespostaAluno}" />
+												</h:panelGroup>
+											</ui:define>
+										</otm2:panel>
+									</h:panelGroup>
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+					</a4j:repeat>
+					<h:panelGroup layout="block" styleClass="row mn border rounded bg-gray p5 text-center" rendered="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador and MonitoramentoAlunosEADControle.versaoNova}">
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<span class="#{msg_botoes.btn_icon_usuario_embutido} fs20 mr5" />
+							<h:outputText styleClass="col-md-12 tituloCampos" value="Dúvidas Professor" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<span class="#{msg_botoes.btn_icon_professor_embutido} fs20 mr5 ml10" />
+							<h:outputText styleClass="col-md-12 tituloCampos" value="Dúvidas Aguardando Resposta Professor" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-4">
+							<span class="#{msg_botoes.btn_icon_aluno_embutido} fs20 mr5 ml10" />
+							<h:outputText styleClass="col-md-12 tituloCampos" value="Dúvidas Aguardando Resposta Aluno" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<rich:dataScroller align="center" for="alunosVOsApre" render="form:listaConsulta" id="scResultadoConsulta" page="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.page}" scrollListener="#{MonitoramentoAlunosEADControle.paginarConsulta}" rendered="#{MonitoramentoAlunosEADControle.controleConsultaOtimizado.apresentarPaginador}" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</h:panelGroup>
+					</h:panelGroup>
+
+				</h:panelGroup>
+
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="panelGridMensagens">
+					<otm:mensagem bean="#{MonitoramentoAlunosEADControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAluno" shadowOpacity="true" width="750" onshow="document.getElementById('formAluno:valorConsultaAluno').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_HistoricoAlunoRel_consultarAluno}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['imagens/close.png']}" style="cursor:pointer" id="hidelink1">
+						<rich:componentControl target="panelAluno" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAluno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAluno" value="#{MonitoramentoAlunosEADControle.campoConsultaAluno}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.tipoConsultaComboAluno}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaAluno" size="20" onkeypress="modalKeyHandler('panelAluno', 'formAluno:btnConsultar')" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.valorConsultaAluno}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formAluno:mensagemConsultaAluno, formAluno:resultadoConsultaAluno, formAluno:scResultadoAluno" action="#{MonitoramentoAlunosEADControle.consultarAluno}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAluno" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MonitoramentoAlunosEADControle.listaConsultaAluno}" rows="5" var="matriculaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_matricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_nomeAluno}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.aluno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Matricula_curso}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" value="#{matriculaItem.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MonitoramentoAlunosEADControle.selecionarAluno}" render="form" oncomplete="#{rich:component('panelAluno')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="#{msg.msg_selecionar_dados}" />
+					</rich:column>
+				</rich:dataTable>
+				<h:panelGroup styleClass="colunaCentralizada">
+					<rich:dataScroller for="formAluno:resultadoConsultaAluno" maxPages="10" id="scResultadoAluno" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+				</h:panelGroup>
+				<h:panelGroup id="mensagemConsultaAluno" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MonitoramentoAlunosEADControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelDisciplina" shadowOpacity="true" top="0" width="750" onshow="document.getElementById('formDisciplina:valorConsultaDisciplina').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_tituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkfunc6">
+						<rich:componentControl target="panelDisciplina" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formDisciplina">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaDisciplina" value="#{MonitoramentoAlunosEADControle.campoConsultaDisciplina}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.tipoConsultaComboDisciplina}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaDisciplina" size="10" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.valorConsultaDisciplina}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formDisciplina:mensagemConsultaDisciplina, formDisciplina:resultadoConsultaDisciplina, formDisciplina:scResultadoDisciplina" action="#{MonitoramentoAlunosEADControle.consultarDisciplina}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaDisciplina" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MonitoramentoAlunosEADControle.listaConsultaDisciplina}" rows="10" var="disciplinaItem">
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Disciplina_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarDisciplinaAdministrativo}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide();" value="#{disciplinaItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Disciplina_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarDisciplinaAdministrativo}" render="form" oncomplete="#{rich:component('panelDisciplina')}.hide();" value="#{disciplinaItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="1">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MonitoramentoAlunosEADControle.selecionarDisciplinaAdministrativo}" oncomplete="#{rich:component('panelDisciplina')}.hide();" render="form" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" fastControls="hide" boundaryControls="auto" stepControls="auto" for="formDisciplina:resultadoConsultaDisciplina" maxPages="10" id="scResultadoDisciplina" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaDisciplina" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MonitoramentoAlunosEADControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAvaliacaoOnlineRea" shadowOpacity="true" top="0" width="750" onshow="document.getElementById('formAvaliacaoOnlineRea:valorConsultaAvaliacaoOnlineRea').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_monitoramentoEad_AvaliacaoOnlineReaTituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['imagens/close.png']}" style="cursor:pointer" id="hideAvaliacaoOnlineRea">
+						<rich:componentControl target="panelAvaliacaoOnlineRea" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAvaliacaoOnlineRea">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAvaliacaoOnlineRea" value="#{MonitoramentoAlunosEADControle.campoConsultaAvaliacaoOnlineRea}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.tipoConsultaComboAvaliacaoOnlineRea}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaAvaliacaoOnlineRea" size="10" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.valorConsultaAvaliacaoOnlineRea}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formAvaliacaoOnlineRea:mensagemConsultaAvaliacaoOnlineRea, formAvaliacaoOnlineRea:resultadoConsultaAvaliacaoOnlineRea, formAvaliacaoOnlineRea:scResultadoAvaliacaoOnlineReal" action="#{MonitoramentoAlunosEADControle.consultarAvaliacaoOnlineRea}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAvaliacaoOnlineRea" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MonitoramentoAlunosEADControle.listaConsultaAvaliacaoOnlineRea}" rows="10" var="avaliacaoOnlineReaItem">
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_AvaliacaoOnlineReaCodigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAvaliacaoOnlineRea}" render="form" oncomplete="#{rich:component('panelAvaliacaoOnlineRea')}.hide();" value="#{avaliacaoOnlineReaItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_AvaliacaoOnlineReaNome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAvaliacaoOnlineRea}" render="form" oncomplete="#{rich:component('panelAvaliacaoOnlineRea')}.hide();" value="#{avaliacaoOnlineReaItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_AvaliacaoOnlineReaConteudo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAvaliacaoOnlineRea}" render="form" oncomplete="#{rich:component('panelAvaliacaoOnlineRea')}.hide();" value="#{avaliacaoOnlineReaItem.conteudoVO.descricao}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_AvaliacaoOnlineReaDisciplina}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAvaliacaoOnlineRea}" render="form" oncomplete="#{rich:component('panelAvaliacaoOnlineRea')}.hide();" value="#{avaliacaoOnlineReaItem.disciplinaVO.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="1">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MonitoramentoAlunosEADControle.selecionarAvaliacaoOnlineRea}" oncomplete="#{rich:component('panelAvaliacaoOnlineRea')}.hide();" render="form" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" fastControls="hide" boundaryControls="auto" stepControls="auto" for="formAvaliacaoOnlineRea:resultadoConsultaAvaliacaoOnlineRea" maxPages="10" id="scResultadoAvaliacaoOnlineRea" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAvaliacaoOnlineRea" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MonitoramentoAlunosEADControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAtividadeDiscursiva" shadowOpacity="true" top="0" width="750" onshow="document.getElementById('formAtividadeDiscursiva:valorConsultaAtividadeDiscursiva').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_monitoramentoEad_AtividadeDiscursivaTituloForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['imagens/close.png']}" style="cursor:pointer" id="hideAtividadeDiscursiva">
+						<rich:componentControl target="panelAtividadeDiscursiva" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAtividadeDiscursiva">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaAtividadeDiscursiva" value="#{MonitoramentoAlunosEADControle.campoConsultaAtividadeDiscursiva}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.tipoConsultaComboAtividadeDiscursiva}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaAtividadeDiscursiva" size="10" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.valorConsultaAtividadeDiscursiva}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formAtividadeDiscursiva:mensagemConsultaAtividadeDiscursiva, formAtividadeDiscursiva:resultadoConsultaAtividadeDiscursiva, formAtividadeDiscursiva:scResultadoAtividadeDiscursiva" action="#{MonitoramentoAlunosEADControle.consultarAtividadeDiscursiva}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaAtividadeDiscursiva" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MonitoramentoAlunosEADControle.listaConsultaAtividadeDiscursiva}" rows="10" var="atividadeDiscursivaItem">
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_AtividadeDiscursivaCodigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAtividadeDiscursiva}" render="form" oncomplete="#{rich:component('panelAtividadeDiscursiva')}.hide();" value="#{atividadeDiscursivaItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_AtividadeDiscursivaEnunciado}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAtividadeDiscursiva}" render="form" oncomplete="#{rich:component('panelAtividadeDiscursiva')}.hide();" value="#{atividadeDiscursivaItem.enunciado}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_AtividadeDiscursivaDisciplina}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarAtividadeDiscursiva}" render="form" oncomplete="#{rich:component('panelAtividadeDiscursiva')}.hide();" value="#{atividadeDiscursivaItem.disciplinaVO.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="1">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MonitoramentoAlunosEADControle.selecionarAtividadeDiscursiva}" oncomplete="#{rich:component('panelAtividadeDiscursiva')}.hide();" render="form" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" fastControls="hide" boundaryControls="auto" stepControls="auto" for="formAtividadeDiscursiva:resultadoConsultaAtividadeDiscursiva" maxPages="10" id="scResultadoAtividadeDiscursiva" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaAtividadeDiscursiva" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MonitoramentoAlunosEADControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTutor" shadowOpacity="true" top="0" width="750" onshow="document.getElementById('formTutor:valorConsultaTutor').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_monitoramentoEad_TutorForm}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage styleClass="icon-close-modal" value="#{resource['imagens/close.png']}" style="cursor:pointer" id="hideTutor">
+						<rich:componentControl target="panelTutor" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTutor">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTutor" value="#{MonitoramentoAlunosEADControle.campoConsultaTutor}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.tipoConsultaComboTutor}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaTutor" size="10" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.valorConsultaTutor}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTutor:mensagemConsultaTutor, formTutor:resultadoConsultaTutor, formTutor:scResultadoTutor" action="#{MonitoramentoAlunosEADControle.consultarTutor}" styleClass="btn btn-default" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Consultar" alt="#{msg.msg_consultar_dados}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaTutor" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MonitoramentoAlunosEADControle.listaConsultaTutor}" rows="10" var="tutorItem">
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_TutorCodigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarTutor}" render="form" oncomplete="#{rich:component('panelTutor')}.hide();" value="#{tutorItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_TutorNome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarTutor}" render="form" oncomplete="#{rich:component('panelTutor')}.hide();" value="#{tutorItem.pessoa.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="3">
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_monitoramentoEad_TutorMatricula}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarTutor}" render="form" oncomplete="#{rich:component('panelTutor')}.hide();" value="#{tutorItem.matricula}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column colspan="1">
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MonitoramentoAlunosEADControle.selecionarTutor}" styleClass="botoes" oncomplete="#{rich:component('panelTutor')}.hide();" render="form" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" fastControls="hide" boundaryControls="auto" stepControls="auto" for="formTutor:resultadoConsultaTutor" maxPages="10" id="scResultadoTutor" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup id="mensagemConsultaTutor" columns="1" width="100%" styleClass="tabMensagens">
+					<otm:mensagem bean="#{MonitoramentoAlunosEADControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelGraficoMonitoramentoAlunos" shadowOpacity="true" width="1000" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Gráfico Evolução Aluno" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkfunc7">
+						<rich:componentControl target="panelGraficoMonitoramentoAlunos" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPanelGraficoLine">
+				<h:panelGroup rendered="#{MonitoramentoAlunosEADControle.apresentarGrafico}">
+					<div id="container" style="width: 950px; height: 450; margin: 0 auto" />
+					<script type="text/javascript" charset="UTF-8">
+					(function($) {
+						$.ajaxSetup({
+							cache : false
+						});
+						var options = {
+							chart : {
+								type : 'line',
+								renderTo : 'container',
+								zoomType : 'x'
+							},
+							title : {
+								text : 'Evolução Aluno',
+								x : -20
+							},
+							subtitle : {
+								text : ' ',
+								x : -20
+							},
+							rangeSelector : {
+								selected : 1
+							},
+							xAxis : {
+								type : 'datetime',
+								//minRange : 3600000,
+								labels : {
+									formatter : function() {
+										return (Highcharts.dateFormat('%e. %b',
+												this.value) == 'Feb' ? 'Fev'
+												: Highcharts.dateFormat(
+														'%e. %b', this.value) == 'Apr' ? 'Abr'
+														: Highcharts
+																.dateFormat(
+																		'%e. %b',
+																		this.value) == 'May' ? 'Mai'
+																: Highcharts
+																		.dateFormat(
+																				'%e. %b',
+																				this.value) == 'Aug' ? 'Ago'
+																		: Highcharts
+																				.dateFormat(
+																						'%e. %b',
+																						this.value) == 'Sep' ? 'Set'
+																				: Highcharts
+																						.dateFormat(
+																								'%e. %b',
+																								this.value) == 'Oct' ? 'Out'
+																						: Highcharts
+																								.dateFormat(
+																										'%e. %b',
+																										this.value) == 'Dec' ? 'Dez'
+																								: Highcharts
+																										.dateFormat(
+																												'%e. %b',
+																												this.value))
+												+ '/'
+												+ Highcharts.dateFormat('%Y',
+														this.value);
+									},
+									rotation : -75.0,
+									step : 0,
+									style : {
+										fontSize : '10px'
+									},
+									align : 'right'
+								}
+							},
+							yAxis : {
+								max : 100,
+								min : 0,
+								title : {
+									text : ' Pontos'
+								},
+								plotLines : [ {
+									value : 0,
+									width : 1,
+									color : '#808080'
+								} ]
+							},
+							tooltip : {
+								valueSuffix : ' Pts.',
+								formatter : function() {
+									return ''
+											+ (Highcharts.dateFormat('%e. %b',
+													this.value) == 'Feb' ? 'Fev'
+													: Highcharts.dateFormat(
+															'%e. %b', this.x) == 'Apr' ? 'Abr'
+															: Highcharts
+																	.dateFormat(
+																			'%e. %b',
+																			this.x) == 'May' ? 'Mai'
+																	: Highcharts
+																			.dateFormat(
+																					'%e. %b',
+																					this.x) == 'Aug' ? 'Ago'
+																			: Highcharts
+																					.dateFormat(
+																							'%e. %b',
+																							this.x) == 'Sep' ? 'Set'
+																					: Highcharts
+																							.dateFormat(
+																									'%e. %b',
+																									this.x) == 'Oct' ? 'Out'
+																							: Highcharts
+																									.dateFormat(
+																											'%e. %b',
+																											this.x) == 'Dec' ? 'Dez'
+																									: Highcharts
+																											.dateFormat(
+																													'%e. %b',
+																													this.x))
+											+ '/'
+											+ Highcharts.dateFormat('%Y',
+													this.x)
+											+ ' - '
+											+ Highcharts.numberFormat((this.y),
+													0, ',', '.');
+								}
+							},
+							legend : {
+								layout : 'vertical',
+								align : 'right',
+								verticalAlign : 'middle',
+								borderWidth : 0
+							},
+							series : ${MonitoramentoAlunosEADControle.seriesGraficoLinhaEvolucaoAluno}
+						};
+						var chart = new Highcharts.Chart(options);
+					}(jQuery));
+				</script>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelAvaliacoesAluno" domElementAttachment="parent" shadowOpacity="true" width="900" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Avaliações Aluno" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkfunc9">
+						<rich:componentControl target="panelAvaliacoesAluno" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAvaliacoesAluno">
+				<h:panelGroup id="tabForm">
+					<a4j:repeat id="items" rowKeyVar="row" value="#{MonitoramentoAlunosEADControle.calendarioAtividadeMatriculaVOs}" rows="10" var="avaliacaoOnlineItem" style="width:100%; display:block;overflow:auto">
+						<h:panelGroup layout="block" styleClass="row mn border rounded bg-gray p5" rendered="#{avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.isApresentarIniciarAvaliacaoOnline}">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos font-weight-bold btn-block" value="Data Liberação" />
+								<h:outputText styleClass="field control-label tituloCampos" value="#{avaliacaoOnlineItem.dataInicio}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+								</h:outputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos font-weight-bold btn-block" value="Data Limite Realização" />
+								<h:outputText styleClass="field control-label tituloCampos" value="#{avaliacaoOnlineItem.dataFim}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+								</h:outputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="field control-label tituloCampos font-weight-bold btn-block" value="Situação" />
+								<h:outputText styleClass="field control-label tituloCampos" id="situacaoEnum" value="#{avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum_Apresentar}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mn border rounded bg-gray-100" style="margin-top: 10px !important" rendered="#{!avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.isApresentarIniciarAvaliacaoOnline}">
+							<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray p5 border-bottom-panel">
+								<h:panelGroup layout="block" styleClass="col-md-10">
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos font-weight-bold btn-block" value="Liberação:" />
+										<h:outputText styleClass="field control-label tituloCampos" value="#{avaliacaoOnlineItem.dataInicio}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+										</h:outputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos font-weight-bold btn-block" value="Situação:" />
+										<h:outputText styleClass="field control-label tituloCampos" id="situacaoEnumAprovadoReprovado" value="#{avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum_Apresentar}" />
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos font-weight-bold btn-block" value="Limite Realização:" />
+										<h:outputText styleClass="field control-label tituloCampos" value="#{avaliacaoOnlineItem.dataFim}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+										</h:outputText>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="col-md-3">
+										<h:outputText styleClass="field control-label tituloCampos font-weight-bold btn-block" value="Realização:" />
+										<h:outputText styleClass="field control-label tituloCampos" value="#{avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.dataTermino}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+										</h:outputText>
+									</h:panelGroup>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-2">
+									<h:outputText styleClass="field control-label tituloCampos" value="Nota:" style="position:relative;" />
+									<h:outputText id="nota" styleClass="field control-label tituloCampos" value="#{avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.nota}">
+										<f:converter converterId="FormatadorNumerico" />
+									</h:outputText>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<rich:dataTable id="graficoAproveitamento2" width="100%" headerClass="consulta" value="#{avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" rowKeyVar="row" rendered="#{! empty avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" rows="10" var="grafico">
+									<rich:column filterType="custom" filterExpression="#{grafico.geral}" style="text-align: center;">
+										<f:facet name="header">
+											<h:outputText value="Por Discplina" />
+										</f:facet>
+										<h:outputText id="assunto" value="#{grafico.assunto}" />
+									</rich:column>
+									<rich:column style="text-align: center;">
+										<f:facet name="header">
+											<h:outputText value="Nível" />
+										</f:facet>
+										<h:outputText id="descricao" value="#{grafico.descricaoParametro}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="% Acertos" />
+										</f:facet>
+										<h:outputText escape="false" value="#{grafico.graficoAproveitamento}" />
+									</rich:column>
+									<rich:column style="text-align: center;">
+										<f:facet name="header">
+											<h:outputText value="Detalhes" />
+										</f:facet>
+										<otm:commandIcon icon="#{msg_botoes.btn_icon_lupa} iconePequeno" tooltip="#{msg_botoes.btn_consultar}" action="#{MonitoramentoAlunosEADControle.realizarGeracaoMonitoramentoDeConhecimentoAssuntos}" render="formMonitorConhecimento" oncomplete="#{rich:component('panelMonitorConhecimento')}.show();" />
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-6">
+								<rich:dataTable id="graficoAproveitamento" width="100%" headerClass="consulta" value="#{avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" rowKeyVar="row" rendered="#{avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.isApresentarMonitorConhecimentoPorAssunto}" rows="10" var="grafico">
+									<rich:column filterType="custom" filterExpression="#{!grafico.geral}" style="text-align: center;">
+										<f:facet name="header">
+											<h:outputText value="Por Assunto" />
+										</f:facet>
+										<h:outputText id="assunto" value="#{grafico.assunto}" />
+									</rich:column>
+									<rich:column style="text-align: center;">
+										<f:facet name="header">
+											<h:outputText value="Nível" />
+										</f:facet>
+										<h:outputText id="descricao" value="#{grafico.descricaoParametro}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="% Acertos" />
+										</f:facet>
+										<h:outputText escape="false" value="#{grafico.graficoAproveitamento}" />
+									</rich:column>
+									<rich:column style="text-align: center;">
+										<f:facet name="header">
+											<h:outputText value="Detalhes" />
+										</f:facet>
+										<otm:commandIcon icon="#{msg_botoes.btn_icon_lupa} iconePequeno" tooltip="#{msg_botoes.btn_consultar}" action="#{MonitoramentoAlunosEADControle.realizarGeracaoMonitoramentoDeConhecimentoAssuntos}" render="formMonitorConhecimento" oncomplete="#{rich:component('panelMonitorConhecimento')}.show();" />
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 text-center m5">
+								<otm:commandButton disabled="#{avaliacaoOnlineItem.avaliacaoOnlineMatriculaVO.codigo eq 0}" id="visualizarGabarito" render="formGabarito" oncomplete="#{rich:component('panelGabarito')}.show();" action="#{MonitoramentoAlunosEADControle.visualizarGabarito}" accesskey="1" icon="#{msg_botoes.btn_icon_lupa_embutido}" value="Visualizar Gabarito" styleClass="btn btn-primary" title="#{msg.msg_novo_dados}" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</a4j:repeat>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelGabarito" domElementAttachment="parent" shadowOpacity="true" width="1000" height="600" onshow="document.getElementById('formGabarito:panelGridForm').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Gabarito Avaliação" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkGabarito">
+						<rich:componentControl target="panelGabarito" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formGabarito">
+				<h:panelGroup id="panelGridForm">
+					<h:panelGroup id="exercicios">
+						<h:panelGroup id="panelFinalizarAvaliacao">
+							<h:panelGroup id="topoInformacoes">
+								<h:panelGroup layout="block" styleClass="row mn border rounded p5 bg-gray text-center" rendered="#{MonitoramentoAlunosEADControle.mostrarGabarito}">
+									<h:outputText styleClass="tituloGabarito" value="#{msg_aplic.prt_AvaliacaoOnline_oAlunoFoi}" />
+									<otm:spacer width="10px" />
+									<h:outputText styleClass="tituloGabarito #{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum == 'APROVADO' ? 'text-success' : 'text-danger'}" value="#{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum_Apresentar}" />
+									<otm:spacer width="10px" />
+									<h:outputFormat styleClass="tituloGabarito" value="#{msg_aplic.prt_AvaliacaoOnline_resultadoAcerto}">
+										<f:param name="{0}" value=" #{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.quantidadeAcertos} "></f:param>
+										<f:param name="{1}" value=" #{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.percentualAcerto} "></f:param>
+										<f:param name="{2}" value=" #{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.quantidadeErros} "></f:param>
+										<f:param name="{3}" value=" #{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.percentualErro} "></f:param>
+									</h:outputFormat>
+									<h:outputText styleClass="tituloGabarito float-right #{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.situacaoAvaliacaoOnlineMatriculaEnum == 'APROVADO' ? 'text-success' : 'text-danger'}" style="font-style:oblique;font-size:x-large;" value="Nota: #{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.nota}" />
+								</h:panelGroup>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mn" id="avaliacao">
+							<a4j:repeat id="items" rowKeyVar="row" rendered="#{!empty MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.avaliacaoOnlineMatriculaQuestaoVOs}" value="#{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.avaliacaoOnlineMatriculaQuestaoVOs}" var="questaoListaExercicioItem">
+								<style>
+.rowIcon {
+	display: inline-block;
+	width: 100%;
+	flex-wrap: wrap;
+	margin: 0 !important;
+	flex-wrap: wrap;
+}
+
+.panelDescricao {
+	float: left;
+	text-align: left;
+	height: 100%;
+	width: calc(100% - 50px)
+}
+
+.panelDescricaoListaCampos {
+	border-bottom: solid 2px #cacaca;
+}
+
+.panelListaCampos {
+	border: solid 1px #cacaca;
+	border-radius: 5px 5px 5px 5px;
+	padding: 10px;
+}
+
+.panelSimplesMultiplas {
+	border: solid 1px #cacaca;
+	border-radius: 5px 5px 5px 5px;
+	margin-bottom: 5px !important
+}
+
+.panelNaoSimplesMultiplas {
+	margin-bottom: 5px !important
+}
+
+.panelDescricaoEscolha {
+	display: block;
+	float: left;
+	width: calc(100% - 60px);
+}
+
+.panelBooleans {
+	float: left;
+	display: flex;
+}
+
+.styleAdicionar {
+	border: solid 1px #cacacaca;
+	border-radius: 5px 5px 5px 5px;
+	padding: 6px;
+	background: cornsilk;
+}
+
+.styleCampoDescricao {
+	display: inline-block;
+	width: 100%;
+	flex-wrap: wrap;
+	margin-bottom: 5px !important;
+	margin-top: 5px !important;
+	padding: 10px !important;
+	background-color: #f8f9fc !important;
+	border-radius: .35rem !important;
+}
+
+.styleCampoDescricao:hover {
+	background: #d6d6d6 !important;
+	border-color: #a29e9e !important;
+	transition: 0.1s !important;
+}
+
+.tituloPergunta {
+	color: #929599 !important;
+	font-size: 13px;
+	font-weight: 510;
+	line-height: 23px !important;
+	font-weight: 700 !important;
+}
+
+.tituloPergunta:hover {
+	color: green !important;
+	transition: 0.1s !important;
+}
+
+.styleListaCampos1 {
+	margin-left: -3.48837209px;
+	margin-right: -3.48837209px;
+	display: inline-block;
+	width: 100%;
+	flex-wrap: wrap;
+	border: solid 2px #cacaca;
+	padding: 8px;
+	border-radius: 5px 5px 5px 5px;
+}
+</style>
+								<h:panelGroup layout="block" styleClass="row mn">
+									<h:panelGroup layout="block" styleClass="styleCampoDescricao">
+										<h:panelGroup layout="block" styleClass="panelDescricao">
+											<h:panelGroup layout="block" styleClass="col-md-1" style="width: 1.33%; margin-right: 7px;">
+												<h:outputText id="editorFinish2" styleClass="tituloPergunta" value="#{questaoListaExercicioItem.ordemApresentacao})" />
+											</h:panelGroup>
+											<h:panelGroup layout="block" styleClass="col-md-11" style="display: contents;">
+												<h:outputText id="editorFinish" styleClass="tituloPergunta" escape="false" value="#{questaoListaExercicioItem.questaoVO.enunciado}" />
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="#{questaoListaExercicioItem.questaoVO.tipoQuestaoEnum == 'MULTIPLA_ESCOLHA' or questaoListaExercicioItem.questaoVO.tipoQuestaoEnum == 'UNICA_ESCOLHA' ? 'panelSimplesMultiplas' : 'panelNaoSimplesMultiplas'} rowIcon">
+										<a4j:repeat id="subItems" value="#{questaoListaExercicioItem.avaliacaoOnlineMatriculaRespostaQuestaoVOs}" var="opcaoRespostaQuestaoItem">
+											<h:panelGroup layout="block" styleClass="rowIcon p5">
+												<h:panelGroup styleClass="panelBooleans">
+													<h:panelGroup rendered="#{questaoListaExercicioItem.questaoVO.tipoQuestaoEnum == 'MULTIPLA_ESCOLHA'}" styleClass="mr5">
+														<otm:commandButton disabled="#{MonitoramentoAlunosEADControle.mostrarGabarito}" styleClass="#{opcaoRespostaQuestaoItem.marcada ? 'fas fa-check-square fs14' : 'far fa-square fs14'}" render="subItems, form:questoesRespondidas" />
+													</h:panelGroup>
+													<h:panelGroup rendered="#{questaoListaExercicioItem.questaoVO.tipoQuestaoEnum == 'UNICA_ESCOLHA'}" styleClass="mr5">
+														<otm:commandButton disabled="#{MonitoramentoAlunosEADControle.mostrarGabarito}" styleClass="#{opcaoRespostaQuestaoItem.marcada ? 'fas fa-check-circle fs14': 'far fa-circle fs14'}" render="subItems, form:questoesRespondidas" />
+													</h:panelGroup>
+													<h:panelGroup rendered="#{MonitoramentoAlunosEADControle.mostrarGabarito and (questaoListaExercicioItem.questaoVO.errouQuestao || questaoListaExercicioItem.questaoVO.questaoNaoRespondida)}" layout="block" id="situacaoResposta">
+														<h:panelGroup rendered="#{questaoListaExercicioItem.questaoVO.tipoQuestaoEnum == 'MULTIPLA_ESCOLHA'}" styleClass="mr5">
+												 			<h:panelGroup styleClass="#{opcaoRespostaQuestaoItem.opcaoRespostaQuestaoVO.correta ? msg_botoes.btn_icon_confirmar_embutido : msg_botoes.btn_icon_fechar_embutido} #{opcaoRespostaQuestaoItem.opcaoRespostaQuestaoVO.correta ? 'text-success' : 'text-danger'} fs14 "></h:panelGroup>
+														</h:panelGroup>
+														<h:panelGroup rendered="#{questaoListaExercicioItem.questaoVO.tipoQuestaoEnum == 'UNICA_ESCOLHA'}" styleClass="mr5">
+															<h:panelGroup styleClass="#{opcaoRespostaQuestaoItem.opcaoRespostaQuestaoVO.correta ? msg_botoes.btn_icon_confirmar_embutido : msg_botoes.btn_icon_fechar_embutido} #{opcaoRespostaQuestaoItem.opcaoRespostaQuestaoVO.correta ? 'text-success' : 'text-danger'} fs14 "></h:panelGroup>
+														</h:panelGroup>
+													</h:panelGroup>
+												</h:panelGroup>
+												<h:panelGroup id="editorFinish" styleClass="panelDescricaoEscolha">
+													<h:panelGroup layout="block" styleClass="col-md-1" style="width: 1.33%; margin-right: 7px;">
+														<h:outputText style="color: black;" value="#{opcaoRespostaQuestaoItem.opcaoRespostaQuestaoVO.letraCorrespondente}" />
+													</h:panelGroup>
+													<h:panelGroup layout="block" styleClass="col-md-11" style="display: contents;">
+														<h:outputText style="color: black;" escape="false" value="#{opcaoRespostaQuestaoItem.opcaoRespostaQuestaoVO.opcaoResposta}" />
+													</h:panelGroup>
+												</h:panelGroup>
+											</h:panelGroup>
+										</a4j:repeat>
+										<h:panelGroup layout="block" styleClass="row mn border rounded-bottom bg-gray p5">
+											<h:panelGroup id="ajudaResposta">
+												<h:panelGroup styleClass="col-md-1 border rounded bg-success text-center p5" rendered="#{MonitoramentoAlunosEADControle.mostrarGabarito and questaoListaExercicioItem.questaoVO.acertouQuestao and questaoListaExercicioItem.questaoVO.situacaoQuestaoEnum ne 'ANULADA'}">
+													<span class="#{msg_botoes.btn_icon_confirmar_embutido} fs14 text-white mr5"></span>
+											 		<h:outputText styleClass="text-white" value="Certo" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-1 border rounded bg-danger text-center p5" rendered="#{MonitoramentoAlunosEADControle.mostrarGabarito and questaoListaExercicioItem.questaoVO.errouQuestao and questaoListaExercicioItem.questaoVO.situacaoQuestaoEnum ne 'ANULADA'}">
+													<span class="#{msg_botoes.btn_icon_fechar_embutido} fs14 text-white mr5"></span>
+											 		<h:outputText styleClass="text-white" value="Errado" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-1 border rounded bg-warning text-center p5" rendered="#{MonitoramentoAlunosEADControle.mostrarGabarito and questaoListaExercicioItem.questaoVO.situacaoQuestaoEnum eq 'ANULADA'}">
+													<span class="#{msg_botoes.btn_icon_cancelar_embutido} fs14 text-white mr5"></span>
+											  		<h:outputText styleClass="text-white" value="Anulada" />
+												</h:panelGroup>
+												<h:panelGroup styleClass="col-md-1 border rounded bg-primary text-center p5 pl10 pr10" rendered="#{questaoListaExercicioItem.questaoVO.questaoNaoRespondida and !MonitoramentoAlunosEADControle.mostrarGabarito}">
+													<span class="#{msg_botoes.btn_icon_editar_embutido} fs14 text-white mr5"></span>
+											  		<h:outputText styleClass="text-white" value="Responder!" />
+												</h:panelGroup>
+												<h:graphicImage width="16px" height="16px" style="margin-left:2px" rendered="#{questaoListaExercicioItem.questaoVO.isExisteAjuda}" id="help" url="#{resource['./imagens/help.gif']}" />
+												<rich:tooltip direction="topLeft" followMouse="true" target="help">
+													<h:outputText styleClass="field control-label tituloCampos" value="#{questaoListaExercicioItem.questaoVO.ajuda}" />
+												</rich:tooltip>
+											</h:panelGroup>
+											<h:panelGroup rendered="#{questaoListaExercicioItem.questaoVO.situacaoQuestaoEnum eq 'ANULADA'}" id="motivoAnulacao">
+												<h:outputText styleClass="tituloCampos" rendered="#{questaoListaExercicioItem.questaoVO.situacaoQuestaoEnum eq 'ANULADA'}" value="Motivo Anulação:" />
+												<otm:spacer width="5px" />
+												<h:outputText styleClass="tituloCampos" value="#{questaoListaExercicioItem.questaoVO.motivoAnulacaoQuestao}" />
+											</h:panelGroup>
+											<h:panelGroup rendered="#{MonitoramentoAlunosEADControle.mostrarGabarito and questaoListaExercicioItem.questaoVO.isExisteJustificativa}">
+												<h:outputText styleClass="tituloCampos" value="#{msg_aplic.prt_Questao_justificativa}:" />
+												<otm:spacer width="5px" />
+												<h:panelGroup styleClass="tituloCampos" id="Just">
+													<h:outputText value="#{questaoListaExercicioItem.questaoVO.justificativa}" />
+												</h:panelGroup>
+											</h:panelGroup>
+										</h:panelGroup>
+									</h:panelGroup>
+								</h:panelGroup>
+							</a4j:repeat>
+							<h:panelGroup columns="1" style="width: 100%;">
+								<rich:dataTable id="graficoAproveitamento2" width="100%" headerClass="consulta" value="#{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" rowKeyVar="row" rendered="#{! empty MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" rows="10" var="grafico">
+									<rich:column filterType="custom" filterExpression="#{grafico.geral}" style="text-align: center;width: 183px;">
+										<f:facet name="header">
+											<h:outputText value="Por Discplina" />
+										</f:facet>
+										<h:outputText id="assunto" value="#{grafico.assunto}" style="margin-top: 18px;position: relative;display: inline-block;" />
+									</rich:column>
+									<rich:column style="text-align: center;">
+										<f:facet name="header">
+											<h:outputText value="Nível" />
+										</f:facet>
+										<h:outputText id="descricao" value="#{grafico.descricaoParametro}" style="#{grafico.cssNivelAproveitamento}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="% Acertos" />
+										</f:facet>
+										<h:outputText escape="false" value="#{grafico.graficoAproveitamento}" />
+									</rich:column>
+								</rich:dataTable>
+								<rich:dataTable id="graficoAproveitamento" width="100%" headerClass="consulta" value="#{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.graficoAproveitamentoAvaliacaoVOs}" rowKeyVar="row" rendered="#{MonitoramentoAlunosEADControle.avaliacaoOnlineMatriculaVO.isApresentarMonitorConhecimentoPorAssunto}" rows="10" var="grafico">
+									<rich:column filterType="custom" filterExpression="#{!grafico.geral}" style="text-align: center;width: 183px;">
+										<f:facet name="header">
+											<h:outputText value="Por Assunto" />
+										</f:facet>
+										<h:outputText id="assunto" value="#{grafico.assunto}" style="margin-top: 18px;position: relative;display: inline-block;" />
+									</rich:column>
+									<rich:column style="text-align: center;">
+										<f:facet name="header">
+											<h:outputText value="Nível" />
+										</f:facet>
+										<h:outputText id="descricao" value="#{grafico.descricaoParametro}" style="#{grafico.cssNivelAproveitamento}" />
+									</rich:column>
+									<rich:column>
+										<f:facet name="header">
+											<h:outputText value="% Acertos" />
+										</f:facet>
+										<h:outputText escape="false" value="#{grafico.graficoAproveitamento}" />
+									</rich:column>
+								</rich:dataTable>
+							</h:panelGroup>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelAtividadesAluno" domElementAttachment="parent" shadowOpacity="true" width="900" height="500" onshow="document.getElementById('formAtividadesAluno:valorConsultaAluno').focus();">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Atividades Discursivas Aluno" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkfunc1">
+						<rich:componentControl target="panelAtividadesAluno" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAtividadesAluno">
+				<h:panelGroup id="atividades">
+					<a4j:repeat id="atividadesAlunos" rowKeyVar="row" value="#{MonitoramentoAlunosEADControle.atividadeDiscursivaRespostaAlunoVO}" rows="10" var="ativiadesDiscursivas">
+						<h:panelGroup layout="block" styleClass="col-md-12 pn border rounded-top bg-gray-100 #{MonitoramentoAlunosEADControle.atividadeDiscursivaRespostaAlunoVO.size() > 1 ? 'mt10' : ''}">
+							<h:panelGroup layout="block" styleClass="col-md-12 border rounded-top bg-gray border-bottom-panel p5">
+								<h:outputText styleClass="tituloCampos font-weight-bold" value="Enunciado" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-12 p5">
+								<h:outputText styleClass="tituloCampos" value="#{ativiadesDiscursivas.atividadeDiscursivaVO.enunciado}" />
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="row mn border rounded-bottom bg-gray p5">
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos font-weight-bold btn-block" value="Data Limite Entrega" />
+								<h:outputText styleClass="tituloCampos" value="#{ativiadesDiscursivas.atividadeDiscursivaVO.dataLimiteEntrega}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+								</h:outputText>
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<h:outputText styleClass="tituloCampos font-weight-bold btn-block" value="Situação Atividade" />
+								<h:outputText styleClass="tituloCampos" value="#{ativiadesDiscursivas.situacaoRespostaAtividadeDiscursiva_Apresentar}" />
+							</h:panelGroup>
+							<h:panelGroup layout="block" styleClass="col-md-4">
+								<otm:commandButton id="visualizarAtividade" action="#{MonitoramentoAlunosEADControle.visualizarAtividadeDiscursivaAluno}" accesskey="1" icon="#{msg_botoes.btn_icon_lupa_embutido}" styleClass="btn btn-primary" value="Visualizar Atividade" />
+							</h:panelGroup>
+						</h:panelGroup>
+					</a4j:repeat>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelTurma" shadowOpacity="true" width="750" onshow="document.getElementById('formTurma:valorConsultaTurma').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_AtualizacaoVencimento_consultaTurma}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkfunc2">
+						<rich:componentControl target="panelTurma" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formTurma">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaTurma" value="#{MonitoramentoAlunosEADControle.controleConsulta.campoConsulta}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.tipoConsultaComboTurma}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaTurma" size="20" onkeypress="modalKeyHandler('panelTurma', 'formTurma:btnConsultar')" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.controleConsulta.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formTurma:mensagemConsultaTurma, formTurma:resultadoConsultaTurma, formTurma:scResultadoTurma" action="#{MonitoramentoAlunosEADControle.consultarTurma}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaTurma" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MonitoramentoAlunosEADControle.listaConsultaTurmaVOs}" rows="5" var="turmaItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_HistoricoTurmaRel_identificador}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarTurma}" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.identificadorTurma}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarTurma}" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.curso.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_CalendarioMatriculaAluno_turno}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarTurma}" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" value="#{turmaItem.turno.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MonitoramentoAlunosEADControle.selecionarTurma}" render="form" oncomplete="#{rich:component('panelTurma')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formTurma:resultadoConsultaTurma" maxPages="10" id="scResultadoTurma" boundaryControls="auto" stepControls="auto" fastControls="hide" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="mensagemConsultaTurma">
+					<otm:mensagem bean="#{MonitoramentoAlunosEADControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelCurso" shadowOpacity="true" width="750" onshow="document.getElementById('formCurso:valorConsultaCurso').focus()" height="500">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_AvaliacaoInstitucionalPresencialResposta_consultarCurso}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkfunc3">
+						<rich:componentControl target="panelCurso" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formCurso">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg.msg_consultar_por}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-4">
+					<h:selectOneMenu styleClass="form-control campos" id="consultaCurso" value="#{MonitoramentoAlunosEADControle.controleConsulta.campoConsulta}">
+						<f:selectItems value="#{MonitoramentoAlunosEADControle.tipoConsultaComboCurso}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-6">
+					<h:inputText id="valorConsultaCurso" size="20" onkeypress="modalKeyHandler('panelCurso', 'formCurso:btnConsultar')" styleClass="form-control campos" value="#{MonitoramentoAlunosEADControle.controleConsulta.valorConsulta}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-2">
+					<otm:commandButton id="btnConsultar" render="formCurso:mensagemConsultaCurso, formCurso:resultadoConsultaCurso, formCurso:scResultadoCurso" action="#{MonitoramentoAlunosEADControle.consultarDadosCurso}" value="#{msg_botoes.btn_consultar}" styleClass="btn btn-default btn-consultar" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+				<rich:dataTable id="resultadoConsultaCurso" width="100%" headerClass="consulta" rowClasses="linhaImpar, linhaPar" columnClasses="colunaAlinhamento" value="#{MonitoramentoAlunosEADControle.listaConsultaCursoVOs}" rows="5" var="cursoItem">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_codigo}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{cursoItem.codigo}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_nome}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{cursoItem.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Curso_areaConhecimento}" />
+						</f:facet>
+						<h:panelGroup>
+							<a4j:commandLink action="#{MonitoramentoAlunosEADControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" value="#{cursoItem.areaConhecimento.nome}" />
+						</h:panelGroup>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon action="#{MonitoramentoAlunosEADControle.selecionarCurso}" render="form" oncomplete="#{rich:component('panelCurso')}.hide();" icon="#{msg_botoes.btn_icon_selecionar} iconePequeno" tooltip="Selecionar" />
+					</rich:column>
+					<f:facet name="footer">
+						<div style="text-align: center !important">
+							<rich:dataScroller align="center" for="formCurso:resultadoConsultaCurso" maxPages="10" id="scResultadoCurso" />
+						</div>
+					</f:facet>
+				</rich:dataTable>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="mensagemConsultaCurso">
+					<otm:mensagem bean="#{MonitoramentoAlunosEADControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelMonitorConhecimento" width="800" height="550" domElementAttachment="parent" shadowOpacity="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="tituloCampos" value="Monitor de Conhecimento - #{MonitoramentoAlunosEADControle.monitorConhecimentoVO.graficoAproveitamentoAvaliacaoVO.assunto}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkfunc4">
+						<rich:componentControl target="panelMonitorConhecimento" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMonitorConhecimento">
+				<h:panelGroup layout="block" styleClass="row mn border rounded">
+					<h:panelGroup layout="block" styleClass="row mn border rounded-top bg-gray-100 p5">
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="tituloCampos btn-block" value="Nível: " />
+							<h:outputText id="nivel" value="#{MonitoramentoAlunosEADControle.monitorConhecimentoVO.graficoAproveitamentoAvaliacaoVO.descricaoParametro}" style="#{MonitoramentoAlunosEADControle.monitorConhecimentoVO.graficoAproveitamentoAvaliacaoVO.cssNivelAproveitamento}; border-radius: 3px;" />
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-6">
+							<h:outputText styleClass="tituloCampos btn-block" value="Desempenho: " />
+							<h:outputText escape="false" rendered="#{MonitoramentoAlunosEADControle.apresentarGrafico}" value="#{MonitoramentoAlunosEADControle.monitorConhecimentoVO.graficoAproveitamentoAvaliacaoVO.graficoAproveitamento}" />
+						</h:panelGroup>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="row mn">
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<otm2:dashpanel id="dashboard_comparativoColegas" cols="12" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+								<ui:define name="header">
+									<h:outputText value="Comparativo Meus Colegas"></h:outputText>
+								</ui:define>
+								<ui:define name="body">
+									<h:outputText id="graficoComparativoMeusColegas" escape="false" rendered="#{MonitoramentoAlunosEADControle.apresentarGrafico}" value="#{MonitoramentoAlunosEADControle.monitorConhecimentoVO.graficoComparativoMeusColegas}" />
+								</ui:define>
+							</otm2:dashpanel>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="col-md-12">
+							<otm2:dashpanel id="dashboard_comparativoAvaliacoes" cols="12" stylePanelHeader=" " renderedControl="false" styleClassFooter="dn" styleClassPanel="p5" stylePanel=" ">
+								<ui:define name="header">
+									<h:outputText value="Comparativo Minhas Avaliações"></h:outputText>
+								</ui:define>
+								<ui:define name="body">
+									<h:outputText id="graficoComparativoAvaliacoesOnlines" escape="false" rendered="#{MonitoramentoAlunosEADControle.apresentarGrafico}" value="#{MonitoramentoAlunosEADControle.monitorConhecimentoVO.graficoComparativoAvaliacoesOnlines}" />
+								</ui:define>
+							</otm2:dashpanel>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelComunicadoInterno" width="800" height="650" domElementAttachment="parent">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_MonitoramentoAlunosEAD_enviarEmail}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkfunc5">
+						<rich:componentControl target="panelComunicadoInterno" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formComunicadoInterno">
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_Catalogo_assunto}" />
+					<h:inputText id="assunto" styleClass="form-control camposObrigatorios" value="#{MonitoramentoAlunosEADControle.comunicacaoInternaVO.assunto}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="col-md-12">
+					<otm:editor id="mensagem" height="420" width="750" value="#{MonitoramentoAlunosEADControle.comunicacaoInternaVO.mensagem}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-80">
+					<otm:commandButton id="enviar" render="formComunicadoInterno" icon="#{msg_botoes.btn_icon_enviar_email_embutido}" value="Enviar" styleClass="btn btn-success" action="#{MonitoramentoAlunosEADControle.realizarEnvioComunicadoInterno}" alt="#{msg.btn_enviar}" accesskey="3" />
+				</h:panelGroup>
+				<h:panelGroup columns="1" width="100%" styleClass="tabMensagens" id="mensagemConsultaCurso">
+					<otm:mensagem bean="#{MonitoramentoAlunosEADControle}"></otm:mensagem>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+	</ui:define>
+</ui:composition>
+</html>

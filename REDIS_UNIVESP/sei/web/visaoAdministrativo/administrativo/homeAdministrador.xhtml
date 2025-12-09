@@ -1,0 +1,602 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich" xmlns:otm="http://java.sun.com/jsf/composite/otm" template="../../templates/template.xhtml" xmlns:otm2="http://www.otimize-ti.com.br"  >
+
+	<header> </header>
+
+	<ui:define name="topo">
+		<ui:include src="/visaoAdministrativo/administrativo/topo.xhtml" />
+	</ui:define>
+	<ui:define name="menuLateral">
+		<ui:include src="/visaoAdministrativo/administrativo/menuTopo.xhtml" />
+	</ui:define>
+	<ui:define name="tituloPagina">
+		<h:form id="formPesquisaPadraoHomeAdministrador">
+			<ui:include src="../../pesquisaPadrao.xhtml" />
+		</h:form>
+	</ui:define>
+
+
+	<ui:define name="conteudo">
+		<ui:include src="/visaoAdministrativo/administrativo/conteudoCentralAdministrativo.xhtml" />
+	</ui:define>
+
+	<ui:define name="modal">
+
+
+		<a4j:jsFunction name="verificarModal" oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}" />
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelPesquisarUser" shadowOpacity="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg.msg_pesquisar_usuario}"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['/imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkLivroRegistro" />
+					<rich:componentControl target="panelPesquisarUser" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPesquisarUser">
+				<h:panelGroup id="panelGridFormUser">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="tituloCampos" value="#{msg.msg_consultar_por}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-4">
+						<h:selectOneMenu styleClass="form-control campos" id="consulta" required="true" value="#{UsuarioControle.controleConsulta.campoConsultaEspecificoSimulacao}">
+							<f:selectItems value="#{UsuarioControle.tipoConsultaEspecificaSimulacao}" />
+							<a4j:ajax event="change" render="formPesquisarUser" listener="#{UsuarioControle.anularDataModelo}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{UsuarioControle.apresentarComboTipoUsuario}">
+						<h:selectOneMenu id="tipoUsuario" styleClass="form-control camposObrigatorios" value="#{UsuarioControle.valorConsultaTipoUsuario}">
+							<a4j:ajax render="formPesquisarUser" event="change" />
+							<f:selectItems value="#{UsuarioControle.listaSelectItemTipoUsuario}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3" rendered="#{UsuarioControle.apresentarComboTipoUsuario}">
+						<h:inputText id="valorConsulta2" styleClass="form-control campos" value="#{UsuarioControle.controleConsulta.valorConsulta}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-6">
+						<h:inputText id="valorConsulta" styleClass="form-control campos" value="#{UsuarioControle.controleConsulta.valorConsulta}" rendered="#{!UsuarioControle.apresentarComboTipoUsuario}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-2">
+						<a4j:commandLink id="consultar" render="formPesquisarUser" styleClass="btn btn-default" value="Consultar" action="#{UsuarioControle.consultarEspecificoSimulacaoUsuario}" accesskey="2">
+							<span class="#{msg_botoes.btn_icon_lupa_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+							<f:setPropertyActionListener target="#{UsuarioControle.controleConsultaOtimizado.paginaAtual}" value="1" />
+							<f:setPropertyActionListener target="#{UsuarioControle.controleConsultaOtimizado.page}" value="1" />
+						</a4j:commandLink>
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-12 mt5" />
+					<rich:dataTable id="items" width="100%" headerClass="consulta" columnClasses="colunaAlinhamento" value="#{UsuarioControle.controleConsultaOtimizado}" rows="10" var="usuarioItem">
+						<rich:column sortBy="#{usuarioItem.nome}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Usuario_nome}" />
+							</f:facet>
+							<h:outputText id="nome" value="#{usuarioItem.nome}" />
+						</rich:column>
+						<rich:column sortBy="#{usuarioItem.username}">
+							<f:facet name="header">
+								<h:outputText value="#{msg_aplic.prt_Usuario_username}" />
+							</f:facet>
+							<h:outputText id="username" value="#{usuarioItem.username}" />
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Visão Aluno" />
+							</f:facet>
+							<div style="min-width: 70px" align="center">
+								<otm:commandIcon render="script, formPesquisarUser" rendered="#{usuarioItem.pessoa.aluno}" action="#{UsuarioControle.loginComSimulacaoAcessoVisaoAluno}" title="Simular Acesso Aluno" tooltip="Simular Acesso Aluno" icon="#{msg_botoes.btn_icon_aluno} iconePequeno" />
+							</div>
+							<h:panelGroup id="scriptAluno">
+								<h:outputScript rendered="#{not empty UsuarioControle.executarNavegacaoSimulacaoVisaoAluno}">#{UsuarioControle.executarNavegacaoSimulacaoVisaoAluno}</h:outputScript>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Visão Professor" />
+							</f:facet>
+							<div style="min-width: 70px" align="center">
+								<otm:commandIcon render="script, formPesquisarUser" rendered="#{usuarioItem.pessoa.professor}" action="#{UsuarioControle.loginComSimulacaoAcessoVisaoProfessor}" title="Simular Acesso Professor" tooltip="Simular Acesso Professor" icon="#{msg_botoes.btn_icon_professor} iconePequeno" />
+							</div>
+							<h:panelGroup id="scriptProfessor">
+								<h:outputScript rendered="#{not empty UsuarioControle.executarNavegacaoSimulacaoVisaoAluno}">#{UsuarioControle.executarNavegacaoSimulacaoVisaoAluno}</h:outputScript>
+							</h:panelGroup>
+						</rich:column>
+						<rich:column>
+							<f:facet name="header">
+								<h:outputText value="Visão Coordenador" />
+							</f:facet>
+							<div style="min-width: 70px" align="center">
+								<otm:commandIcon render="script, formPesquisarUser" rendered="#{usuarioItem.pessoa.coordenador}" action="#{UsuarioControle.loginComSimulacaoAcessoVisaoCoordenador}" title="Simular Acesso Coordenador" tooltip="Simular Acesso Coordenador" icon="#{msg_botoes.btn_icon_coordernador} iconePequeno" />
+							</div>
+							<h:panelGroup id="scriptCoordenador">
+								<h:outputScript rendered="#{not empty UsuarioControle.executarNavegacaoSimulacaoVisaoAluno}">#{UsuarioControle.executarNavegacaoSimulacaoVisaoAluno}</h:outputScript>
+							</h:panelGroup>
+						</rich:column>
+						<f:facet name="footer">
+							<rich:dataScroller align="center" for="items" id="paginador" page="#{UsuarioControle.controleConsultaOtimizado.page}" render="formPesquisarUser" scrollListener="#{UsuarioControle.scrollerListenerEspecificoUsuarioAlunoProfessorCoordenador}" rendered="#{UsuarioControle.controleConsultaOtimizado.getRowCount() gt 10}" />
+						</f:facet>
+					</rich:dataTable>
+					<h:panelGroup layout="block" styleClass="row">
+						<otm:mensagem bean="#{LoginControle}"></otm:mensagem>
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado50" id="alterarSenha" width="650" height="300" onshow="javascript:verifica('formAlterarSenha:senha')">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Alterar Senha"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer;margin-top:3px" id="hidelinkFoto" />
+					<rich:componentControl target="alterarSenha" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formAlterarSenha">
+				<h:panelGroup layout="block" styleClass="row">
+
+					<h:panelGroup layout="block" styleClass="col-md-3 ">
+						<h:outputText styleClass="field control-label tituloCampos" value="Senha Atual" />
+						<h:inputSecret id="senhaAtual" styleClass="form-control camposObrigatorios" size="20" maxlength="50" value="#{LoginControle.senha}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" styleClass="col-md-3 ">
+						<h:outputText styleClass="field control-label tituloCampos" value="Nova Senha" />
+						<h:inputSecret id="senha" styleClass="form-control camposObrigatorios" size="20" maxlength="50" value="#{LoginControle.novaSenha}" onkeyup="javascript:verifica('formAlterarSenha:senha')" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" styleClass="col-md-3 ">
+						<h:outputText styleClass="field control-label tituloCampos" value="Confirmação de Nova Senha" />
+						<h:inputSecret id="senha2" styleClass="form-control camposObrigatorios" size="20" maxlength="50" value="#{LoginControle.novaSenha2}" onkeyup="javascript:verifica('formAlterarSenha:senha2')" />
+					</h:panelGroup>
+
+					<h:panelGroup layout="block" styleClass="col-md-2 ">
+						<otm:spacer width="100%" />
+						<h:outputText styleClass="field control-label tituloCampos" value="Nível Segurança" />
+						<div id="page-wrap"></div>
+					</h:panelGroup>
+				</h:panelGroup>
+
+				<otm:mensagem bean="#{LoginControle}"></otm:mensagem>
+				<h:panelGroup layout="block" styleClass="row" style="margin-top: 15px">
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<otm:commandButton styleClass="btn btn-dark btn-gravar" oncomplete="#{LoginControle.oncompleteModal}" icon="#{msg_botoes.btn_icon_gravar_embutido}" render="formAlterarSenha" action="#{LoginControle.mudarSenha}" value="Alterar Senha" />
+					</h:panelGroup>
+				</h:panelGroup>
+
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" autosized="true" domElementAttachment="parent"   onshow="consultarNovidadeNaoVisualizada()" id="panelAvisoNovidades" show="#{LoginControle.existeNovidadeSei}" >
+
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Novidades do SEI" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkNew">
+						<rich:componentControl target="panelAvisoNovidades" operation="hide" event="click">
+							<f:setPropertyActionListener target="#{LoginControle.existeNovidadeSei}" value="null" />
+						</rich:componentControl>
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formNovidade">
+				<h:panelGroup layout="block" styleClass="row">
+				<a4j:jsFunction name="consultarNovidadeNaoVisualizada" action="#{NovidadeSeiControle.consultarNovidade(true)}" render="formNovidade, btnNews"></a4j:jsFunction>
+				<rich:list id="novidades" rows="1" var="novidadeSeiItem" style="text-align:left" value="#{NovidadeSeiControle.novidadeNaoVisualizado}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<otm2:panel name="pa#{novidadeSeiItem.codigo}">
+							<ui:define name="header">
+								<h:outputText styleClass="btn-block" value="#{novidadeSeiItem.descricao}"></h:outputText>								
+							</ui:define>
+							<ui:define name="body">
+								<h:outputText escape="false" rendered="#{novidadeSeiItem.tipoArtefato ne 'HTML'}" value="#{novidadeSeiItem.linkApresentar}"></h:outputText>
+								<otm:editor id="edinewsnaolido" rendered="#{novidadeSeiItem.tipoArtefato eq 'HTML'}" readonly="true" value="#{novidadeSeiItem.textoInformativo}"></otm:editor>
+							</ui:define>
+
+							<ui:define name="footer">
+								<h:panelGroup layout="block" styleClass="col-md-6 text-left">
+									<h:outputText styleClass="tituloCampos" rendered="#{novidadeSeiItem.versao ne ''}" value="Versão: #{novidadeSeiItem.versao}"></h:outputText>
+								</h:panelGroup>
+								<h:panelGroup layout="block" styleClass="col-md-6 text-right">
+									<h:outputText styleClass="tituloCampos" value="Disp. Em: " />
+									<h:outputText styleClass="tituloCampos" value="#{novidadeSeiItem.data}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"></f:convertDateTime>
+									</h:outputText>
+								</h:panelGroup>
+							</ui:define>
+						</otm2:panel>
+					</h:panelGroup>
+				</rich:list>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-100">
+					
+						<otm:commandButton rendered="#{NovidadeSeiControle.novidadeNaoVisualizado.totalRegistrosEncontrados > 1}"  styleClass="btn btn-info" icon="#{msg_botoes.btn_icon_proximo2}" render="formNovidade, btnNews" action="#{NovidadeSeiControle.consultarNovidade(true)}" value="Próxima Novidade" />						
+						<otm:commandButton styleClass="btn btn-danger ml5" icon="#{msg_botoes.btn_icon_fechar_embutido}" render="formNovidade, btnNews" oncomplete="#{rich:component('panelAvisoNovidades')}.hide()" value="Fechar" />						
+					
+				</h:panelGroup>
+
+
+
+				<h:panelGroup rendered="#{!NovidadeSeiControle.novidadeNaoVisualizado.apresentarListaConsulta}" layout="block" styleClass="row text-center mt20 mb20">
+					<i class="fas fa-exclamation-circle fs25"></i>
+					<h:outputText styleClass="field control-label tituloCampos fs25 ml5" value="Não foi encontrado nenhuma novidade sem visualização." />
+				</h:panelGroup>
+			</h:panelGroup>
+			</h:form>
+
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximixao50" id="panelNotificacaoEmail" show="#{LoginControle.apresentarRichNotificaoEmailAcimaPermitido}" autosized="true" shadowOpacity="true" width="400" height="120">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="JobEmail sobrecarregada"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink2">
+						<rich:componentControl target="panelNotificacaoEmail" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formNoficicacaoEmail">
+				<h:panelGroup layout="block" styleClass="row mt20 mb20">
+					<h:outputText value="#{msg_aplic.prt_RenovarMatricula_notificacaoEmail}" styleClass="fields tituloCampos fs16" />
+					<otm:spacer width="20px" />
+					<otm:spacer width="20px" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelMensagem" domElementAttachment="parent" show="#{ComunicacaoInternaControle.abrirRichModalMensagem}">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Comunicação"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formMensagem">
+				<h:panelGroup layout="block" styleClass="row">
+					<h:panelGroup layout="block" rendered="#{ComunicacaoInternaControle.lerComunicado}" styleClass="col-md-12">
+						<otm:editor readonly="true" contents="height: calc(100vh - 180px) !important; " id="mensagemResposta2" value="#{ComunicacaoInternaControle.comunicacaoInternaVO.mensagem}">
+
+						</otm:editor>
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{ComunicacaoInternaControle.responderComunicado}" styleClass="col-md-12">
+						<otm:editor contents="height: calc(100vh - 180px) !important; " rendered="#{ComunicacaoInternaControle.responderComunicado}" id="mensagemResposta" value="#{ComunicacaoInternaControle.comunicacaoInternaResposta.mensagem}">
+
+						</otm:editor>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" id="paMensagemMsg" rendered="#{ComunicacaoInternaControle.responderComunicado}">
+					<otm:mensagem bean="#{ComunicacaoInternaControle}"></otm:mensagem>
+				</h:panelGroup>
+				<h:panelGroup id="paMensagem" styleClass="barra-btn-flutuante-modal-100" layout="block" rendered="#{!LoginControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<h:commandLink id="gravarRecadoRespostaMsg" oncomplete="verificarModal()" rendered="#{ComunicacaoInternaControle.responderComunicado}" action="#{ComunicacaoInternaControle.responderLeituraObrigatoriaOuMarketing}" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" accesskey="2" styleClass="btn btn-info" value="Enviar Resposta">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</h:commandLink>
+						<h:commandLink rendered="#{ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}" action="#{ComunicacaoInternaControle.inicializarDadosResponderComunicado}" value="Responder" styleClass="btn btn-primary">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</h:commandLink>
+						<h:commandLink styleClass="btn btn-info" id="reMarcarLidas" oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}" action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}" rendered="#{!ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}" execute="@this" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" accesskey="1" value="Marcar como Lida">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</h:commandLink>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup styleClass="barra-btn-flutuante-modal-100" layout="block" rendered="#{LoginControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<otm:commandButton value="Fechar" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}" oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}" execute="@this" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado100" id="panelMarketing" top="10" moveable="true" headerClass="consulta" domElementAttachment="parent" show="#{ComunicacaoInternaControle.abrirRichModalMarketing}" controlsClass="aba" shadowOpacity="true" minWidth="800" minHeight="600" maxWidth="800" maxHeight="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Marketing"></h:outputText>
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formAnexoMarketing">
+				<h:panelGroup layout="block" styleClass="row">
+
+
+					<h:panelGroup layout="block" rendered="#{ComunicacaoInternaControle.comunicacaoInternaVO.existeArquivo  and ComunicacaoInternaControle.lerComunicado}" styleClass="col-md-12 text-center">
+						<h:graphicImage styleClass="imagem-comunicao-mural" value="#{ComunicacaoInternaControle.paintArquivoMarketing1}" />
+					</h:panelGroup>
+					<h:panelGroup layout="block" rendered="#{ComunicacaoInternaControle.responderComunicado}" styleClass="col-md-12">
+						<otm:editor contents="height: calc(100vh - 180px) !important; " rendered="#{ComunicacaoInternaControle.responderComunicado}" id="mensagemRespostaMarketing" value="#{ComunicacaoInternaControle.comunicacaoInternaResposta.mensagem}">
+
+						</otm:editor>
+					</h:panelGroup>
+
+				</h:panelGroup>
+
+				<h:panelGroup id="paMensagemMarke" rendered="#{ComunicacaoInternaControle.responderComunicado}" layout="block">
+					<otm:mensagem bean="#{ComunicacaoInternaControle}"></otm:mensagem>
+
+				</h:panelGroup>
+				<h:panelGroup id="paBotaoMarketing" styleClass="barra-btn-flutuante-modal-100" layout="block" rendered="#{!LoginControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<h:commandLink styleClass="btn btn-info" oncomplete="verificarModal()" id="gravarRecadoRespostaMarke" rendered="#{ComunicacaoInternaControle.responderComunicado}" action="#{ComunicacaoInternaControle.responderLeituraObrigatoriaOuMarketing}" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" accesskey="2" value="Enviar Resposta">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</h:commandLink>
+						<h:commandLink styleClass="btn btn-primary" render="panelMarketing, formAnexoMarketing, panelMensagem" rendered="#{ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}" action="#{ComunicacaoInternaControle.inicializarDadosResponderComunicado}" value="#{msg_bt.btn_responder}">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</h:commandLink>
+						<h:commandLink styleClass="btn btn-info" id="reMarcarLidasMar" action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}" rendered="#{!ComunicacaoInternaControle.apresentarBotaoResponder and !ComunicacaoInternaControle.responderComunicado}" execute="@this" render="formMensagem, formAnexoMarketing, panelMarketing" accesskey="1" value="Marcar Como Lida">
+							<span class="#{msg_botoes.btn_icon_responder_embutido} pull-left" style="margin-right: 0.8em; position: relative; top: 1px; font-size: 14px;" />
+						</h:commandLink>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup styleClass="barra-btn-flutuante-modal-100" layout="block" rendered="#{LoginControle.usuarioLogado.permiteSimularNavegacaoAluno}">
+					<h:panelGroup styleClass="w-100 text-center" layout="block">
+						<otm:commandButton value="Fechar" styleClass="btn btn-danger" icon="#{msg_botoes.btn_icon_fechar_embutido}" action="#{ComunicacaoInternaControle.marcarComoLidasLeituraObrigatoriaOuMarketing}" oncomplete="#{ComunicacaoInternaControle.acaoModalMensagemMaketingOuLeituraObrigatoria}" execute="@this" render="formMensagem, formAnexoMarketing, panelMensagem, panelMarketing" />
+					</h:panelGroup>
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelRequisicoes" domElementAttachment="parent" show="#{LoginControle.apresentarRequisicoes}" shadowOpacity="true" width="850" height="450">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="Questionário Requisição" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelink3">
+						<rich:componentControl target="panelRequisicoes" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formRequisicoes">
+				<rich:dataTable id="items" width="100%" columnHeaderCellClass="consulta" columnClasses="colunaAlinhamento" value="#{LoginControle.requisicoesVOs}" var="requisicaoItemVOItens">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Requisicao_codigo}" />
+						</f:facet>
+						<h:outputText value="#{requisicaoItemVOItens.codigo}" />
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Responsável" />
+						</f:facet>
+						<h:outputText value="#{requisicaoItemVOItens.responsavelRequisicao.nome}" />
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Solicitante" />
+						</f:facet>
+						<h:outputText value="#{requisicaoItemVOItens.solicitanteRequisicao.nome}" />
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Requisicao_dataRequisicao}" />
+						</f:facet>
+						<h:outputText value="#{requisicaoItemVOItens.dataRequisicao_Apresentar}" />
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Requisicao_categoriaProduto}" />
+						</f:facet>
+						<h:outputText value="#{requisicaoItemVOItens.categoriaProduto.nome}" />
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Requisicao_unidadeEnsino}" />
+						</f:facet>
+						<h:outputText value="#{requisicaoItemVOItens.unidadeEnsino.nome}" />
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_aplic.prt_Requisicao_departamento}" />
+						</f:facet>
+						<h:outputText value="#{requisicaoItemVOItens.departamento.nome}" />
+					</rich:column>
+
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg_botoes.btn_opcoes}" />
+						</f:facet>
+						<otm:commandIcon id="btnResponder" action="#{LoginControle.selecionarRequisicao}" render="formQuestionarioFechamento" oncomplete="#{rich:component('panelQuestionarioFechamento')}.show()" styleClass="btn btn-info light" icon="#{msg_botoes.btn_icon_responder_embutido} iconePequeno" />
+					</rich:column>
+				</rich:dataTable>
+			</h:form>
+
+			<h:panelGroup styleClass="barra-btn-flutuante-modal-80" layout="block">
+				<otm:commandButton onclick="#{rich:component('panelRequisicoes')}.hide();" value="Responder Mais Tarde" icon="#{msg_botoes.btn_icon_fechar_embutido}" />
+			</h:panelGroup>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelQuestionarioFechamento" shadowOpacity="false" width="900" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Questionario_tituloForm}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer" id="hidelinkPanelQuestionarioFechamento">
+						<rich:componentControl target="panelQuestionarioFechamento" operation="hide" event="click" />
+					</h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form id="formQuestionarioFechamento">
+				<otm2:questionarioResposta bean="#{LoginControle}" objetoOrigem="#{LoginControle.requisicaoVO.questionarioRespostaOrigemFechamentoVO}" />
+
+				<otm:mensagem bean="#{LoginControle}" />
+
+				<h:panelGroup styleClass="barra-btn-flutuante-modal-80" layout="block">
+					<otm:commandButton rendered="#{!LoginControle.apresentarBotaoImprimirQuestionarioRequisicao()}" value="#{msg_botoes.btn_gravar}" render="formQuestionarioFechamento formRequisicoes panelRequisicoes" actionListener="#{LoginControle.gravarRequisicaoComQuestionario}" styleClass="btn btn-dark btn-gravar" oncomplete="#{LoginControle.acaoModalQuestionario}" />
+					<otm:spacer width="10px"></otm:spacer>
+					<otm:commandButton rendered="#{LoginControle.apresentarBotaoImprimirQuestionarioRequisicao()}" render="form" id="imprimirPDFFechamentoQuestionario" oncomplete="#{LoginControle.download}" action="#{LoginControle.imprimirPDFEntregaQuestionario}" value="Imprimir Questionário Fechamento" icon="#{msg_botoes.btn_icon_pdf_embutido}" />
+				</h:panelGroup>
+
+
+			</h:form>
+		</rich:popupPanel>
+		<rich:popupPanel styleClass="modalMaximizado50" id="panelCapturarImagemWebCamFotoUsuario" zindex="2000" width="750" height="500" onshow="showWebCamAPP()">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{msg_aplic.prt_Disciplina_tirarFoto}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="#{resource['imagens/close.png']}" styleClass="icon-close-modal" style="cursor:pointer;margin-top:3px" id="hidelinkPanelCapturarImagemWebCamFotoUsuario" />
+					<rich:componentControl target="panelCapturarImagemWebCamFotoUsuario" operation="hide" event="click" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formWebCamFotoUsuario">
+				<div id="my_camera" style="width: 320px; height: 240px;"></div>
+				<br />
+				<br />
+				<h:panelGroup layout="block" id="mcMenu" styleClass="barra-btn-flutuante-modal-50">
+					<otm:commandButton id="btnTirarFoto" styleClass="btn btn-primary" icon=" #{msg_botoes.btn_icon_camera_embutido}" value="Tirar Foto" action="#{LoginControle.executarCapturarFotoWebCam}" oncomplete="take_snapshot('../UploadServlet');" />
+					<otm:commandButton id="btnNovaFoto" style="margin-left: 10px" styleClass="btn btn-info btn-novo" value="Tirar Foto" onclick="Webcam.unfreeze();" />
+					<otm:commandButton id="btnGravarFoto" style="margin-left: 10px" styleClass="btn btn-dark btn-gravar" icon=" #{msg_botoes.btn_icon_retrato_embutido}" value="Gravar" render="formImagem, formWebCamFotoUsuario" onclick="#{rich:component('panelCapturarImagemWebCamFotoUsuario')}.hide(); #{rich:component('panelImagem')}.show()" />
+				</h:panelGroup>
+			</h:form>
+		</rich:popupPanel>
+
+		<rich:popupPanel styleClass="modalMaximizado" id="panelImagem" zindex="2000" width="800" height="600">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText styleClass="field control-label tituloCampos" value="#{msg_aplic.prt_AlterarFoto}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formImagem">
+				<style>
+.barra-btn-flutuante-modal-image {
+	position: fixed;
+	width: 80%;
+	background-color: #dedede;
+	padding: 10px 5px 5px 5px;
+	left: 10%;
+	border-radius: 0px 0px 10px 10px;
+	margin: 0 auto;
+	bottom: 5.5%;
+	z-index: 1;
+	text-align: center;
+	min-height: 35px;
+}
+</style>
+				<h:panelGroup layout="block" styleClass="row mb10 border-bottom pb10">
+					<h:panelGroup layout="block" styleClass="col-md-12 text-center">
+						<otm:commandIcon id="btnZoomIn" style="margin-left: 10px" rendered="#{LoginControle.exibirBotao}" action="#{LoginControle.executarZoomIn}" icon="#{msg_botoes.btn_icon_zoomPlus_embutido} fs18" render="formImagem" />
+						<otm:commandIcon id="btnZoomOut" style="margin-left: 10px" rendered="#{LoginControle.exibirBotao}" action="#{LoginControle.executarZoomOut}" icon="#{msg_botoes.btn_icon_zoomMinus_embutido} fs18" render="formImagem" />
+						<otm:commandIcon id="btnGirarEsquerda" style="margin-left: 10px" rendered="#{LoginControle.exibirBotao}" icon="#{msg_botoes.btn_icon_girar_esquerda_embutido} fs18" action="#{LoginControle.rotacionar90GrausParaEsquerda}" render="formImagem" tooltip="Girar 90º para Esquerda" />
+						<otm:commandIcon id="btnGirarDireita" style="margin-left: 10px" rendered="#{LoginControle.exibirBotao}" icon="#{msg_botoes.btn_icon_girar_direita_embutido} fs18" action="#{LoginControle.rotacionar90GrausParaDireita}" render="formImagem" tooltip="Girar 90º para Direita" />
+						<otm:commandIcon id="btnGirar180" style="margin-left: 10px" rendered="#{LoginControle.exibirBotao}" icon="#{msg_botoes.btn_icon_girar_180_embutido} fs18" action="#{LoginControle.rotacionar180Graus}" render="formImagem" tooltip="Girar 180º" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block">
+					<h:panelGroup style="clear:both;overflow:auto; min-width:455px; min-height:120px ; width:600px; height:500px;" rendered="#{LoginControle.exibirBotao}">
+						<h:graphicImage url="#{LoginControle.showFotoCrop}" id="foto2" />
+					</h:panelGroup>
+					<script src="#{resource['script/crop/jquery.Jcrop.js']}" />
+					<script type="text/javascript">
+					jQuery(function($) {
+						$(document).ready(function() {
+							$("#formImagem\\:foto2").Jcrop({
+								onSelect : showCoords,
+								onChange : showCoords,
+								bgColor : 'black',
+								bgOpacity : .3,
+								setSelect : [ 1, 1, 85, 113 ],
+								minSize : [ 31, 21 ],
+								maxSize : [ 600, 450 ]
+							});
+						});
+					});
+					function showCoords(c) {
+						var valorX = document.getElementById('formImagem:x');
+						valorX.value = c.x;
+	
+						var valorY = document.getElementById('formImagem:y');
+						valorY.value = c.y;
+	
+						var valorW = document.getElementById('formImagem:w');
+						valorW.value = c.w;
+	
+						var valorH = document.getElementById('formImagem:h');
+						valorH.value = c.h;
+	
+					};
+				</script>
+				</h:panelGroup>
+				<h:panelGroup style="display:none" layout="block">
+					<h:panelGrid style="display:none" columns="6">
+						<h:panelGroup>
+							<h:outputText value="X" />
+							<h:inputText size="4" id="x" value="#{LoginControle.x}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="Y" />
+							<h:inputText size="4" id="y" value="#{LoginControle.y}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="largura" />
+							<h:inputText size="4" id="w" value="#{LoginControle.largura}" />
+						</h:panelGroup>
+						<h:panelGroup>
+							<h:outputText value="altura" />
+							<h:inputText size="4" id="h" value="#{LoginControle.altura}" />
+						</h:panelGroup>
+					</h:panelGrid>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row" rendered="#{LoginControle.exibirUpload}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<rich:fileUpload id="btnUpload" listHeight="40" style="width:200px" listWidth="200" noDuplicate="true" fileUploadListener="#{LoginControle.upLoadImagem}" addLabel="Selecionar Arquivo" acceptedTypes="png, jpg, jpeg, JPEG, JPG, PNG, PDF, pdf" maxFilesQuantity="1" cancelEntryControlLabel="Cancelar" doneLabel="Pronto" sizeErrorLabel="Arquivo não Enviado. Tamanho Máximo Permitido 2 MB" progressLabel="Enviando" stopControlLabel="Parar" uploadControlLabel="Enviar" clearAllControlLabel="Limpar lista" transferErrorLabel="Falha de Transmissão" stopEntryControlLabel="Parar" immediateUpload="true" clearLabel="" ontyperejected="alert('Arquivo não Enviado. Formato inválido do arquivo.');">
+							<a4j:ajax event="uploadcomplete" render="formImagem, btnUpload" listener="#{LoginControle.renderizarUpload}" oncomplete="iniciarCropFotoPessoa()" />
+						</rich:fileUpload>
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="row" rendered="#{LoginControle.exibirUpload}">
+					<h:panelGroup layout="block" styleClass="col-md-12">
+						<h:outputText styleClass="field control-label tituloCampos" value="Você pode enviar arquivos JPG ou PNG (tamanho máximo de 2MB)" />
+					</h:panelGroup>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="barra-btn-flutuante-modal-image">
+					<otm:commandButton styleClass="btn btn-dark" oncomplete="#{LoginControle.oncompleteModal}; Webcam.reset();" rendered="#{LoginControle.exibirBotao}" action="#{LoginControle.recortarFoto}" render="formImagem, formWebcam, foto2, formTopoVisaoAluno:box-user, form, formTopoVisaoAluno" value="Confirmar foto" icon="#{msg_botoes.btn_icon_confirmar_embutido}" />
+					<otm:commandButton styleClass="btn btn-info" style="margin-left: 10px" oncomplete="Webcam.reset();#{rich:component('panelCapturarImagemWebCamFotoUsuario')}.show()" render="formWebcam" value="Tirar foto" icon="#{msg_botoes.btn_icon_camera_embutido}" />
+					<otm:commandButton style="margin-left: 10px" styleClass="btn btn-danger light btn-cancelar" icon="#{msg_botoes.btn_icon_cancelar_embutido}" value="Cancelar" action="#{LoginControle.cancelar}" oncomplete="#{rich:component('panelImagem')}.hide();" render="formImagem" title="Cancelar" />
+				</h:panelGroup>
+				<a4j:outputPanel id="panelMensagem">
+					<otm:mensagem bean="#{LoginControle}"></otm:mensagem>
+				</a4j:outputPanel>
+			</h:form>
+		</rich:popupPanel>
+
+
+		<script>
+(function($) {
+    $(document).ready(function() {	
+    	focus('preferencia:btnIconPreferencia');
+    });
+    
+})(jQuery);
+</script>
+
+	</ui:define>
+
+
+	<ui:include src="/templates/javascriptadministrativo.xhtml"></ui:include>
+
+</ui:composition>
